@@ -66,10 +66,10 @@ public interface VCSEngine extends Iterable<Version> {
 
 	/**
 	 * Reads the contents of the given file. This method does not depend on the
-     * current state of this engine. (see Note 2 above).
+	 * current state of this engine. (see Note 2 above).
 	 *
 	 * @param file
-     *      The file to read the contents from.
+	 *      The file to read the contents from.
 	 * @return
 	 * 		A byte array containing the bytes read from the file.
 	 * @throws NullPointerException
@@ -164,9 +164,9 @@ public interface VCSEngine extends Iterable<Version> {
 	}
 
 	/**
-	 * Returns a list of all non-VCS-specific files located in
-	 * {@link #getOutput()}. All paths of the list are absolute and the list
-	 * does not contain any directory path. The default implementation uses the
+	 * Returns all non-VCS-specific files located in {@link #getOutput()}.
+	 * All paths of the list are absolute and the list does not contain
+	 * any directory path. The default implementation uses the
 	 * {@link FilenameFilter} returned by {@link #createVCSFileFilter()} to
 	 * exclude particular files from {@link #getOutput()}. {@link #getOutput()}
 	 * itself can not be excluded.
