@@ -1,0 +1,17 @@
+plugins {
+	id 'java'
+	id 'maven'
+}
+
+group = 'de.unibremen.st'
+version = '1.0.1'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	testCompile 'junit:junit:4.12'
+	testCompile 'org.mockito:mockito-all:2.0.2-beta'
+	testCompile 'org.assertj:assertj-core:3.8.0'
+}
