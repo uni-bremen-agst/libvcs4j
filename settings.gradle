@@ -1,0 +1,1 @@
+include 'libvcs4j-api', 'libvcs4j-impl'
