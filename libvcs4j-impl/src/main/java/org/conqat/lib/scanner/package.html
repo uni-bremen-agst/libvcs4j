@@ -1,0 +1,23 @@
+<!--  
+  $Id: package.html 35769 2011-08-29 15:41:23Z hummelb $
+  @version $Rev: 35769 $
+  @ConQAT.Rating GREEN Hash: 50F106D65D2243B6BC76C7A6CC89CCB2
+-->
+<body>
+Provides scanners for several languages that can be obtained in a <b>strict</b> or in a <b>lenient</b> variant.
+The variants differ in the way they handle unrecognized characters.
+<br/>
+<b>Strict</b> scanners implement interface {@link org.conqat.lib.scanner.IScanner} and throw 
+{@link org.conqat.lib.scanner.ScannerException}s for unrecognized input and abort scanning. <br/> 
+<b>Lenient</b> scanners implement interface {@link org.conqat.lib.scanner.ILenientScanner} and do not throw
+exceptions, but return tokens of token class {@link org.conqat.lib.scanner.ETokenType.ETokenClass#ERROR}
+and resume scanning.
+<br/>
+<br>
+Besides, the central elements of the package are:
+<ul>
+<li>{@link org.conqat.lib.scanner.ScannerFactory} from which scanners can be obtained</li>
+<li>{@link org.conqat.lib.scanner.ELanguage} the enumeration that lists all supported languages</li>
+<li>{@link org.conqat.lib.scanner.IToken} the interface that is implemented by all tokens</li>
+</ul> 
+</body>

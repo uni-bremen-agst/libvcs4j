@@ -1,0 +1,26 @@
+plugins {
+	id 'java'
+	id 'maven'
+	id "com.github.johnrengelman.shadow" version "2.0.3"
+}
+
+group = 'de.unibremen.st'
+version = '1.0.1'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compile project(':libvcs4j-api')
+	compile 'com.ibm.icu:icu4j:59.1'
+	compile 'org.apache.commons:commons-lang3:3.4'
+	compile 'org.eclipse.jgit:org.eclipse.jgit:4.10.0.201712302008-r'
+	compile 'org.gitlab:java-gitlab-api:4.0.0'
+	compile 'org.kohsuke:github-api:1.92'
+	compile 'org.slf4j:slf4j-api:1.7.22'
+	compile 'org.tmatesoft.svnkit:svnkit:1.9.1'
+	testCompile 'junit:junit:4.12'
+	testCompile 'org.apache.commons:commons-compress:1.15'
+	testCompile 'org.slf4j:slf4j-simple:1.7.25'
+}

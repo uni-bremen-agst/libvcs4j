@@ -1,0 +1,2 @@
+include ':libvcs4j-api'
+project(':libvcs4j-api').projectDir = new File(settingsDir, '../libvcs4j-api')

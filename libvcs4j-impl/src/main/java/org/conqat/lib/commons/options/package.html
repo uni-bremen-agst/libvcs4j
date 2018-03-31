@@ -1,0 +1,37 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<!--  $Rev: 41763 $
+      @ConQAT.Rating GREEN Hash: 242EFCAB19EAC1A55FA4856C65219B1D -->
+</head>
+<body bgcolor="white">
+
+<p>
+Classes for simplifying command line parsing. The general idea is to annotate methods with 
+{@link org.conqat.lib.commons.options.AOption}, which are then exposed as command line switches. Whether the 
+option takes an argument (and the type of the argument) is determined by the arguments the method accepts.
+Additional constraints on the option arguments (e.g. value positive) can be enforced by the method by throwing
+an IllegalArgumentException.
+</p>
+
+<p>
+The options are extracted and collected by an {@link org.conqat.lib.commons.options.OptionRegistry}. The 
+OptionRegistry extracts methods annotated with AOption and keeps them as 
+{@link org.conqat.lib.commons.options.OptionApplicator}s for later use. To support the distribution of option handling
+over multiple classes (e.g. to separate options affecting different parts of the architecture) multiple objects
+can be registered with the registry.
+</p>
+
+<p>
+The actual parsing of the command line is performed by the {@link org.conqat.lib.commons.options.CommandLine}. This 
+is to separate the low level part (annotations and reflection) from the parser. Additionally this way the parser
+can easily be extended or exchanged.
+</p>
+
+<p>
+As an example for using these classes see the org.conqat.engine.core.driver.Driver
+class in the ConQAT project.
+</p>
+
+</body>
+</html>

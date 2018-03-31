@@ -1,0 +1,34 @@
+<!--  
+  $Id: package.html 41763 2012-09-18 15:36:49Z kinnen $
+  @version $Rev: 41763 $
+  @ConQAT.Rating GREEN Hash: 22FB06EF224FEEFE9B54139B10E14E03 
+-->
+<body>
+This package provides support for precondition checking and assertions.
+
+<h3>Preconditions vs Assertions</h3>
+<p>To understand the difference between preconditions and assertions it is
+important do differentiate between the developer of a component (class,
+method, ...) and the user of this component.</p>
+<p><b>Preconditions</b> are used to signal violations of the usage
+contract of components to its <em>user</em>. These preconditions are
+usually documented as part of the component's comment. 
+Examples: "Argument may not
+be <code>null</code>", "Argument must be positive", 
+"cannot call <code>x</code> for empty list". Preconditions are checked
+using the methods of the {@link org.conqat.lib.commons.assertion.CCSMPre}
+class. Violations are signaled with 
+{@link org.conqat.lib.commons.assertion.PreconditionException}s.
+</p>
+<p><b>Assertions</b> are used to check that invariants that only the
+developer of component knows are valid. These are used to check for
+<em>implementation</em> (opposed to <em>usage</em>) faults.
+Examples are: "Stack size 
+cannot be negative.", "Array index must not be greater than array length".
+Assertions are checked
+using the methods of the {@link org.conqat.lib.commons.assertion.CCSMAssert}
+class. Violations are signaled with 
+{@link java.lang.AssertionError}s.
+</p>
+
+</body>
