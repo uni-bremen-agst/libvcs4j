@@ -96,8 +96,8 @@ public interface Version {
 										? c.getOldFile()
 										: c.getNewFile())
 								.map(VCSFile::toPath)
-                                .map(p -> p.equals(path))
-                                .orElse(false))
+								.map(p -> p.equals(path))
+								.orElse(false))
 						.findAny().ifPresent(match -> {
 							final FileChange.Type oType = match.getType();
 							if (type == ADD && oType == ADD) {

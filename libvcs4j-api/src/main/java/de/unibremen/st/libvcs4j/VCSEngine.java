@@ -80,7 +80,7 @@ public interface VCSEngine extends Iterable<Version> {
 	 * 		If an error occurred while reading the contents.
 	 */
 	byte[] readAllBytes(final VCSFile file) throws NullPointerException,
-            IllegalArgumentException, IOException;
+			IllegalArgumentException, IOException;
 
 	/**
 	 * Returns the currently checked out revision.

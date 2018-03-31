@@ -60,8 +60,8 @@ public interface FileChange {
 
 	/**
 	 * Returns the {@link Type} of this file change. The default implementation
-     * computes the type based on the presence/absence of {@link #getOldFile()}
-     * and {@link #getNewFile()}.
+	 * computes the type based on the presence/absence of {@link #getOldFile()}
+	 * and {@link #getNewFile()}.
 	 *
 	 * @return
 	 * 		The {@link Type} of this file change.
@@ -86,15 +86,15 @@ public interface FileChange {
 				Type.MODIFY : Type.RELOCATE;
 	}
 
-    /**
-     * Computes the changed lines.
-     *
-     * @return
-     *      A sequence of {@link LineChange} objects.
-     * @throws IOException
-     *      If an error occurred while reading the content of the old or new
-     *      file (see {@link VCSFile#readeContent()}).
-     */
+	/**
+	 * Computes the changed lines.
+	 *
+	 * @return
+	 *      A sequence of {@link LineChange} objects.
+	 * @throws IOException
+	 *      If an error occurred while reading the content of the old or new
+	 *      file (see {@link VCSFile#readeContent()}).
+	 */
 	default List<LineChange> computeDiff() throws IOException {
 		final String LINE_SEPARATOR = "\\r?\\n";
 		final String[] old = getOldFile().isPresent()
