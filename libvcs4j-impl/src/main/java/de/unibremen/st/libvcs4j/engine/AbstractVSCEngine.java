@@ -141,21 +141,21 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 
 	@Override
 	public final byte[] readAllBytes(final VCSFile pFile) throws
-            NullPointerException, IllegalArgumentException, IOException {
+			NullPointerException, IllegalArgumentException, IOException {
 		Validate.notNull(pFile);
 		final String rev = pFile.getRevision().getCommitId();
 		init();
 		Validate.isTrue(revisions.contains(rev));
-        if (revision != null && revision.equals(rev)) {
+		if (revision != null && revision.equals(rev)) {
 			Validate.isTrue(Files.isRegularFile(pFile.toPath()),
 					"'%s' is not a regular file", pFile.toPath());
 			return Files.readAllBytes(pFile.toPath());
-        } else {
-            final byte[] bytes = readAllBytesImpl(
-            		pFile.getRelativePath(), rev);
-            IllegalReturnException.notNull(bytes);
-            return bytes;
-        }
+		} else {
+			final byte[] bytes = readAllBytesImpl(
+					pFile.getRelativePath(), rev);
+			IllegalReturnException.notNull(bytes);
+			return bytes;
+		}
 	}
 
 	@Override
@@ -183,7 +183,7 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 			public Version next() {
 				try {
 					final Optional<Version> version =
-                            AbstractVSCEngine.this.next();
+							AbstractVSCEngine.this.next();
 					if (!version.isPresent()) {
 						throw new NoSuchElementException();
 					}

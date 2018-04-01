@@ -17,58 +17,58 @@ import java.util.Optional;
 
 public class GitlabEngine extends AbstractITEngine {
 
-    private final String host;
-    private final GitlabAPI gitlab;
+	private final String host;
+	private final GitlabAPI gitlab;
 
-    public GitlabEngine(
-            final String pHost,
-            final String pRepository,
-            final String pToken) {
-        super(pRepository, pToken);
-        host = Validate.notEmpty(pHost);
-        gitlab = GitlabAPI.connect(host, pToken);
-    }
+	public GitlabEngine(
+			final String pHost,
+			final String pRepository,
+			final String pToken) {
+		super(pRepository, pToken);
+		host = Validate.notEmpty(pHost);
+		gitlab = GitlabAPI.connect(host, pToken);
+	}
 
-    public String getHost() {
-        return host;
-    }
+	public String getHost() {
+		return host;
+	}
 
-    @Override
-    public Optional<Issue> getIssueById(final String pId) throws IOException {
-        Validate.notEmpty(pId);
-        try {
-            final GitlabIssue glIssue = gitlab.getIssue(
-                    getRepository(), Integer.parseInt(pId));
-            return Optional.of(createIssue(glIssue));
-        } catch (final NumberFormatException e) {
-            throw new IllegalArgumentException(e.getMessage());
-        } catch (final FileNotFoundException e) {
-            return Optional.empty();
-        }
-    }
+	@Override
+	public Optional<Issue> getIssueById(final String pId) throws IOException {
+		Validate.notEmpty(pId);
+		try {
+			final GitlabIssue glIssue = gitlab.getIssue(
+					getRepository(), Integer.parseInt(pId));
+			return Optional.of(createIssue(glIssue));
+		} catch (final NumberFormatException e) {
+			throw new IllegalArgumentException(e.getMessage());
+		} catch (final FileNotFoundException e) {
+			return Optional.empty();
+		}
+	}
 
-    private Issue createIssue(final GitlabIssue pGLIssue) {
-        final IssueImpl issue = new IssueImpl();
-        issue.setId(String.valueOf(pGLIssue.getId()));
-        String author = pGLIssue.getAuthor().getName();
-        if (author == null) {
-            author = pGLIssue.getAuthor().getUsername();
-        }
-        issue.setAuthor(author);
-        issue.setTitle(pGLIssue.getTitle());
-        final LocalDateTime dateTime = pGLIssue
-                .getCreatedAt()
-                .toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDateTime();
-        issue.setDateTime(dateTime);
+	private Issue createIssue(final GitlabIssue pGLIssue) {
+		final IssueImpl issue = new IssueImpl();
+		issue.setId(String.valueOf(pGLIssue.getId()));
+		String author = pGLIssue.getAuthor().getName();
+		if (author == null) {
+			author = pGLIssue.getAuthor().getUsername();
+		}
+		issue.setAuthor(author);
+		issue.setTitle(pGLIssue.getTitle());
+		final LocalDateTime dateTime = pGLIssue
+				.getCreatedAt()
+				.toInstant()
+				.atZone(ZoneId.systemDefault())
+				.toLocalDateTime();
+		issue.setDateTime(dateTime);
 
-        final CommentImpl comment = new CommentImpl();
-        comment.setAuthor(author);
-        comment.setDateTime(dateTime);
-        comment.setMessage(pGLIssue.getDescription());
-        issue.setComments(Collections.singletonList(comment));
+		final CommentImpl comment = new CommentImpl();
+		comment.setAuthor(author);
+		comment.setDateTime(dateTime);
+		comment.setMessage(pGLIssue.getDescription());
+		issue.setComments(Collections.singletonList(comment));
 
-        return issue;
-    }
+		return issue;
+	}
 }

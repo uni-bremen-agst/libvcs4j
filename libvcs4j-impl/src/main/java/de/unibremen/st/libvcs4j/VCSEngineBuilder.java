@@ -198,54 +198,54 @@ public class VCSEngineBuilder {
 	}
 
 	@SuppressWarnings("deprecation")
-    public VCSEngine build() {
+	public VCSEngine build() {
 		final VCSEngine vcsEngine;
 		if (engine == Engine.SINGLE) {
-		    vcsEngine = new SingleEngine(Paths.get(repository, root));
-        } else {
-            final String repo = Files.isDirectory(Paths.get(repository))
-                    ? "file://" + repository : repository;
-            if (engine == Engine.SVN) {
-                if (interval == Interval.DATE) {
-                    vcsEngine = new SVNEngine(
-                            repo, root,
-                            Paths.get(target),
-                            since,
-                            until);
-                } else if (interval == Interval.REVISION) {
-                    vcsEngine = new SVNEngine(
-                            repo, root,
-                            Paths.get(target),
-                            from,
-                            to);
-                } else {
-                    throw new IllegalStateException(String.format(
-                            "Unknown interval '%s'", interval));
-                }
-            } else if (engine == Engine.GIT) {
-                if (interval == Interval.DATE) {
-                    vcsEngine = new GitEngine(
-                            repo, root,
-                            Paths.get(target),
-                            branch,
-                            since,
-                            until);
-                } else if (interval == Interval.REVISION) {
-                    vcsEngine = new GitEngine(
-                            repo, root,
-                            Paths.get(target),
-                            branch,
-                            from,
-                            to);
-                } else {
-                    throw new IllegalStateException(String.format(
-                            "Unknown interval '%s'", interval));
-                }
-            } else {
-                throw new IllegalStateException(String.format(
-                        "Unknown VCS engine '%s'", engine));
-            }
-        }
+			vcsEngine = new SingleEngine(Paths.get(repository, root));
+		} else {
+			final String repo = Files.isDirectory(Paths.get(repository))
+					? "file://" + repository : repository;
+			if (engine == Engine.SVN) {
+				if (interval == Interval.DATE) {
+					vcsEngine = new SVNEngine(
+							repo, root,
+							Paths.get(target),
+							since,
+							until);
+				} else if (interval == Interval.REVISION) {
+					vcsEngine = new SVNEngine(
+							repo, root,
+							Paths.get(target),
+							from,
+							to);
+				} else {
+					throw new IllegalStateException(String.format(
+							"Unknown interval '%s'", interval));
+				}
+			} else if (engine == Engine.GIT) {
+				if (interval == Interval.DATE) {
+					vcsEngine = new GitEngine(
+							repo, root,
+							Paths.get(target),
+							branch,
+							since,
+							until);
+				} else if (interval == Interval.REVISION) {
+					vcsEngine = new GitEngine(
+							repo, root,
+							Paths.get(target),
+							branch,
+							from,
+							to);
+				} else {
+					throw new IllegalStateException(String.format(
+							"Unknown interval '%s'", interval));
+				}
+			} else {
+				throw new IllegalStateException(String.format(
+						"Unknown VCS engine '%s'", engine));
+			}
+		}
 
 		// delete temporary directory when shutting down application
 		if (target.equals(defaultTarget)) {

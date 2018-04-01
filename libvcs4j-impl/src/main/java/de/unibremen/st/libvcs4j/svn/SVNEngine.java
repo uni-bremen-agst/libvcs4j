@@ -50,7 +50,7 @@ import static org.apache.commons.lang3.Validate.notNull;
  */
 public class SVNEngine extends AbstractIntervalVCSEngine {
 
-    private static final Logger log = LoggerFactory.getLogger(SVNEngine.class);
+	private static final Logger log = LoggerFactory.getLogger(SVNEngine.class);
 
 	private static final Predicate<String> SUPPORTED_PROTOCOLS = Pattern
 			.compile("file://.*|http://.*|https://.*|svn://.*|svn+ssh://.*")
@@ -63,11 +63,11 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 	public static final LocalDateTime MINIMUM_DATETIME =
 			LocalDateTime.of(1980, 1, 1, 0, 0, 0);
 
-    /**
-     * Use {@link de.unibremen.st.libvcs4j.VCSEngineBuilder} instead.
-     */
-    @Deprecated
-    @SuppressWarnings("DeprecatedIsStillUsed")
+	/**
+	 * Use {@link de.unibremen.st.libvcs4j.VCSEngineBuilder} instead.
+	 */
+	@Deprecated
+	@SuppressWarnings("DeprecatedIsStillUsed")
 	public SVNEngine(
 			final String pRepository,
 			final String pRoot,
@@ -86,11 +86,11 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 				"Since (%s) after until (%s)", pSince, pUntil);
 	}
 
-    /**
-     * Use {@link de.unibremen.st.libvcs4j.VCSEngineBuilder} instead.
-     */
-    @Deprecated
-    @SuppressWarnings("DeprecatedIsStillUsed")
+	/**
+	 * Use {@link de.unibremen.st.libvcs4j.VCSEngineBuilder} instead.
+	 */
+	@Deprecated
+	@SuppressWarnings("DeprecatedIsStillUsed")
 	public SVNEngine(
 			final String pRepository,
 			final String pRoot,

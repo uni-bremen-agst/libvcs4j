@@ -19,66 +19,66 @@ import java.util.Objects;
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class DeleteTask extends Thread {
 
-    /**
-     * The {@link Logger} of this class.
-     */
-    private final Logger LOGGER = LoggerFactory.getLogger(DeleteTask.class);
+	/**
+	 * The {@link Logger} of this class.
+	 */
+	private final Logger LOGGER = LoggerFactory.getLogger(DeleteTask.class);
 
-    /**
-     * Path to file or directory that will be deleted.
-     */
-    private final Path path;
+	/**
+	 * Path to file or directory that will be deleted.
+	 */
+	private final Path path;
 
-    /**
-     * Creates a new task that deletes {@code pPath} when calling
-     * {@link #run()}.
-     *
-     * @param pPath
-     *      Path to the file or directory to delete.
-     * @throws NullPointerException
-     *      If {@code pPath == null}.
-     */
-    public DeleteTask(final Path pPath) {
-        path = Objects.requireNonNull(pPath);
-    }
+	/**
+	 * Creates a new task that deletes {@code pPath} when calling
+	 * {@link #run()}.
+	 *
+	 * @param pPath
+	 *      Path to the file or directory to delete.
+	 * @throws NullPointerException
+	 *      If {@code pPath == null}.
+	 */
+	public DeleteTask(final Path pPath) {
+		path = Objects.requireNonNull(pPath);
+	}
 
-    /**
-     * Convenience constructor for {@link #DeleteTask(Path)}.
-     *
-     * @param pPath
-     *      Path to the file or directory to delete.
-     * @throws NullPointerException
-     *      If {@code pPath == null}.
-     */
-    public DeleteTask(final String pPath) {
-        this(Paths.get(pPath));
-    }
+	/**
+	 * Convenience constructor for {@link #DeleteTask(Path)}.
+	 *
+	 * @param pPath
+	 *      Path to the file or directory to delete.
+	 * @throws NullPointerException
+	 *      If {@code pPath == null}.
+	 */
+	public DeleteTask(final String pPath) {
+		this(Paths.get(pPath));
+	}
 
-    @Override
-    public void run() {
-        LOGGER.info("Deleting directory '{}'", path);
-        try {
-            if (Files.exists(path)) {
-                Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-                    @Override
-                    public FileVisitResult visitFile(
-                            final Path pFile, final BasicFileAttributes pAttrs)
-                            throws IOException {
-                        Files.delete(pFile);
-                        return FileVisitResult.CONTINUE;
-                    }
+	@Override
+	public void run() {
+		LOGGER.info("Deleting directory '{}'", path);
+		try {
+			if (Files.exists(path)) {
+				Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+					@Override
+					public FileVisitResult visitFile(
+							final Path pFile, final BasicFileAttributes pAttrs)
+							throws IOException {
+						Files.delete(pFile);
+						return FileVisitResult.CONTINUE;
+					}
 
-                    @Override
-                    public FileVisitResult postVisitDirectory(
-                            final Path pDir, final IOException pExc)
-                            throws IOException {
-                        Files.delete(pDir);
-                        return FileVisitResult.CONTINUE;
-                    }
-                });
-            }
-        } catch (final IOException e) {
-            LOGGER.warn("Error while deleting directory '{}'", path, e);
-        }
-    }
+					@Override
+					public FileVisitResult postVisitDirectory(
+							final Path pDir, final IOException pExc)
+							throws IOException {
+						Files.delete(pDir);
+						return FileVisitResult.CONTINUE;
+					}
+				});
+			}
+		} catch (final IOException e) {
+			LOGGER.warn("Error while deleting directory '{}'", path, e);
+		}
+	}
 }

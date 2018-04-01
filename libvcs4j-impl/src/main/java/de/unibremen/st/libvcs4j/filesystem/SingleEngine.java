@@ -27,11 +27,11 @@ public class SingleEngine extends AbstractVSCEngine {
 
 	private final static String DEFAULT_AUTHOR = "(no author)";
 
-    /**
-     * Use {@link de.unibremen.st.libvcs4j.VCSEngineBuilder} instead.
-     */
-    @Deprecated
-    @SuppressWarnings("DeprecatedIsStillUsed")
+	/**
+	 * Use {@link de.unibremen.st.libvcs4j.VCSEngineBuilder} instead.
+	 */
+	@Deprecated
+	@SuppressWarnings("DeprecatedIsStillUsed")
 	public SingleEngine(final Path pPath) throws NullPointerException,
 			IllegalArgumentException {
 		super(parsePath(pPath).toString(), "", parsePath(pPath));
@@ -59,8 +59,8 @@ public class SingleEngine extends AbstractVSCEngine {
 
 	@Override
 	protected Changes createChanges(
-	        final String pFrom,
-            final String pTo) {
+			final String pFrom,
+			final String pTo) {
 		throw new IllegalStateException(
 				"This mothod should not have been called");
 	}

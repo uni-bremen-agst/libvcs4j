@@ -14,66 +14,66 @@ import java.util.List;
  */
 public class CommitImpl implements Commit {
 
-    private String id;
-    private String author;
-    private String message;
-    private LocalDateTime dateTime;
-    private List<String> parentIds = Collections.emptyList();
-    private List<FileChange> fileChanges = Collections.emptyList();
+	private String id;
+	private String author;
+	private String message;
+	private LocalDateTime dateTime;
+	private List<String> parentIds = Collections.emptyList();
+	private List<FileChange> fileChanges = Collections.emptyList();
 
-    @Override
-    public String getId() {
-        return id;
-    }
+	@Override
+	public String getId() {
+		return id;
+	}
 
-    public void setId(final String pId) {
-        id = Validate.notNull(pId);
-    }
+	public void setId(final String pId) {
+		id = Validate.notNull(pId);
+	}
 
-    @Override
-    public String getAuthor() {
-        return author;
-    }
+	@Override
+	public String getAuthor() {
+		return author;
+	}
 
-    public void setAuthor(final String pAuthor) {
-        author = Validate.notNull(pAuthor);
-    }
+	public void setAuthor(final String pAuthor) {
+		author = Validate.notNull(pAuthor);
+	}
 
-    @Override
-    public String getMessage() {
-        return message;
-    }
+	@Override
+	public String getMessage() {
+		return message;
+	}
 
-    public void setMessage(final String pMessage) {
-        message = Validate.notNull(pMessage);
-    }
+	public void setMessage(final String pMessage) {
+		message = Validate.notNull(pMessage);
+	}
 
-    @Override
-    public LocalDateTime getDateTime() {
-        return dateTime;
-    }
+	@Override
+	public LocalDateTime getDateTime() {
+		return dateTime;
+	}
 
-    public void setDateTime(final LocalDateTime pDateTime) {
-        dateTime = Validate.notNull(pDateTime);
-    }
+	public void setDateTime(final LocalDateTime pDateTime) {
+		dateTime = Validate.notNull(pDateTime);
+	}
 
-    @Override
-    public List<String> getParentIds() {
-        return new ArrayList<>(parentIds);
-    }
+	@Override
+	public List<String> getParentIds() {
+		return new ArrayList<>(parentIds);
+	}
 
-    public void setParentIds(List<String> pParentIds) {
-        Validate.noNullElements(pParentIds);
-        parentIds = new ArrayList<>(pParentIds);
-    }
+	public void setParentIds(List<String> pParentIds) {
+		Validate.noNullElements(pParentIds);
+		parentIds = new ArrayList<>(pParentIds);
+	}
 
-    @Override
-    public List<FileChange> getFileChanges() {
-        return new ArrayList<>(fileChanges);
-    }
+	@Override
+	public List<FileChange> getFileChanges() {
+		return new ArrayList<>(fileChanges);
+	}
 
-    public void setFileChanges(final List<FileChange> pFileChanges) {
-        Validate.noNullElements(pFileChanges);
-        fileChanges = new ArrayList<>(pFileChanges);
-    }
+	public void setFileChanges(final List<FileChange> pFileChanges) {
+		Validate.noNullElements(pFileChanges);
+		fileChanges = new ArrayList<>(pFileChanges);
+	}
 }

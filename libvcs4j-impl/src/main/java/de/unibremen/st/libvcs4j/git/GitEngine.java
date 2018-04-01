@@ -64,11 +64,11 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	 */
 	private final String branch;
 
-    /**
-     * Use {@link de.unibremen.st.libvcs4j.VCSEngineBuilder} instead.
-     */
-    @Deprecated
-    @SuppressWarnings("DeprecatedIsStillUsed")
+	/**
+	 * Use {@link de.unibremen.st.libvcs4j.VCSEngineBuilder} instead.
+	 */
+	@Deprecated
+	@SuppressWarnings("DeprecatedIsStillUsed")
 	public GitEngine(
 			final String pRepository,
 			final String pRoot,
@@ -85,11 +85,11 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 		branch = Validate.notEmpty(pBranch);
 	}
 
-    /**
-     * Use {@link de.unibremen.st.libvcs4j.VCSEngineBuilder} instead.
-     */
-    @Deprecated
-    @SuppressWarnings("DeprecatedIsStillUsed")
+	/**
+	 * Use {@link de.unibremen.st.libvcs4j.VCSEngineBuilder} instead.
+	 */
+	@Deprecated
+	@SuppressWarnings("DeprecatedIsStillUsed")
 	public GitEngine(
 			final String pRepository,
 			final String pRoot,
@@ -113,7 +113,7 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 		Validate.isTrue(SUPPORTED_PROTOCOLS.test(pRepository),
 				"Unsupported protocol for '%s'", pRepository);
 		if (FILE_PROTOCOL.test(pRepository)) {
-		    final String repo = pRepository.substring(7);
+			final String repo = pRepository.substring(7);
 			final Path path = Paths.get(repo).toAbsolutePath();
 			Validate.isTrue(Files.exists(path),
 					"'%s' does not exist", pRepository);
@@ -202,9 +202,9 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 				throws IOException {
 		try {
 			openRepository()
-                    .checkout()
+					.checkout()
 					.setName(pRevision)
-                    .call();
+					.call();
 		} catch (final GitAPIException e) {
 			throw new IOException(e);
 		}
@@ -310,11 +310,11 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 						}
 					});
 		} catch (NoHeadException e) {
-		    return Collections.emptyList();
-        } catch (final GitAPIException e) {
+			return Collections.emptyList();
+		} catch (final GitAPIException e) {
 			throw new IOException(e);
 		}
-        Collections.reverse(revs);
+		Collections.reverse(revs);
 		return revs;
 	}
 
@@ -335,11 +335,11 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 					.call()
 					.forEach(rv -> revs.add(rv.getName()));
 		} catch (NoHeadException e) {
-            return Collections.emptyList();
-        } catch (final GitAPIException e) {
+			return Collections.emptyList();
+		} catch (final GitAPIException e) {
 			throw new IOException(e);
 		}
-        Collections.reverse(revs);
+		Collections.reverse(revs);
 		return revs;
 	}
 
@@ -380,10 +380,10 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 
 		try {
 			openRepository()
-                    .log()
-                    .setMaxCount(1)
-                    .add(rev)
-                    .call()
+					.log()
+					.setMaxCount(1)
+					.add(rev)
+					.call()
 					.forEach(commits::add);
 		} catch (final GitAPIException e) {
 			throw new IOException(e);
@@ -417,10 +417,10 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 		try {
 			log.info("Cloning {} to {}", getRepository(), getTarget());
 			Git.cloneRepository()
-                    .setURI(getRepository())
-                    .setDirectory(getTarget().toFile())
-                    .setBranch(branch)
-                    .call();
+					.setURI(getRepository())
+					.setDirectory(getTarget().toFile())
+					.setBranch(branch)
+					.call();
 		} catch (final GitAPIException e) {
 			throw new IOException(e);
 		}
