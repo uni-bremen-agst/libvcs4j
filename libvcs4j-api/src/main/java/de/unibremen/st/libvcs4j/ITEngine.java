@@ -2,7 +2,9 @@ package de.unibremen.st.libvcs4j;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -79,14 +81,65 @@ public interface ITEngine {
      *      If an error occurred while retrieving an issue.
      */
     default List<Issue> getIssuesFor(final Commit commit) throws IOException {
-        final List<Issue> issues = new ArrayList<>();
+        final Map<String, Issue> issues = new HashMap<>();
         if (commit != null) {
             final List<String> ids = parseIssueIds(commit.getMessage());
             for (final String id : ids) {
-                getIssueById(id).ifPresent(issues::add);
+                getIssueById(id).ifPresent(i -> issues.put(i.getId(), i));
             }
         }
-        return issues;
+        return new ArrayList<>(issues.values());
+    }
+
+    /**
+     * Returns all issues referenced by the given list of commits. This method
+     * does not fail if {@code commits} is {@code null} or contains
+     * {@code null} values.
+     *
+     * The default implementation delegates each commit to
+     * {@link #getIssuesFor(Commit)} and collects the results.
+     *
+     * @param commits
+     *      The commits to parse.
+     * @return
+     *      The referenced issues.
+     * @throws IOException
+     *      If an error occurred while retrieving an issue.
+     */
+    default List<Issue> getIssuesFor(final List<Commit> commits)
+            throws IOException {
+        final Map<String, Issue> issues = new HashMap<>();
+        if (commits != null) {
+            for (final Commit c : commits) {
+                if (c != null) {
+                    getIssuesFor(c).forEach(i -> issues.put(i.getId(), i));
+                }
+            }
+        }
+        return new ArrayList<>(issues.values());
+    }
+
+    /**
+     * Returns all issues referenced by the given version. This method does not
+     * fail if {@code version} is {@code null}.
+     *
+     * The default implementations delegates the referenced commits
+     * ({@link Version#getCommits()}) to {@link #getIssuesFor(List)}.
+     *
+     * @param version
+     *      The version to parse.
+     * @return
+     *      The referenced issues.
+     * @throws IOException
+     *      If an error occurred while retrieving an issue.
+     */
+    default List<Issue> getIssuesFor(final Version version)
+            throws IOException {
+        if (version == null) {
+            return new ArrayList<>();
+        } else {
+            return getIssuesFor(version.getCommits());
+        }
     }
 
     /**
