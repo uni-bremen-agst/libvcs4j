@@ -3,6 +3,7 @@ package de.unibremen.st.libvcs4j;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -44,6 +45,12 @@ class TestVersionProvider implements VCSEngine {
 
 	@Override
 	public Path getOutput() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public List<LineChange> computeDiff(FileChange fileChange) throws
+			NullPointerException {
 		throw new UnsupportedOperationException();
 	}
 

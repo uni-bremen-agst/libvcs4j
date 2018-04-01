@@ -1,13 +1,16 @@
 package de.unibremen.st.libvcs4j.engine;
 
+import bmsi.util.Diff;
 import de.unibremen.st.libvcs4j.Commit;
 import de.unibremen.st.libvcs4j.FileChange;
+import de.unibremen.st.libvcs4j.LineChange;
 import de.unibremen.st.libvcs4j.Revision;
 import de.unibremen.st.libvcs4j.VCSEngine;
 import de.unibremen.st.libvcs4j.VCSFile;
 import de.unibremen.st.libvcs4j.Version;
 import de.unibremen.st.libvcs4j.data.CommitImpl;
 import de.unibremen.st.libvcs4j.data.FileChangeImpl;
+import de.unibremen.st.libvcs4j.data.LineChangeImpl;
 import de.unibremen.st.libvcs4j.data.RevisionImpl;
 import de.unibremen.st.libvcs4j.data.VCSFileImpl;
 import de.unibremen.st.libvcs4j.data.VersionImpl;
@@ -193,6 +196,50 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 		};
 	}
 
+	@Override
+	public List<LineChange> computeDiff(FileChange pFileChange) throws
+			NullPointerException, IOException {
+		Validate.notNull(pFileChange);
+		final String LINE_SEPARATOR = "\\r?\\n";
+
+		final String[] old = pFileChange.getOldFile().isPresent()
+				? pFileChange.getOldFile().get()
+					.readeContent().split(LINE_SEPARATOR)
+				: new String[0];
+		final String[] nev = pFileChange.getNewFile().isPresent()
+				? pFileChange.getNewFile().get()
+					.readeContent().split(LINE_SEPARATOR)
+				: new String[0];
+
+		final Diff diff = new Diff(old, nev);
+		Diff.change change = diff.diff_2(false);
+		final List<LineChange> lineChanges = new ArrayList<>();
+		while (change != null) {
+			final Diff.change c = change;
+			for (int i = 0; i < change.deleted; i++) {
+				final LineChangeImpl lineChange = new LineChangeImpl();
+				lineChange.setType(LineChange.Type.DELETE);
+				lineChange.setLine(c.line0 + i + 1);
+				lineChange.setContent(old[lineChange.getLine() - 1]);
+				lineChange.setFile(pFileChange.getOldFile()
+						.orElseThrow(IllegalStateException::new));
+				lineChanges.add(lineChange);
+			}
+			for (int i = 0; i < change.inserted; i++) {
+				final LineChangeImpl lineChange = new LineChangeImpl();
+				lineChange.setType(LineChange.Type.INSERT);
+				lineChange.setLine(c.line1 + i + 1);
+				lineChange.setContent(nev[lineChange.getLine() - 1]);
+				lineChange.setFile(pFileChange.getNewFile()
+						.orElseThrow(IllegalStateException::new));
+				lineChanges.add(lineChange);
+			}
+			change = change.link;
+		}
+
+		return lineChanges;
+	}
+
 	/**
 	 * Returns the revisions to process. If necessary, the first call of this
 	 * method initializes the repository---for instance, cloning the repository
@@ -334,6 +381,7 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 		final List<FileChange> fileChanges = new ArrayList<>();
 		for (final String add : pChanges.getAdded()) {
 			final FileChangeImpl fileChange = new FileChangeImpl();
+			fileChange.setEngine(this);
 			fileChange.setNewFile(createFile(add, rev));
 			fileChanges.add(fileChange);
 		}
@@ -342,11 +390,13 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 			Validate.validState(currentRevision != null);
 			for (final String remove : pChanges.getRemoved()) {
 				final FileChangeImpl fileChange = new FileChangeImpl();
+				fileChange.setEngine(this);
 				fileChange.setOldFile(createFile(remove, currentRevision));
 				fileChanges.add(fileChange);
 			}
 			for (final String modify : pChanges.getModified()) {
 				final FileChangeImpl fileChange = new FileChangeImpl();
+				fileChange.setEngine(this);
 				fileChange.setOldFile(createFile(modify, currentRevision));
 				fileChange.setNewFile(createFile(modify, rev));
 				fileChanges.add(fileChange);
@@ -356,6 +406,7 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 				final FileChangeImpl fileChange = new FileChangeImpl();
 				final String old = relocate.getKey();
 				final String nev = relocate.getValue();
+				fileChange.setEngine(this);
 				fileChange.setOldFile(createFile(old, currentRevision));
 				fileChange.setNewFile(createFile(nev, rev));
 				fileChanges.add(fileChange);

@@ -149,6 +149,11 @@ public interface Version {
 						final FileChange match = matches.poll();
 						iter.set(new FileChange() {
 							@Override
+							public VCSEngine getEngine() {
+								return change.getEngine();
+							}
+
+							@Override
 							public Optional<VCSFile> getOldFile() {
 								return change.getOldFile();
 							}

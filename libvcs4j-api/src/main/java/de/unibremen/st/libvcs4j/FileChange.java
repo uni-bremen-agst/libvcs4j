@@ -1,9 +1,6 @@
 package de.unibremen.st.libvcs4j;
 
-import bmsi.util.Diff;
-
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,6 +34,14 @@ public interface FileChange {
 		 */
 		RELOCATE
 	}
+
+	/**
+	 * Returns the engine used to extract this file change.
+	 *
+	 * @return
+	 * 		The engine used to extract this file change.
+	 */
+	VCSEngine getEngine();
 
 	/**
 	 * Returns the file as it was like when its corresponding revision was
@@ -87,81 +92,9 @@ public interface FileChange {
 	}
 
 	/**
-	 * Computes the changed lines.
-	 *
-	 * @return
-	 *      A sequence of {@link LineChange} objects.
-	 * @throws IOException
-	 *      If an error occurred while reading the content of the old or new
-	 *      file (see {@link VCSFile#readeContent()}).
+	 * @see VCSEngine#computeDiff(FileChange)
 	 */
 	default List<LineChange> computeDiff() throws IOException {
-		final String LINE_SEPARATOR = "\\r?\\n";
-		final String[] old = getOldFile().isPresent()
-				? getOldFile().get().readeContent().split(LINE_SEPARATOR)
-				: new String[0];
-		final String[] nev = getNewFile().isPresent()
-				? getNewFile().get().readeContent().split(LINE_SEPARATOR)
-				: new String[0];
-
-		final Diff diff = new Diff(old, nev);
-		Diff.change change = diff.diff_2(false);
-		final List<LineChange> lineChanges = new ArrayList<>();
-		while (change != null) {
-			final Diff.change c = change;
-			for (int i = 0; i < change.deleted; i++) {
-				final int j = i;
-				lineChanges.add(new LineChange() {
-					@Override
-					public Type getType() {
-						return Type.DELETE;
-					}
-
-					@Override
-					public int getLine() {
-						return c.line0 + j + 1;
-					}
-
-					@Override
-					public String getContent() {
-						return old[getLine() - 1];
-					}
-
-					@Override
-					public VCSFile getFile() {
-						return getOldFile()
-								.orElseThrow(IllegalStateException::new);
-					}
-				});
-			}
-			for (int i = 0; i < change.inserted; i++) {
-				final int j = i;
-				lineChanges.add(new LineChange() {
-					@Override
-					public Type getType() {
-						return Type.INSERT;
-					}
-
-					@Override
-					public int getLine() {
-						return c.line1 + j + 1;
-					}
-
-					@Override
-					public String getContent() {
-						return nev[getLine() - 1];
-					}
-
-					@Override
-					public VCSFile getFile() {
-						return getNewFile()
-								.orElseThrow(IllegalStateException::new);
-					}
-				});
-			}
-			change = change.link;
-		}
-
-		return lineChanges;
+		return getEngine().computeDiff(this);
 	}
 }
