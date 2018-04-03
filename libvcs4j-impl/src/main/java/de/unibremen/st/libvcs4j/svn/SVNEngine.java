@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-import static java.io.File.separator;
 import static org.apache.commons.lang3.Validate.notNull;
 
 /**
@@ -127,13 +126,25 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 			IllegalRepositoryException.isTrue(Files.isReadable(p),
 					"'%s' is not readable", pRepository);
 		}
-		return pRepository;
+		// '\' (Windows file separator) is not supported by SVNKit.
+		String repo = pRepository.replace("\\", "/");
+		// Remove trailing '/'.
+		if (repo.endsWith("/")) {
+			repo = repo.substring(0, repo.length() - 1);
+		}
+		return repo;
 	}
 
 	private static String parseAndValidateRoot(
 			final String pRoot) {
 		Validate.notNull(pRoot);
-		return Paths.get(pRoot).toString();
+		// '\' (Windows file separator) is not supported by SVNKit.
+		String root = pRoot.replace("\\", "/");
+		// Remove trailing '/'.
+		if (root.endsWith("/")) {
+			root = root.substring(0, root.length() - 1);
+		}
+		return root;
 	}
 
 	private static Path parseAndValidateTarget(
@@ -181,16 +192,21 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 		// `Paths.get` breaks protocol prefix
 		final String repository = getRepository();
 		final String root = getRoot();
-		final String sep = FILE_PROTOCOL.test(repository) ? separator : "/";
-		return root.isEmpty() ? repository : repository + sep + root;
+		return root.isEmpty() ? repository : repository + "/" + root;
 	}
 
 	private String toSVNPath(final String pPath) {
 		notNull(pPath);
-		final String repository = getRepository();
-		final Path path = Paths.get(getRoot(), pPath);
-		final String sep = FILE_PROTOCOL.test(repository) ? separator : "/";
-		return repository + sep + path;
+		if (pPath.isEmpty()) {
+			return getInput();
+		}
+		// '\' (Windows file separator) is not supported by SVNKit.
+		String path = pPath.replace("\\", "/");
+		// Remove trailing '/'.
+		if (path.endsWith("/")) {
+			path = path.substring(0, path.length() - 1);
+		}
+		return getInput() + "/" + path;
 	}
 
 	private String toAbsolutePath(final String pPath) {
