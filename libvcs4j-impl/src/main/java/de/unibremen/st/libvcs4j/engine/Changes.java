@@ -13,22 +13,22 @@ public class Changes {
 	/**
 	 * Added files.
 	 */
-	private List<String> added = new ArrayList<>();
+	private final List<String> added = new ArrayList<>();
 
 	/**
 	 * Removed files.
 	 */
-	private List<String> removed = new ArrayList<>();
+	private final List<String> removed = new ArrayList<>();
 
 	/**
 	 * Modified files.
 	 */
-	private List<String> modified = new ArrayList<>();
+	private final List<String> modified = new ArrayList<>();
 
 	/**
 	 * Relocated files (from -> to).
 	 */
-	private List<Entry<String, String>> relocated = new ArrayList<>();
+	private final List<Entry<String, String>> relocated = new ArrayList<>();
 
 	public List<String> getAdded() {
 		return added;

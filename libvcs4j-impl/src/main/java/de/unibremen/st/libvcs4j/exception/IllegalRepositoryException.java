@@ -7,10 +7,8 @@ public class IllegalRepositoryException extends IllegalArgumentException {
 	}
 
 	public static void isTrue(
-			final boolean pCondition,
-			final String pMessage,
-			final Object... pValues)
-				throws IllegalRepositoryException {
+			final boolean pCondition, final String pMessage,
+			final Object... pValues) throws IllegalRepositoryException {
 		if (!pCondition) {
 			final String message = pMessage == null || pValues == null
 					? "Illegal repository"

@@ -68,14 +68,10 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 	@Deprecated
 	@SuppressWarnings("DeprecatedIsStillUsed")
 	public SVNEngine(
-			final String pRepository,
-			final String pRoot,
-			final Path pTarget,
-			final LocalDateTime pSince,
-			final LocalDateTime pUntil)
-				throws NullPointerException, IllegalStateException,
-				IllegalRepositoryException, IllegalTargetException,
-				IllegalIntervalException {
+			final String pRepository, final String pRoot, final Path pTarget,
+			final LocalDateTime pSince, final LocalDateTime pUntil)
+			throws NullPointerException, IllegalRepositoryException,
+			IllegalTargetException, IllegalIntervalException {
 		super(parseAndValidateRepository(pRepository),
 				parseAndValidateRoot(pRoot),
 				parseAndValidateTarget(pTarget),
@@ -91,14 +87,10 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 	@Deprecated
 	@SuppressWarnings("DeprecatedIsStillUsed")
 	public SVNEngine(
-			final String pRepository,
-			final String pRoot,
-			final Path pTarget,
-			final String pFrom,
-			final String pTo)
-				throws NullPointerException, IllegalStateException,
-				IllegalRepositoryException, IllegalTargetException,
-				IllegalIntervalException {
+			final String pRepository, final String pRoot, final Path pTarget,
+			final String pFrom, final String pTo)
+			throws NullPointerException, IllegalRepositoryException,
+			IllegalTargetException, IllegalIntervalException {
 		super(parseAndValidateRepository(pRepository),
 				parseAndValidateRoot(pRoot),
 				parseAndValidateTarget(pTarget),
@@ -114,41 +106,27 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 
 	private static String parseAndValidateRepository(
 			final String pRepository) {
-		Validate.notNull(pRepository);
+		Validate.notEmpty(pRepository);
 		IllegalRepositoryException.isTrue(
 				SUPPORTED_PROTOCOLS.test(pRepository),
-				"Unsupported protocol for '%s'", pRepository);
+				"Unsupported protocol: '%s'", pRepository);
 		if (FILE_PROTOCOL.test(pRepository)) {
-			final String path = pRepository.substring(7);
-			final Path p = Paths.get(path).toAbsolutePath();
-			IllegalRepositoryException.isTrue(Files.isDirectory(p),
+			final String repository = pRepository.substring(7);
+			final Path path = Paths.get(repository).toAbsolutePath();
+			IllegalRepositoryException.isTrue(Files.isDirectory(path),
 					"'%s' is not a directory", pRepository);
-			IllegalRepositoryException.isTrue(Files.isReadable(p),
+			IllegalRepositoryException.isTrue(Files.isReadable(path),
 					"'%s' is not readable", pRepository);
 		}
-		// '\' (Windows file separator) is not supported by SVNKit.
-		String repo = pRepository.replace("\\", "/");
-		// Remove trailing '/'.
-		if (repo.endsWith("/")) {
-			repo = repo.substring(0, repo.length() - 1);
-		}
-		return repo;
+		return normalizePath(pRepository);
 	}
 
-	private static String parseAndValidateRoot(
-			final String pRoot) {
+	private static String parseAndValidateRoot(final String pRoot) {
 		Validate.notNull(pRoot);
-		// '\' (Windows file separator) is not supported by SVNKit.
-		String root = pRoot.replace("\\", "/");
-		// Remove trailing '/'.
-		if (root.endsWith("/")) {
-			root = root.substring(0, root.length() - 1);
-		}
-		return root;
+		return normalizePath(pRoot);
 	}
 
-	private static Path parseAndValidateTarget(
-			final Path pTarget) {
+	private static Path parseAndValidateTarget(final Path pTarget) {
 		Validate.notNull(pTarget);
 		IllegalTargetException.isTrue(!Files.exists(pTarget),
 				"'%s' already exists", pTarget);
@@ -167,8 +145,7 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 		return pDatetime;
 	}
 
-	private static String parseAndValidateRevision(
-			final String pRevision) {
+	private static String parseAndValidateRevision(final String pRevision) {
 		Validate.notNull(pRevision);
 		try {
 			int revision = Integer.parseInt(pRevision);
@@ -183,8 +160,6 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 			return null; // just for the compiler
 		}
 	}
-
-	///////////////////////////////////////////////////////////////////////////
 
 	////////////////////////////////// Utils //////////////////////////////////
 
@@ -232,14 +207,12 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 	///////////////////////////////////////////////////////////////////////////
 
 	@Override
-	protected Path getOutputImpl() {
+	public Path getOutput() {
 		return getTarget();
 	}
 
 	@Override
-	protected void checkoutImpl(
-			final String pRevision)
-				throws IOException {
+	protected void checkoutImpl(final String pRevision) throws IOException {
 		final SvnOperationFactory factory = new SvnOperationFactory();
 
 		try {
@@ -262,16 +235,14 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 	}
 
 	@Override
-	protected Changes createChanges(
-			final String pFrom,
-			final String pTo)
-				throws IOException {
+	protected Changes createChangesImpl(
+			final String fromRev, final String toRev) throws IOException {
 		final SvnOperationFactory factory = new SvnOperationFactory();
 
 		final Changes changes = new Changes();
 		try {
-			final SVNRevision from = createSVNRevision(pFrom);
-			final SVNRevision to = createSVNRevision(pTo);
+			final SVNRevision from = createSVNRevision(fromRev);
+			final SVNRevision to = createSVNRevision(toRev);
 			final SvnTarget input = SvnTarget.fromURL(
 					createSVNURL(getInput()), from);
 
@@ -305,9 +276,8 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 
 	@Override
 	protected List<String> listRevisionsImpl(
-			final LocalDateTime pSince,
-			final LocalDateTime pUntil)
-				throws IOException {
+			final LocalDateTime pSince, final LocalDateTime pUntil)
+			throws IOException {
 		final SvnOperationFactory factory = new SvnOperationFactory();
 
 		final List<String> revs = new ArrayList<>();
@@ -344,9 +314,7 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 
 	@Override
 	protected List<String> listRevisionsImpl(
-			final String pFrom,
-			final String pTo)
-				throws IOException {
+			final String pFrom, final String pTo) throws IOException {
 		final long head;
 		try {
 			head = SVNRepositoryFactory
@@ -385,9 +353,7 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 
 	@Override
 	protected byte[] readAllBytesImpl(
-			final String pPath,
-			final String pRevision)
-				throws IOException {
+			final String pPath, final String pRevision) throws IOException {
 		final SvnOperationFactory factory = new SvnOperationFactory();
 
 		try {
@@ -410,8 +376,7 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 	}
 
 	@Override
-	protected CommitImpl createCommitImpl(
-			final String pRevision)
+	protected CommitImpl createCommitImpl(final String pRevision)
 			throws IOException {
 		final SvnOperationFactory factory = new SvnOperationFactory();
 
@@ -446,7 +411,7 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 	}
 
 	@Override
-	public FilenameFilter createVCSFileFilterImpl() {
+	public FilenameFilter createVCSFileFilter() {
 		return (pDir, pName) -> !pName.endsWith(".svn");
 	}
 }

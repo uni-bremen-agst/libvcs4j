@@ -195,12 +195,11 @@ public class IntegrationTest {
 		}
 
 		@Override
-		protected void checkoutImpl(String pRevision) {}
+		protected void checkoutImpl(String revision) {}
 
 		@Override
-		protected Changes createChanges(
-		        final String pFrom,
-                final String pTo) {
+		protected Changes createChangesImpl(
+				final String fromRev, final String toRev) {
 		    final Changes changes = new Changes();
 			changes.getAdded().add(getTarget() + "/add/add1.java");
             changes.getAdded().add(getTarget() + "/add/add2.java");
@@ -245,7 +244,7 @@ public class IntegrationTest {
 		}
 
 		@Override
-		public Path getOutputImpl() {
+		public Path getOutput() {
 			return getTarget();
 		}
 	}
@@ -276,7 +275,7 @@ public class IntegrationTest {
 		}
 
 		@Override
-		public Path getOutputImpl() {
+		public Path getOutput() {
 			return null;
 		}
 	}
@@ -289,7 +288,7 @@ public class IntegrationTest {
 		}
 
 		@Override
-		public Path getOutputImpl() {
+		public Path getOutput() {
 			return Paths.get(String.valueOf(n++));
 		}
 	}
@@ -300,7 +299,7 @@ public class IntegrationTest {
 		}
 
 		@Override
-		public Path getOutputImpl() {
+		public Path getOutput() {
 			return Paths.get("");
 		}
 	}
@@ -311,7 +310,7 @@ public class IntegrationTest {
 		}
 
 		@Override
-		public Path getOutputImpl() {
+		public Path getOutput() {
 			return getTarget().resolve("src");
 		}
 	}
@@ -322,7 +321,7 @@ public class IntegrationTest {
 		}
 
 		@Override
-		protected FilenameFilter createVCSFileFilterImpl() {
+		public FilenameFilter createVCSFileFilter() {
 			return null;
 		}
 	}

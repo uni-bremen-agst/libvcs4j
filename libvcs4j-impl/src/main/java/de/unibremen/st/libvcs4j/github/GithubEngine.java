@@ -47,8 +47,7 @@ public class GithubEngine extends AbstractITEngine {
 	 *      If an error occurred while connecting to the given repository.
 	 */
 	public GithubEngine(
-			final String pRepository,
-			final String pUsername,
+			final String pRepository, final String pUsername,
 			final String pPassword) throws IOException {
 		super(pRepository, pUsername, pPassword);
 		github = GitHub
@@ -56,9 +55,8 @@ public class GithubEngine extends AbstractITEngine {
 				.getRepository(pRepository);
 	}
 
-	public GithubEngine(
-			final String pRepository,
-			final String pToken) throws IOException {
+	public GithubEngine(final String pRepository, final String pToken)
+			throws IOException {
 		super(pRepository, pToken);
 		github = GitHub
 				.connectUsingOAuth(pToken)
@@ -66,8 +64,9 @@ public class GithubEngine extends AbstractITEngine {
 	}
 
 	@Override
-	public Optional<Issue> getIssueById(final String pId) throws
-			NullPointerException, IllegalArgumentException, IOException {
+	public Optional<Issue> getIssueById(final String pId)
+			throws NullPointerException, IllegalArgumentException,
+			IOException {
 		Validate.notEmpty(pId);
 		try {
 			final int id = Integer.parseInt(pId);

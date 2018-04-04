@@ -45,7 +45,7 @@ public class SingleEngine extends AbstractVSCEngine {
 	}
 
 	@Override
-	public Path getOutputImpl() {
+	public Path getOutput() {
 		return getTarget();
 	}
 
@@ -55,21 +55,18 @@ public class SingleEngine extends AbstractVSCEngine {
 	}
 
 	@Override
-	protected void checkoutImpl(final String pRevision) {}
+	protected void checkoutImpl(final String revision) {}
 
 	@Override
-	protected Changes createChanges(
-			final String pFrom,
-			final String pTo) {
+	protected Changes createChangesImpl(
+			final String fromRev, final String toRev) {
 		throw new IllegalStateException(
-				"This mothod should not have been called");
+				"This method should not have been called");
 	}
 
 	@Override
 	protected byte[] readAllBytesImpl(
-			final String pPath,
-			final String pRevision)
-				throws IOException {
+			final String pPath, final String pRevision) throws IOException {
 		final Path path = getOutput().resolve(pPath);
 		Validate.isTrue(Files.isRegularFile(path),
 				"'%s' is not a regular file", path);
@@ -77,9 +74,8 @@ public class SingleEngine extends AbstractVSCEngine {
 	}
 
 	@Override
-	protected CommitImpl createCommitImpl(
-			final String pRevision)
-				throws IOException {
+	protected CommitImpl createCommitImpl(final String pRevision)
+			throws IOException {
 		final CommitImpl commit = new CommitImpl();
 		commit.setId(DEFAULT_REVISION);
 		commit.setAuthor(DEFAULT_AUTHOR);

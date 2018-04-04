@@ -26,12 +26,9 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 	 * Datetime interval constructor. Validates that pSince <= pUntil.
 	 */
 	public AbstractIntervalVCSEngine(
-			final String pRepository,
-			final String pRoot,
-			final Path pTarget,
-			final LocalDateTime pSince,
-			final LocalDateTime pUntil)
-				throws NullPointerException, IllegalIntervalException {
+			final String pRepository, final String pRoot, final Path pTarget,
+			final LocalDateTime pSince, final LocalDateTime pUntil)
+			throws NullPointerException, IllegalIntervalException {
 		super(pRepository, pRoot, pTarget);
 		from = to = null;
 		since = Validate.notNull(pSince);
@@ -44,12 +41,9 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 	 * Revision interval constructor. Does NOT validate if pFrom <= pTo.
 	 */
 	public AbstractIntervalVCSEngine(
-			final String pRepository,
-			final String pRoot,
-			final Path pTarget,
-			final String pFrom,
-			final String pTo)
-				throws NullPointerException {
+			final String pRepository, final String pRoot, final Path pTarget,
+			final String pFrom, final String pTo)
+			throws NullPointerException {
 		super(pRepository, pRoot, pTarget);
 		since = until = null;
 		from = Validate.notNull(pFrom);
@@ -92,12 +86,9 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 	}
 
 	protected abstract List<String> listRevisionsImpl(
-			final LocalDateTime pSince,
-			final LocalDateTime pUntil)
-				throws IOException;
+			final LocalDateTime pSince, final LocalDateTime pUntil)
+			throws IOException;
 
 	protected abstract List<String> listRevisionsImpl(
-			final String pFrom,
-			final String pTo)
-				throws IOException;
+			final String pFrom, final String pTo) throws IOException;
 }

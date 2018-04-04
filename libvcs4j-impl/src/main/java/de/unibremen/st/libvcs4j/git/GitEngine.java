@@ -1,6 +1,7 @@
 package de.unibremen.st.libvcs4j.git;
 
 import de.unibremen.st.libvcs4j.data.CommitImpl;
+import de.unibremen.st.libvcs4j.exception.IllegalRepositoryException;
 import de.unibremen.st.libvcs4j.exception.IllegalTargetException;
 import de.unibremen.st.libvcs4j.engine.AbstractIntervalVCSEngine;
 import de.unibremen.st.libvcs4j.engine.Changes;
@@ -70,15 +71,13 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	@Deprecated
 	@SuppressWarnings("DeprecatedIsStillUsed")
 	public GitEngine(
-			final String pRepository,
-			final String pRoot,
-			final Path pTarget,
-			final String pBranch,
-			final LocalDateTime pSince,
+			final String pRepository, final String pRoot, final Path pTarget,
+			final String pBranch, final LocalDateTime pSince,
 			final LocalDateTime pUntil)
-				throws NullPointerException, IllegalArgumentException {
+			throws NullPointerException, IllegalRepositoryException,
+			IllegalTargetException {
 		super(parseRepository(pRepository),
-				parseRoot(pRepository, pRoot),
+				parseRoot(pRoot),
 				parseAndValidateTarget(pTarget),
 				parseDateTime(pSince),
 				parseDateTime(pUntil));
@@ -91,15 +90,12 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	@Deprecated
 	@SuppressWarnings("DeprecatedIsStillUsed")
 	public GitEngine(
-			final String pRepository,
-			final String pRoot,
-			final Path pTarget,
-			final String pBranch,
-			final String pFrom,
-			final String pTo)
-				throws NullPointerException, IllegalArgumentException {
+			final String pRepository, final String pRoot, final Path pTarget,
+			final String pBranch, final String pFrom, final String pTo)
+			throws NullPointerException, IllegalRepositoryException,
+			IllegalTargetException {
 		super(parseRepository(pRepository),
-				parseRoot(pRepository, pRoot),
+				parseRoot(pRoot),
 				parseAndValidateTarget(pTarget),
 				Validate.notEmpty(pFrom),
 				Validate.notEmpty(pTo));
@@ -108,42 +104,33 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 
 	///////////////////////// Parsing and validation //////////////////////////
 
+	@SuppressWarnings("Duplicates")
 	private static String parseRepository(final String pRepository) {
-		Validate.notNull(pRepository);
+		Validate.notEmpty(pRepository);
 		Validate.isTrue(SUPPORTED_PROTOCOLS.test(pRepository),
-				"Unsupported protocol for '%s'", pRepository);
+				"Unsupported protocol: '%s'", pRepository);
 		if (FILE_PROTOCOL.test(pRepository)) {
-			final String repo = pRepository.substring(7);
-			final Path path = Paths.get(repo).toAbsolutePath();
-			Validate.isTrue(Files.exists(path),
+			final String repository = pRepository.substring(7);
+			final Path path = Paths.get(repository).toAbsolutePath();
+			IllegalRepositoryException.isTrue(Files.exists(path),
 					"'%s' does not exist", pRepository);
-			Validate.isTrue(Files.isDirectory(path),
+			IllegalRepositoryException.isTrue(Files.isDirectory(path),
 					"'%s' is not a directory", pRepository);
-			Validate.isTrue(Files.isReadable(path),
+			IllegalRepositoryException.isTrue(Files.isReadable(path),
 					"'%s' is not readable", pRepository);
 		}
-		return pRepository;
+		return normalizePath(pRepository);
 	}
 
-	private static String parseRoot(
-			final String pRepository,
-			final String pRoot) {
-		Validate.notNull(pRepository);
+	private static String parseRoot(final String pRoot) {
 		Validate.notNull(pRoot);
-		final Path repository = Paths.get(pRepository);
-		if (Files.isDirectory(repository)) {
-			final Path root = Paths.get(pRepository, pRoot).toAbsolutePath();
-			Validate.isTrue(Files.isDirectory(root),
-					"'%s' is not a directory", pRoot);
-			Validate.isTrue(Files.isReadable(root),
-					"'%s' is not readable", pRoot);
-		}
-		return Paths.get(pRoot).toString();
+		return normalizePath(pRoot);
 	}
 
-	private static Path parseAndValidateTarget(
-			final Path pTarget) {
+	@SuppressWarnings("Duplicates")
+	private static Path parseAndValidateTarget(final Path pTarget) {
 		Validate.notNull(pTarget);
+		Validate.notEmpty(pTarget.toString());
 		IllegalTargetException.isTrue(!Files.exists(pTarget),
 				"'%s' already exists", pTarget);
 		IllegalTargetException.isTrue(Files.isWritable(pTarget.getParent()),
@@ -151,14 +138,12 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 		return pTarget.toAbsolutePath();
 	}
 
-	private static LocalDateTime parseDateTime(
-			final LocalDateTime pDatetime) {
+	private static LocalDateTime parseDateTime(final LocalDateTime pDatetime) {
+		Validate.notNull(pDatetime);
 		return pDatetime.getHour() == 0
 				? pDatetime.plusHours(1)
 				: pDatetime;
 	}
-
-	///////////////////////////////////////////////////////////////////////////
 
 	////////////////////////////////// Utils //////////////////////////////////
 
@@ -192,18 +177,16 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	///////////////////////////////////////////////////////////////////////////
 
 	@Override
-	public Path getOutputImpl() {
+	public Path getOutput() {
 		return getTarget().resolve(getRoot());
 	}
 
 	@Override
-	protected void checkoutImpl(
-			final String pRevision)
-				throws IOException {
+	protected void checkoutImpl(final String revision) throws IOException {
 		try {
 			openRepository()
 					.checkout()
-					.setName(pRevision)
+					.setName(revision)
 					.call();
 		} catch (final GitAPIException e) {
 			throw new IOException(e);
@@ -211,12 +194,10 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	}
 
 	@Override
-	protected Changes createChanges(
-			final String pFrom,
-			final String pTo)
-				throws IOException {
-		final AnyObjectId from = createId(pFrom);
-		final AnyObjectId to = createId(pTo);
+	protected Changes createChangesImpl(
+			final String fromRev, final String toRev) throws IOException {
+		final AnyObjectId from = createId(fromRev);
+		final AnyObjectId to = createId(toRev);
 		final Repository repo = openRepository().getRepository();
 
 		final Changes changes = new Changes();
@@ -291,9 +272,8 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 
 	@Override
 	protected List<String> listRevisionsImpl(
-			final LocalDateTime pSince,
-			final LocalDateTime pUntil)
-				throws IOException {
+			final LocalDateTime pSince, final LocalDateTime pUntil)
+			throws IOException {
 		final Date since = toDate(pSince);
 		final Date until = toDate(pUntil);
 
@@ -320,9 +300,7 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 
 	@Override
 	protected List<String> listRevisionsImpl(
-			final String pFrom,
-			final String pTo)
-				throws IOException {
+			final String pFrom, final String pTo) throws IOException {
 		final AnyObjectId from = createId(pFrom);
 		final AnyObjectId to = createId(pTo);
 
@@ -345,9 +323,7 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 
 	@Override
 	protected byte[] readAllBytesImpl(
-			final String pPath,
-			final String pRevision)
-				throws IOException {
+			final String pPath, final String pRevision) throws IOException {
 		final String path = Paths.get(getRoot(), pPath).toString();
 		final AnyObjectId rev = createId(pRevision);
 		final Repository repo = openRepository().getRepository();
@@ -372,9 +348,8 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	}
 
 	@Override
-	protected CommitImpl createCommitImpl(
-			final String pRevision)
-				throws IOException {
+	protected CommitImpl createCommitImpl(final String pRevision)
+			throws IOException {
 		final AnyObjectId rev = createId(pRevision);
 		final List<RevCommit> commits = new ArrayList<>();
 
@@ -427,7 +402,7 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	}
 
 	@Override
-	public FilenameFilter createVCSFileFilterImpl() {
+	public FilenameFilter createVCSFileFilter() {
 		return (pDir, pName) -> !pName.equals(".git") &&
 				!pName.equals(".gitignore");
 	}

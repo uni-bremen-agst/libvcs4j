@@ -7,10 +7,8 @@ public class IllegalTargetException extends IllegalArgumentException {
 	}
 
 	public static void isTrue(
-			final boolean pCondition,
-			final String pMessage,
-			final Object... pValues)
-				throws IllegalTargetException {
+			final boolean pCondition, final String pMessage,
+			final Object... pValues) throws IllegalTargetException {
 		if (!pCondition) {
 			final String message = pMessage == null || pValues == null
 					? "Illegal target"

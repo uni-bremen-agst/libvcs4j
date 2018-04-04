@@ -19,7 +19,6 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -49,19 +48,16 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 	private final String repository;
 	private final String root;
 	private final Path target;
-	private Path lastOutput;
 
 	private boolean initialized = false;
 	private List<String> revisions = null;
 	private int revisionIdx = -1;
 	private String revision = null;
-	private Revision currentRevision;
+	private Revision currentRevision = null;
 
 	public AbstractVSCEngine(
-			final String pRepository,
-			final String pRoot,
-			final Path pTarget)
-				throws NullPointerException {
+	        final String pRepository, final String pRoot, final Path pTarget)
+            throws NullPointerException {
 		repository = Validate.notNull(pRepository);
 		root = Validate.notNull(pRoot);
 		target = Validate.notNull(pTarget).toAbsolutePath();
@@ -80,24 +76,6 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 	@Override
 	public final Path getTarget() {
 		return target;
-	}
-
-	@Override
-	public final Path getOutput() {
-		Path output = getOutputImpl();
-		IllegalReturnException.notNull(output);
-		final Path oPath = output.toAbsolutePath();
-		final Path tPath = target; // target already is absolute
-		IllegalReturnException.isTrue(oPath.startsWith(tPath),
-				"'%s' is neither equals to '%s' nor a subdirectory of it",
-				oPath, tPath);
-		output = oPath;
-		if (lastOutput == null) {
-			lastOutput = output;
-		} else {
-			IllegalReturnException.equals(output, lastOutput);
-		}
-		return output;
 	}
 
 	@Override
@@ -131,7 +109,7 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 			changes = new Changes();
 			changes.getAdded().addAll(listFilesInOutput());
 		} else {
-			changes = createChanges(getPreviousRevision(), revision);
+			changes = createChangesImpl(getPreviousRevision(), revision);
 			//validate(changes);
 		}
 		final Version version = createVersion(changes);
@@ -141,7 +119,7 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 
 	@Override
 	public final byte[] readAllBytes(final VCSFile pFile) throws
-			NullPointerException, IllegalArgumentException, IOException {
+            NullPointerException, IllegalArgumentException, IOException {
 		Validate.notNull(pFile);
 		final String rev = pFile.getRevision().getCommitId();
 		init();
@@ -156,13 +134,6 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 			IllegalReturnException.notNull(bytes);
 			return bytes;
 		}
-	}
-
-	@Override
-	public final FilenameFilter createVCSFileFilter() {
-		final FilenameFilter filter = createVCSFileFilterImpl();
-		IllegalReturnException.notNull(filter);
-		return filter;
 	}
 
 	@Override
@@ -197,8 +168,8 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 	}
 
 	@Override
-	public List<LineChange> computeDiff(FileChange pFileChange) throws
-			NullPointerException, IOException {
+	public List<LineChange> computeDiff(final FileChange pFileChange)
+			throws NullPointerException, IOException {
 		Validate.notNull(pFileChange);
 		final String LINE_SEPARATOR = "\\r?\\n";
 
@@ -257,10 +228,8 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 
 	///////////////////////////// helping methods /////////////////////////////
 
-	private VCSFile createFile(
-			final String pPath,
-			final Revision pRevision)
-				throws IOException {
+	private VCSFile createFile(final String pPath, final Revision pRevision)
+			throws IOException {
 		// use `Paths.get(String)` to remove trailing separators
 		final Path path = Paths.get(pPath);
 		final Path output = getOutput();
@@ -280,101 +249,86 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 		return file;
 	}
 
-	private Revision createRevision(
-			final String pRevision)
-			throws NullPointerException, IllegalArgumentException,
-			IOException {
-		Validate.notNull(pRevision);
-		Validate.isTrue(revisions.contains(pRevision));
-
-		final RevisionImpl revision = new RevisionImpl(this);
+	private Revision createRevision() throws NullPointerException,
+			IllegalArgumentException, IOException {
+		final RevisionImpl rev = new RevisionImpl(this);
 		final List<VCSFile> files = new ArrayList<>();
 		for (final String f : listFilesInOutput()) {
-			files.add(createFile(f, revision));
+			files.add(createFile(f, rev));
 		}
-		revision.setCommitId(pRevision);
-		revision.setFiles(files);
-		return revision;
+		rev.setCommitId(revision);
+		rev.setFiles(files);
+		return rev;
 	}
 
 	private void init() throws IOException {
 		if (!initialized) {
 			initImpl();
-
 			revisions = listRevisionsImpl();
 			IllegalReturnException.noNullElements(revisions);
-
-			// check `getOutputImpl` and init `lastOutput`
-			getOutput();
-			// consistency check of `getOutputImpl` and `lastOutput`
-			getOutput();
-
 			initialized = true;
 		}
 	}
 
-	private void validate(final Changes pChanges)
-				throws IOException {
-		Validate.validState(revisionIdx > 0);
+//	private void validate(final Changes pChanges) throws IOException {
+//		Validate.validState(revisionIdx > 0);
+//
+//		if (revisionIdx == 0) {
+//			Validate.validState(pChanges.getRemoved().isEmpty(),
+//					"Detected removals in first version");
+//			Validate.validState(pChanges.getModified().isEmpty(),
+//					"Detected modifications in first version");
+//			Validate.validState(pChanges.getRelocated().isEmpty(),
+//					"Detected relocations in first version");
+//		}
+//
+//		Iterator<String> it;
+//		it = pChanges.getAdded().iterator();
+//		while (it.hasNext()) {
+//			final Path add = Paths.get(it.next());
+//			IllegalReturnException.isTrue(add.isAbsolute(),
+//				"'%s' is not an absolute path", add);
+//			IllegalReturnException.isTrue(Files.exists(add),
+//				"'%s' has been recorded as added but does not exist", add);
+//		}
+//		it = pChanges.getRemoved().iterator();
+//		while (it.hasNext()) {
+//			final Path remove = Paths.get(it.next());
+//			IllegalReturnException.isTrue(remove.isAbsolute(),
+//				"'%s' is not an absolute path", remove);
+//			IllegalReturnException.isTrue(Files.notExists(remove),
+//				"'%s' has been recorded as removed but exists", remove);
+//		}
+//		it = pChanges.getModified().iterator();
+//		while (it.hasNext()) {
+//			final Path modify = Paths.get(it.next());
+//			IllegalReturnException.isTrue(modify.isAbsolute(),
+//					"'%s' is not an absolute path", modify);
+//			IllegalReturnException.isTrue(Files.exists(modify),
+//					"'%s' has been recorded as modified but does not exist",
+//					modify);
+//		}
+//		Iterator<Entry<String, String>> itr =
+//				pChanges.getRelocated().iterator();
+//		while (itr.hasNext()) {
+//			final Entry<String, String> relocate = itr.next();
+//			final Path from = Paths.get(relocate.getKey());
+//			final Path to = Paths.get(relocate.getValue());
+//			IllegalReturnException.isTrue(from.isAbsolute(),
+//					"'%s' is not an absolute path", from);
+//			IllegalReturnException.isTrue(to.isAbsolute(),
+//					"'%s' is not an absolute path", from);
+//			IllegalReturnException.isTrue(Files.notExists(from),
+//					"'%s' has been recorded as relocation to '%s' but exists",
+//					from, to);
+//			IllegalReturnException.isTrue(Files.exists(to),
+//					"'%s' has been recorded as relocation from '%s' but does not exist",
+//					to, from);
+//		}
+//	}
 
-		if (revisionIdx == 0) {
-			Validate.validState(pChanges.getRemoved().isEmpty(),
-					"Detected removals in first version");
-			Validate.validState(pChanges.getModified().isEmpty(),
-					"Detected modifications in first version");
-			Validate.validState(pChanges.getRelocated().isEmpty(),
-					"Detected relocations in first version");
-		}
-
-		Iterator<String> it;
-		it = pChanges.getAdded().iterator();
-		while (it.hasNext()) {
-			final Path add = Paths.get(it.next());
-			IllegalReturnException.isTrue(add.isAbsolute(),
-				"'%s' is not an absolute path", add);
-			IllegalReturnException.isTrue(Files.exists(add),
-				"'%s' has been recorded as added but does not exist", add);
-		}
-		it = pChanges.getRemoved().iterator();
-		while (it.hasNext()) {
-			final Path remove = Paths.get(it.next());
-			IllegalReturnException.isTrue(remove.isAbsolute(),
-				"'%s' is not an absolute path", remove);
-			IllegalReturnException.isTrue(Files.notExists(remove),
-				"'%s' has been recorded as removed but exists", remove);
-		}
-		it = pChanges.getModified().iterator();
-		while (it.hasNext()) {
-			final Path modify = Paths.get(it.next());
-			IllegalReturnException.isTrue(modify.isAbsolute(),
-					"'%s' is not an absolute path", modify);
-			IllegalReturnException.isTrue(Files.exists(modify),
-					"'%s' has been recorded as modified but does not exist",
-					modify);
-		}
-		Iterator<Entry<String, String>> itr =
-				pChanges.getRelocated().iterator();
-		while (itr.hasNext()) {
-			final Entry<String, String> relocate = itr.next();
-			final Path from = Paths.get(relocate.getKey());
-			final Path to = Paths.get(relocate.getValue());
-			IllegalReturnException.isTrue(from.isAbsolute(),
-					"'%s' is not an absolute path", from);
-			IllegalReturnException.isTrue(to.isAbsolute(),
-					"'%s' is not an absolute path", from);
-			IllegalReturnException.isTrue(Files.notExists(from),
-					"'%s' has been recorded as relocation to '%s' but exists",
-					from, to);
-			IllegalReturnException.isTrue(Files.exists(to),
-					"'%s' has been recorded as relocation from '%s' but does not exist",
-					to, from);
-		}
-	}
-
-	private Version createVersion(
-			final Changes pChanges)
-				throws IOException {
-		final Revision rev = createRevision(revision);
+	private Version createVersion(final Changes pChanges) throws IOException {
+		final Revision rev = createRevision();
 		final VersionImpl version = new VersionImpl();
 		version.setRevision(rev);
 
@@ -419,9 +373,8 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 		return version;
 	}
 
-	private Commit createCommit(
-			final List<FileChange> pFileChanges)
-				throws IOException {
+	private Commit createCommit(final List<FileChange> pFileChanges)
+			throws IOException {
 		final CommitImpl commit = createCommitImpl(revision);
 		IllegalReturnException.notNull(commit);
 		IllegalReturnException.notNull(commit.getAuthor());
@@ -439,42 +392,39 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 		return revisions.get(revisionIdx - 1);
 	}
 
-	protected Date toDate(final LocalDateTime pDateTime) {
+	protected static Date toDate(final LocalDateTime pDateTime) {
 		Validate.notNull(pDateTime);
 		return Date.from(pDateTime.atZone(
 				ZoneId.systemDefault()).toInstant());
+	}
+
+	protected static String normalizePath(final String pPath) {
+		Validate.notNull(pPath);
+		String path = pPath.replace("\\", "/");
+		if (path.endsWith("/")) {
+			path = path.substring(0, path.length() - 1);
+		}
+		return path;
 	}
 
 	/////////////////////////// optional overrides ////////////////////////////
 
 	protected void initImpl() throws IOException {}
 
-	protected FilenameFilter createVCSFileFilterImpl() {
-		return VCSEngine.super.createVCSFileFilter();
-	}
-
 	/////////////////////////// required overrides ////////////////////////////
 
-	protected abstract Path getOutputImpl();
+	protected abstract void checkoutImpl(final String revision)
+			throws IOException;
 
-	protected abstract void checkoutImpl(
-			final String pRevision)
-				throws IOException;
-
-	protected abstract Changes createChanges(
-			final String pFrom,
-			final String pTo)
-				throws IOException;
+	protected abstract Changes createChangesImpl(
+	        final String fromRev, final String toRev)
+			throws IOException;
 
 	protected abstract byte[] readAllBytesImpl(
-			final String path,
-			final String revision)
-				throws IOException;
+			final String path, final String revision) throws IOException;
 
-	protected abstract CommitImpl createCommitImpl(
-			final String revision)
-				throws IOException;
+	protected abstract CommitImpl createCommitImpl(final String revision)
+            throws IOException;
 
-	protected abstract List<String> listRevisionsImpl()
-			throws IOException;
+	protected abstract List<String> listRevisionsImpl() throws IOException;
 }

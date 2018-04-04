@@ -18,18 +18,17 @@ public abstract class AbstractITEngine implements ITEngine {
 	}
 
 	public AbstractITEngine(
-			final String pRepository,
-			final String pUsername,
-			final String pPassword) {
+			final String pRepository, final String pUsername,
+			final String pPassword)
+			throws NullPointerException, IllegalArgumentException {
 		repository = Validate.notEmpty(pRepository);
 		username = Validate.notEmpty(pUsername);
 		password = Validate.notEmpty(pPassword);
 		token = null;
 	}
 
-	public AbstractITEngine(
-			final String pRepository,
-			final String pToken) {
+	public AbstractITEngine(final String pRepository, final String pToken)
+			throws NullPointerException, IllegalArgumentException {
 		repository = Validate.notEmpty(pRepository);
 		token = Validate.notEmpty(pToken);
 		username = password = null;
