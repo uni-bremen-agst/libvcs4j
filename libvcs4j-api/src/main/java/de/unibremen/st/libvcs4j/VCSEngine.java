@@ -151,7 +151,7 @@ public interface VCSEngine extends Iterable<Version> {
 	 * Computes the changed lines.
 	 *
 	 * @return
-	 *      A sequence of {@link LineChange} objects.
+	 * 		A sequence of {@link LineChange} objects.
 	 * @throws NullPointerException
 	 * 		If {@code fileChange} is {@code null}.
 	 * @throws IOException
@@ -201,44 +201,50 @@ public interface VCSEngine extends Iterable<Version> {
 			return Collections.singletonList(output.getAbsolutePath());
 		} else {
 			final List<String> filesInOutput = new ArrayList<>();
-			final FilenameFilter filter = createVCSFileFilter();
+			// For the sake of stability, handle null filters.
+			final Optional<FilenameFilter> filter =
+					Optional.ofNullable(createVCSFileFilter());
 			final Path rootDir = getOutput();
 			Files.walkFileTree(rootDir, new FileVisitor<Path>() {
 				@Override
 				public FileVisitResult preVisitDirectory(
 						final Path dir, final BasicFileAttributes attrs)
-							throws IOException {
+						throws IOException {
 					if (dir.equals(rootDir)) {
 						return FileVisitResult.CONTINUE;
 					}
-					return filter.accept(dir.getParent().toFile(),
-								dir.getFileName().toString())
-							? FileVisitResult.CONTINUE
-							: FileVisitResult.SKIP_SUBTREE;
+					return filter
+							.map(f -> f.accept(dir.getParent().toFile(),
+									dir.getFileName().toString()))
+							.filter(b -> !b)
+							.map(b -> FileVisitResult.SKIP_SUBTREE)
+							.orElse(FileVisitResult.CONTINUE);
 				}
 
 				@Override
 				public FileVisitResult visitFile(
 						final Path file, final BasicFileAttributes attrs)
-							throws IOException {
-					if (filter.accept(file.getParent().toFile(),
-							file.getFileName().toString())) {
-						filesInOutput.add(file.toAbsolutePath().toString());
-					}
+						throws IOException {
+					filter
+							.map(f -> f.accept(file.getParent().toFile(),
+									file.getFileName().toString()))
+							.filter(b -> b)
+							.map(__ -> file.toAbsolutePath().toString())
+							.ifPresent(filesInOutput::add);
 					return FileVisitResult.CONTINUE;
 				}
 
 				@Override
 				public FileVisitResult visitFileFailed(
 						final Path file, final IOException exc)
-							throws IOException {
+						throws IOException {
 					throw exc;
 				}
 
 				@Override
 				public FileVisitResult postVisitDirectory(
 						final Path dir, final IOException exc)
-							throws IOException {
+						throws IOException {
 					if (exc != null) {
 						throw exc;
 					}
