@@ -7,6 +7,7 @@ import de.unibremen.st.libvcs4j.svn.SVNEngine;
 import org.apache.commons.lang3.Validate;
 
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -213,8 +214,14 @@ public class VCSEngineBuilder {
 		if (engine == Engine.SINGLE) {
 			vcsEngine = new SingleEngine(Paths.get(repository, root));
 		} else {
-			final String repo = Files.isDirectory(Paths.get(repository))
-					? "file://" + repository : repository;
+			Optional<Path> path = Optional.empty();
+			try {
+				path = Optional.of(Paths.get(repository));
+			} catch (final InvalidPathException ignored) {}
+			final String repo = path
+					.filter(Files::isDirectory)
+					.map(r -> "file://" + r)
+					.orElse(repository);
 			if (engine == Engine.SVN) {
 				if (interval == Interval.DATE) {
 					vcsEngine = new SVNEngine(

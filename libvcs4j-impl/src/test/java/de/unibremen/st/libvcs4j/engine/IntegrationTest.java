@@ -3,7 +3,6 @@ package de.unibremen.st.libvcs4j.engine;
 import de.unibremen.st.libvcs4j.VCSEngine;
 import de.unibremen.st.libvcs4j.Version;
 import de.unibremen.st.libvcs4j.data.CommitImpl;
-import de.unibremen.st.libvcs4j.exception.IllegalReturnException;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.Before;
 import org.junit.Rule;
@@ -12,7 +11,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -139,41 +137,11 @@ public class IntegrationTest {
 	}
 
 	@Test
-	public void testGetOutputWithNull() {
-		final VCSEngine vp = new NullOutputTestClass();
-		thrown.expect(IllegalReturnException.class);
-		vp.getOutput();
-	}
-
-	@Test
-	public void testGetOutputChanging() {
-		final VCSEngine vp = new ChangingOutputTestClass();
-		vp.getOutput();
-		thrown.expect(IllegalReturnException.class);
-		vp.getOutput();
-	}
-
-	@Test
-	public void testGetOutputWrongPath() {
-		final VCSEngine vp =
-				new WrongOutputTestClass(folder.getRoot().toPath());
-		thrown.expect(IllegalReturnException.class);
-		vp.getOutput();
-	}
-
-	@Test
 	public void testGetOutputValidSubPath() {
 		final VCSEngine vp =
 				new ValidOutputTestClass(folder.getRoot().toPath());
 		final Path expected = folder.getRoot().toPath().resolve("src");
 		assertEquals(expected, vp.getOutput());
-	}
-
-	@Test
-	public void testFilenameFilterNull() throws IOException {
-		final VCSEngine vp = new NullFilenameFilterTestClass();
-		thrown.expect(IllegalReturnException.class);
-		vp.listFilesInOutput();
 	}
 
 	@Test
@@ -269,41 +237,6 @@ public class IntegrationTest {
 		}
 	}
 
-	private static class NullOutputTestClass extends TestClass {
-		private NullOutputTestClass() {
-			super(Paths.get(""));
-		}
-
-		@Override
-		public Path getOutput() {
-			return null;
-		}
-	}
-
-	private static class ChangingOutputTestClass extends TestClass {
-		private int n = 0;
-
-		private ChangingOutputTestClass() {
-			super(Paths.get(""));
-		}
-
-		@Override
-		public Path getOutput() {
-			return Paths.get(String.valueOf(n++));
-		}
-	}
-
-	private static class WrongOutputTestClass extends TestClass {
-		private WrongOutputTestClass(final Path target) {
-			super(target);
-		}
-
-		@Override
-		public Path getOutput() {
-			return Paths.get("");
-		}
-	}
-
 	private static class ValidOutputTestClass extends TestClass {
 		private ValidOutputTestClass(final Path target) {
 			super(target);
@@ -312,17 +245,6 @@ public class IntegrationTest {
 		@Override
 		public Path getOutput() {
 			return getTarget().resolve("src");
-		}
-	}
-
-	private class NullFilenameFilterTestClass extends TestClass {
-		private NullFilenameFilterTestClass() {
-			super(Paths.get(""));
-		}
-
-		@Override
-		public FilenameFilter createVCSFileFilter() {
-			return null;
 		}
 	}
 }
