@@ -2,6 +2,7 @@ package de.unibremen.st.libvcs4j;
 
 import de.unibremen.st.libvcs4j.filesystem.SingleEngine;
 import de.unibremen.st.libvcs4j.git.GitEngine;
+import de.unibremen.st.libvcs4j.hg.HGEngine;
 import de.unibremen.st.libvcs4j.svn.SVNEngine;
 import org.apache.commons.lang3.Validate;
 
@@ -28,7 +29,7 @@ import static org.apache.commons.lang3.Validate.notNull;
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class VCSEngineBuilder {
 
-	private enum Engine { SINGLE, SVN, GIT }
+	private enum Engine { SINGLE, SVN, GIT, HG }
 
 	private enum Interval { DATE, REVISION }
 
@@ -93,6 +94,10 @@ public class VCSEngineBuilder {
 		return of(pRepository).withGit();
 	}
 
+	public static VCSEngineBuilder ofHG(final String pRepository) {
+		return of(pRepository).withHG();
+	}
+
 	public static VCSEngineBuilder ofSingle(final String pRepository) {
 		return of(pRepository).withSingle();
 	}
@@ -120,6 +125,11 @@ public class VCSEngineBuilder {
 
 	public VCSEngineBuilder withGit() {
 		engine = Engine.GIT;
+		return this;
+	}
+
+	public VCSEngineBuilder withHG() {
+		engine = Engine.HG;
 		return this;
 	}
 
@@ -235,6 +245,23 @@ public class VCSEngineBuilder {
 							repo, root,
 							Paths.get(target),
 							branch,
+							from,
+							to);
+				} else {
+					throw new IllegalStateException(String.format(
+							"Unknown interval '%s'", interval));
+				}
+			} else if (engine == Engine.HG) {
+				if (interval == Interval.DATE) {
+					vcsEngine = new HGEngine(
+							repo, root,
+							Paths.get(target),
+							since,
+							until);
+				} else if (interval == Interval.REVISION) {
+					vcsEngine = new HGEngine(
+							repo, root,
+							Paths.get(target),
 							from,
 							to);
 				} else {
