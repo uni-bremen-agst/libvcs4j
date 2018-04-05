@@ -37,7 +37,6 @@ public class ConstructorTest extends VCSBaseTest {
 						.withSVN()
 						.build();
 		assertEquals(MINIMUM_DATETIME, engine.getSince());
-		assertEquals("file://" + input.toString(), engine.getRepository());
 		assertEquals("", engine.getRoot());
 		assertEquals(64, engine.listRevisions().size());
 	}
@@ -107,7 +106,7 @@ public class ConstructorTest extends VCSBaseTest {
 	@Test
 	public void untilBeforeSince() {
 		final LocalDateTime now = LocalDateTime.now();
-		thrown.expect(IllegalArgumentException.class);
+		thrown.expect(IllegalIntervalException.class);
 		new SVNEngine(
 				"file://" + input.toString(),
 				"",

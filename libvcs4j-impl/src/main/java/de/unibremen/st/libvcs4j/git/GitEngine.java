@@ -107,7 +107,8 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	@SuppressWarnings("Duplicates")
 	private static String parseRepository(final String pRepository) {
 		Validate.notEmpty(pRepository);
-		Validate.isTrue(SUPPORTED_PROTOCOLS.test(pRepository),
+		IllegalRepositoryException.isTrue(
+				SUPPORTED_PROTOCOLS.test(pRepository),
 				"Unsupported protocol: '%s'", pRepository);
 		if (FILE_PROTOCOL.test(pRepository)) {
 			final String repository = pRepository.substring(7);

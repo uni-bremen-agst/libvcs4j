@@ -2,6 +2,9 @@ package de.unibremen.st.libvcs4j.git;
 
 import de.unibremen.st.libvcs4j.VCSBaseTest;
 import de.unibremen.st.libvcs4j.VCSEngineBuilder;
+import de.unibremen.st.libvcs4j.exception.IllegalIntervalException;
+import de.unibremen.st.libvcs4j.exception.IllegalRepositoryException;
+import de.unibremen.st.libvcs4j.exception.IllegalTargetException;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -26,7 +29,7 @@ public class ConstructorTest extends VCSBaseTest {
 
 	@Test
 	public void testUnsupportedProtocol() {
-		thrown.expect(IllegalArgumentException.class);
+		thrown.expect(IllegalRepositoryException.class);
 		new GitEngine(
 				"unsupported://path",
 				"",
@@ -38,7 +41,7 @@ public class ConstructorTest extends VCSBaseTest {
 
 	@Test
 	public void notExistingRepository() {
-		thrown.expect(IllegalArgumentException.class);
+		thrown.expect(IllegalRepositoryException.class);
 		new GitEngine(
 				"file://" + "3hlkjf3l48@#%^&hwc8lv%&43pt2131",
 				"",
@@ -52,8 +55,7 @@ public class ConstructorTest extends VCSBaseTest {
 	public void regularFileRepository() throws IOException {
 		final Path file = Files.createTempFile(null, null);
 		file.toFile().deleteOnExit();
-
-		thrown.expect(IllegalArgumentException.class);
+		thrown.expect(IllegalRepositoryException.class);
 		new GitEngine(
 				"file://" + file.toString(),
 				"",
@@ -67,8 +69,7 @@ public class ConstructorTest extends VCSBaseTest {
 	public void testExistingTarget() throws IOException {
 		final Path target = Files.createTempDirectory(null);
 		target.toFile().deleteOnExit();
-
-		thrown.expect(IllegalArgumentException.class);
+		thrown.expect(IllegalTargetException.class);
 		new GitEngine(
 				"file://" + input.toString(),
 				"",
@@ -82,7 +83,7 @@ public class ConstructorTest extends VCSBaseTest {
 	@Test
 	public void testUntilBeforeSince() {
 		final LocalDateTime now = LocalDateTime.now();
-		thrown.expect(IllegalArgumentException.class);
+		thrown.expect(IllegalIntervalException.class);
 		new GitEngine(
 				"file://" + input.toString(),
 				"",
