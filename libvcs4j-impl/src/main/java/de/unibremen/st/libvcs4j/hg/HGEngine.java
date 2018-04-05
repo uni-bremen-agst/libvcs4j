@@ -33,9 +33,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class HGEngine extends AbstractIntervalVCSEngine {
 
@@ -49,23 +51,23 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 
 	private Repository repository = null;
 
-    public HGEngine(
-    		final String pRepository, final String pRoot, final Path pTarget,
+	public HGEngine(
+			final String pRepository, final String pRoot, final Path pTarget,
 			final LocalDateTime pSince, final LocalDateTime pUntil)
 			throws NullPointerException, IllegalIntervalException {
-        super(parseAndValidateRepository(pRepository),
+		super(parseAndValidateRepository(pRepository),
 				parseAndValidateRoot(pRoot),
 				parseAndValidateTarget(pTarget),
 				parseAndValidateDateTime(pSince),
 				parseAndValidateDateTime(pUntil));
 		IllegalIntervalException.isTrue(!pSince.isAfter(pUntil),
 				"Since (%s) after until (%s)", pSince, pUntil);
-    }
+	}
 
-    public HGEngine(final String pRepository, final String pRoot,
+	public HGEngine(final String pRepository, final String pRoot,
 					final Path pTarget, final String pFrom, final String pTo)
 			throws NullPointerException {
-        super(parseAndValidateRepository(pRepository),
+		super(parseAndValidateRepository(pRepository),
 				parseAndValidateRoot(pRoot),
 				parseAndValidateTarget(pTarget),
 				parseAndValidateRevision(pFrom),
@@ -74,11 +76,11 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 		final int to = Integer.parseInt(pTo);
 		IllegalIntervalException.isTrue(from <= to,
 				"From (%s) > to (%s)", from, to);
-    }
+	}
 
 	///////////////////////// Parsing and validation //////////////////////////
 
-    @SuppressWarnings("Duplicates")
+	@SuppressWarnings("Duplicates")
 	private static String parseAndValidateRepository(final String pRepository) {
 		Validate.notEmpty(pRepository);
 		Validate.isTrue(SUPPORTED_PROTOCOLS.test(pRepository),
@@ -114,7 +116,7 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 
 	private static LocalDateTime parseAndValidateDateTime(
 			final LocalDateTime pDateTime) {
-    	return Validate.notNull(pDateTime);
+		return Validate.notNull(pDateTime);
 	}
 
 	private static String parseAndValidateRevision(final String pRevision) {
@@ -141,24 +143,38 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 
 	///////////////////////////////////////////////////////////////////////////
 
-    @Override
-    public Path getOutput() {
-        return getTarget().resolve(getRoot());
-    }
+	@Override
+	public Path getOutput() {
+		return getTarget().resolve(getRoot());
+	}
 
-    @Override
-    protected void checkoutImpl(final String pRevision) throws IOException {
-    	Validate.validState(repository != null);
-        UpdateCommandFlags.on(repository).rev(pRevision).execute();
-    }
+	@Override
+	protected void checkoutImpl(final String pRevision) throws IOException {
+		Validate.validState(repository != null);
+		try {
+			UpdateCommandFlags.on(repository).rev(pRevision).execute();
+		} catch (final RuntimeException e) {
+			throw new IOException(e);
+		}
+	}
 
-    @Override
-    protected Changes createChangesImpl(
-    		final String pFromRev, final String pToRev)
+	@Override
+	protected Changes createChangesImpl(
+			final String pFromRev, final String pToRev)
 			throws IOException {
 		Validate.validState(repository != null);
-		final StatusCommand cmd = StatusCommandFlags.on(repository);
-		final StatusResult result = cmd.rev(pFromRev, pToRev).execute();
+
+		final StatusResult result;
+		try {
+			final StatusCommand cmd = StatusCommandFlags.on(repository);
+			result = cmd.rev(pFromRev, pToRev).execute();
+		} catch (final RuntimeException e) {
+			throw new IOException(e);
+		}
+		Validate.validState(result.getClean().isEmpty());
+		Validate.validState(result.getIgnored().isEmpty());
+		Validate.validState(result.getMissing().isEmpty());
+		Validate.validState(result.getUnknown().isEmpty());
 
 		final Changes changes = new Changes();
 		result.getAdded().stream()
@@ -172,100 +188,126 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 		result.getModified().stream()
 				.map(this::toAbsolutePath)
 				.forEach(changes.getModified()::add);
-
-		Validate.validState(result.getClean().isEmpty());
-		Validate.validState(result.getIgnored().isEmpty());
-		Validate.validState(result.getMissing().isEmpty());
-		Validate.validState(result.getUnknown().isEmpty());
 		return changes;
-    }
+	}
 
-    @Override
-    protected byte[] readAllBytesImpl(
-    		final String pPath, final String pRevision)
+	@Override
+	protected byte[] readAllBytesImpl(
+			final String pPath, final String pRevision)
 			throws IOException {
 		Validate.validState(repository != null);
-        final CatCommand cmd = CatCommandFlags.on(repository);
-        final InputStream is = cmd.rev(pRevision).execute(pPath);
 
-        final BufferedInputStream bis = new BufferedInputStream(is);
-        final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        final byte[] buffer = new byte[4096];
-        int n;
-        while ((n = bis.read(buffer, 0, buffer.length)) != -1) {
-            bos.write(buffer, 0, n);
-        }
-        return bos.toByteArray();
-    }
+		final InputStream is;
+		try {
+			final CatCommand cmd = CatCommandFlags.on(repository);
+			is = cmd.rev(pRevision).execute(pPath);
+		} catch (final RuntimeException e) {
+			throw new IOException(e);
+		}
 
-    @Override
-    protected CommitImpl createCommitImpl(final String pRevision)
+		final BufferedInputStream bis = new BufferedInputStream(is);
+		final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		final byte[] buffer = new byte[4096];
+		int n;
+		while ((n = bis.read(buffer, 0, buffer.length)) != -1) {
+			bos.write(buffer, 0, n);
+		}
+		return bos.toByteArray();
+	}
+
+	@Override
+	protected CommitImpl createCommitImpl(final String pRevision)
 			throws IOException {
 		Validate.validState(repository != null);
-        final LogCommand cmd = LogCommandFlags.on(repository);
-        final List<Changeset> changes = cmd.rev(pRevision).execute();
-        Validate.validState(changes.size() == 1,
+
+		final List<Changeset> changes;
+		try {
+			final LogCommand cmd = LogCommandFlags.on(repository);
+			changes = cmd.rev(pRevision).execute();
+		} catch (final RuntimeException e) {
+			throw new IOException(e);
+		}
+		Validate.validState(changes.size() == 1,
 				"Unexpected number of log entries: Expected %d, Actual %d",
 				1, changes.size());
-        final Changeset cs = changes.get(0);
+		final Changeset changeset = changes.get(0);
 
 		final CommitImpl commit = new CommitImpl();
-		commit.setAuthor(cs.getUser());
-		commit.setMessage(cs.getMessage());
+		commit.setAuthor(changeset.getUser());
+		commit.setMessage(changeset.getMessage());
 		final List<String> parents = new ArrayList<>();
-		if (cs.getParent1() != null) {
-			parents.add(String.valueOf(cs.getParent1().getRevision()));
-		}
-		if (cs.getParent2() != null) {
-			parents.add(String.valueOf(cs.getParent2().getRevision()));
-		}
+		Stream.of(changeset.getParent1(), changeset.getParent2())
+				.filter(Objects::nonNull)
+				.map(Changeset::getRevision)
+				.map(String::valueOf)
+				.forEach(parents::add);
 		commit.setParentIds(parents);
 		final LocalDateTime dateTime = LocalDateTime.ofInstant(
-				cs.getTimestamp().getDate().toInstant(),
+				changeset.getTimestamp().getDate().toInstant(),
 				ZoneId.systemDefault());
 		commit.setDateTime(dateTime);
 		return commit;
-    }
+	}
 
-    @Override
-    protected List<String> listRevisionsImpl(
-    		final LocalDateTime pSince, final LocalDateTime pUntil)
+	@Override
+	protected List<String> listRevisionsImpl(
+			final LocalDateTime pSince, final LocalDateTime pUntil)
 			throws IOException {
 		Validate.validState(repository != null);
+
 		final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE;
-    	final String since = formatter.format(pSince);
-    	final String until = formatter.format(pUntil);
-    	final String date = since + " to " + until;
-        final List<String> revisions = LogCommandFlags.on(repository)
-				.date(date)
-				.execute()
-				.stream()
-				.map(Changeset::getRevision)
-				.map(String::valueOf)
-				.collect(Collectors.toList());
+		final String since = formatter.format(pSince);
+		final String until = formatter.format(pUntil);
+		final String date = since + " to " + until;
+
+		final List<String> revisions;
+		try {
+			revisions = LogCommandFlags.on(repository)
+					.date(date)
+					.execute()
+					.stream()
+					.map(Changeset::getRevision)
+					.map(String::valueOf)
+					.collect(Collectors.toList());
+		} catch (final RuntimeException e) {
+			throw new IOException(e);
+		}
+
 		Collections.reverse(revisions);
 		return revisions;
 	}
 
-    @Override
-    protected List<String> listRevisionsImpl(
-    		final String pFromRev, final String pToRev)
+	@Override
+	protected List<String> listRevisionsImpl(
+			final String pFromRev, final String pToRev)
 			throws IOException {
 		Validate.validState(repository != null);
-		final List<String> revisions = LogCommandFlags.on(repository)
-				.rev(pFromRev, pToRev)
-				.execute()
-				.stream()
-				.map(Changeset::getRevision)
-				.map(String::valueOf)
-				.collect(Collectors.toList());
+
+		final List<String> revisions;
+		try {
+			revisions = LogCommandFlags.on(repository)
+					.rev(pFromRev, pToRev)
+					.execute()
+					.stream()
+					.map(Changeset::getRevision)
+					.map(String::valueOf)
+					.collect(Collectors.toList());
+		} catch (final RuntimeException e) {
+			throw new IOException(e);
+		}
+
 		Collections.reverse(revisions);
 		return revisions;
-    }
+	}
 
 	@Override
 	protected void initImpl() throws IOException {
-    	Validate.validState(repository == null);
-		repository = Repository.clone(getTarget().toFile(), getRepository());
+		Validate.validState(repository == null);
+		try {
+			repository = Repository.clone(
+					getTarget().toFile(), getRepository());
+		} catch (final RuntimeException e) {
+			throw new IOException(e);
+		}
 	}
 }
