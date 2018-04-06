@@ -35,11 +35,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.logging.LogManager;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class HGEngine extends AbstractIntervalVCSEngine {
+
+	static {
+		// Disable the logger (java.util.logging) used by JavaHG.
+		LogManager.getLogManager().reset();
+	}
 
 	private static final Logger log = LoggerFactory.getLogger(HGEngine.class);
 
