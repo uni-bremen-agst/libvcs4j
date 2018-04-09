@@ -77,7 +77,7 @@ public class VCSFileImpl implements VCSFile {
 		final String LINE_SEP = "\\r?\\n";
 
 		final ELanguage lang = ELanguage.fromFile(toFile());
-		if (lang == null) {
+		if (lang == null || lang == ELanguage.TEXT) {
 			return Optional.empty();
 		}
 
