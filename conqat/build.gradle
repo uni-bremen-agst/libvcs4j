@@ -1,0 +1,14 @@
+plugins {
+	id 'java'
+	id 'maven'
+}
+
+group = 'org.conqt.lib'
+version = '2015.2'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+}
