@@ -11,12 +11,16 @@ repositories {
 	mavenCentral()
 }
 
+configurations {
+	extraLibs
+}
+
 dependencies {
-	compile project(':conqat')
-	compile project(':libvcs4j-api')
+	extraLibs project(':conqat')
+	extraLibs project(':libvcs4j-api')
 
 	// add local jars from 'libs' directory
-	compile fileTree(dir: 'libs', include: '*.jar')
+	extraLibs fileTree(dir: 'libs', include: '*.jar')
 	// required by JavaHG
 	compile 'com.google.guava:guava:24.1-jre'
 
@@ -30,4 +34,14 @@ dependencies {
 	testCompile 'junit:junit:4.12'
 	testCompile 'org.apache.commons:commons-compress:1.15'
 	testCompile 'org.slf4j:slf4j-simple:1.7.25'
+
+	configurations.compile.extendsFrom(configurations.extraLibs)
+}
+
+jar {
+	from {
+		configurations.extraLibs.collect {
+			it.isDirectory() ? it : zipTree(it)
+		}
+	}
 }
