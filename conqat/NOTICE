@@ -1,0 +1,594 @@
+
+--------------------------------------------------------------------------------
+
+The ConQAT Core bundle uses ANTLR 3 Runtime
+ (http://www.antlr3.org/),
+licensed under BSD 3-Clause
+ (http://opensource.org/licenses/BSD-3-Clause).
+
+--------------------------------------------------------------------------------
+
+The ConQAT Core bundle uses Apache Ant Core
+ (http://ant.apache.org/),
+licensed under Apache License 2.0
+ (http://www.apache.org/licenses/LICENSE-2.0).
+
+--------------------------------------------------------------------------------
+
+The HTML Presentation bundle uses Apache Batik SVG Toolkit
+ (http://xmlgraphics.apache.org/batik/),
+licensed under Apache License 2.0
+ (http://www.apache.org/licenses/LICENSE-2.0).
+
+--------------------------------------------------------------------------------
+
+The Database Bundle bundle uses Apache Cassandra Thrift
+ (http://cassandra.apache.org/),
+licensed under Apache License 2.0
+ (http://www.apache.org/licenses/LICENSE-2.0).
+
+--------------------------------------------------------------------------------
+
+The Java Bundle bundle uses Apache Commons BCEL
+ (http://asm.ow2.org/),
+licensed under Apache License 2.0
+ (http://www.apache.org/licenses/LICENSE-2.0).
+
+--------------------------------------------------------------------------------
+
+The HTML Presentation bundle uses Apache Commons Codec
+ (http://commons.apache.org/proper/commons-codec/),
+licensed under Apache License 2.0
+ (http://www.apache.org/licenses/LICENSE-2.0).
+
+--------------------------------------------------------------------------------
+
+The Graph Bundle bundle uses Apache Commons Collections
+ (http://commons.apache.org/proper/commons-collections/),
+licensed under Apache License 2.0
+ (http://www.apache.org/licenses/LICENSE-2.0).
+
+--------------------------------------------------------------------------------
+
+The HTML Presentation bundle uses Apache Commons HTTP Client
+ (http://hc.apache.org/httpclient-3.x/),
+licensed under Apache License 2.0
+ (http://www.apache.org/licenses/LICENSE-2.0).
+
+--------------------------------------------------------------------------------
+
+The HTML Presentation bundle uses Apache Commons HTTP Components Client
+ (http://hc.apache.org/),
+licensed under Apache License 2.0
+ (http://www.apache.org/licenses/LICENSE-2.0).
+
+--------------------------------------------------------------------------------
+
+The HTML Presentation bundle uses Apache Commons HTTP Components Core
+ (http://hc.apache.org/),
+licensed under Apache License 2.0
+ (http://www.apache.org/licenses/LICENSE-2.0).
+
+--------------------------------------------------------------------------------
+
+The HTML Presentation bundle uses Apache Commons HTTP Components MIME
+ (http://hc.apache.org/),
+licensed under Apache License 2.0
+ (http://www.apache.org/licenses/LICENSE-2.0).
+
+--------------------------------------------------------------------------------
+
+The HTML Presentation bundle uses Apache Commons IO
+ (http://commons.apache.org/io/),
+licensed under Apache License 2.0
+ (http://www.apache.org/licenses/LICENSE-2.0).
+
+--------------------------------------------------------------------------------
+
+The ConQAT Commons bundle uses Apache Commons Lang
+ (http://jakarta.apache.org/commons/lang/),
+licensed under Apache License 2.0
+ (http://www.apache.org/licenses/LICENSE-2.0).
+
+--------------------------------------------------------------------------------
+
+The HTML Presentation bundle uses Apache Commons Logging
+ (http://commons.apache.org/proper/commons-logging/),
+licensed under Apache License 2.0
+ (http://www.apache.org/licenses/LICENSE-2.0).
+
+--------------------------------------------------------------------------------
+
+The ConQAT Commons bundle uses Apache Commons Math
+ (http://commons.apache.org/proper/commons-math/),
+licensed under Apache License 2.0
+ (http://www.apache.org/licenses/LICENSE-2.0).
+
+--------------------------------------------------------------------------------
+
+The HTML Presentation bundle uses Apache FOP
+ (http://xmlgraphics.apache.org/fop/),
+licensed under Apache License 2.0
+ (http://www.apache.org/licenses/LICENSE-2.0).
+
+--------------------------------------------------------------------------------
+
+The Text Bundle bundle uses Apache POI
+ (http://poi.apache.org/),
+licensed under Apache License 2.0
+ (http://www.apache.org/licenses/LICENSE-2.0).
+
+--------------------------------------------------------------------------------
+
+The Database Bundle bundle uses Apache Thrift
+ (http://thrift.apache.org/),
+licensed under Apache License 2.0
+ (http://www.apache.org/licenses/LICENSE-2.0).
+
+--------------------------------------------------------------------------------
+
+The HTML Presentation bundle uses Apache XML Commons XML APIs
+ (http://xerces.apache.org/xml-commons/),
+licensed under Apache License 2.0
+ (http://www.apache.org/licenses/LICENSE-2.0).
+
+--------------------------------------------------------------------------------
+
+The HTML Presentation bundle uses Apache XML Graphics Commons
+ (http://xmlgraphics.apache.org/commons/),
+licensed under Apache License 2.0
+ (http://www.apache.org/licenses/LICENSE-2.0).
+
+--------------------------------------------------------------------------------
+
+The Source Code Bundle bundle uses args4j
+ (http://args4j.kohsuke.org/),
+licensed under MIT Licence
+ (null).
+
+--------------------------------------------------------------------------------
+
+The Java Bundle bundle uses ASM
+ (http://asm.ow2.org/),
+licensed under AsmDex License
+ (http://asm.ow2.org/asmdex-license.html).
+
+Copyright (c) 2012 France Télécom
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+3. Neither the name of the copyright holders nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+THE POSSIBILITY OF SUCH DAMAGE.
+
+--------------------------------------------------------------------------------
+
+The Architecture Bundle bundle uses Automaton
+ (http://www.brics.dk/automaton/),
+licensed under BSD 2-Clause
+ (http://opensource.org/licenses/BSD-2-Clause).
+
+--------------------------------------------------------------------------------
+
+The HTML Presentation bundle uses Avalon Framework
+ (http://avalon.apache.org/),
+licensed under Apache License 2.0
+ (http://www.apache.org/licenses/LICENSE-2.0).
+
+--------------------------------------------------------------------------------
+
+The Scripting Bundle bundle uses BeanShell
+ (http://www.beanshell.org/),
+licensed under GNU Lesser General Public License Version 3
+ (http://www.gnu.org/copyleft/lesser.html).
+
+--------------------------------------------------------------------------------
+
+The Source Code Bundle bundle uses Closure Compiler
+ (http://code.google.com/p/closure-compiler/),
+licensed under Apache License 2.0
+ (http://www.apache.org/licenses/LICENSE-2.0).
+
+--------------------------------------------------------------------------------
+
+The Simulink Bundle bundle uses CUP Runtime
+ (http://www2.cs.tum.edu/projects/cup/),
+licensed under CUP Parser Generator License
+ (http://www2.cs.tum.edu/projects/cup/licence.html).
+
+CUP Parser Generator Copyright Notice, License, and Disclaimer
+ Copyright 1996-1999 by Scott Hudson, Frank Flannery, C. Scott Ananian 
+
+ Permission to use, copy, modify, and distribute this software and its
+documentation for any purpose and without fee is hereby granted, provided that
+the above copyright notice appear in all copies and that both the copyright
+notice and this permission notice and warranty disclaimer appear in supporting
+documentation, and that the names of the authors or their employers not be used
+in advertising or publicity pertaining to distribution of the software without
+specific, written prior permission. 
+
+ The authors and their employers disclaim all warranties with regard to this
+software, including all implied warranties of merchantability and fitness. In
+no event shall the authors or their employers be liable for any special,
+indirect or consequential damages or any damages whatsoever resulting from loss
+of use, data or profits, whether in an action of contract, negligence or other
+tortious action, arising out of or in connection with the use or performance of
+this software. 
+ This is an open source license. It is also GPL-Compatible (see entry for
+"Standard ML of New Jersey"). The portions of CUP output which are hard-coded
+into the CUP source code are (naturally) covered by this same license, as is
+the CUP runtime code linked with the generated parser. 
+
+ Java is a trademark of Sun Microsystems, Inc. References to the Java
+programming language in relation to JLex are not meant to imply that Sun
+endorses this product.
+
+--------------------------------------------------------------------------------
+
+The Java Bundle bundle uses Eclipse ECJ
+ (http://www.eclipse.org/jdt/),
+licensed under Eclipse Public License Version 1.0
+ (http://www.eclipse.org/org/documents/epl-v10.php).
+
+--------------------------------------------------------------------------------
+
+The HTML Presentation bundle uses Google Closure Templates
+ (http://code.google.com/p/closure-templates/),
+licensed under Apache License 2.0
+ (http://www.apache.org/licenses/LICENSE-2.0).
+
+--------------------------------------------------------------------------------
+
+The ConQAT Commons bundle uses Gson
+ (http://xmlgraphics.apache.org/fop/),
+licensed under Apache License 2.0
+ (http://www.apache.org/licenses/LICENSE-2.0).
+
+--------------------------------------------------------------------------------
+
+The ConQAT Commons bundle uses guava-libraries
+ (http://code.google.com/p/guava-libraries/),
+licensed under Apache License 2.0
+ (http://www.apache.org/licenses/LICENSE-2.0).
+
+--------------------------------------------------------------------------------
+
+The Database Bundle bundle uses Hector
+ (http://hector-client.github.io/hector/build/html/index.html),
+licensed under MIT License
+ (http://opensource.org/licenses/mit-license.php).
+
+--------------------------------------------------------------------------------
+
+The Database Bundle bundle uses HyperSQL Database Engine
+ (http://hsqldb.org/),
+licensed under HSQL License
+ (http://hsqldb.org/web/hsqlLicense.html).
+
+For work developed by the HSQL Development Group:
+
+Copyright (c) 2001-2010, The HSQL Development Group
+ All rights reserved.
+
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+
+ Redistributions of source code must retain the above copyright notice, this
+ list of conditions and the following disclaimer.
+
+ Redistributions in binary form must reproduce the above copyright notice,
+ this list of conditions and the following disclaimer in the documentation
+ and/or other materials provided with the distribution.
+
+ Neither the name of the HSQL Development Group nor the names of its
+ contributors may be used to endorse or promote products derived from this
+ software without specific prior written permission.
+
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED. IN NO EVENT SHALL HSQL DEVELOPMENT GROUP, HSQLDB.ORG, 
+ OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
+ EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, 
+ PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+For work originally developed by the Hypersonic SQL Group:
+
+ Copyright (c) 1995-2000 by the Hypersonic SQL Group.
+ All rights reserved. 
+
+Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+
+ Redistributions of source code must retain the above copyright notice, this
+ list of conditions and the following disclaimer.
+
+ Redistributions in binary form must reproduce the above copyright notice,
+ this list of conditions and the following disclaimer in the documentation
+ and/or other materials provided with the distribution.
+
+ Neither the name of the Hypersonic SQL Group nor the names of its
+ contributors may be used to endorse or promote products derived from this
+ software without specific prior written permission.
+
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED. IN NO EVENT SHALL THE HYPERSONIC SQL GROUP, 
+ OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
+ EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, 
+ PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+This software consists of voluntary contributions made by many individuals on 
+behalf of the Hypersonic SQL Group.
+
+--------------------------------------------------------------------------------
+
+The ConQAT Core bundle uses Jacoco for Ant
+ (http://www.eclemma.org/jacoco/),
+licensed under Eclipse Public License Version 1.0
+ (http://www.eclipse.org/org/documents/epl-v10.php).
+
+--------------------------------------------------------------------------------
+
+The Java Bundle bundle uses jaxen
+ (http://jaxen.codehaus.org/),
+licensed under Jaxen License
+ (http://jaxen.codehaus.org/license.html).
+
+Copyright 2003-2006 The Werken Company. All Rights Reserved.
+ 
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are
+ met:
+
+  * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+
+  * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+
+  * Neither the name of the Jaxen Project nor the names of its
+    contributors may be used to endorse or promote products derived 
+    from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+--------------------------------------------------------------------------------
+
+The Bugzilla Bundle bundle uses jchronic
+ (https://github.com/samtingleff/jchronic),
+licensed under MIT License
+ (http://opensource.org/licenses/mit-license.php).
+
+--------------------------------------------------------------------------------
+
+The HTML Presentation bundle uses JCommon
+ (org.jfree),
+licensed under GNU Lesser General Public License Version 3
+ (http://www.gnu.org/copyleft/lesser.html).
+
+--------------------------------------------------------------------------------
+
+The HTML Presentation bundle uses JFreeChart
+ (http://www.jfree.org/jfreechart/),
+licensed under GNU Lesser General Public License Version 3
+ (http://www.gnu.org/copyleft/lesser.html).
+
+--------------------------------------------------------------------------------
+
+The ConQAT Commons bundle uses Joda-Time
+ (http://www.joda.org/joda-time/),
+licensed under Apache License 2.0
+ (http://www.apache.org/licenses/LICENSE-2.0).
+
+--------------------------------------------------------------------------------
+
+The Graph Bundle bundle uses Jung
+ (http://jung.sourceforge.net/),
+licensed under BSD-style License
+ (http://jung.sourceforge.net/license.txt).
+
+The license below is the BSD open-source license. See 
+	http://www.opensource.org/licenses/bsd-license.php
+with:
+	<OWNER> = Regents of the University of California and the JUNG Project
+	<ORGANIZATION> = University of California
+	<YEAR> = 2003 
+
+It allows redistribution of JUNG freely, albeit with acknowledgement of JUNG's
+being a component in the redistributed software. However, we would greatly
+appreciate if you can let us know what you are doing with JUNG.
+
+--
+THE JUNG LICENSE
+
+Copyright (c) 2003-2004,  Regents of the University of California and the JUNG
+Project 
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice,
+this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice,
+this list of conditions and the following disclaimer in the documentation and/or
+other materials provided with the distribution.
+    * Neither the name of the University of California nor the names of its
+contributors may be used to endorse or promote products derived from this
+software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+--------------------------------------------------------------------------------
+
+The ConQAT Core bundle uses JUnit
+ (http://junit.org),
+licensed under Common Public License Version 1.0
+ (http://www.opensource.org/licenses/cpl1.0.txt).
+
+--------------------------------------------------------------------------------
+
+The Database Bundle bundle uses LevelDB Wrapper
+ (http://leveldb.googlecode.com/),
+licensed under BSD 3-Clause
+ (http://opensource.org/licenses/BSD-3-Clause).
+
+--------------------------------------------------------------------------------
+
+The ConQAT Core bundle uses Log4J
+ (http://logging.apache.org/log4j),
+licensed under Apache License 2.0
+ (http://www.apache.org/licenses/LICENSE-2.0).
+
+--------------------------------------------------------------------------------
+
+The Text Bundle bundle uses Lucene Common Analyzers
+ (http://lucene.apache.org/core/),
+licensed under Apache License 2.0
+ (http://www.apache.org/licenses/LICENSE-2.0).
+
+--------------------------------------------------------------------------------
+
+The Database Bundle bundle uses Microsoft JDBC Driver for SQL Server
+ (http://msdn.microsoft.com/en-us/sqlserver/aa937724.aspx),
+licensed under Microsoft Software License Terms Redistribution License for Microsoft JDBC Driver 4.0 for SQL Server
+ (http://msdn.microsoft.com/en-us/sqlserver/jj589698).
+
+--------------------------------------------------------------------------------
+
+The Java Bundle bundle uses PMD
+ (http://pmd.sourceforge.net/),
+licensed under BSD-style License
+ (http://pmd.sourceforge.net/license.html).
+
+Copyright (c) 2002-2009, InfoEther, Inc
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+    * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+    * The end-user documentation included with the redistribution, if
+any, must include the following acknowledgement:
+      "This product includes software developed in part by support from
+the Defense Advanced Research Project Agency (DARPA)"
+    * Neither the name of InfoEther, LLC nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+--------------------------------------------------------------------------------
+
+The ConQAT Commons bundle uses SLF4J
+ (http://www.slf4j.org/),
+licensed under MIT License
+ (http://opensource.org/licenses/mit-license.php).
+
+--------------------------------------------------------------------------------
+
+The IO bundle uses Super CSV Core
+ (http://supercsv.sourceforge.net/),
+licensed under Apache License 2.0
+ (http://www.apache.org/licenses/LICENSE-2.0).
+
+--------------------------------------------------------------------------------
+
+The ConQAT Commons bundle uses XStream Core
+ (http://xstream.codehaus.org/),
+licensed under BSD-style License
+ (http://xstream.codehaus.org/license.html).
+
+Copyright (c) 2003-2006, Joe Walnes
+Copyright (c) 2006-2009, 2011 XStream Committers
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this list of
+conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice, this list of
+conditions and the following disclaimer in the documentation and/or other materials provided
+with the distribution.
+
+3. Neither the name of XStream nor the names of its contributors may be used to endorse
+or promote products derived from this software without specific prior written
+permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
+WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+DAMAGE.
