@@ -178,9 +178,9 @@ public interface VCSEngine extends Iterable<Version> {
 	}
 
 	/**
-	 * Returns all non-VCS-specific files located in {@link #getOutput()}.
-	 * All paths of the list are absolute and the list does not contain
-	 * any directory path. The default implementation uses the
+	 * Returns all non-VCS-specific files located in {@link #getOutput()}. All
+	 * paths of the list are absolute and the list does not contain any
+	 * directory path. The default implementation uses the
 	 * {@link FilenameFilter} returned by {@link #createVCSFileFilter()} to
 	 * exclude particular files from {@link #getOutput()}. {@link #getOutput()}
 	 * itself can not be excluded.
@@ -192,15 +192,15 @@ public interface VCSEngine extends Iterable<Version> {
 	 * @throws IOException
 	 * 		If an error occurred while collecting files.
 	 */
-	default List<String> listFilesInOutput() throws IOException {
-		final File output = getOutput().toFile();
-		if (!output.exists()) {
+	default List<Path> listFilesInOutput() throws IOException {
+		final Path output = getOutput();
+		if (!Files.exists(output)) {
 			throw new FileNotFoundException(
 					String.format("'%s' does not exist", getOutput()));
-		} else if (output.isFile()) {
-			return Collections.singletonList(output.getAbsolutePath());
+		} else if (Files.isRegularFile(output)) {
+			return Collections.singletonList(output.toAbsolutePath());
 		} else {
-			final List<String> filesInOutput = new ArrayList<>();
+			final List<Path> filesInOutput = new ArrayList<>();
 			// For the sake of stability, handle null filters.
 			final Optional<FilenameFilter> filter =
 					Optional.ofNullable(createVCSFileFilter());
@@ -229,7 +229,7 @@ public interface VCSEngine extends Iterable<Version> {
 							.map(f -> f.accept(file.getParent().toFile(),
 									file.getFileName().toString()))
 							.filter(b -> b)
-							.map(__ -> file.toAbsolutePath().toString())
+							.map(__ -> file.toAbsolutePath())
 							.ifPresent(filesInOutput::add);
 					return FileVisitResult.CONTINUE;
 				}

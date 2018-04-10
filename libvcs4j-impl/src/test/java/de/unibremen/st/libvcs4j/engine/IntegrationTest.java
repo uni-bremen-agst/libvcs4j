@@ -151,10 +151,10 @@ public class IntegrationTest {
 		assertEquals(6, vp.listFilesInOutput().size());
 		assertTrue(vp.listFilesInOutput().contains(
 				Paths.get(folder.getRoot().getAbsolutePath(),
-						"relocate2.java").toString()));
+						"relocate2.java")));
 		assertTrue(vp.listFilesInOutput().contains(
 				Paths.get(folder.getRoot().getAbsolutePath(),
-						"add", "add1.java").toString()));
+						"add", "add1.java")));
 	}
 
 	private static class TestClass extends AbstractIntervalVCSEngine {

@@ -14,6 +14,7 @@ import org.junit.rules.TemporaryFolder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
@@ -33,8 +34,8 @@ public class SingleEngineTest {
 	public void testSingleFile() throws IOException {
 		final VCSEngine engine = new SingleEngine(
 				folder.newFile("single.txt").toPath());
-		final String pathOfFile = Paths.get(
-				folder.getRoot().toString(), "single.txt").toString();
+		final Path pathOfFile = Paths.get(
+				folder.getRoot().toString(), "single.txt");
 
 		assertEquals(1, engine.listFilesInOutput().size());
 		assertEquals(pathOfFile, engine.listFilesInOutput().get(0));
@@ -46,14 +47,15 @@ public class SingleEngineTest {
 
 		final FileChange fileChange = version.getFileChanges().get(0);
 		assertEquals(FileChange.Type.ADD, fileChange.getType());
-		assertEquals(pathOfFile, fileChange.getNewFile().get().getPath());
+		assertEquals(pathOfFile, fileChange.getNewFile().get().toPath());
 		// there is no relative path for a single file
 		assertEquals("", fileChange.getNewFile().get().getRelativePath());
 	}
 
 	@Test
 	public void testFolderWithSingleFile() throws IOException {
-		final String path = folder.newFile("file.java").getAbsolutePath();
+		final Path path = folder.newFile("file.java")
+				.toPath().toAbsolutePath();
 		final VCSEngine engine = new SingleEngine(folder.getRoot().toPath());
 
 		assertEquals(1, engine.listFilesInOutput().size());
@@ -66,7 +68,7 @@ public class SingleEngineTest {
 
 		final FileChange fileChange = version.getFileChanges().get(0);
 		assertEquals(FileChange.Type.ADD, fileChange.getType());
-		assertEquals(path, fileChange.getNewFile().get().getPath());
+		assertEquals(path, fileChange.getNewFile().get().toPath());
 		assertEquals("file.java",
 				fileChange.getNewFile().get().getRelativePath());
 	}
@@ -76,10 +78,10 @@ public class SingleEngineTest {
 		folder.newFile("first.java");
 		final File sub = folder.newFolder("sub");
 		Files.createFile(Paths.get(sub.getAbsolutePath(), "second.java"));
-		final String first = Paths.get(folder.getRoot().getAbsolutePath(),
-				"first.java").toString();
-		final String second = Paths.get(sub.getAbsolutePath(),
-				"second.java").toString();
+		final Path first = Paths.get(folder.getRoot().getAbsolutePath(),
+				"first.java");
+		final Path second = Paths.get(sub.getAbsolutePath(),
+				"second.java");
 
 		final VCSEngine engine = new SingleEngine(folder.getRoot().toPath());
 		assertEquals(2, engine.listFilesInOutput().size());

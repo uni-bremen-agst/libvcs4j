@@ -26,14 +26,17 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * An abstract base implementation of a {@link VCSEngine}. This class assumes
@@ -107,7 +110,9 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 		// the first revision can only have additions
 		if (revisionIdx == 0) {
 			changes = new Changes();
-			changes.getAdded().addAll(listFilesInOutput());
+			listFilesInOutput().stream()
+					.map(Path::toString)
+					.forEach(f -> changes.getAdded().add(f));
 		} else {
 			changes = createChangesImpl(getPreviousRevision(), revision);
 			//validate(changes);
@@ -228,22 +233,19 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 
 	///////////////////////////// helping methods /////////////////////////////
 
-	private VCSFile createFile(final String pPath, final Revision pRevision)
-			throws IOException {
-		// use `Paths.get(String)` to remove trailing separators
-		final Path path = Paths.get(pPath);
+	private VCSFile createFile(final Path pPath, final Revision pRevision) {
 		final Path output = getOutput();
-		if (!path.isAbsolute()) {
-			throw new IOException(String.format(
-					"'%s' is not an absolute path", path));
-		} else if (!path.startsWith(output)) {
-			throw new IOException(String.format(
-					"'%s' is not a file located in '%s'", path, output));
+		if (!pPath.isAbsolute()) {
+			throw new IllegalArgumentException(String.format(
+					"'%s' is not an absolute path", pPath));
+		} else if (!pPath.startsWith(output)) {
+			throw new IllegalArgumentException(String.format(
+					"'%s' is not a file located in '%s'", pPath, output));
 		}
-		final Path relPath = output.relativize(path);
+		final Path relPath = output.relativize(pPath);
 
 		final VCSFileImpl file = new VCSFileImpl(this);
-		file.setPath(path.toString());
+		file.setPath(pPath.toString());
 		file.setRelativePath(relPath.toString());
 		file.setRevision(pRevision);
 		return file;
@@ -252,10 +254,9 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 	private Revision createRevision() throws NullPointerException,
 			IllegalArgumentException, IOException {
 		final RevisionImpl rev = new RevisionImpl(this);
-		final List<VCSFile> files = new ArrayList<>();
-		for (final String f : listFilesInOutput()) {
-			files.add(createFile(f, rev));
-		}
+		final List<VCSFile> files = listFilesInOutput().stream()
+				.map(f -> createFile(f, rev))
+				.collect(Collectors.toList());
 		rev.setId(revision);
 		rev.setFiles(files);
 		return rev;
@@ -331,41 +332,60 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 		final Revision rev = createRevision();
 		final VersionImpl version = new VersionImpl();
 		version.setRevision(rev);
+		version.setPredecessorRevision(currentRevision);
 
+		final Map<Path, VCSFile> path2File = new HashMap<>();
+		rev.getFiles().forEach(f -> path2File.put(f.toPath(), f));
 		final List<FileChange> fileChanges = new ArrayList<>();
-		for (final String add : pChanges.getAdded()) {
-			final FileChangeImpl fileChange = new FileChangeImpl();
-			fileChange.setEngine(this);
-			fileChange.setNewFile(createFile(add, rev));
-			fileChanges.add(fileChange);
-		}
-
+		pChanges.getAdded().stream()
+				.map(Paths::get)
+				.map(a -> {
+					final FileChangeImpl fc = new FileChangeImpl();
+					fc.setEngine(this);
+					fc.setNewFile(path2File.computeIfAbsent(
+							a, p -> createFile(p, rev)));
+					return fc;
+				})
+				.forEach(fileChanges::add);
 		if (revisionIdx > 0) {
 			Validate.validState(currentRevision != null);
-			for (final String remove : pChanges.getRemoved()) {
-				final FileChangeImpl fileChange = new FileChangeImpl();
-				fileChange.setEngine(this);
-				fileChange.setOldFile(createFile(remove, currentRevision));
-				fileChanges.add(fileChange);
-			}
-			for (final String modify : pChanges.getModified()) {
-				final FileChangeImpl fileChange = new FileChangeImpl();
-				fileChange.setEngine(this);
-				fileChange.setOldFile(createFile(modify, currentRevision));
-				fileChange.setNewFile(createFile(modify, rev));
-				fileChanges.add(fileChange);
-			}
-			for (final Entry<String, String> relocate :
-					pChanges.getRelocated()) {
-				final FileChangeImpl fileChange = new FileChangeImpl();
-				final String old = relocate.getKey();
-				final String nev = relocate.getValue();
-				fileChange.setEngine(this);
-				fileChange.setOldFile(createFile(old, currentRevision));
-				fileChange.setNewFile(createFile(nev, rev));
-				fileChanges.add(fileChange);
-			}
-			version.setPredecessorRevision(currentRevision);
+			pChanges.getRemoved().stream()
+					.map(Paths::get)
+					.map(r -> {
+						final FileChangeImpl fc = new FileChangeImpl();
+						fc.setEngine(this);
+						fc.setOldFile(path2File.computeIfAbsent(
+								r, p -> createFile(p, currentRevision)));
+						return fc;
+					})
+					.forEach(fileChanges::add);
+			pChanges.getModified().stream()
+					.map(Paths::get)
+					.map(m -> {
+						final FileChangeImpl fc = new FileChangeImpl();
+						fc.setEngine(this);
+						fc.setOldFile(createFile(m, currentRevision));
+						fc.setNewFile(path2File.computeIfAbsent(
+								m, p -> createFile(p, rev)));
+						return fc;
+					})
+					.forEach(fileChanges::add);
+			pChanges.getRelocated().stream()
+					.map(e -> new AbstractMap.SimpleEntry<>(
+							Paths.get(e.getKey()),
+							Paths.get(e.getValue())))
+					.map(e -> {
+						final Path old = e.getKey();
+						final Path nev = e.getValue();
+						final FileChangeImpl fc = new FileChangeImpl();
+						fc.setEngine(this);
+						fc.setOldFile(path2File.computeIfAbsent(
+								old, p -> createFile(p, currentRevision)));
+						fc.setNewFile(path2File.computeIfAbsent(
+								nev, p -> createFile(p, rev)));
+						return fc;
+					})
+					.forEach(fileChanges::add);
 		}
 
 		final Commit commit = createCommit(fileChanges);
