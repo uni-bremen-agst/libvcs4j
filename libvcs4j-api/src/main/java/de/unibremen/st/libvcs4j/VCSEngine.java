@@ -162,6 +162,24 @@ public interface VCSEngine extends Iterable<Version> {
 			NullPointerException, IOException;
 
 	/**
+	 * Sets the engine used to extract issues from an issue tracker. If
+	 * {@code null} is passed, the currently set engine is removed.
+	 *
+	 * @param itEngine
+	 * 		The engine used to extract issues from an issue tracker or
+	 * 		{@code null} to unset the currently set engine.
+	 */
+	void setITEngine(final ITEngine itEngine);
+
+	/**
+	 * Return the engine used to extract issues from an issue tracker.
+	 *
+	 * @return
+	 * 		The engine used to extract issues from an issue tracker.
+	 */
+	Optional<ITEngine> getITEngine();
+
+	/**
 	 * Returns a {@link FilenameFilter} that is supposed to exclude VCS
 	 * specific files and directories. The default implementation creates a
 	 * filter that does not exclude any file or directory.

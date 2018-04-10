@@ -3,6 +3,7 @@ package de.unibremen.st.libvcs4j.engine;
 import bmsi.util.Diff;
 import de.unibremen.st.libvcs4j.Commit;
 import de.unibremen.st.libvcs4j.FileChange;
+import de.unibremen.st.libvcs4j.ITEngine;
 import de.unibremen.st.libvcs4j.LineChange;
 import de.unibremen.st.libvcs4j.Revision;
 import de.unibremen.st.libvcs4j.VCSEngine;
@@ -51,6 +52,8 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 	private final String repository;
 	private final String root;
 	private final Path target;
+
+	private ITEngine itEngine = null;
 
 	private boolean initialized = false;
 	private List<String> revisions = null;
@@ -214,6 +217,16 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 		}
 
 		return lineChanges;
+	}
+
+	@Override
+	public void setITEngine(final ITEngine pITEngine) {
+		itEngine = pITEngine;
+	}
+
+	@Override
+	public Optional<ITEngine> getITEngine() {
+		return Optional.ofNullable(itEngine);
 	}
 
 	/**
@@ -403,6 +416,9 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 		IllegalReturnException.noNullElements(commit.getParentIds());
 		commit.setId(revision);
 		commit.setFileChanges(pFileChanges);
+		if (itEngine != null) {
+			commit.setIssues(itEngine.getIssuesFor(commit));
+		}
 		return commit;
 	}
 

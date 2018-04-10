@@ -58,6 +58,16 @@ public interface Commit {
 	List<FileChange> getFileChanges();
 
 	/**
+	 * Returns the issues referenced by this commit. To enable this feature
+	 * when processing a repository, set the appropriate {@link ITEngine} with
+	 * {@link VCSEngine#setITEngine(ITEngine)}.
+	 *
+	 * @return
+	 * 		The Issues referenced by this commit.
+	 */
+	List<Issue> getIssues();
+
+	/**
 	 * Returns whether this commit is a merge commit. That is, it has more than
 	 * one parent.
 	 *

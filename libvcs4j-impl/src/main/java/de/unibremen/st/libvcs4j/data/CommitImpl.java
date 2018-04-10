@@ -2,6 +2,7 @@ package de.unibremen.st.libvcs4j.data;
 
 import de.unibremen.st.libvcs4j.Commit;
 import de.unibremen.st.libvcs4j.FileChange;
+import de.unibremen.st.libvcs4j.Issue;
 import org.apache.commons.lang3.Validate;
 
 import java.time.LocalDateTime;
@@ -20,6 +21,7 @@ public class CommitImpl implements Commit {
 	private LocalDateTime dateTime;
 	private List<String> parentIds = Collections.emptyList();
 	private List<FileChange> fileChanges = Collections.emptyList();
+	private List<Issue> issues = Collections.emptyList();
 
 	@Override
 	public String getId() {
@@ -75,5 +77,15 @@ public class CommitImpl implements Commit {
 	public void setFileChanges(final List<FileChange> pFileChanges) {
 		Validate.noNullElements(pFileChanges);
 		fileChanges = new ArrayList<>(pFileChanges);
+	}
+
+	@Override
+	public List<Issue> getIssues() {
+		return new ArrayList<>(issues);
+	}
+
+	public void setIssues(final List<Issue> pIssues) {
+		Validate.noNullElements(pIssues);
+		issues = new ArrayList<>(pIssues);
 	}
 }

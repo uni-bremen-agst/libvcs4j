@@ -55,6 +55,16 @@ class TestVersionProvider implements VCSEngine {
 	}
 
 	@Override
+	public void setITEngine(ITEngine itEngine) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Optional<ITEngine> getITEngine() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public Iterator<Version> iterator() {
 		throw new UnsupportedOperationException();
 	}
