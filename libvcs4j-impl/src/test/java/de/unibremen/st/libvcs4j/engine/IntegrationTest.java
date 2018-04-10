@@ -59,14 +59,14 @@ public class IntegrationTest {
 		optional = vp.next();
 		assertTrue(optional.isPresent());
 		version = optional.get();
-		assertEquals("1", version.getRevision().getCommitId());
+		assertEquals("1", version.getRevision().getId());
 		assertEquals(6, version.getFileChanges().size());
 		assertTrue(version.isFirst());
 
 		optional = vp.next();
 		assertTrue(optional.isPresent());
 		version = optional.get();
-		assertEquals("2", version.getRevision().getCommitId());
+		assertEquals("2", version.getRevision().getId());
 		assertFalse(version.isFirst());
 		assertEquals(7, version.getFileChanges().size());
 		assertEquals(2, version.getFileChanges().stream()

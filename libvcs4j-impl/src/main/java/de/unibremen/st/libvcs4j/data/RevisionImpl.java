@@ -15,7 +15,7 @@ import java.util.List;
 public class RevisionImpl implements Revision {
 
 	private final VCSEngine engine;
-	private String commitId;
+	private String id;
 	private List<VCSFile> files;
 
 	public RevisionImpl(VCSEngine pEngine) {
@@ -23,12 +23,12 @@ public class RevisionImpl implements Revision {
 	}
 
 	@Override
-	public String getCommitId() {
-		return commitId;
+	public String getId() {
+		return id;
 	}
 
-	public void setCommitId(final String pCommitId) {
-		commitId = Validate.notNull(pCommitId);
+	public void setId(final String pCommitId) {
+		id = Validate.notNull(pCommitId);
 	}
 
 	@Override

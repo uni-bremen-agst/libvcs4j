@@ -11,12 +11,14 @@ import java.util.stream.Collectors;
 public interface Revision {
 
 	/**
-	 * Returns the id of the commit that yields to this revision.
+	 * Returns the id of this revision. Usually, it is the id of the commit
+	 * that yields to this revision. However, a VCS may use a dedicated id to
+	 * identify commits and revisions independently.
 	 *
 	 * @return
-	 * 		The id of the commit that yields to this revision.
+	 * 		The id of this revision.
 	 */
-	String getCommitId();
+	String getId();
 
 	/**
 	 * @see VCSEngine#getOutput()

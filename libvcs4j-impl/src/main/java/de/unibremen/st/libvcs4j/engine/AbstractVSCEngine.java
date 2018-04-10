@@ -121,7 +121,7 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 	public final byte[] readAllBytes(final VCSFile pFile) throws
             NullPointerException, IllegalArgumentException, IOException {
 		Validate.notNull(pFile);
-		final String rev = pFile.getRevision().getCommitId();
+		final String rev = pFile.getRevision().getId();
 		init();
 		Validate.isTrue(revisions.contains(rev));
 		if (revision != null && revision.equals(rev)) {
@@ -256,7 +256,7 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 		for (final String f : listFilesInOutput()) {
 			files.add(createFile(f, rev));
 		}
-		rev.setCommitId(revision);
+		rev.setId(revision);
 		rev.setFiles(files);
 		return rev;
 	}

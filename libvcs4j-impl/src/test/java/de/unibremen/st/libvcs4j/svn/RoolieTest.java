@@ -88,7 +88,7 @@ public class RoolieTest extends VCSBaseTest {
 	public void forEachIteration() {
 		int i = 1;
 		for (final Version v : createProvider("")) {
-			assertEquals(String.valueOf(i++), v.getRevision().getCommitId());
+			assertEquals(String.valueOf(i++), v.getRevision().getId());
 		}
 	}
 
@@ -100,7 +100,7 @@ public class RoolieTest extends VCSBaseTest {
 			 optional.isPresent();
 			 optional = engine.next()) {
 			assertEquals(String.valueOf(i++),
-					optional.get().getRevision().getCommitId());
+					optional.get().getRevision().getId());
 		}
 	}
 
