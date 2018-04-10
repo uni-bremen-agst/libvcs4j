@@ -140,13 +140,16 @@ public class FSTree {
 	}
 
 	/**
-	 * Returns the sub files and directories if this tree is a directory.
+	 * Returns the sub files and directories if this tree is a directory. If
+	 * this tree is a file, an empty list is returned.
 	 *
 	 * @return
 	 *      The sub files and directories of this tree.
 	 */
-	public Optional<List<FSTree>> getNodes() {
-		return Optional.ofNullable(nodes).map(ArrayList::new);
+	public List<FSTree> getNodes() {
+		return nodes == null
+				? Collections.emptyList()
+				: new ArrayList<>(nodes);
 	}
 
 	/**
