@@ -12,6 +12,7 @@ repositories {
 }
 
 dependencies {
+	compile project(':conqat')
 	compile project(':libvcs4j-api')
 
 	// add local jars from 'libs' directory

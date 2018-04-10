@@ -1,2 +1,3 @@
-include ':libvcs4j-api'
+include ':libvcs4j-api', ':conqat'
 project(':libvcs4j-api').projectDir = new File(settingsDir, '../libvcs4j-api')
+project(':conqat').projectDir = new File(settingsDir, '../conqat')
