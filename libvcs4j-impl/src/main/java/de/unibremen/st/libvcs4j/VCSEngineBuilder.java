@@ -81,6 +81,8 @@ public class VCSEngineBuilder {
 
 	private String to = null;
 
+	private ITEngine itEngine = null;
+
 	////////////////////////////// Constructors ///////////////////////////////
 
 	public VCSEngineBuilder(final String pRepository) {
@@ -208,6 +210,11 @@ public class VCSEngineBuilder {
 		return this;
 	}
 
+	public VCSEngineBuilder withITEngine(final ITEngine pITEngine) {
+		itEngine = pITEngine;
+		return this;
+	}
+
 	@SuppressWarnings("deprecation")
 	public VCSEngine build() {
 		final VCSEngine vcsEngine;
@@ -286,6 +293,9 @@ public class VCSEngineBuilder {
 			Runtime.getRuntime().addShutdownHook(new DeleteTask(target));
 		}
 
+		if (itEngine != null) {
+			vcsEngine.setITEngine(itEngine);
+		}
 		return vcsEngine;
 	}
 
