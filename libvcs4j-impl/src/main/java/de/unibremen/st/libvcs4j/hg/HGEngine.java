@@ -10,6 +10,7 @@ import com.aragost.javahg.commands.flags.CatCommandFlags;
 import com.aragost.javahg.commands.flags.LogCommandFlags;
 import com.aragost.javahg.commands.flags.StatusCommandFlags;
 import com.aragost.javahg.commands.flags.UpdateCommandFlags;
+import com.google.common.collect.Streams;
 import de.unibremen.st.libvcs4j.data.CommitImpl;
 import de.unibremen.st.libvcs4j.engine.AbstractIntervalVCSEngine;
 import de.unibremen.st.libvcs4j.engine.Changes;
@@ -33,6 +34,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.logging.LogManager;
@@ -175,14 +177,20 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 
 		final Changes changes = new Changes();
 		result.getAdded().stream()
+				.filter(p -> normalizePath(p).startsWith(getRoot()))
 				.map(this::toAbsolutePath)
 				.forEach(changes.getAdded()::add);
-		result.getCopied().forEach((__, c) ->
-				changes.getAdded().add(toAbsolutePath(c)));
+		result.getCopied().entrySet().stream()
+				.map(Map.Entry::getValue)
+				.filter(p -> normalizePath(p).startsWith(getRoot()))
+				.map(this::toAbsolutePath)
+				.forEach(changes.getAdded()::add);
 		result.getRemoved().stream()
+				.filter(p -> normalizePath(p).startsWith(getRoot()))
 				.map(this::toAbsolutePath)
 				.forEach(changes.getRemoved()::add);
 		result.getModified().stream()
+				.filter(p -> normalizePath(p).startsWith(getRoot()))
 				.map(this::toAbsolutePath)
 				.forEach(changes.getModified()::add);
 		return changes;
@@ -264,9 +272,15 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 		try {
 			revisions = LogCommandFlags.on(repository)
 					.date(date)
-					.execute(getRoot())
+					.execute()
 					.stream()
-					.map(Changeset::getNode)
+					.filter(cs -> Streams.concat(
+								cs.getAddedFiles().stream(),
+								cs.getDeletedFiles().stream(),
+								cs.getModifiedFiles().stream())
+							.anyMatch(p -> p.startsWith(getRoot())))
+					.map(Changeset::getRevision)
+					.map(String::valueOf)
 					.collect(Collectors.toList());
 		} catch (final RuntimeException e) {
 			throw new IOException(e);
@@ -287,14 +301,21 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 
 		final List<String> revisions = new ArrayList<>();
 		try {
-			// If `pToRev` is empty, we assume latest changeset.
-			boolean include = pToRev.isEmpty();
-			List<Changeset> changesets = LogCommandFlags
-					.on(repository)
-					.rev(pFromRev, pToRev)
-					.execute(getRoot());
+			List<Changeset> changesets = LogCommandFlags.on(repository)
+					.execute()
+					.stream()
+					.filter(cs -> Streams.concat(
+								cs.getAddedFiles().stream(),
+								cs.getDeletedFiles().stream(),
+								cs.getModifiedFiles().stream())
+							.anyMatch(p -> p.startsWith(getRoot())))
+					.collect(Collectors.toList());
+
 			// The following code does not fail if `pFromRev` > `pToRev`, but
 			// the resulting list will be empty.
+
+			// If `pToRev` is empty, we assume latest changeset.
+			boolean include = pToRev.isEmpty();
 			for (final Changeset cs : changesets) {
 				final String revNumber = String.valueOf(cs.getRevision());
 				final String revId = cs.getNode();
@@ -308,7 +329,7 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 					include = true;
 				}
 				if (include) {
-					revisions.add(revId);
+					revisions.add(revNumber);
 				}
 				// Likewise, compare number and id.
 				if (revNumber.equals(pFromRev) || revId.equals(pFromRev)) {
