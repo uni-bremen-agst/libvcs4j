@@ -10,8 +10,12 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 import java.util.Optional;
 import java.util.UUID;
@@ -313,13 +317,31 @@ public class VCSEngineBuilder {
 		}
 		try {
 			return LocalDateTime.parse(tmp);
-		} catch (final DateTimeParseException e) {
+		} catch (final DateTimeParseException ignored) {
+		}
+		try {
 			final LocalDate date = LocalDate.parse(tmp);
 			return LocalDateTime.of(
 					date.getYear(),
 					date.getMonth(),
 					date.getDayOfMonth(),
 					0, 0);
+		}catch (final DateTimeParseException ignored) {
 		}
+		try {
+			final DateFormat dateFormat = new SimpleDateFormat();
+			final LocalDateTime dateTime = LocalDateTime.ofInstant(
+					dateFormat.parse(pDateTime).toInstant(),
+					ZoneId.systemDefault());
+		} catch (final ParseException ignored) {
+		}
+		try {
+			final int year = Integer.parseInt(pDateTime);
+			return LocalDateTime.of(year, 0, 0, 0, 0);
+		} catch (final NumberFormatException |
+				DateTimeParseException ignored) {
+		}
+		throw new IllegalArgumentException(String.format(
+				"Unable to parse '%s'", pDateTime));
 	}
 }
