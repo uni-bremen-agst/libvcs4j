@@ -1,5 +1,8 @@
 package de.unibremen.st.libvcs4j;
 
+/**
+ * Represents different size metrics.
+ */
 @SuppressWarnings("unused")
 public interface Size {
 

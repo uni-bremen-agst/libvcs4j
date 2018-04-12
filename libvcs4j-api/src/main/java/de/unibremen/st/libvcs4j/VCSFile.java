@@ -64,6 +64,16 @@ public interface VCSFile {
 	Optional<Size> computeSize() throws IOException;
 
 	/**
+	 * Tries to compute the complexity of this file.
+	 *
+	 * @return
+	 * 		The complexity of this file.
+	 * @throws IOException
+	 * 		If an error occurred while reading the content of this file.
+	 */
+	Optional<Complexity> computeComplexity() throws IOException;
+
+	/**
 	 * Returns the contents of this file.
 	 *
 	 * @return

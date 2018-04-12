@@ -267,4 +267,78 @@ public class FSTree {
 			}
 		});
 	}
+
+	public Complexity computeComplexity() throws IOException {
+		final List<Complexity> complexities = new ArrayList<>();
+		for (final VCSFile file : getFilesPreOrder()) {
+			final Optional<Complexity> complexity = file.computeComplexity();
+			complexity.ifPresent(complexities::add);
+		}
+		return complexities.parallelStream().reduce((c1, c2) ->
+				new Complexity() {
+			@Override
+			public Halstead getHalstead() {
+				return new Halstead() {
+					@Override
+					public int getn1() {
+						return c1.getHalstead().getn1() +
+								c2.getHalstead().getn1();
+					}
+
+					@Override
+					public int getn2() {
+						return c1.getHalstead().getn2() +
+								c2.getHalstead().getn2();
+					}
+
+					@Override
+					public int getN1() {
+						return c1.getHalstead().getN1() +
+								c2.getHalstead().getN1();
+					}
+
+					@Override
+					public int getN2() {
+						return c1.getHalstead().getN2() +
+								c2.getHalstead().getN2();
+					}
+				};
+			}
+
+			@Override
+			public int getMcCabe() {
+				return c1.getMcCabe() + c2.getMcCabe();
+			}
+		}).orElse(new Complexity() {
+			@Override
+			public Halstead getHalstead() {
+				return new Halstead() {
+					@Override
+					public int getn1() {
+						return 0;
+					}
+
+					@Override
+					public int getn2() {
+						return 0;
+					}
+
+					@Override
+					public int getN1() {
+						return 0;
+					}
+
+					@Override
+					public int getN2() {
+						return 0;
+					}
+				};
+			}
+
+			@Override
+			public int getMcCabe() {
+				return 0;
+			}
+		});
+	}
 }
