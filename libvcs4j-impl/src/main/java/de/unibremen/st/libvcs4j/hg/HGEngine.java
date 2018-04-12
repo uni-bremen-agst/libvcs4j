@@ -70,18 +70,14 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 				"Since (%s) after until (%s)", pSince, pUntil);
 	}
 
-	public HGEngine(final String pRepository, final String pRoot,
-					final Path pTarget, final String pFrom, final String pTo)
-			throws NullPointerException {
+	public HGEngine(
+			final String pRepository, final String pRoot, final Path pTarget,
+			final String pFrom, final String pTo) throws NullPointerException {
 		super(parseAndValidateRepository(pRepository),
 				parseAndValidateRoot(pRoot),
 				parseAndValidateTarget(pTarget),
 				parseAndValidateRevision(pFrom),
 				parseAndValidateRevision(pTo));
-		final int from = Integer.parseInt(pFrom);
-		final int to = Integer.parseInt(pTo);
-		IllegalIntervalException.isTrue(from <= to,
-				"From (%s) > to (%s)", from, to);
 	}
 
 	///////////////////////// Parsing and validation //////////////////////////
@@ -126,18 +122,13 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	}
 
 	private static String parseAndValidateRevision(final String pRevision) {
-		Validate.notEmpty(pRevision);
-		try {
-			int revision = Integer.parseInt(pRevision);
-			if (revision < 0) {
-				log.debug("Mapping revision {} to {}", revision, 0);
-				revision = 0;
-			}
-			return String.valueOf(revision);
-		} catch (final NumberFormatException e) {
-			IllegalIntervalException.isTrue(false,
-					"'%s' is not a valid mercurial revision", pRevision);
-			return null; // just for the compiler
+		if (pRevision == null) {
+			// Will be mapped to first/last revision.
+			return "";
+		} else {
+			IllegalIntervalException.isTrue(!pRevision.isEmpty(),
+					"Unsupported revision value");
+			return pRevision;
 		}
 	}
 
@@ -266,14 +257,16 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 		final String until = formatter.format(pUntil);
 		final String date = since + " to " + until;
 
+		// Keep in mind that 'hg log' returns changesets in the following
+		// order: [n, n-1, ..., 0] (or corresponding changeset id)
+
 		final List<String> revisions;
 		try {
 			revisions = LogCommandFlags.on(repository)
 					.date(date)
-					.execute()
+					.execute(getRoot())
 					.stream()
-					.map(Changeset::getRevision)
-					.map(String::valueOf)
+					.map(Changeset::getNode)
 					.collect(Collectors.toList());
 		} catch (final RuntimeException e) {
 			throw new IOException(e);
@@ -289,19 +282,42 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 			throws IOException {
 		Validate.validState(repository != null);
 
-		final List<String> revisions;
+		// Keep in mind that 'hg log' returns changesets in the following
+		// order: [n, n-1, ..., 0] (or corresponding changeset id)
+
+		final List<String> revisions = new ArrayList<>();
 		try {
-			revisions = LogCommandFlags.on(repository)
+			// If `pToRev` is empty, we assume latest changeset.
+			boolean include = pToRev.isEmpty();
+			List<Changeset> changesets = LogCommandFlags
+					.on(repository)
 					.rev(pFromRev, pToRev)
-					.execute()
-					.stream()
-					.map(Changeset::getRevision)
-					.map(String::valueOf)
-					.collect(Collectors.toList());
+					.execute(getRoot());
+			// The following code does not fail if `pFromRev` > `pToRev`, but
+			// the resulting list will be empty.
+			for (final Changeset cs : changesets) {
+				final String revNumber = String.valueOf(cs.getRevision());
+				final String revId = cs.getNode();
+				if (!include && (
+						// changeset number
+						// https://www.mercurial-scm.org/wiki/RevisionNumber
+						revNumber.equals(pToRev)
+						// changeset id
+						// https://www.mercurial-scm.org/wiki/ChangeSetID
+						|| revId.equals(pToRev))) {
+					include = true;
+				}
+				if (include) {
+					revisions.add(revId);
+				}
+				// Likewise, compare number and id.
+				if (revNumber.equals(pFromRev) || revId.equals(pFromRev)) {
+					break;
+				}
+			}
 		} catch (final RuntimeException e) {
 			throw new IOException(e);
 		}
-
 		Collections.reverse(revisions);
 		return revisions;
 	}

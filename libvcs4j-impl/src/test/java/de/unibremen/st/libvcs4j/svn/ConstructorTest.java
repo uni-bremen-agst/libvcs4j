@@ -13,7 +13,6 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static de.unibremen.st.libvcs4j.svn.SVNEngine.MINIMUM_DATETIME;
 import static org.junit.Assert.assertEquals;
 
 @SuppressWarnings("deprecation")
@@ -36,7 +35,6 @@ public class ConstructorTest extends VCSBaseTest {
 						.of(input.toString())
 						.withSVN()
 						.build();
-		assertEquals(MINIMUM_DATETIME, engine.getSince());
 		assertEquals("", engine.getRoot());
 		assertEquals(64, engine.listRevisions().size());
 	}
@@ -128,14 +126,14 @@ public class ConstructorTest extends VCSBaseTest {
 	}
 
 	@Test
-	public void toBeforeFrom() {
-		thrown.expect(IllegalIntervalException.class);
-		new SVNEngine(
+	public void toBeforeFrom() throws IOException {
+		SVNEngine engine = new SVNEngine(
 				"file://" + input.toString(),
 				"",
 				output,
 				"100",
 				"1");
+		assertEquals(0, engine.listRevisions().size());
 	}
 
 	@Test
@@ -161,7 +159,6 @@ public class ConstructorTest extends VCSBaseTest {
                 output,
                 LocalDateTime.of(1900, 1, 1, 0, 0),
                 LocalDateTime.of(3000, 1, 1, 0, 0));
-		assertEquals(MINIMUM_DATETIME, provider.getSince());
 		assertEquals(64, provider.listRevisions().size());
 	}
 

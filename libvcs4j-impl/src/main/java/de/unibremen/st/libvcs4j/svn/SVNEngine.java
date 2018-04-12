@@ -39,8 +39,6 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-import static org.apache.commons.lang3.Validate.notNull;
-
 /**
  * An {@link VCSEngine} that is supposed to extract file changes from SVN
  * repositories.
@@ -96,10 +94,6 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 				parseAndValidateTarget(pTarget),
 				parseAndValidateRevision(pFrom),
 				parseAndValidateRevision(pTo));
-		final int from = Integer.parseInt(pFrom);
-		final int to = Integer.parseInt(pTo);
-		IllegalIntervalException.isTrue(from <= to,
-				"From (%s) > to (%s)", from, to);
 	}
 
 	///////////////////////// Parsing and validation //////////////////////////
@@ -146,7 +140,10 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 	}
 
 	private static String parseAndValidateRevision(final String pRevision) {
-		Validate.notNull(pRevision);
+		if (pRevision == null) {
+			// Will be mapped to first/last revision.
+			return "";
+		}
 		try {
 			int revision = Integer.parseInt(pRevision);
 			if (revision < 1) {
@@ -171,17 +168,8 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 	}
 
 	private String toSVNPath(final String pPath) {
-		notNull(pPath);
-		if (pPath.isEmpty()) {
-			return getInput();
-		}
-		// '\' (Windows file separator) is not supported by SVNKit.
-		String path = pPath.replace("\\", "/");
-		// Remove trailing '/'.
-		if (path.endsWith("/")) {
-			path = path.substring(0, path.length() - 1);
-		}
-		return getInput() + "/" + path;
+		Validate.notNull(pPath);
+		return normalizePath(getInput() + "/" + pPath);
 	}
 
 	private String toAbsolutePath(final String pPath) {
@@ -202,6 +190,38 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 
 	private File createTargetFile() {
 		return getTarget().toFile();
+	}
+
+	private List<String> listRevisions(
+			final SVNRevision from, final SVNRevision to) throws IOException {
+		final SvnOperationFactory factory = new SvnOperationFactory();
+		final List<String> revs = new ArrayList<>();
+		try {
+			final SVNURL inputUrl = createSVNURL(getInput());
+			final SvnTarget input = SvnTarget.fromURL(inputUrl);
+			final SvnLog log = factory.createLog();
+			log.addRange(SvnRevisionRange.create(from, to));
+			log.setSingleTarget(input);
+			log.setReceiver((__, entry) -> {
+				if (entry.getRevision() != 0) {
+					revs.add(String.valueOf(entry.getRevision()));
+				}
+			});
+			log.run();
+		} catch (final SVNException e) {
+			// Avoid file not found exception which is thrown if there is not
+			// a single revision for `root` available. Return an empty
+			// collection instead.
+			if (e.getErrorMessage()
+					.getErrorCode()
+					.getCode() == 160013) {
+				return Collections.emptyList();
+			}
+			throw new IOException(e);
+		} finally {
+			factory.dispose();
+		}
+		return revs;
 	}
 
 	///////////////////////////////////////////////////////////////////////////
@@ -278,38 +298,9 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 	protected List<String> listRevisionsImpl(
 			final LocalDateTime pSince, final LocalDateTime pUntil)
 			throws IOException {
-		final SvnOperationFactory factory = new SvnOperationFactory();
-
-		final List<String> revs = new ArrayList<>();
-		try {
-			final SVNRevision since = createSVNRevision(pSince);
-			final SVNRevision until = createSVNRevision(pUntil);
-			final SvnTarget input = SvnTarget.fromURL(
-					createSVNURL(getInput()));
-
-			final SvnLog log = factory.createLog();
-			log.addRange(SvnRevisionRange.create(since, until));
-			log.setSingleTarget(input);
-			log.setReceiver((__, entry) -> {
-				if (entry.getRevision() != 0) {
-					revs.add(String.valueOf(entry.getRevision()));
-				}
-			});
-			log.run();
-		} catch (final SVNException e) {
-			// Avoid file not found exception which is thrown if there is not
-			// a single revision for `root`. Return an empty collection of
-			// revisions instead.
-			if (e.getErrorMessage()
-					.getErrorCode()
-					.getCode() == 160013) {
-				return Collections.emptyList();
-			}
-			throw new IOException(e);
-		} finally {
-			factory.dispose();
-		}
-		return revs;
+		final SVNRevision since = createSVNRevision(pSince);
+		final SVNRevision until = createSVNRevision(pUntil);
+		return listRevisions(since, until);
 	}
 
 	@Override
@@ -324,31 +315,16 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 			throw new IOException(e);
 		}
 
-		final SvnOperationFactory factory = new SvnOperationFactory();
-
-		final List<String> revs = new ArrayList<>();
-		try {
-			final SVNRevision from = createSVNRevision(pFrom);
-			final SVNRevision to = createSVNRevision(String.valueOf(
-					Math.min(Long.parseLong(pTo), head)));
-			final SvnTarget input = SvnTarget.fromURL(
-					createSVNURL(getInput()));
-
-			final SvnLog log = factory.createLog();
-			log.addRange(SvnRevisionRange.create(from, to));
-			log.setSingleTarget(input);
-			log.setReceiver((__, entry) -> {
-				if (entry.getRevision() != 0) {
-					revs.add(String.valueOf(entry.getRevision()));
-				}
-			});
-			log.run();
-		} catch (final SVNException e) {
-			throw new IOException(e);
-		} finally {
-			factory.dispose();
+		final long from = pFrom.isEmpty() ? 1 : Long.parseLong(pFrom);
+		long to = pTo.isEmpty() ? head : Long.parseLong(pTo);
+		to = Math.min(to, head);
+		if (from > to) {
+			return Collections.emptyList();
 		}
-		return revs;
+
+		final SVNRevision fromRev = createSVNRevision(String.valueOf(from));
+		final SVNRevision toRev = createSVNRevision(String.valueOf(to));
+		return listRevisions(fromRev, toRev);
 	}
 
 	@Override

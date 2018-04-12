@@ -48,31 +48,15 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 		since = until = null;
 		from = Validate.notNull(pFrom);
 		to = Validate.notNull(pTo);
-		// we can not validate if from <= to because this requires a method
-		// call to a not (yet) fully available subclass instance
+		// We can not validate if from <= to because this requires a method
+		// call to a not (yet) fully available subclass instance.
 	}
 
-	public LocalDateTime getSince() {
-		return since;
-	}
-
-	public LocalDateTime getUntil() {
-		return until;
-	}
-
-	public String getFrom() {
-		return from;
-	}
-
-	public String getTo() {
-		return to;
-	}
-
-	public boolean isDateTimeInterval() {
+	boolean isDateTimeInterval() {
 		return since != null;
 	}
 
-	public boolean isRevisionInterval() {
+	boolean isRevisionInterval() {
 		return from != null;
 	}
 

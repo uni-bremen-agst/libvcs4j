@@ -1,6 +1,7 @@
 package de.unibremen.st.libvcs4j.git;
 
 import de.unibremen.st.libvcs4j.data.CommitImpl;
+import de.unibremen.st.libvcs4j.exception.IllegalIntervalException;
 import de.unibremen.st.libvcs4j.exception.IllegalRepositoryException;
 import de.unibremen.st.libvcs4j.exception.IllegalTargetException;
 import de.unibremen.st.libvcs4j.engine.AbstractIntervalVCSEngine;
@@ -97,8 +98,8 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 		super(parseRepository(pRepository),
 				parseRoot(pRoot),
 				parseAndValidateTarget(pTarget),
-				Validate.notEmpty(pFrom),
-				Validate.notEmpty(pTo));
+				parseAndValidateRevision(pFrom),
+				parseAndValidateRevision(pTo));
 		branch = Validate.notEmpty(pBranch);
 	}
 
@@ -146,11 +147,22 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 				: pDatetime;
 	}
 
+	private static String parseAndValidateRevision(final String pRevision) {
+		if (pRevision == null) {
+			// Will be mapped to first/last revision.
+			return "";
+		} else {
+			IllegalIntervalException.isTrue(!pRevision.isEmpty(),
+					"Unsupported revision hash");
+			return pRevision;
+		}
+	}
+
 	////////////////////////////////// Utils //////////////////////////////////
 
 	private LogCommand addRootPath(final LogCommand pLogCmd) {
 		if (!getRoot().isEmpty()) {
-			pLogCmd.addPath(getRoot().replace(File.separator, "/"));
+			pLogCmd.addPath(getRoot());
 		}
 		return pLogCmd;
 	}
@@ -278,10 +290,12 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 		final Date since = toDate(pSince);
 		final Date until = toDate(pUntil);
 
+		// Keep in mind that 'git log' returns commits in the following
+		// order: [HEAD, HEAD^1, ..., initial]
+
 		final List<String> revs = new ArrayList<>();
 		try {
-			final LogCommand logCmd = openRepository()
-					.log();
+			final LogCommand logCmd = openRepository().log();
 			addRootPath(logCmd)
 					.call()
 					.forEach(rv -> {
@@ -302,17 +316,30 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	@Override
 	protected List<String> listRevisionsImpl(
 			final String pFrom, final String pTo) throws IOException {
-		final AnyObjectId from = createId(pFrom);
-		final AnyObjectId to = createId(pTo);
+		// Keep in mind that 'git log' returns commits in the following
+		// order: [HEAD, HEAD^1, ..., initial]
 
 		final List<String> revs = new ArrayList<>();
 		try {
-			final LogCommand logCmd = openRepository()
-					.log()
-					.addRange(from, to);
-			addRootPath(logCmd)
-					.call()
-					.forEach(rv -> revs.add(rv.getName()));
+			final LogCommand logCmd = openRepository().log();
+			addRootPath(logCmd);
+
+			// The following code does not fail if `pFrom` > `pTo`, but the
+			// resulting list will be empty.
+
+			// If `pTo` is empty, we assume HEAD.
+			boolean include = pTo.isEmpty();
+			for (final RevCommit rv : logCmd.call()) {
+				if (!include && rv.getName().equals(pTo)) {
+					include = true;
+				}
+				if (include) {
+					revs.add(rv.getName());
+				}
+				if (rv.getName().equals(pFrom)) {
+					break;
+				}
+			}
 		} catch (NoHeadException e) {
 			return Collections.emptyList();
 		} catch (final GitAPIException e) {
