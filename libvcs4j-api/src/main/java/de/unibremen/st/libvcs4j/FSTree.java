@@ -2,7 +2,16 @@ package de.unibremen.st.libvcs4j;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Allows to represent a collection of {@link VCSFile} instances as a file
@@ -10,6 +19,29 @@ import java.util.*;
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class FSTree {
+
+	public static class Visitor {
+
+		public void visit(final FSTree pTree) {
+			if (pTree.nodes != null) {
+				visitDirectory(pTree);
+			} else {
+				visitFile(pTree);
+			}
+		}
+
+		protected void visitDirectory(final FSTree pTree) {
+			pTree.nodes.forEach(this::visit);
+		}
+
+		protected void visitFile(final FSTree pTree) {
+		}
+	}
+
+	/**
+	 * The parent of this tree. Is {@code null} for the root node.
+	 */
+	private final FSTree parent;
 
 	/**
 	 * The relative path (relative to {@link VCSEngine#getRoot()}) of the
@@ -19,8 +51,7 @@ public class FSTree {
 	private final String path;
 
 	/**
-	 * Path of the referenced file. Is {@code null} if {@link #nodes} is
-	 * present.
+	 * The referenced file. Is {@code null} if {@link #nodes} is present.
 	 */
 	private VCSFile file = null;
 
@@ -38,11 +69,9 @@ public class FSTree {
 	 * @throws NullPointerException
 	 *      If {@code pPath} is {@code null}.
 	 */
-	private FSTree(final String pPath) {
-		if (pPath == null) {
-			throw new NullPointerException();
-		}
-		path = pPath;
+	private FSTree(final FSTree pParent, final String pPath) {
+		parent = pParent;
+		path = Objects.requireNonNull(pPath);
 	}
 
 	/**
@@ -64,7 +93,7 @@ public class FSTree {
 			throw new IllegalArgumentException();
 		}
 
-		final Set<FSTree> dirsWithoutParent = new HashSet<>();
+		final Set<FSTree> treesWithoutParent = new HashSet<>();
 		final Map<String, FSTree> cache = new HashMap<>();
 		pFiles.forEach(f -> {
 			// (1) "home/user/file.txt" -> "home", "user", "file.txt"
@@ -74,47 +103,59 @@ public class FSTree {
 			// (2) For each directory ("home", "user")...
 			FSTree parent = null;
 			for (int i = 0; i < parts.size() - 1; i++) {
-				String path = String.join(File.separator,
-						parts.subList(0, i + 1));
+				final String path = String.join(
+						File.separator, parts.subList(0, i + 1));
 				FSTree dir = cache.get(path);
 				if (dir == null) {
-					dir = new FSTree(path);
+					dir = new FSTree(parent, path);
+					dir.nodes = new ArrayList<>();
 					cache.put(path, dir);
 					if (parent != null) {
-						if (parent.nodes == null) {
-							parent.nodes = new ArrayList<>();
-						}
 						parent.nodes.add(dir);
 					}
 				}
 				if (parent == null) {
-					dirsWithoutParent.add(dir);
+					treesWithoutParent.add(dir);
 				}
 				parent = dir;
 			}
 
 			// (3) Add file ("file.txt").
-			final FSTree file = cache.computeIfAbsent(
-					f.getRelativePath(), FSTree::new);
-			file.file = f;
-			if (parent != null) {
-				if (parent.nodes == null) {
-					parent.nodes = new ArrayList<>();
+			final String path = String.join(File.separator, parts);
+			FSTree file = cache.get(path);
+			if (file == null) {
+				file = new FSTree(parent, path);
+				cache.put(path, file);
+				if (parent != null) {
+					parent.nodes.add(file);
 				}
-				parent.nodes.add(file);
+			}
+			file.file = f;
+			if (parent == null) {
+				treesWithoutParent.add(file);
 			}
 		});
 
-		if (dirsWithoutParent.isEmpty()) {
-			return new FSTree("");
-		} else if (dirsWithoutParent.size() > 1) {
-			final FSTree root = new FSTree("/");
+		if (treesWithoutParent.isEmpty()) {
+			return new FSTree(null, "");
+		} else if (treesWithoutParent.size() > 1) {
+			final FSTree root = new FSTree(null, "/");
 			root.nodes = new ArrayList<>();
-			root.nodes.addAll(dirsWithoutParent);
+			root.nodes.addAll(treesWithoutParent);
 			return root;
 		} else {
-			return dirsWithoutParent.iterator().next();
+			return treesWithoutParent.iterator().next();
 		}
+	}
+
+	/**
+	 * Returns the parent of this tree.
+	 *
+	 * @return
+	 * 		The parent of this tree.
+	 */
+	public Optional<FSTree> getParent() {
+		return Optional.ofNullable(parent);
 	}
 
 	/**
@@ -153,6 +194,52 @@ public class FSTree {
 	}
 
 	/**
+	 * Returns the root of this tree.
+	 *
+	 * @return
+	 * 		The root of this tree.
+	 */
+	public FSTree getRoot() {
+		FSTree root = this;
+		while (root.getParent().isPresent()) {
+			root = root.getParent().get();
+		}
+		return root;
+	}
+
+	/**
+	 * Returns whether this tree is a file.
+	 *
+	 * @return
+	 * 		{@code true} if this tree is a file, {@code false} otherwise.
+	 */
+	public boolean isFile() {
+		return file != null;
+	}
+
+	/**
+	 * Returns whether this tree is a directory.
+	 *
+	 * @return
+	 * 		{@code true} if this tree is a directory, {@code false} otherwise.
+	 */
+	public boolean isDirectory() {
+		return file == null;
+	}
+
+	/**
+	 * Returns whether this tree is a virtual root directory that has been
+	 * created to cover multiple actual roots.
+	 *
+	 * @return
+	 * 		{@code true} if this tree is a virtual root directory,
+	 * 		{@code false} otherwise.
+	 */
+	public boolean isVirtualRoot() {
+		return path.isEmpty() || path.equals("/");
+	}
+
+	/**
 	 * Returns all files of this tree in pre-order.
 	 *
 	 * @return
@@ -160,7 +247,7 @@ public class FSTree {
 	 */
 	public List<VCSFile> getFilesPreOrder() {
 		final List<VCSFile> files = new ArrayList<>();
-		getFilesPreOrder(files, true);
+		getFiles(files, true);
 		return files;
 	}
 
@@ -172,18 +259,18 @@ public class FSTree {
 	 */
 	public List<VCSFile> getFilesPostOrder() {
 		final List<VCSFile> files = new ArrayList<>();
-		getFilesPreOrder(files, false);
+		getFiles(files, false);
 		return files;
 	}
 
-	private void getFilesPreOrder(
+	private void getFiles(
 			final List<VCSFile> pAccumulator,
 			final boolean pPreOrder) {
 		if (pPreOrder && file != null) {
 			pAccumulator.add(file);
 		}
 		if (nodes != null) {
-			nodes.forEach(n -> n.getFilesPreOrder(pAccumulator, pPreOrder));
+			nodes.forEach(n -> n.getFiles(pAccumulator, pPreOrder));
 		}
 		if (!pPreOrder && file != null) {
 			pAccumulator.add(file);
@@ -196,7 +283,7 @@ public class FSTree {
 	 * @return
 	 *      The aggregated size of all files of this tree.
 	 * @throws IOException
-	 *      Of any of the processed files throws an {@link IOException} (see
+	 *      If any of the processed files throws an {@link IOException} (see
 	 *      {@link VCSFile#computeSize()}).
 	 */
 	public Size computeSize() throws IOException {
@@ -268,6 +355,15 @@ public class FSTree {
 		});
 	}
 
+	/**
+	 * Aggregates and returns the complexity of all files of this tree.
+	 *
+	 * @return
+	 * 		The aggregated complexity of all files of this tree.
+	 * @throws IOException
+	 * 		If any of the processed files throws an {@link IOException} (see
+	 *      {@link VCSFile#computeSize()}).
+	 */
 	public Complexity computeComplexity() throws IOException {
 		final List<Complexity> complexities = new ArrayList<>();
 		for (final VCSFile file : getFilesPreOrder()) {
