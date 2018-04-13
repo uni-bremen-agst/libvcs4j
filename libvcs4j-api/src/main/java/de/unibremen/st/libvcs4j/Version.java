@@ -7,6 +7,7 @@ import java.util.Deque;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static de.unibremen.st.libvcs4j.FileChange.Type.*;
@@ -26,6 +27,16 @@ import static de.unibremen.st.libvcs4j.FileChange.Type.*;
  */
 @SuppressWarnings("unused")
 public interface Version {
+
+	/**
+	 * Returns the ordinal of this version. Ordinals are used to identify
+	 * individual versions with a serial number when processing a VCS. The
+	 * origin is 0.
+	 *
+	 * @return
+	 * 		The ordinal of this version (>= 0).
+	 */
+	int getOrdinal();
 
 	/**
 	 * Returns the "to" {@link Revision} the file changes of this version
@@ -49,14 +60,26 @@ public interface Version {
 	Optional<Revision> getPredecessorRevision();
 
 	/**
-	 * Returns the commits that have been applied to change from
-	 * {@link #getPredecessorRevision()} to {@link #getRevision()}. Contains at
-	 * least one commit.
+	 * Returns the commits that have been applied to
+	 * {@link #getPredecessorRevision()} so that {@link #getRevision()} results
+	 * from it. The order of the returned list is from oldest to latest.
+	 * Contains at least one commit.
 	 *
 	 * @return
 	 * 		The list of commits.
 	 */
 	List<Commit> getCommits();
+
+	/**
+	 * Returns the latest commit of {@link #getCommits()}.
+	 *
+	 * @return
+	 * 		The latest commit of {@link #getCommits()}.
+	 */
+	default Commit getLatestCommit() {
+		final List<Commit> commits = getCommits();
+		return commits.get(commits.size() - 1);
+	}
 
 	/**
 	 * Returns all files that have changed between
@@ -172,6 +195,68 @@ public interface Version {
 	}
 
 	/**
+	 * Returns all files that have been added.
+	 *
+	 * @return
+	 * 		All files that have been added.
+	 */
+	default List<FileChange> getAddedFiles() {
+		return getFileChanges().stream()
+				.filter(fc -> fc.getType() == ADD)
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Returns all files that have been removed.
+	 *
+	 * @return
+	 * 		All files that have been removed.
+	 */
+	default List<FileChange> getRemovedFiles() {
+		return getFileChanges().stream()
+				.filter(fc -> fc.getType() == REMOVE)
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Returns all files that have been modified.
+	 *
+	 * @return
+	 * 		All files that have been modified.
+	 */
+	default List<FileChange> getModifiedFiles() {
+		return getFileChanges().stream()
+				.filter(fc -> fc.getType() == MODIFY)
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Returns all files that have been relocated.
+	 *
+	 * @return
+	 * 		All files that have been relocated.
+	 */
+	default List<FileChange> getRelocatedFiles() {
+		return getFileChanges().stream()
+				.filter(fc -> fc.getType() == RELOCATE)
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Returns all files that have been added, modified, or relocated. This
+	 * method is in particular useful when processing file changes providing a
+	 * new file ({@link FileChange#getNewFile()}).
+	 *
+	 * @return
+	 * 		All files that have been added, modified, or relocated.
+	 */
+	default List<FileChange> getOutdatedFiles() {
+		return getFileChanges().stream()
+				.filter(fc -> fc.getType() != REMOVE)
+				.collect(Collectors.toList());
+	}
+
+	/**
 	 * Filters the list of file changes returned by {@link #getFileChanges()}
 	 * and returns only those whose old or the new relative file path ends with
 	 * {@code suffix}.
@@ -247,5 +332,29 @@ public interface Version {
 	 */
 	default boolean isFirst() {
 		return !getPredecessorRevision().isPresent();
+	}
+
+	/**
+	 * Runs the given action if this version is the first one.
+	 *
+	 * @param action
+	 * 		The action to run if this is the first version.
+	 */
+	default void ifFirst(final Consumer<Version> action) {
+		if (isFirst()) {
+			action.accept(this);
+		}
+	}
+
+	/**
+	 * Runs the given action if this version is not the first one.
+	 *
+	 * @param action
+	 * 		The action to run if this is not the first version.
+	 */
+	default void ifNotFirst(final Consumer<Version> action) {
+		if (!isFirst()) {
+			action.accept(this);
+		}
 	}
 }

@@ -55,6 +55,7 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 
 	private ITEngine itEngine = null;
 
+	private int ordinal = 0;
 	private boolean initialized = false;
 	private List<String> revisions = null;
 	private int revisionIdx = -1;
@@ -344,6 +345,7 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 	private Version createVersion(final Changes pChanges) throws IOException {
 		final Revision rev = createRevision();
 		final VersionImpl version = new VersionImpl();
+		version.setOrdinal(ordinal++);
 		version.setRevision(rev);
 		version.setPredecessorRevision(currentRevision);
 

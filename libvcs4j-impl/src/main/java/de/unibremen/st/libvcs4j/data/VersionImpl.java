@@ -14,9 +14,20 @@ import java.util.Optional;
  */
 public class VersionImpl implements Version {
 
+	private int ordinal = 0;
 	private Revision revision;
 	private Revision predecessorRevision;
 	private List<Commit> commits;
+
+	@Override
+	public int getOrdinal() {
+		return ordinal;
+	}
+
+	public void setOrdinal(final int pOrdinal) {
+		Validate.isTrue(pOrdinal >= 0, "%d < 0", pOrdinal);
+		ordinal = pOrdinal;
+	}
 
 	@Override
 	public Revision getRevision() {

@@ -97,4 +97,25 @@ public interface FileChange {
 	default List<LineChange> computeDiff() throws IOException {
 		return getEngine().computeDiff(this);
 	}
+
+	/**
+	 * Returns the delta of the changed lines. A positive value indicates that
+	 * more lines have been inserted than deleted, whereas a negative value
+	 * indicates that more lines have been deleted than inserted. 0 indicates
+	 * that an equal amount of lines have been inserted and deleted.
+	 *
+	 * @return
+	 * 		The delta of the changed lines.
+	 * @throws IOException
+	 * 		If an occurred while computing the diff.
+	 */
+	default int computeLineDelta() throws IOException {
+		final List<LineChange> changes = computeDiff();
+		int delta = 0;
+		for (final LineChange c : changes) {
+			delta = c.getType() == LineChange.Type.INSERT
+					? delta + 1 : delta - 1;
+		}
+		return delta;
+	}
 }
