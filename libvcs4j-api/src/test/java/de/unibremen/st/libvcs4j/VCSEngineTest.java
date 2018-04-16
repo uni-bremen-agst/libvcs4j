@@ -24,7 +24,7 @@ public class VCSEngineTest {
 				return Paths.get(p).toAbsolutePath();
 			}
 		};
-		Assert.assertEquals(11, vp.listFilesInOutput().size());
+		Assert.assertEquals(12, vp.listFilesInOutput().size());
 	}
 
 	@Test
@@ -36,7 +36,7 @@ public class VCSEngineTest {
 				return Paths.get(p).toAbsolutePath();
 			}
 		};
-		Assert.assertEquals(11, vp.listFilesInOutput().size());
+		Assert.assertEquals(12, vp.listFilesInOutput().size());
 	}
 
 	@Test
@@ -76,7 +76,7 @@ public class VCSEngineTest {
 				return (dir, name) -> !name.startsWith("Version");
 			}
 		};
-		Assert.assertEquals(10, vp.listFilesInOutput().size());
+		Assert.assertEquals(11, vp.listFilesInOutput().size());
 	}
 
 	@Test

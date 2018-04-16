@@ -19,6 +19,11 @@ public class VersionTest {
         }
 
         @Override
+        public int getOrdinal() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public Revision getRevision() {
             throw new UnsupportedOperationException();
         }
