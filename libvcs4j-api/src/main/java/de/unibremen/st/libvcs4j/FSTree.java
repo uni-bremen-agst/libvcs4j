@@ -20,21 +20,46 @@ import java.util.Set;
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class FSTree {
 
+	/**
+	 * A simple visitor to process {@link FSTree} instances.
+	 */
 	public static class Visitor {
 
+		/**
+		 * Delegates {@code pTree} to {@link #visitDirectory(FSTree)} or
+		 * {@link #visitFile(FSTree, VCSFile)} depending on whether
+		 * {@code pTree} represents a directory or a file.
+		 *
+		 * @param pTree
+		 * 		The tree to visit and delegate.
+		 */
 		public void visit(final FSTree pTree) {
 			if (pTree.nodes != null) {
 				visitDirectory(pTree);
 			} else {
-				visitFile(pTree);
+				visitFile(pTree, pTree.file);
 			}
 		}
 
-		protected void visitDirectory(final FSTree pTree) {
-			pTree.nodes.forEach(this::visit);
+		/**
+		 * Visits the given directory.
+		 *
+		 * @param pDirectory
+		 * 		The directory to visit.
+		 */
+		protected void visitDirectory(final FSTree pDirectory) {
+			pDirectory.nodes.forEach(this::visit);
 		}
 
-		protected void visitFile(final FSTree pTree) {
+		/**
+		 * Visits the given file.
+		 *
+		 * @param pTree
+		 * 		The tree containing {@code pFile}.
+		 * @param pFile
+		 * 		The file to visit.
+		 */
+		protected void visitFile(final FSTree pTree, final VCSFile pFile) {
 		}
 	}
 
@@ -181,6 +206,25 @@ public class FSTree {
 	}
 
 	/**
+	 * Returns all files of this tree.
+	 *
+	 * @return
+	 * 		All files of this tree.
+	 */
+	public List<VCSFile> getFiles() {
+		final List<VCSFile> files = new ArrayList<>();
+		final Visitor visitor = new Visitor() {
+			@Override
+			protected void visitFile(final FSTree pTree, final VCSFile pFile) {
+				files.add(pFile);
+				super.visitFile(pTree, pFile);
+			}
+		};
+		visitor.visit(this);
+		return files;
+	}
+
+	/**
 	 * Returns the sub files and directories if this tree is a directory. If
 	 * this tree is a file, an empty list is returned.
 	 *
@@ -240,44 +284,6 @@ public class FSTree {
 	}
 
 	/**
-	 * Returns all files of this tree in pre-order.
-	 *
-	 * @return
-	 *      All files of this tree in pre-order.
-	 */
-	public List<VCSFile> getFilesPreOrder() {
-		final List<VCSFile> files = new ArrayList<>();
-		getFiles(files, true);
-		return files;
-	}
-
-	/**
-	 * Returns all files of this tree in post-order.
-	 *
-	 * @return
-	 *      All files of this tree in post-order.
-	 */
-	public List<VCSFile> getFilesPostOrder() {
-		final List<VCSFile> files = new ArrayList<>();
-		getFiles(files, false);
-		return files;
-	}
-
-	private void getFiles(
-			final List<VCSFile> pAccumulator,
-			final boolean pPreOrder) {
-		if (pPreOrder && file != null) {
-			pAccumulator.add(file);
-		}
-		if (nodes != null) {
-			nodes.forEach(n -> n.getFiles(pAccumulator, pPreOrder));
-		}
-		if (!pPreOrder && file != null) {
-			pAccumulator.add(file);
-		}
-	}
-
-	/**
 	 * Aggregates and returns the size of all files of this tree.
 	 *
 	 * @return
@@ -288,7 +294,7 @@ public class FSTree {
 	 */
 	public Size computeSize() throws IOException {
 		final List<Size> sizes = new ArrayList<>();
-		for (final VCSFile file : getFilesPreOrder()) {
+		for (final VCSFile file : getFiles()) {
 			final Optional<Size> size = file.computeSize();
 			size.ifPresent(sizes::add);
 		}
@@ -366,7 +372,7 @@ public class FSTree {
 	 */
 	public Complexity computeComplexity() throws IOException {
 		final List<Complexity> complexities = new ArrayList<>();
-		for (final VCSFile file : getFilesPreOrder()) {
+		for (final VCSFile file : getFiles()) {
 			final Optional<Complexity> complexity = file.computeComplexity();
 			complexity.ifPresent(complexities::add);
 		}
