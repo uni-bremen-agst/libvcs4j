@@ -87,8 +87,10 @@ public class FSTree {
 	private List<FSTree> nodes = null;
 
 	/**
-	 * Creates a FSTree with given relative path.
+	 * Creates a FSTree with given parent and relative path.
 	 *
+	 * @param pParent
+	 * 		The parent of the tree to create. Use {@code null} for root nodes.
 	 * @param pPath
 	 *      The relative path of the file or directory.
 	 * @throws NullPointerException
