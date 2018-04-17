@@ -344,15 +344,6 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 	}
 
 	@Override
-	protected List<String> listRevisionsImpl(
-			final int pStart, final int pEnd) throws IOException {
-		return listRevisionsImpl(
-				// SVN starts with revision 1.
-				String.valueOf(pStart),
-				String.valueOf(pEnd));
-	}
-
-	@Override
 	protected byte[] readAllBytesImpl(
 			final String pPath, final String pRevision) throws IOException {
 		final SvnOperationFactory factory = new SvnOperationFactory();

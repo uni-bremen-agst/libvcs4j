@@ -55,7 +55,7 @@ public class VCSEngineBuilder {
 
 	public static final LocalDateTime DEFAULT_UNTIL = LocalDateTime.now();
 
-	public final int DEFAULT_START = 1;
+	public final int DEFAULT_START = 0;
 
 	public final int DEFAULT_END = Integer.MAX_VALUE;
 
@@ -223,7 +223,7 @@ public class VCSEngineBuilder {
 	}
 
 	public VCSEngineBuilder withStart(final int pStart) {
-		start = Math.max(1, pStart);
+		start = Math.max(0, pStart);
 		interval = Interval.ORDINAL;
 		return this;
 	}

@@ -366,15 +366,6 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	}
 
 	@Override
-	protected List<String> listRevisionsImpl(
-			final int pStart, final int pEnd) throws IOException {
-		return listRevisionsImpl(
-				// Mercurial start with revision 0.
-				String.valueOf(pStart - 1),
-				String.valueOf(pEnd));
-	}
-
-	@Override
 	protected void initImpl() throws IOException {
 		Validate.validState(repository == null);
 		try {

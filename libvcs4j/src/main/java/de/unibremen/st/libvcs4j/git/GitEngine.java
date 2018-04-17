@@ -366,29 +366,6 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	}
 
 	@Override
-	protected List<String> listRevisionsImpl(
-			final int pStart, final int pEnd) throws IOException {
-		// Keep in mind that 'git log' returns commits in the following
-		// order: [HEAD, HEAD^1, ..., initial]
-
-		List<RevCommit> revs = new ArrayList<>();
-		try {
-			final LogCommand logCmd = openRepository().log();
-			addRootPath(logCmd).call().forEach(revs::add);
-			// Use 'pStart - 1' to map pStart from origin 1 to origin 0.
-			revs = revs.subList(pStart - 1, pEnd);
-		} catch (NoHeadException e) {
-			return Collections.emptyList();
-		} catch (final GitAPIException e) {
-			throw new IOException(e);
-		}
-		Collections.reverse(revs);
-		return revs.stream()
-				.map(RevCommit::getName)
-				.collect(Collectors.toList());
-	}
-
-	@Override
 	protected byte[] readAllBytesImpl(
 			final String pPath, final String pRevision) throws IOException {
 		final String path = Paths.get(getRoot(), pPath).toString();
