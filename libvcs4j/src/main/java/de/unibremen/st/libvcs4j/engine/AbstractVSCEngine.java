@@ -55,7 +55,7 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 
 	private ITEngine itEngine = null;
 
-	private int ordinal = 0;
+	private int ordinal = 1;
 	private boolean initialized = false;
 	private List<String> revisions = null;
 	private int revisionIdx = -1;

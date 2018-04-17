@@ -31,10 +31,10 @@ public interface Version {
 	/**
 	 * Returns the ordinal of this version. Ordinals are used to identify
 	 * individual versions with a serial number when processing a VCS. The
-	 * origin is 0.
+	 * origin is 1.
 	 *
 	 * @return
-	 * 		The ordinal of this version (>= 0).
+	 * 		The ordinal of this version (>= 1).
 	 */
 	int getOrdinal();
 
