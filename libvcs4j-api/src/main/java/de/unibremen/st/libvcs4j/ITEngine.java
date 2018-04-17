@@ -2,12 +2,15 @@ package de.unibremen.st.libvcs4j;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * This engine is supposed to extract issues from an issue tracker, such as
@@ -42,9 +45,8 @@ public interface ITEngine {
      * Returns all issues referenced by the given {@link Commit}. This method
      * does not fail if {@code commit} is {@code null}.
      *
-     * The default implementation delegates {@link Commit#getMessage()} to
-     * {@link #parseIssueIds(String)} and creates an issue instance for each
-     * id found using {@link #getIssueById(String)}.
+     * The default implementation delegates {@code commit} to
+     * {@link #getIssuesFor(List)}.
      *
      * @param commit
      *      The commit to parse.
@@ -54,14 +56,7 @@ public interface ITEngine {
      *      If an error occurred while retrieving an issue.
      */
     default List<Issue> getIssuesFor(final Commit commit) throws IOException {
-        final Map<String, Issue> issues = new HashMap<>();
-        if (commit != null) {
-            final List<String> ids = parseIssueIds(commit.getMessage());
-            for (final String id : ids) {
-                getIssueById(id).ifPresent(i -> issues.put(i.getId(), i));
-            }
-        }
-        return new ArrayList<>(issues.values());
+        return getIssuesFor(Collections.singletonList(commit));
     }
 
     /**
@@ -69,8 +64,9 @@ public interface ITEngine {
      * does not fail if {@code commits} is {@code null} or contains
      * {@code null} values.
      *
-     * The default implementation delegates each commit to
-     * {@link #getIssuesFor(Commit)} and collects the results.
+     * The default implementation parses the commit messages using
+     * {@link #parseIssueIds(String)} and creates an {@link Issue} instance for
+     * each id found using {@link #getIssueById(String)}.
      *
      * @param commits
      *      The commits to parse.
@@ -81,13 +77,15 @@ public interface ITEngine {
      */
     default List<Issue> getIssuesFor(final List<Commit> commits)
             throws IOException {
+        final List<String> ids =
+                (commits == null ? Collections.<Commit>emptyList() : commits)
+                .stream()
+                .filter(Objects::nonNull)
+                .map(Commit::getId)
+                .collect(Collectors.toList());
         final Map<String, Issue> issues = new HashMap<>();
-        if (commits != null) {
-            for (final Commit c : commits) {
-                if (c != null) {
-                    getIssuesFor(c).forEach(i -> issues.put(i.getId(), i));
-                }
-            }
+        for (final String id : ids) {
+            getIssueById(id).ifPresent(i -> issues.put(i.getId(), i));
         }
         return new ArrayList<>(issues.values());
     }
