@@ -96,6 +96,22 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 				parseAndValidateRevision(pTo));
 	}
 
+	/**
+	 * Use {@link de.unibremen.st.libvcs4j.VCSEngineBuilder} instead.
+	 */
+	@Deprecated
+	@SuppressWarnings("DeprecatedIsStillUsed")
+	public SVNEngine(
+			final String pRepository, final String pRoot, final Path pTarget,
+			final int pStart, int pEnd)
+			throws NullPointerException, IllegalIntervalException {
+		super(parseAndValidateRepository(pRepository),
+				parseAndValidateRoot(pRoot),
+				parseAndValidateTarget(pTarget),
+				pStart,
+				pEnd);
+	}
+
 	///////////////////////// Parsing and validation //////////////////////////
 
 	private static String parseAndValidateRepository(
@@ -325,6 +341,15 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 		final SVNRevision fromRev = createSVNRevision(String.valueOf(from));
 		final SVNRevision toRev = createSVNRevision(String.valueOf(to));
 		return listRevisions(fromRev, toRev);
+	}
+
+	@Override
+	protected List<String> listRevisionsImpl(
+			final int pStart, final int pEnd) throws IOException {
+		return listRevisionsImpl(
+				// SVN starts with revision 1.
+				String.valueOf(pStart),
+				String.valueOf(pEnd));
 	}
 
 	@Override

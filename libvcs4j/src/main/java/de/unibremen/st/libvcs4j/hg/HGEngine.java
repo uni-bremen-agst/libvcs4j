@@ -18,8 +18,6 @@ import de.unibremen.st.libvcs4j.exception.IllegalIntervalException;
 import de.unibremen.st.libvcs4j.exception.IllegalRepositoryException;
 import de.unibremen.st.libvcs4j.exception.IllegalTargetException;
 import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -49,8 +47,6 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 		LogManager.getLogManager().reset();
 	}
 
-	private static final Logger log = LoggerFactory.getLogger(HGEngine.class);
-
 	private static final Predicate<String> SUPPORTED_PROTOCOLS =
 			Pattern.compile("file://.*|http.*|https.*|ssh.*").asPredicate();
 
@@ -59,6 +55,11 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 
 	private Repository repository = null;
 
+	/**
+	 * Use {@link de.unibremen.st.libvcs4j.VCSEngineBuilder} instead.
+	 */
+	@Deprecated
+	@SuppressWarnings("DeprecatedIsStillUsed")
 	public HGEngine(
 			final String pRepository, final String pRoot, final Path pTarget,
 			final LocalDateTime pSince, final LocalDateTime pUntil)
@@ -72,6 +73,11 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 				"Since (%s) after until (%s)", pSince, pUntil);
 	}
 
+	/**
+	 * Use {@link de.unibremen.st.libvcs4j.VCSEngineBuilder} instead.
+	 */
+	@Deprecated
+	@SuppressWarnings("DeprecatedIsStillUsed")
 	public HGEngine(
 			final String pRepository, final String pRoot, final Path pTarget,
 			final String pFrom, final String pTo) throws NullPointerException {
@@ -80,6 +86,22 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 				parseAndValidateTarget(pTarget),
 				parseAndValidateRevision(pFrom),
 				parseAndValidateRevision(pTo));
+	}
+
+	/**
+	 * Use {@link de.unibremen.st.libvcs4j.VCSEngineBuilder} instead.
+	 */
+	@Deprecated
+	@SuppressWarnings("DeprecatedIsStillUsed")
+	public HGEngine(
+			final String pRepository, final String pRoot, final Path pTarget,
+			final int pStart, final int pEnd) throws NullPointerException,
+			IllegalIntervalException {
+		super(parseAndValidateRepository(pRepository),
+				parseAndValidateRoot(pRoot),
+				parseAndValidateTarget(pTarget),
+				pStart,
+				pEnd);
 	}
 
 	///////////////////////// Parsing and validation //////////////////////////
@@ -341,6 +363,15 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 		}
 		Collections.reverse(revisions);
 		return revisions;
+	}
+
+	@Override
+	protected List<String> listRevisionsImpl(
+			final int pStart, final int pEnd) throws IOException {
+		return listRevisionsImpl(
+				// Mercurial start with revision 0.
+				String.valueOf(pStart - 1),
+				String.valueOf(pEnd));
 	}
 
 	@Override

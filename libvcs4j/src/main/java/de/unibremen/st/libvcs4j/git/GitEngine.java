@@ -29,7 +29,6 @@ import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -100,6 +99,23 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 				parseAndValidateTarget(pTarget),
 				parseAndValidateRevision(pFrom),
 				parseAndValidateRevision(pTo));
+		branch = Validate.notEmpty(pBranch);
+	}
+
+	/**
+	 * Use {@link de.unibremen.st.libvcs4j.VCSEngineBuilder} instead.
+	 */
+	@Deprecated
+	@SuppressWarnings("DeprecatedIsStillUsed")
+	public GitEngine(
+			final String pRepository, final String pRoot, final Path pTarget,
+			final String pBranch, final int pStart, final int pEnd)
+			throws NullPointerException, IllegalIntervalException {
+		super(parseRepository(pRepository),
+				parseRoot(pRoot),
+				parseAndValidateTarget(pTarget),
+				pStart,
+				pEnd);
 		branch = Validate.notEmpty(pBranch);
 	}
 
@@ -347,6 +363,29 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 		}
 		Collections.reverse(revs);
 		return revs;
+	}
+
+	@Override
+	protected List<String> listRevisionsImpl(
+			final int pStart, final int pEnd) throws IOException {
+		// Keep in mind that 'git log' returns commits in the following
+		// order: [HEAD, HEAD^1, ..., initial]
+
+		List<RevCommit> revs = new ArrayList<>();
+		try {
+			final LogCommand logCmd = openRepository().log();
+			addRootPath(logCmd).call().forEach(revs::add);
+			// Use 'pStart - 1' to map pStart from origin 1 to origin 0.
+			revs = revs.subList(pStart - 1, pEnd);
+		} catch (NoHeadException e) {
+			return Collections.emptyList();
+		} catch (final GitAPIException e) {
+			throw new IOException(e);
+		}
+		Collections.reverse(revs);
+		return revs.stream()
+				.map(RevCommit::getName)
+				.collect(Collectors.toList());
 	}
 
 	@Override
