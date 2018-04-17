@@ -7,12 +7,12 @@ engine = VCSEngineBuilder
 println "id,date,LOC,SLOC,CLOC,NOT,SNOT,CNOT"
 engine.each {
 	size = FSTree.of(it.revision.files).computeSize()
-	println	"${it.revision.id},"    +
-		"${it.commits[0].dateTime}" +
-		"${size.LOC},"              +
-		"${size.SLOC},"             +
-		"${size.CLOC},"             +
-		"${size.NOT},"              +
-		"${size.SNOT},"             +
+	println	"${it.revision.id},"         +
+		"${it.commits[0].dateTime}," +
+		"${size.LOC},"               +
+		"${size.SLOC},"              +
+		"${size.CLOC},"              +
+		"${size.NOT},"               +
+		"${size.SNOT},"              +
 		"${size.CNOT}"
 }
