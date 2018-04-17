@@ -89,7 +89,7 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 	}
 
 	boolean isRangeInterval() {
-		return start >= 1;
+		return start >= 0;
 	}
 
 	@Override
