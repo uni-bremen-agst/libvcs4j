@@ -19,7 +19,7 @@ import java.util.List;
 @SuppressWarnings({"unused", "WeakerAccess"})
 public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 
-	private static final int MIN_START = 0;
+	public static final int MIN_START = 0;
 
 	/* Datetime interval. */
 	private final LocalDateTime since, until;

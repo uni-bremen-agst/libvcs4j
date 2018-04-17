@@ -1,5 +1,6 @@
 package de.unibremen.st.libvcs4j;
 
+import de.unibremen.st.libvcs4j.engine.AbstractIntervalVCSEngine;
 import de.unibremen.st.libvcs4j.filesystem.SingleEngine;
 import de.unibremen.st.libvcs4j.git.GitEngine;
 import de.unibremen.st.libvcs4j.hg.HGEngine;
@@ -27,41 +28,34 @@ import static org.apache.commons.lang3.Validate.notNull;
  * handle user input values and, thus, is more forgiving with improper
  * parameters. That is, for instance, {@code null} and empty parameter values
  * are mapped to default values.
- *
- * @author Marcel Steinbeck
- * @version 2016-10-04
  */
-@SuppressWarnings({"WeakerAccess", "unused"})
+@SuppressWarnings({"WeakerAccess", "unused", "UnusedReturnValue"})
 public class VCSEngineBuilder {
 
 	private enum Engine { SINGLE, SVN, GIT, HG }
 
-	private enum Interval { DATE, REVISION, ORDINAL }
+	private enum Interval { DATE, REVISION, RANGE }
 
 	//////////////////////////////// Defaults /////////////////////////////////
 
 	public static final String DEFAULT_ROOT = "";
 
-	/**
-	 * Usually, `master` is the default development branch.
-	 */
+	// Usually, 'master' is the default development branch.
 	public static final String DEFAULT_BRANCH = "master";
 
-	/**
-	 * SVN does not support dates before 1980-01-01
-	 */
+	// Only SVN has restrictions regarding the minimum date.
 	public static final LocalDateTime DEFAULT_SINCE =
 			SVNEngine.MINIMUM_DATETIME;
 
-	public static final LocalDateTime DEFAULT_UNTIL = LocalDateTime.now();
+	// Year 2200 should be sufficient.
+	public static final LocalDateTime DEFAULT_UNTIL =
+			LocalDateTime.of(2200, 1, 1, 0, 0);
 
-	public final int DEFAULT_START = 0;
+	public final int DEFAULT_START = AbstractIntervalVCSEngine.MIN_START;
 
 	public final int DEFAULT_END = Integer.MAX_VALUE;
 
-	/**
-	 * Cannot be static since every instance needs its own default value!
-	 */
+	// Cannot be static since every instance needs its own default value!
 	private final String defaultTarget = Paths.get(
 			System.getProperty("java.io.tmpdir"),          // system tmp dir
 			"libvcs4j").toString() +                       // prefix
@@ -98,7 +92,7 @@ public class VCSEngineBuilder {
 	////////////////////////////// Constructors ///////////////////////////////
 
 	public VCSEngineBuilder(final String pRepository) {
-		repository = notNull(pRepository).trim();
+		withRepository(pRepository);
 	}
 
 	public static VCSEngineBuilder of(final String pRepository) {
@@ -150,7 +144,6 @@ public class VCSEngineBuilder {
 
 	public VCSEngineBuilder withRoot(final String pRoot) {
 		root = pRoot == null ? DEFAULT_ROOT : pRoot.trim();
-		root = root.isEmpty() ? DEFAULT_ROOT : root;
 		return this;
 	}
 
@@ -173,13 +166,16 @@ public class VCSEngineBuilder {
 	}
 
 	public VCSEngineBuilder withSinceDate(final LocalDateTime pSince) {
-		since = pSince == null ? DEFAULT_SINCE : pSince;
+		since = pSince == null || pSince.isBefore(DEFAULT_SINCE)
+				? DEFAULT_SINCE
+				: pSince;
 		interval = Interval.DATE;
 		return this;
 	}
 
 	public VCSEngineBuilder withSinceDate(final LocalDate pSince) {
-		since = pSince == null ? DEFAULT_SINCE
+		since = pSince == null || pSince.isBefore(DEFAULT_SINCE.toLocalDate())
+				? DEFAULT_SINCE
 				: parseDateTime(pSince.toString(), DEFAULT_SINCE);
 		interval = Interval.DATE;
 		return this;
@@ -192,13 +188,16 @@ public class VCSEngineBuilder {
 	}
 
 	public VCSEngineBuilder withUntilDate(final LocalDateTime pUntil) {
-		until = pUntil == null ? DEFAULT_UNTIL : pUntil;
+		until = pUntil == null || pUntil.isAfter(DEFAULT_UNTIL)
+				? DEFAULT_UNTIL
+				: pUntil;
 		interval = Interval.DATE;
 		return this;
 	}
 
 	public VCSEngineBuilder withUntilDate(final LocalDate pUntil) {
-		until = pUntil == null ? DEFAULT_UNTIL
+		until = pUntil == null || pUntil.isAfter(DEFAULT_UNTIL.toLocalDate())
+				? DEFAULT_UNTIL
 				: parseDateTime(pUntil.toString(), DEFAULT_UNTIL);
 		interval = Interval.DATE;
 		return this;
@@ -211,26 +210,26 @@ public class VCSEngineBuilder {
 	}
 
 	public VCSEngineBuilder withFromRevision(final String pFrom) {
-		from = Validate.notNull(pFrom);
+		from = Validate.notEmpty(pFrom);
 		interval = Interval.REVISION;
 		return this;
 	}
 
 	public VCSEngineBuilder withToRevision(final String pTo) {
-		to = Validate.notNull(pTo);
+		to = Validate.notEmpty(pTo);
 		interval = Interval.REVISION;
 		return this;
 	}
 
 	public VCSEngineBuilder withStart(final int pStart) {
-		start = Math.max(0, pStart);
-		interval = Interval.ORDINAL;
+		start = Math.max(AbstractIntervalVCSEngine.MIN_START, pStart);
+		interval = Interval.RANGE;
 		return this;
 	}
 
 	public VCSEngineBuilder withEnd(final int pEnd) {
-		end = Math.max(1, pEnd);
-		interval = Interval.ORDINAL;
+		end = Math.max(AbstractIntervalVCSEngine.MIN_START + 1, pEnd);
+		interval = Interval.RANGE;
 		return this;
 	}
 
@@ -264,7 +263,7 @@ public class VCSEngineBuilder {
 							repo, root,
 							Paths.get(target),
 							from, to);
-				} else if (interval == Interval.ORDINAL) {
+				} else if (interval == Interval.RANGE) {
 					vcsEngine = new SVNEngine(
 							repo, root,
 							Paths.get(target),
@@ -286,7 +285,7 @@ public class VCSEngineBuilder {
 							Paths.get(target),
 							branch,
 							from, to);
-				} else if (interval == Interval.ORDINAL) {
+				} else if (interval == Interval.RANGE) {
 					vcsEngine = new GitEngine(
 							repo, root,
 							Paths.get(target),
@@ -307,7 +306,7 @@ public class VCSEngineBuilder {
 							repo, root,
 							Paths.get(target),
 							from, to);
-				} else if (interval == Interval.ORDINAL) {
+				} else if (interval == Interval.RANGE) {
 					vcsEngine = new HGEngine(
 							repo, root,
 							Paths.get(target),
