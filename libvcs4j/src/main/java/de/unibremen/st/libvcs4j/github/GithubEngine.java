@@ -49,7 +49,7 @@ public class GithubEngine extends AbstractITEngine {
 	public GithubEngine(
 			final String pRepository, final String pUsername,
 			final String pPassword) throws IOException {
-		super(pRepository, pUsername, pPassword);
+		super(pRepository);
 		github = GitHub
 				.connectUsingPassword(pUsername, pPassword)
 				.getRepository(pRepository);
@@ -57,7 +57,7 @@ public class GithubEngine extends AbstractITEngine {
 
 	public GithubEngine(final String pRepository, final String pToken)
 			throws IOException {
-		super(pRepository, pToken);
+		super(pRepository);
 		github = GitHub
 				.connectUsingOAuth(pToken)
 				.getRepository(pRepository);

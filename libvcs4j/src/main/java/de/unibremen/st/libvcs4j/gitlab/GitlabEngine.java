@@ -21,10 +21,9 @@ public class GitlabEngine extends AbstractITEngine {
 	private final GitlabAPI gitlab;
 
 	public GitlabEngine(
-			final String pHost, final String pRepository,
-			final String pToken)
+			final String pHost, final String pRepository, final String pToken)
 			throws NullPointerException, IllegalArgumentException {
-		super(pRepository, pToken);
+		super(pRepository);
 		host = Validate.notEmpty(pHost);
 		gitlab = GitlabAPI.connect(host, pToken);
 	}

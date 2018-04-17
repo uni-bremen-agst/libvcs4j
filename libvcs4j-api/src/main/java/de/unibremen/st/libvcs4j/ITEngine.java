@@ -12,9 +12,6 @@ import java.util.regex.Pattern;
 /**
  * This engine is supposed to extract issues from an issue tracker, such as
  * Github, Gitlab, and so on.
- *
- * Implementations may support username/password or access token
- * authentication.
  */
 @SuppressWarnings("unused")
 public interface ITEngine {
@@ -26,30 +23,6 @@ public interface ITEngine {
      *      The processed repository.
      */
     String getRepository();
-
-    /**
-     * Returns the username used for authentication, if any.
-     *
-     * @return
-     *      The username used for authentication, if any.
-     */
-    Optional<String> getUsername();
-
-    /**
-     * Returns the password used for authentication, if any.
-     *
-     * @return
-     *      The password used for authentication, if any.
-     */
-    Optional<String> getPassword();
-
-    /**
-     * Returns the access token used for authentication, if any.
-     *
-     * @return
-     *      The access token used for authentication, if any.
-     */
-    Optional<String> getToken();
 
     /**
      * Returns the issue with the given id (see {@link Issue#getId()}). Returns
