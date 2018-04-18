@@ -1,4 +1,4 @@
-import de.unibremen.st.libvcs4j.*
+import de.unibremen.informatik.st.libvcs4j.*
 
 engine = VCSEngineBuilder
 	.ofGit("https://github.com/amaembo/streamex.git")
