@@ -212,13 +212,6 @@ public class IntegrationTest {
 		}
 
 		@Override
-		protected List<String> listRevisionsImpl(
-				final int pStart,
-				final int pEnd) {
-			return Arrays.asList("1", "2", "3");
-		}
-
-		@Override
 		public Path getOutput() {
 			return getTarget();
 		}
