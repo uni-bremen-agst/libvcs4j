@@ -22,6 +22,9 @@ public interface Revision {
 
 	/**
 	 * @see VCSEngine#getOutput()
+	 *
+	 * @return
+	 * 		The path to the tracked files and directories.
 	 */
 	Path getOutput();
 

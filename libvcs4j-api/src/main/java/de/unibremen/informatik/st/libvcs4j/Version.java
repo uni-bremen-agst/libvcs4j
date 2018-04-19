@@ -34,7 +34,7 @@ public interface Version {
 	 * origin is 1.
 	 *
 	 * @return
-	 * 		The ordinal of this version (>= 1).
+	 * 		The ordinal of this version ({@code >= 1}).
 	 */
 	int getOrdinal();
 

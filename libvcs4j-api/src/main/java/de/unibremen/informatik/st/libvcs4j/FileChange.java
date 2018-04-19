@@ -93,6 +93,12 @@ public interface FileChange {
 
 	/**
 	 * @see VCSEngine#computeDiff(FileChange)
+	 *
+	 * @return
+	 * 		A sequence of {@link LineChange} objects.
+	 * @throws IOException
+	 *      If an error occurred while reading the content of the old or new
+	 *      file (see {@link VCSFile#readeContent()}).
 	 */
 	default List<LineChange> computeDiff() throws IOException {
 		return getEngine().computeDiff(this);

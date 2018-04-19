@@ -78,6 +78,8 @@ public interface VCSFile {
 	 *
 	 * @return
 	 * 		The contents of this file.
+	 * @throws IOException
+	 * 		If an error occurred while reading the contents.
 	 */
 	byte[] readAllBytes() throws IOException;
 

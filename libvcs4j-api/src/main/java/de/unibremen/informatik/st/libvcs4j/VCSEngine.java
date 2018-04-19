@@ -148,15 +148,17 @@ public interface VCSEngine extends Iterable<Version> {
 	Path getOutput();
 
 	/**
-	 * Computes the changed lines.
+	 * Computes the changed lines of the given file change.
 	 *
+	 * @param fileChange
+	 * 		The file change to compute the line diff for.
 	 * @return
 	 * 		A sequence of {@link LineChange} objects.
 	 * @throws NullPointerException
 	 * 		If {@code fileChange} is {@code null}.
 	 * @throws IOException
-	 *      If an error occurred while reading the content of the old or new
-	 *      file (see {@link VCSFile#readeContent()}).
+	 * 		If an error occurred while reading the content of the old or new
+	 * 		file (see {@link VCSFile#readeContent()}).
 	 */
 	List<LineChange> computeDiff(final FileChange fileChange) throws
 			NullPointerException, IOException;
