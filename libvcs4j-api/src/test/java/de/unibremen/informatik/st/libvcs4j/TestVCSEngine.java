@@ -10,7 +10,7 @@ import java.util.Optional;
  * An implementation of {@link VCSEngine} that throws an
  * {@link UnsupportedOperationException} for all non-default methods.
  */
-class TestVersionProvider implements VCSEngine {
+class TestVCSEngine implements VCSEngine {
 	@Override
 	public Optional<Version> next() throws IOException {
 		throw new UnsupportedOperationException();

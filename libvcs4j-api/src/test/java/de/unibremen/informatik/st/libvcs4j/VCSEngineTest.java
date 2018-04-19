@@ -1,13 +1,19 @@
 package de.unibremen.informatik.st.libvcs4j;
 
-import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Some tests must be adjusted if new files are added or existing files are
@@ -15,46 +21,70 @@ import java.nio.file.Paths;
  */
 public class VCSEngineTest {
 
-	@Test
-	public void testListFilesInOutput() throws IOException {
-		String p = "src/main/java/de/unibremen/st/libvcs4j";
-		VCSEngine vp = new TestVersionProvider() {
-			@Override
-			public Path getOutput() {
-				return Paths.get(p).toAbsolutePath();
-			}
-		};
-		Assert.assertEquals(12, vp.listFilesInOutput().size());
+	@Rule
+	public TemporaryFolder folder = new TemporaryFolder();
+
+	@Before
+	public void setup() throws IOException {
+		/*
+		 * The following layout will be generated:
+		 *
+		 * a (file)
+		 * b (file)
+		 * c (dir)
+		 * 		c1 (file)
+		 * 		c2 (file)
+		 * 		c3 (file)
+		 * d (file)
+		 * e (file)
+		 * f (dir)
+		 * 		f1 (file)
+		 * 		ff (dir)
+		 * 			ff1 (file)
+		 * 			ff2 (file)
+		 */
+		folder.newFile("a");
+		folder.newFile("b");
+		final File c = folder.newFolder("c");
+		Files.createFile(c.toPath().resolve("c1"));
+		Files.createFile(c.toPath().resolve("c2"));
+		Files.createFile(c.toPath().resolve("c3"));
+		folder.newFile("d");
+		folder.newFile("e");
+		final File f = folder.newFolder("f");
+		Files.createFile(f.toPath().resolve("f1"));
+		final Path ff = Files.createDirectory(f.toPath().resolve("ff"));
+		Files.createFile(ff.resolve("ff1"));
+		Files.createFile(ff.resolve("ff2"));
 	}
 
 	@Test
-	public void testListFilesInOutputSubDirs() throws IOException {
-		String p = "src/main/java/de/unibremen/st/";
-		VCSEngine vp = new TestVersionProvider() {
+	public void testListFilesInOutput() throws IOException {
+		VCSEngine vp = new TestVCSEngine() {
 			@Override
 			public Path getOutput() {
-				return Paths.get(p).toAbsolutePath();
+				return folder.getRoot().toPath();
 			}
 		};
-		Assert.assertEquals(12, vp.listFilesInOutput().size());
+		assertEquals(10, vp.listFilesInOutput().size());
 	}
 
 	@Test
 	public void testListFilesInOutputSingleFile() throws IOException {
-		String p = "src/main/java/de/unibremen/st/libvcs4j/VCSFile.java";
-		VCSEngine vp = new TestVersionProvider() {
+
+		VCSEngine vp = new TestVCSEngine() {
 			@Override
 			public Path getOutput() {
-				return Paths.get(p).toAbsolutePath();
+				return folder.getRoot().toPath().resolve("c").resolve("c1");
 			}
 		};
-		Assert.assertEquals(1, vp.listFilesInOutput().size());
+		assertEquals(1, vp.listFilesInOutput().size());
 	}
 
 	@Test(expected = FileNotFoundException.class)
 	public void testNonExistingOutputDir() throws IOException {
 		String p = "asdfhalf324hr789erher9c78vh3cr72ny48t784r7c8tycn87c3";
-		new TestVersionProvider() {
+		new TestVCSEngine() {
 			@Override
 			public Path getOutput() {
 				return Paths.get(p);
@@ -64,35 +94,33 @@ public class VCSEngineTest {
 
 	@Test
 	public void testSimpleFileFilter() throws IOException {
-		String p = "src/main/java/de/unibremen/st/libvcs4j";
-		VCSEngine vp = new TestVersionProvider() {
+		VCSEngine vp = new TestVCSEngine() {
 			@Override
 			public Path getOutput() {
-				return Paths.get(p).toAbsolutePath();
+				return folder.getRoot().toPath();
 			}
 
 			@Override
 			public FilenameFilter createVCSFileFilter() {
-				return (dir, name) -> !name.startsWith("Version");
+				return (dir, name) -> !name.startsWith("f");
 			}
 		};
-		Assert.assertEquals(11, vp.listFilesInOutput().size());
+		assertEquals(7, vp.listFilesInOutput().size());
 	}
 
 	@Test
 	public void testSimpleDirectoryFilter() throws IOException {
-		String p = "src/main/java/de/unibremen/st/";
-		VCSEngine vp = new TestVersionProvider() {
+		VCSEngine vp = new TestVCSEngine() {
 			@Override
 			public Path getOutput() {
-				return Paths.get(p).toAbsolutePath();
+				return folder.getRoot().toPath();
 			}
 
 			@Override
 			public FilenameFilter createVCSFileFilter() {
-				return (dir, name) -> !name.equals("libvcs4j");
+				return (dir, name) -> !dir.getName().equals("c");
 			}
 		};
-		Assert.assertEquals(0, vp.listFilesInOutput().size());
+		assertEquals(7, vp.listFilesInOutput().size());
 	}
 }
