@@ -31,7 +31,7 @@ artifacts {
 	archives javadocJar
 }
 
-task createPom {
+build {
 	doLast {
 		pom {
 			project {
@@ -58,6 +58,6 @@ task createPom {
 					url 'https://github.com/uni-bremen-agst/libvcs4j'
 				}
 			}
-		}.writeTo("pom.xml")
+		}.writeTo("${buildDir}/libs/pom.xml")
 	}
 }
