@@ -1,0 +1,84 @@
+
+--------------------------------------------------------------------------------
+
+LibVCS4j includes GNU Diff for Java
+ (http://www.bmsi.com/java/#diff),
+licensed under GNU General Public License
+ (https://opensource.org/licenses/GPL-3.0).
+
+--------------------------------------------------------------------------------
+
+LibVCS4j includes ConQAT
+ (https://www.cqse.eu/en/products/conqat/overview),
+licensed under Apache License 2.0
+ (https://opensource.org/licenses/Apache-2.0).
+
+--------------------------------------------------------------------------------
+
+LibVCS4j uses JavaHG
+ (https://www.mercurial-scm.org/wiki/JavaHg),
+licensed under MIT Licence
+ (https://opensource.org/licenses/MIT).
+
+--------------------------------------------------------------------------------
+
+LibVCS4j uses Google Guava
+ (https://github.com/google/guava),
+licensed under Apache License 2.0
+ (https://opensource.org/licenses/Apache-2.0).
+
+--------------------------------------------------------------------------------
+
+LibVCS4j uses ICU4J
+ (https://wiki.eclipse.org/ICU4J),
+see LICENSE.ICU4J.
+
+--------------------------------------------------------------------------------
+
+LibVCS4j uses LibVCS4j-API
+ (https://github.com/uni-bremen-agst/libvcs4j),
+licensed under MIT Licence
+ (https://opensource.org/licenses/MIT).
+
+--------------------------------------------------------------------------------
+
+LibVCS4j uses Apache Commons Lang3
+ (https://commons.apache.org/proper/commons-lang),
+licensed under Apache License 2.0
+ (https://opensource.org/licenses/Apache-2.0).
+
+--------------------------------------------------------------------------------
+
+LibVCS4j uses JGit
+ (https://www.eclipse.org/jgit),
+see LICENSE.JGit.
+
+--------------------------------------------------------------------------------
+
+LibVCS4j uses java-gitlab-api
+ (https://github.com/timols/java-gitlab-api),
+licensed under Apache License 2.0
+ (https://opensource.org/licenses/Apache-2.0).
+
+--------------------------------------------------------------------------------
+
+LibVCS4j uses GitHub API for Java
+ (http://github-api.kohsuke.org),
+licensed under MIT Licence
+ (https://opensource.org/licenses/MIT).
+
+--------------------------------------------------------------------------------
+
+LibVCS4j uses SLF4J
+ (https://www.slf4j.org),
+licensed under MIT Licence
+ (https://opensource.org/licenses/MIT).
+
+--------------------------------------------------------------------------------
+
+LibVCS4j uses SVNKit
+ (https://svnkit.com/),
+see LICENSE.SVNKit
+
+--------------------------------------------------------------------------------
+
