@@ -165,7 +165,7 @@ public class VCSEngineBuilder {
 		return this;
 	}
 
-	public VCSEngineBuilder withSinceDate(final LocalDateTime pSince) {
+	public VCSEngineBuilder withSince(final LocalDateTime pSince) {
 		since = pSince == null || pSince.isBefore(DEFAULT_SINCE)
 				? DEFAULT_SINCE
 				: pSince;
@@ -173,7 +173,7 @@ public class VCSEngineBuilder {
 		return this;
 	}
 
-	public VCSEngineBuilder withSinceDate(final LocalDate pSince) {
+	public VCSEngineBuilder withSince(final LocalDate pSince) {
 		since = pSince == null || pSince.isBefore(DEFAULT_SINCE.toLocalDate())
 				? DEFAULT_SINCE
 				: parseDateTime(pSince.toString(), DEFAULT_SINCE);
@@ -181,13 +181,13 @@ public class VCSEngineBuilder {
 		return this;
 	}
 
-	public VCSEngineBuilder withSinceDate(final String pSince) {
+	public VCSEngineBuilder withSince(final String pSince) {
 		since = parseDateTime(pSince, DEFAULT_SINCE);
 		interval = Interval.DATE;
 		return this;
 	}
 
-	public VCSEngineBuilder withUntilDate(final LocalDateTime pUntil) {
+	public VCSEngineBuilder withUntil(final LocalDateTime pUntil) {
 		until = pUntil == null || pUntil.isAfter(DEFAULT_UNTIL)
 				? DEFAULT_UNTIL
 				: pUntil;
@@ -195,7 +195,7 @@ public class VCSEngineBuilder {
 		return this;
 	}
 
-	public VCSEngineBuilder withUntilDate(final LocalDate pUntil) {
+	public VCSEngineBuilder withUntil(final LocalDate pUntil) {
 		until = pUntil == null || pUntil.isAfter(DEFAULT_UNTIL.toLocalDate())
 				? DEFAULT_UNTIL
 				: parseDateTime(pUntil.toString(), DEFAULT_UNTIL);
@@ -203,19 +203,19 @@ public class VCSEngineBuilder {
 		return this;
 	}
 
-	public VCSEngineBuilder withUntilDate(final String pUntil) {
+	public VCSEngineBuilder withUntil(final String pUntil) {
 		until = parseDateTime(pUntil, DEFAULT_UNTIL);
 		interval = Interval.DATE;
 		return this;
 	}
 
-	public VCSEngineBuilder withFromRevision(final String pFrom) {
+	public VCSEngineBuilder withFrom(final String pFrom) {
 		from = Validate.notEmpty(pFrom);
 		interval = Interval.REVISION;
 		return this;
 	}
 
-	public VCSEngineBuilder withToRevision(final String pTo) {
+	public VCSEngineBuilder withTo(final String pTo) {
 		to = Validate.notEmpty(pTo);
 		interval = Interval.REVISION;
 		return this;

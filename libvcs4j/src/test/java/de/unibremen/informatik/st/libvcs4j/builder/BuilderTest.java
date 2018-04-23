@@ -43,24 +43,24 @@ public class BuilderTest {
 	@Test
 	public void testDateTime() {
 		VCSEngineBuilder.of("")
-				.withSinceDate(LocalDateTime.now())
-				.withUntilDate(LocalDateTime.now())
+				.withSince(LocalDateTime.now())
+				.withUntil(LocalDateTime.now())
 				.build();
 	}
 
 	@Test
 	public void testDate() {
 		VCSEngineBuilder.of("")
-				.withSinceDate(LocalDate.now())
-				.withUntilDate(LocalDate.now())
+				.withSince(LocalDate.now())
+				.withUntil(LocalDate.now())
 				.build();
 	}
 
 	@Test
 	public void testDateString() {
 		VCSEngineBuilder.of("")
-				.withSinceDate("2000-01-01")
-				.withUntilDate("2017-01-01")
+				.withSince("2000-01-01")
+				.withUntil("2017-01-01")
 				.build();
 	}
 }

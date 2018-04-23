@@ -168,8 +168,8 @@ public class ConstructorTest extends VCSBaseTest {
                 (SVNEngine) VCSEngineBuilder
 				.of(input.toString())
 				.withSVN()
-				.withFromRevision("-10")
-				.withToRevision("64")
+				.withFrom("-10")
+				.withTo("64")
 				.build();
 		final List<String> revisions = provider.listRevisions();
 		for (int i = 0; i < revisions.size(); i++) {
@@ -183,8 +183,8 @@ public class ConstructorTest extends VCSBaseTest {
                 (SVNEngine) VCSEngineBuilder
 				.of(input.toString())
 				.withSVN()
-				.withFromRevision("1")
-				.withToRevision("100")
+				.withFrom("1")
+				.withTo("100")
 				.build();
 		final List<String> revisions = provider.listRevisions();
 		for (int i = 0; i < revisions.size(); i++) {
