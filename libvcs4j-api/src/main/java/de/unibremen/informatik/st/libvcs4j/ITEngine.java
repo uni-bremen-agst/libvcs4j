@@ -39,7 +39,7 @@ public interface ITEngine {
 	 * @throws IOException
 	 *      If an error occurred while retrieving the issue.
 	 */
-	Optional<Issue> getIssueById(final String id) throws IOException;
+	Optional<Issue> getIssueById(String id) throws IOException;
 
 	/**
 	 * Returns all issues referenced by the given {@link Commit}. This method
@@ -55,7 +55,7 @@ public interface ITEngine {
 	 * @throws IOException
 	 *      If an error occurred while retrieving an issue.
 	 */
-	default List<Issue> getIssuesFor(final Commit commit) throws IOException {
+	default List<Issue> getIssuesFor(Commit commit) throws IOException {
 		return getIssuesFor(Collections.singletonList(commit));
 	}
 

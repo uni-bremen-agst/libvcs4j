@@ -79,7 +79,7 @@ public interface VCSEngine extends Iterable<Version> {
 	 * @throws IOException
 	 * 		If an error occurred while reading the contents.
 	 */
-	byte[] readAllBytes(final VCSFile file) throws NullPointerException,
+	byte[] readAllBytes(VCSFile file) throws NullPointerException,
 			IllegalArgumentException, IOException;
 
 	/**
@@ -160,7 +160,7 @@ public interface VCSEngine extends Iterable<Version> {
 	 * 		If an error occurred while reading the content of the old or new
 	 * 		file (see {@link VCSFile#readeContent()}).
 	 */
-	List<LineChange> computeDiff(final FileChange fileChange) throws
+	List<LineChange> computeDiff(FileChange fileChange) throws
 			NullPointerException, IOException;
 
 	/**
@@ -171,7 +171,7 @@ public interface VCSEngine extends Iterable<Version> {
 	 * 		The engine used to extract issues from an issue tracker or
 	 * 		{@code null} to unset the currently set engine.
 	 */
-	void setITEngine(final ITEngine itEngine);
+	void setITEngine(ITEngine itEngine);
 
 	/**
 	 * Return the engine used to extract issues from an issue tracker.
