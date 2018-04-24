@@ -163,6 +163,36 @@ public class IntegrationTest {
 		}
 
 		@Override
+		protected LocalDateTime validateMapDateTime(LocalDateTime dt) {
+			return dt;
+		}
+
+		@Override
+		protected String validateMapIntervalRevision(String revision) {
+			return revision;
+		}
+
+		@Override
+		protected String validateMapRepository(String repository) {
+			return repository;
+		}
+
+		@Override
+		protected String validateMapRoot(String root) {
+			return root;
+		}
+
+		@Override
+		protected Path validateMapTarget(Path target) {
+			return target;
+		}
+
+		@Override
+		protected List<String> validateMapRevisions(List<String> revisions) {
+			return revisions;
+		}
+
+		@Override
 		protected void checkoutImpl(String revision) {}
 
 		@Override

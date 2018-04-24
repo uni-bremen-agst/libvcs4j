@@ -2,7 +2,7 @@ package de.unibremen.informatik.st.libvcs4j.exception;
 
 public class IllegalTargetException extends LibVCS4jParameterException {
 
-	private IllegalTargetException(final String pMessage) {
+	public IllegalTargetException(final String pMessage) {
 		super(pMessage);
 	}
 

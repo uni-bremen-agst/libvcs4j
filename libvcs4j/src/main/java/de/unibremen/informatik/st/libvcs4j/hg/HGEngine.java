@@ -70,13 +70,7 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 			final String pRepository, final String pRoot, final Path pTarget,
 			final LocalDateTime pSince, final LocalDateTime pUntil)
 			throws NullPointerException, IllegalIntervalException {
-		super(parseAndValidateRepository(pRepository),
-				parseAndValidateRoot(pRoot),
-				parseAndValidateTarget(pTarget),
-				parseAndValidateDateTime(pSince),
-				parseAndValidateDateTime(pUntil));
-		IllegalIntervalException.isTrue(!pSince.isAfter(pUntil),
-				"Since (%s) after until (%s)", pSince, pUntil);
+		super(pRepository, pRoot,pTarget, pSince, pUntil);
 	}
 
 	/**
@@ -87,11 +81,7 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	public HGEngine(
 			final String pRepository, final String pRoot, final Path pTarget,
 			final String pFrom, final String pTo) throws NullPointerException {
-		super(parseAndValidateRepository(pRepository),
-				parseAndValidateRoot(pRoot),
-				parseAndValidateTarget(pTarget),
-				parseAndValidateIntervalRevision(pFrom),
-				parseAndValidateIntervalRevision(pTo));
+		super(pRepository, pRoot,pTarget, pFrom, pTo);
 	}
 
 	/**
@@ -103,11 +93,7 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 			final String pRepository, final String pRoot, final Path pTarget,
 			final int pStart, final int pEnd) throws NullPointerException,
 			IllegalIntervalException {
-		super(parseAndValidateRepository(pRepository),
-				parseAndValidateRoot(pRoot),
-				parseAndValidateTarget(pTarget),
-				pStart,
-				pEnd);
+		super(pRepository, pRoot,pTarget, pStart, pEnd);
 	}
 
 	/**
@@ -119,16 +105,14 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 			final String pRepository, final String pRoot, final Path pTarget,
 			final List<String> pRevisions) throws NullPointerException,
 			IllegalArgumentException {
-		super(parseAndValidateRepository(pRepository),
-				parseAndValidateRoot(pRoot),
-				parseAndValidateTarget(pTarget),
-				parseAndValidateRevisions(pRevisions));
+		super(pRepository, pRoot,pTarget, pRevisions);
 	}
 
-	///////////////////////// Parsing and validation //////////////////////////
+	///////////////////////// Validation and mapping //////////////////////////
 
+	@Override
 	@SuppressWarnings("Duplicates")
-	private static String parseAndValidateRepository(final String pRepository) {
+	protected String validateMapRepository(final String pRepository) {
 		Validate.notEmpty(pRepository);
 		Validate.isTrue(SUPPORTED_PROTOCOLS.test(pRepository),
 				"Unsupported protocol: '%s'", pRepository);
@@ -145,13 +129,15 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 		return normalizePath(pRepository);
 	}
 
-	private static String parseAndValidateRoot(final String pRoot) {
+	@Override
+	protected String validateMapRoot(final String pRoot) {
 		Validate.notNull(pRoot);
 		return normalizePath(pRoot);
 	}
 
+	@Override
 	@SuppressWarnings("Duplicates")
-	private static Path parseAndValidateTarget(final Path pTarget) {
+	protected Path validateMapTarget(final Path pTarget) {
 		Validate.notNull(pTarget);
 		Validate.notEmpty(pTarget.toString());
 		IllegalTargetException.isTrue(!Files.exists(pTarget),
@@ -161,39 +147,42 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 		return pTarget.toAbsolutePath();
 	}
 
-	private static LocalDateTime parseAndValidateDateTime(
-			final LocalDateTime pDateTime) {
+	@Override
+	protected List<String> validateMapRevisions(final List<String> pRevisions) {
+		return Validate.noNullElements(pRevisions).stream()
+				.peek(r -> {
+					try {
+						//noinspection ResultOfMethodCallIgnored
+						Integer.parseInt(r);
+					} catch (final NumberFormatException e) {
+						IllegalRevisionException.isTrue(
+								r.matches("\b[0-9a-f]{12,40}\b"),
+								"'%s' is not a valid changeset value", r);
+					}
+				})
+				.map(r -> {
+					try {
+						final int rev = Integer.parseInt(r);
+						if (rev < 0) {
+							log.debug("Mapping changeset value '{}' to '{}'",
+									r, 0);
+							return "0";
+						}
+					} catch (final NumberFormatException ignored) {}
+					return r;
+				})
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	protected LocalDateTime validateMapDateTime(final LocalDateTime pDateTime) {
 		return Validate.notNull(pDateTime);
 	}
 
-	private static List<String> parseAndValidateRevisions(
-			final List<String> pRevisions) {
-		Validate.notNull(pRevisions).forEach(
-				HGEngine::parseAndValidateRevision);
-		return pRevisions;
-	}
-
-	private static String parseAndValidateIntervalRevision(
-			final String pRevision) {
-		// Null will be mapped to first/last revision.
-		return pRevision == null ? "" : parseAndValidateRevision(pRevision);
-	}
-
-	private static String parseAndValidateRevision(final String pRevision) {
-		Validate.notNull(pRevision);
-		try {
-			int revision = Integer.parseInt(pRevision);
-			if (revision < 0) {
-				log.debug("Mapping revision value '{}' to '{}'", revision, 0);
-				revision = 0;
-			}
-			return String.valueOf(revision);
-		} catch (final NumberFormatException e) {
-			IllegalRevisionException.isTrue(
-					pRevision.matches("\b[0-9a-f]{12,40}\b"),
-					"'%s' is not a valid changeset value", pRevision);
-			return pRevision;
-		}
+	@Override
+	protected String validateMapIntervalRevision(final String pRevision) {
+		return pRevision == null ? "" : validateMapRevisions(
+				Collections.singletonList(pRevision)).get(0);
 	}
 
 	////////////////////////////////// Utils //////////////////////////////////

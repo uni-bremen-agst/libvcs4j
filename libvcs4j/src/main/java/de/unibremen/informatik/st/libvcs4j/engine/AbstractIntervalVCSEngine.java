@@ -53,10 +53,10 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 		super(pRepository, pRoot, pTarget);
 		from = to = null;
 		start = end = -1;
-		since = Validate.notNull(pSince);
-		until = Validate.notNull(pUntil);
-		IllegalIntervalException.isTrue(!pSince.isAfter(pUntil),
-				"Since (%s) after until (%s)", pSince, pUntil);
+		since = Validate.notNull(validateMapDateTime(pSince));
+		until = Validate.notNull(validateMapDateTime(pUntil));
+		IllegalIntervalException.isTrue(!since.isAfter(until),
+				"Since (%s) after until (%s)", since, until);
 	}
 
 	/**
@@ -69,8 +69,8 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 		super(pRepository, pRoot, pTarget);
 		since = until = null;
 		start = end = -1;
-		from = Validate.notNull(pFrom);
-		to = Validate.notNull(pTo);
+		from = Validate.notNull(validateMapIntervalRevision(pFrom));
+		to = Validate.notNull(validateMapIntervalRevision(pTo));
 		// We can not validate if from <= to because this requires a method
 		// call to a not (yet) fully available subclass instance.
 	}
@@ -121,21 +121,24 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 		return revisions;
 	}
 
-	private List<String> listRevisionsImpl(final int pStart, final int pEnd)
+	private List<String> listRevisionsImpl(int start, int end)
 			throws IOException {
 		final LocalDateTime since = VCSEngineBuilder.DEFAULT_SINCE;
 		final LocalDateTime until = LocalDateTime.of(2200, 1, 1, 0, 0);
 		final List<String> revs = listRevisionsImpl(since, until);
-		if (pStart >= revs.size()) {
+		if (start >= revs.size()) {
 			return Collections.emptyList();
 		}
-		return revs.subList(pStart, Math.min(pEnd, revs.size()));
+		return revs.subList(start, Math.min(end, revs.size()));
 	}
 
 	protected abstract List<String> listRevisionsImpl(
-			final LocalDateTime pSince, final LocalDateTime pUntil)
+			LocalDateTime since, LocalDateTime until) throws IOException;
+
+	protected abstract List<String> listRevisionsImpl(String from, String to)
 			throws IOException;
 
-	protected abstract List<String> listRevisionsImpl(
-			final String pFrom, final String pTo) throws IOException;
+	protected abstract LocalDateTime validateMapDateTime(LocalDateTime dt);
+
+	protected abstract String validateMapIntervalRevision(String revision);
 }

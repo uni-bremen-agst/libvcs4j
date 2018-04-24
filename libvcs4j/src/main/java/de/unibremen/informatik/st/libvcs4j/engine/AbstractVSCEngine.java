@@ -68,9 +68,9 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 	public AbstractVSCEngine(
 	        final String pRepository, final String pRoot, final Path pTarget)
             throws NullPointerException {
-		repository = Validate.notNull(pRepository);
-		root = Validate.notNull(pRoot);
-		target = Validate.notNull(pTarget).toAbsolutePath();
+		repository = Validate.notNull(validateMapRepository(pRepository));
+		root = Validate.notNull(validateMapRoot(pRoot));
+		target = Validate.notNull(validateMapTarget(pTarget)).toAbsolutePath();
 	}
 
 	public AbstractVSCEngine(
@@ -78,7 +78,9 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 			final List<String> pRevisions) throws NullPointerException,
 			IllegalArgumentException {
 		this(pRepository, pRoot, pTarget);
-		revisions = Validate.noNullElements(pRevisions);
+		revisions = validateMapRevisions(pRevisions).stream()
+				.map(Validate::notNull)
+				.collect(Collectors.toList());
 	}
 
 	@Override
@@ -464,18 +466,111 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 
 	/////////////////////////// required overrides ////////////////////////////
 
-	protected abstract void checkoutImpl(final String revision)
+	/**
+	 * Validates and, if necessary, maps the given repository.
+	 *
+	 * @param repository
+	 * 		The repository to validate and, if necessary, map.
+	 * @return
+	 * 		The mapped repository.
+	 */
+	protected abstract String validateMapRepository(String repository);
+
+	/**
+	 * Validates and, if necessary, maps the given root.
+	 *
+	 * @param root
+	 * 		The root to validate and, if necessary, map.
+	 * @return
+	 * 		The mapped root.
+	 */
+	protected abstract String validateMapRoot(String root);
+
+	/**
+	 * Validates and, if necessary, maps the given target.
+	 *
+	 * @param target
+	 * 		The target to validate and, if necessary, map.
+	 * @return
+	 * 		The mapped target.
+	 */
+	protected abstract Path validateMapTarget(Path target);
+
+	/**
+	 * Validates and, if necessary, maps the given revisions.
+	 *
+	 * @param revisions
+	 * 		The revisions to validate and, if necessary, map.
+	 * @return
+	 * 		the mapped revisions.
+	 */
+	protected abstract List<String> validateMapRevisions(
+			List<String> revisions);
+
+	/**
+	 * Checks out the given revision.
+	 *
+	 * @param revision
+	 * 		The revision to checkout.
+	 * @throws IOException
+	 * 		If an error occurred while checking out the given revision.
+	 */
+	protected abstract void checkoutImpl(String revision) throws IOException;
+
+	/**
+	 * Creates the change between {@code fromRev} and {@code toRev}.
+	 *
+	 * @param fromRev
+	 * 		The from revision.
+	 * @param toRev
+	 * 		The to revision.
+	 * @return
+	 * 		The changes between {@code fromRev} and {@code toRev}.
+	 * @throws IOException
+	 * 		If an error occurred while parsing the changes.
+	 */
+	protected abstract Changes createChangesImpl(String fromRev, String toRev)
 			throws IOException;
 
-	protected abstract Changes createChangesImpl(
-	        final String fromRev, final String toRev)
+	/**
+	 * Reads the contents of the file located at {@code path} in revision
+	 * {@code revision}.
+	 *
+	 * @param path
+	 * 		The (relative) path of the file to read.
+	 * @param revision
+	 * 		The file's revision.
+	 * @return
+	 * 		The contents of the file located at {@code path} in revision
+	 * 		{@code revision}.
+	 * @throws IOException
+	 * 		If an error occurred while reading the contents.
+	 */
+	protected abstract byte[] readAllBytesImpl(String path, String revision)
 			throws IOException;
 
-	protected abstract byte[] readAllBytesImpl(
-			final String path, final String revision) throws IOException;
+	/**
+	 * Creates a commit storing the engine specific values. This method is used
+	 * by {@link #createCommit(List)}.
+	 *
+	 * @param revision
+	 * 		The corresponding revision value.
+	 * @return
+	 * 		A {@link CommitImpl} storing the engine specific values.
+	 * @throws IOException
+	 * 		If an error occurred while parsing a commit.
+	 */
+	protected abstract CommitImpl createCommitImpl(String revision)
+			throws IOException;
 
-	protected abstract CommitImpl createCommitImpl(final String revision)
-            throws IOException;
-
+	/**
+	 * Returns the list of revisions to process.
+	 *
+	 * @return
+	 * 		The revisions to process.
+	 * @throws IOException
+	 * 		If an error occurred while retrieving the list of revisions to
+	 * 		process.
+	 */
 	protected abstract List<String> listRevisionsImpl() throws IOException;
 }

@@ -2,7 +2,7 @@ package de.unibremen.informatik.st.libvcs4j.exception;
 
 public class IllegalRepositoryException extends LibVCS4jParameterException {
 
-	private IllegalRepositoryException(final String pMessage) {
+	public IllegalRepositoryException(final String pMessage) {
 		super(pMessage);
 	}
 

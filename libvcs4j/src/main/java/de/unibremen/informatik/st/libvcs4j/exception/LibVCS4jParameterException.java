@@ -16,8 +16,8 @@ abstract class LibVCS4jParameterException
 			final String message = pMessage == null || pValues == null
 					? "Illegal repository" : String.format(pMessage, pValues);
 			try {
-				clazz.getConstructor(String.class).newInstance(message);
-			} catch (final Exception e) {
+				throw clazz.getConstructor(String.class).newInstance(message);
+			} catch (final ReflectiveOperationException e) {
 				throw new IllegalStateException(
 						"Unable to instantiate exception", e);
 			}

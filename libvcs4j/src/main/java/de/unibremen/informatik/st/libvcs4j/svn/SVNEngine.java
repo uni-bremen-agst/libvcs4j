@@ -40,6 +40,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * An {@link VCSEngine} that is supposed to extract file changes from SVN
@@ -72,13 +73,7 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 			final LocalDateTime pSince, final LocalDateTime pUntil)
 			throws NullPointerException, IllegalRepositoryException,
 			IllegalTargetException, IllegalIntervalException {
-		super(parseAndValidateRepository(pRepository),
-				parseAndValidateRoot(pRoot),
-				parseAndValidateTarget(pTarget),
-				parseAndValidateDatetime(pSince),
-				parseAndValidateDatetime(pUntil));
-		IllegalIntervalException.isTrue(!pSince.isAfter(pUntil),
-				"Since (%s) after until (%s)", pSince, pUntil);
+		super(pRepository, pRoot, pTarget, pSince, pUntil);
 	}
 
 	/**
@@ -91,15 +86,7 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 			final String pFrom, final String pTo)
 			throws NullPointerException, IllegalRepositoryException,
 			IllegalTargetException, IllegalIntervalException {
-		super(parseAndValidateRepository(pRepository),
-				parseAndValidateRoot(pRoot),
-				parseAndValidateTarget(pTarget),
-				parseAndValidateIntervalRevision(pFrom),
-				parseAndValidateIntervalRevision(pTo));
-		final int from = Integer.parseInt(pFrom);
-		final int to = Integer.parseInt(pTo);
-		IllegalIntervalException.isTrue(
-				from <= to, "From (%s) > to (%s)", from, to);
+		super(pRepository, pRoot, pTarget, pFrom, pTo);
 	}
 
 	/**
@@ -111,11 +98,7 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 			final String pRepository, final String pRoot, final Path pTarget,
 			final int pStart, int pEnd) throws NullPointerException,
 			IllegalIntervalException {
-		super(parseAndValidateRepository(pRepository),
-				parseAndValidateRoot(pRoot),
-				parseAndValidateTarget(pTarget),
-				pStart,
-				pEnd);
+		super(pRepository, pRoot, pTarget, pStart, pEnd);
 	}
 
 	/**
@@ -127,16 +110,13 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 			final String pRepository, final String pRoot, final Path pTarget,
 			final List<String> pRevisions) throws NullPointerException,
 			IllegalArgumentException {
-		super(parseAndValidateRepository(pRepository),
-				parseAndValidateRoot(pRoot),
-				parseAndValidateTarget(pTarget),
-				parseAndValidateRevisions(pRevisions));
+		super(pRepository, pRoot, pTarget, pRevisions);
 	}
 
-	///////////////////////// Parsing and validation //////////////////////////
+	///////////////////////// Validation and mapping //////////////////////////
 
-	private static String parseAndValidateRepository(
-			final String pRepository) {
+	@Override
+	protected String validateMapRepository(final String pRepository) {
 		Validate.notEmpty(pRepository);
 		IllegalRepositoryException.isTrue(
 				SUPPORTED_PROTOCOLS.test(pRepository),
@@ -152,12 +132,14 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 		return normalizePath(pRepository);
 	}
 
-	private static String parseAndValidateRoot(final String pRoot) {
+	@Override
+	protected String validateMapRoot(final String pRoot) {
 		Validate.notNull(pRoot);
 		return normalizePath(pRoot);
 	}
 
-	private static Path parseAndValidateTarget(final Path pTarget) {
+	@Override
+	protected Path validateMapTarget(final Path pTarget) {
 		Validate.notNull(pTarget);
 		IllegalTargetException.isTrue(!Files.exists(pTarget),
 				"'%s' already exists", pTarget);
@@ -166,43 +148,45 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 		return pTarget.toAbsolutePath();
 	}
 
-	private static LocalDateTime parseAndValidateDatetime(
-			final LocalDateTime pDatetime) {
-		if (pDatetime.isBefore(MINIMUM_DATETIME)) {
+	@Override
+	protected List<String> validateMapRevisions(final List<String> pRevisions) {
+		return Validate.noNullElements(pRevisions).stream()
+				.peek(r -> {
+					try {
+						//noinspection ResultOfMethodCallIgnored
+						Integer.parseInt(r);
+					} catch (final NumberFormatException e) {
+						IllegalRevisionException.isTrue(false,
+								"'%s' is not a valid svn revision", r);
+					}
+				})
+				.map(Integer::parseInt)
+				.map(r -> {
+					if (r < 1) {
+						log.debug("Mapping revision value '{}' to '{}'", r, 1);
+						return 1;
+					} else {
+						return r;
+					}
+				})
+				.map(String::valueOf)
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	protected LocalDateTime validateMapDateTime(final LocalDateTime pDateTime) {
+		if (pDateTime.isBefore(MINIMUM_DATETIME)) {
 			log.debug("Mapping datetime value '{}' to '{}'",
-					pDatetime, MINIMUM_DATETIME);
+					pDateTime, MINIMUM_DATETIME);
 			return MINIMUM_DATETIME;
 		}
-		return pDatetime;
+		return pDateTime;
 	}
 
-	private static List<String> parseAndValidateRevisions(
-			final List<String> pRevisions) {
-		Validate.notNull(pRevisions).forEach(
-				SVNEngine::parseAndValidateRevision);
-		return pRevisions;
-	}
-
-	private static String parseAndValidateIntervalRevision(
-			final String pRevision) {
-		// Null will be mapped to first/last revision.
-		return pRevision == null ? "" : parseAndValidateRevision(pRevision);
-	}
-
-	private static String parseAndValidateRevision(final String pRevision) {
-		Validate.notNull(pRevision);
-		try {
-			int revision = Integer.parseInt(pRevision);
-			if (revision < 1) {
-				log.debug("Mapping revision value '{}' to '{}'", revision, 1);
-				revision = 1;
-			}
-			return String.valueOf(revision);
-		} catch (final NumberFormatException e) {
-			IllegalRevisionException.isTrue(false,
-					"'%s' is not a valid svn revision", pRevision);
-			return null; // just for the compiler
-		}
+	@Override
+	protected String validateMapIntervalRevision(final String pRevision) {
+		return pRevision == null ? "" : validateMapRevisions(
+				Collections.singletonList(pRevision)).get(0);
 	}
 
 	////////////////////////////////// Utils //////////////////////////////////

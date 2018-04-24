@@ -78,11 +78,7 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 			final LocalDateTime pUntil)
 			throws NullPointerException, IllegalRepositoryException,
 			IllegalTargetException {
-		super(parseRepository(pRepository),
-				parseRoot(pRoot),
-				parseAndValidateTarget(pTarget),
-				parseDateTime(pSince),
-				parseDateTime(pUntil));
+		super(pRepository, pRoot, pTarget, pSince, pUntil);
 		branch = Validate.notEmpty(pBranch);
 	}
 
@@ -96,11 +92,7 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 			final String pBranch, final String pFrom, final String pTo)
 			throws NullPointerException, IllegalRepositoryException,
 			IllegalTargetException {
-		super(parseRepository(pRepository),
-				parseRoot(pRoot),
-				parseAndValidateTarget(pTarget),
-				parseAndValidateIntervalRevision(pFrom),
-				parseAndValidateIntervalRevision(pTo));
+		super(pRepository, pRoot, pTarget, pFrom, pTo);
 		branch = Validate.notEmpty(pBranch);
 	}
 
@@ -113,11 +105,7 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 			final String pRepository, final String pRoot, final Path pTarget,
 			final String pBranch, final int pStart, final int pEnd)
 			throws NullPointerException, IllegalIntervalException {
-		super(parseRepository(pRepository),
-				parseRoot(pRoot),
-				parseAndValidateTarget(pTarget),
-				pStart,
-				pEnd);
+		super(pRepository, pRoot, pTarget, pStart, pEnd);
 		branch = Validate.notEmpty(pBranch);
 	}
 
@@ -130,17 +118,15 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 			final String pRepository, final String pRoot, final Path pTarget,
 			final String pBranch, final List<String> pRevisions)
 			throws NullPointerException, IllegalArgumentException {
-		super(parseRepository(pRepository),
-				parseRoot(pRoot),
-				parseAndValidateTarget(pTarget),
-				parseAndValidateRevisions(pRevisions));
+		super(pRepository, pRoot, pTarget, pRevisions);
 		branch = Validate.notEmpty(pBranch);
 	}
 
-	///////////////////////// Parsing and validation //////////////////////////
+	///////////////////////// Validation and mapping //////////////////////////
 
+	@Override
 	@SuppressWarnings("Duplicates")
-	private static String parseRepository(final String pRepository) {
+	protected String validateMapRepository(final String pRepository) {
 		Validate.notEmpty(pRepository);
 		IllegalRepositoryException.isTrue(
 				SUPPORTED_PROTOCOLS.test(pRepository),
@@ -158,13 +144,15 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 		return normalizePath(pRepository);
 	}
 
-	private static String parseRoot(final String pRoot) {
+	@Override
+	protected String validateMapRoot(final String pRoot) {
 		Validate.notNull(pRoot);
 		return normalizePath(pRoot);
 	}
 
+	@Override
 	@SuppressWarnings("Duplicates")
-	private static Path parseAndValidateTarget(final Path pTarget) {
+	protected Path validateMapTarget(final Path pTarget) {
 		Validate.notNull(pTarget);
 		Validate.notEmpty(pTarget.toString());
 		IllegalTargetException.isTrue(!Files.exists(pTarget),
@@ -174,31 +162,27 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 		return pTarget.toAbsolutePath();
 	}
 
-	private static LocalDateTime parseDateTime(final LocalDateTime pDatetime) {
-		Validate.notNull(pDatetime);
-		return pDatetime.getHour() == 0
-				? pDatetime.plusHours(1)
-				: pDatetime;
+	@Override
+	protected List<String> validateMapRevisions(final List<String> pRevisions) {
+		return Validate.noNullElements(pRevisions).stream()
+				.peek(r -> IllegalRevisionException.isTrue(
+						Validate.notNull(r).matches("\b[0-9a-f]{5,40}\b"),
+						String.format("'%s' is not a valid commit hash", r)))
+				.collect(Collectors.toList());
 	}
 
-	private static List<String> parseAndValidateRevisions(
-			final List<String> pRevisions) {
-		Validate.notNull(pRevisions).forEach(
-				GitEngine::parseAndValidateRevision);
-		return pRevisions;
+	@Override
+	protected LocalDateTime validateMapDateTime(final LocalDateTime pDateTime) {
+		Validate.notNull(pDateTime);
+		return pDateTime.getHour() == 0
+				? pDateTime.plusHours(1)
+				: pDateTime;
 	}
 
-	private static String parseAndValidateIntervalRevision(
-			final String pRevision) {
-		// Null will be mapped to first/last revision.
-		return pRevision == null ? "" : parseAndValidateRevision(pRevision);
-	}
-
-	private static String parseAndValidateRevision(final String pRevision) {
-		IllegalRevisionException.isTrue(
-				Validate.notNull(pRevision).matches("\b[0-9a-f]{5,40}\b"),
-				String.format("'%s' is not a valid commit hash", pRevision));
-		return pRevision;
+	@Override
+	protected String validateMapIntervalRevision(final String pRevision) {
+		return pRevision == null ? "" : validateMapRevisions(
+				Collections.singletonList(pRevision)).get(0);
 	}
 
 	////////////////////////////////// Utils //////////////////////////////////

@@ -2,7 +2,7 @@ package de.unibremen.informatik.st.libvcs4j.exception;
 
 public class IllegalRevisionException extends LibVCS4jParameterException {
 
-	private IllegalRevisionException(final String pMessage) {
+	public IllegalRevisionException(final String pMessage) {
 		super(pMessage);
 	}
 

@@ -2,7 +2,7 @@ package de.unibremen.informatik.st.libvcs4j.exception;
 
 public class IllegalIntervalException extends LibVCS4jParameterException {
 
-	private IllegalIntervalException(final String pMessage) {
+	public IllegalIntervalException(final String pMessage) {
 		super(pMessage);
 	}
 
