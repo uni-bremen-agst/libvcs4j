@@ -7,6 +7,7 @@ import de.unibremen.informatik.st.libvcs4j.engine.AbstractIntervalVCSEngine;
 import de.unibremen.informatik.st.libvcs4j.engine.Changes;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalIntervalException;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalRepositoryException;
+import de.unibremen.informatik.st.libvcs4j.exception.IllegalRevisionException;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalTargetException;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -93,8 +94,12 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 		super(parseAndValidateRepository(pRepository),
 				parseAndValidateRoot(pRoot),
 				parseAndValidateTarget(pTarget),
-				parseAndValidateRevision(pFrom),
-				parseAndValidateRevision(pTo));
+				parseAndValidateIntervalRevision(pFrom),
+				parseAndValidateIntervalRevision(pTo));
+		final int from = Integer.parseInt(pFrom);
+		final int to = Integer.parseInt(pTo);
+		IllegalIntervalException.isTrue(
+				from <= to, "From (%s) > to (%s)", from, to);
 	}
 
 	/**
@@ -104,13 +109,28 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 	@SuppressWarnings("DeprecatedIsStillUsed")
 	public SVNEngine(
 			final String pRepository, final String pRoot, final Path pTarget,
-			final int pStart, int pEnd)
-			throws NullPointerException, IllegalIntervalException {
+			final int pStart, int pEnd) throws NullPointerException,
+			IllegalIntervalException {
 		super(parseAndValidateRepository(pRepository),
 				parseAndValidateRoot(pRoot),
 				parseAndValidateTarget(pTarget),
 				pStart,
 				pEnd);
+	}
+
+	/**
+	 * Use {@link VCSEngineBuilder} instead.
+	 */
+	@Deprecated
+	@SuppressWarnings("DeprecatedIsStillUsed")
+	public SVNEngine(
+			final String pRepository, final String pRoot, final Path pTarget,
+			final List<String> pRevisions) throws NullPointerException,
+			IllegalArgumentException {
+		super(parseAndValidateRepository(pRepository),
+				parseAndValidateRoot(pRoot),
+				parseAndValidateTarget(pTarget),
+				parseAndValidateRevisions(pRevisions));
 	}
 
 	///////////////////////// Parsing and validation //////////////////////////
@@ -149,27 +169,37 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 	private static LocalDateTime parseAndValidateDatetime(
 			final LocalDateTime pDatetime) {
 		if (pDatetime.isBefore(MINIMUM_DATETIME)) {
-			log.debug("Mapping datetime {} to {}",
+			log.debug("Mapping datetime value '{}' to '{}'",
 					pDatetime, MINIMUM_DATETIME);
 			return MINIMUM_DATETIME;
 		}
 		return pDatetime;
 	}
 
+	private static List<String> parseAndValidateRevisions(
+			final List<String> pRevisions) {
+		Validate.notNull(pRevisions).forEach(
+				SVNEngine::parseAndValidateRevision);
+		return pRevisions;
+	}
+
+	private static String parseAndValidateIntervalRevision(
+			final String pRevision) {
+		// Null will be mapped to first/last revision.
+		return pRevision == null ? "" : parseAndValidateRevision(pRevision);
+	}
+
 	private static String parseAndValidateRevision(final String pRevision) {
-		if (pRevision == null) {
-			// Will be mapped to first/last revision.
-			return "";
-		}
+		Validate.notNull(pRevision);
 		try {
 			int revision = Integer.parseInt(pRevision);
 			if (revision < 1) {
-				log.debug("Mapping revision {} to {}", revision, 1);
+				log.debug("Mapping revision value '{}' to '{}'", revision, 1);
 				revision = 1;
 			}
 			return String.valueOf(revision);
 		} catch (final NumberFormatException e) {
-			IllegalIntervalException.isTrue(false,
+			IllegalRevisionException.isTrue(false,
 					"'%s' is not a valid svn revision", pRevision);
 			return null; // just for the compiler
 		}

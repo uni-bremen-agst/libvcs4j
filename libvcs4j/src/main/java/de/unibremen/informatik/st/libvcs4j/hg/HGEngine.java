@@ -15,10 +15,13 @@ import de.unibremen.informatik.st.libvcs4j.VCSEngineBuilder;
 import de.unibremen.informatik.st.libvcs4j.engine.AbstractIntervalVCSEngine;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalIntervalException;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalRepositoryException;
+import de.unibremen.informatik.st.libvcs4j.exception.IllegalRevisionException;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalTargetException;
 import de.unibremen.informatik.st.libvcs4j.data.CommitImpl;
 import de.unibremen.informatik.st.libvcs4j.engine.Changes;
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -42,6 +45,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class HGEngine extends AbstractIntervalVCSEngine {
+
+	private static final Logger log = LoggerFactory.getLogger(HGEngine.class);
 
 	static {
 		// Disable the logger (java.util.logging) used by JavaHG.
@@ -85,8 +90,8 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 		super(parseAndValidateRepository(pRepository),
 				parseAndValidateRoot(pRoot),
 				parseAndValidateTarget(pTarget),
-				parseAndValidateRevision(pFrom),
-				parseAndValidateRevision(pTo));
+				parseAndValidateIntervalRevision(pFrom),
+				parseAndValidateIntervalRevision(pTo));
 	}
 
 	/**
@@ -103,6 +108,21 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 				parseAndValidateTarget(pTarget),
 				pStart,
 				pEnd);
+	}
+
+	/**
+	 * Use {@link VCSEngineBuilder} instead.
+	 */
+	@Deprecated
+	@SuppressWarnings("DeprecatedIsStillUsed")
+	public HGEngine(
+			final String pRepository, final String pRoot, final Path pTarget,
+			final List<String> pRevisions) throws NullPointerException,
+			IllegalArgumentException {
+		super(parseAndValidateRepository(pRepository),
+				parseAndValidateRoot(pRoot),
+				parseAndValidateTarget(pTarget),
+				parseAndValidateRevisions(pRevisions));
 	}
 
 	///////////////////////// Parsing and validation //////////////////////////
@@ -146,13 +166,32 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 		return Validate.notNull(pDateTime);
 	}
 
+	private static List<String> parseAndValidateRevisions(
+			final List<String> pRevisions) {
+		Validate.notNull(pRevisions).forEach(
+				HGEngine::parseAndValidateRevision);
+		return pRevisions;
+	}
+
+	private static String parseAndValidateIntervalRevision(
+			final String pRevision) {
+		// Null will be mapped to first/last revision.
+		return pRevision == null ? "" : parseAndValidateRevision(pRevision);
+	}
+
 	private static String parseAndValidateRevision(final String pRevision) {
-		if (pRevision == null) {
-			// Will be mapped to first/last revision.
-			return "";
-		} else {
-			IllegalIntervalException.isTrue(!pRevision.isEmpty(),
-					"Unsupported revision value");
+		Validate.notNull(pRevision);
+		try {
+			int revision = Integer.parseInt(pRevision);
+			if (revision < 0) {
+				log.debug("Mapping revision value '{}' to '{}'", revision, 0);
+				revision = 0;
+			}
+			return String.valueOf(revision);
+		} catch (final NumberFormatException e) {
+			IllegalRevisionException.isTrue(
+					pRevision.matches("\b[0-9a-f]{12,40}\b"),
+					"'%s' is not a valid changeset value", pRevision);
 			return pRevision;
 		}
 	}

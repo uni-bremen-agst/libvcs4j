@@ -2,6 +2,7 @@ package de.unibremen.informatik.st.libvcs4j.git;
 
 import de.unibremen.informatik.st.libvcs4j.VCSEngineBuilder;
 import de.unibremen.informatik.st.libvcs4j.engine.AbstractIntervalVCSEngine;
+import de.unibremen.informatik.st.libvcs4j.exception.IllegalRevisionException;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalTargetException;
 import de.unibremen.informatik.st.libvcs4j.data.CommitImpl;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalIntervalException;
@@ -98,8 +99,8 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 		super(parseRepository(pRepository),
 				parseRoot(pRoot),
 				parseAndValidateTarget(pTarget),
-				parseAndValidateRevision(pFrom),
-				parseAndValidateRevision(pTo));
+				parseAndValidateIntervalRevision(pFrom),
+				parseAndValidateIntervalRevision(pTo));
 		branch = Validate.notEmpty(pBranch);
 	}
 
@@ -117,6 +118,22 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 				parseAndValidateTarget(pTarget),
 				pStart,
 				pEnd);
+		branch = Validate.notEmpty(pBranch);
+	}
+
+	/**
+	 * Use {@link VCSEngineBuilder} instead.
+	 */
+	@Deprecated
+	@SuppressWarnings("DeprecatedIsStillUsed")
+	public GitEngine(
+			final String pRepository, final String pRoot, final Path pTarget,
+			final String pBranch, final List<String> pRevisions)
+			throws NullPointerException, IllegalArgumentException {
+		super(parseRepository(pRepository),
+				parseRoot(pRoot),
+				parseAndValidateTarget(pTarget),
+				parseAndValidateRevisions(pRevisions));
 		branch = Validate.notEmpty(pBranch);
 	}
 
@@ -164,15 +181,24 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 				: pDatetime;
 	}
 
+	private static List<String> parseAndValidateRevisions(
+			final List<String> pRevisions) {
+		Validate.notNull(pRevisions).forEach(
+				GitEngine::parseAndValidateRevision);
+		return pRevisions;
+	}
+
+	private static String parseAndValidateIntervalRevision(
+			final String pRevision) {
+		// Null will be mapped to first/last revision.
+		return pRevision == null ? "" : parseAndValidateRevision(pRevision);
+	}
+
 	private static String parseAndValidateRevision(final String pRevision) {
-		if (pRevision == null) {
-			// Will be mapped to first/last revision.
-			return "";
-		} else {
-			IllegalIntervalException.isTrue(!pRevision.isEmpty(),
-					"Unsupported revision hash");
-			return pRevision;
-		}
+		IllegalRevisionException.isTrue(
+				Validate.notNull(pRevision).matches("\b[0-9a-f]{5,40}\b"),
+				String.format("'%s' is not a valid commit hash", pRevision));
+		return pRevision;
 	}
 
 	////////////////////////////////// Utils //////////////////////////////////

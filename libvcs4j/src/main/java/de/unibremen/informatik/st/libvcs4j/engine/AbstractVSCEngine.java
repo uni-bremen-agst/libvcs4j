@@ -49,12 +49,15 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 
 	private static final Logger log = LoggerFactory.getLogger(VCSEngine.class);
 
+	/* VCS related configurations. */
 	private final String repository;
 	private final String root;
 	private final Path target;
 
+	/* External engines. */
 	private ITEngine itEngine = null;
 
+	/* Internal state of this engine. */
 	private int ordinal = 1;
 	private boolean initialized = false;
 	private List<String> revisions = null;
@@ -68,6 +71,14 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 		repository = Validate.notNull(pRepository);
 		root = Validate.notNull(pRoot);
 		target = Validate.notNull(pTarget).toAbsolutePath();
+	}
+
+	public AbstractVSCEngine(
+			final String pRepository, final String pRoot, final Path pTarget,
+			final List<String> pRevisions) throws NullPointerException,
+			IllegalArgumentException {
+		this(pRepository, pRoot, pTarget);
+		revisions = Validate.noNullElements(pRevisions);
 	}
 
 	@Override
@@ -279,8 +290,10 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 	private void init() throws IOException {
 		if (!initialized) {
 			initImpl();
-			revisions = listRevisionsImpl();
-			IllegalReturnException.noNullElements(revisions);
+			if (revisions == null) {
+				revisions = listRevisionsImpl();
+				IllegalReturnException.noNullElements(revisions);
+			}
 			initialized = true;
 		}
 	}
