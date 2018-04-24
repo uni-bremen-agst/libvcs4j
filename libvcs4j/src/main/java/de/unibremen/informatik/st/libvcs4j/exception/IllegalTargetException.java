@@ -1,6 +1,6 @@
 package de.unibremen.informatik.st.libvcs4j.exception;
 
-public class IllegalTargetException extends IllegalArgumentException {
+public class IllegalTargetException extends LibVCS4jParameterException {
 
 	private IllegalTargetException(final String pMessage) {
 		super(pMessage);
@@ -8,12 +8,8 @@ public class IllegalTargetException extends IllegalArgumentException {
 
 	public static void isTrue(
 			final boolean pCondition, final String pMessage,
-			final Object... pValues) throws IllegalTargetException {
-		if (!pCondition) {
-			final String message = pMessage == null || pValues == null
-					? "Illegal target"
-					: String.format(pMessage, pValues);
-			throw new IllegalTargetException(message);
-		}
+			final Object... pValues) throws IllegalIntervalException {
+		LibVCS4jParameterException.isTrue(IllegalTargetException.class,
+				pCondition, pMessage, pValues);
 	}
 }

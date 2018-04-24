@@ -1,6 +1,6 @@
 package de.unibremen.informatik.st.libvcs4j.exception;
 
-public class IllegalIntervalException extends IllegalArgumentException {
+public class IllegalIntervalException extends LibVCS4jParameterException {
 
 	private IllegalIntervalException(final String pMessage) {
 		super(pMessage);
@@ -9,11 +9,7 @@ public class IllegalIntervalException extends IllegalArgumentException {
 	public static void isTrue(
 			final boolean pCondition, final String pMessage,
 			final Object... pValues) throws IllegalIntervalException {
-		if (!pCondition) {
-			final String message = pMessage == null || pValues == null
-					? "Illegal interval"
-					: String.format(pMessage, pValues);
-			throw new IllegalIntervalException(message);
-		}
+		LibVCS4jParameterException.isTrue(IllegalIntervalException.class,
+				pCondition, pMessage, pValues);
 	}
 }
