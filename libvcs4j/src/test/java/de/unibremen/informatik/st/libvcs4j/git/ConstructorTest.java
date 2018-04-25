@@ -1,34 +1,20 @@
 package de.unibremen.informatik.st.libvcs4j.git;
 
-import de.unibremen.informatik.st.libvcs4j.VCSBaseTest;
 import de.unibremen.informatik.st.libvcs4j.VCSEngineBuilder;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalRepositoryException;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
-
-import static org.junit.Assert.assertEquals;
 
 @SuppressWarnings("deprecation")
-public class ConstructorTest extends VCSBaseTest {
+public class ConstructorTest {
 
-	@Override
-	protected String getTarGZFile() {
-		return "javacpp.tar.gz";
-	}
-
-	@Override
-	protected String getFolderInTarGZ() {
-		return "javacpp";
-	}
-
-	@Override
-	protected void setEngine(final VCSEngineBuilder pBuilder) {
-		pBuilder.withGit();
-	}
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
 
 	private void createEngine(final String pInput) {
 		VCSEngineBuilder.ofGit(pInput).build();
