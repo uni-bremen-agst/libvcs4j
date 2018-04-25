@@ -3,7 +3,6 @@ package de.unibremen.informatik.st.libvcs4j;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalIntervalException;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalTargetException;
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -187,6 +186,19 @@ public abstract class VCSBaseTest {
 		builder.withEnd(6);
 		thrown.expect(IllegalIntervalException.class);
 		builder.build();
+	}
+
+	@Test
+	public void processAll() throws IOException {
+		List<String> commitIds = readIds();
+		VCSEngine engine = createBuilder().build();
+		List<Version> versions = new ArrayList<>();
+		engine.forEach(versions::add);
+		assertEquals(commitIds.size(), versions.size());
+		for (int i = 0; i < versions.size(); i++) {
+			assertEquals(commitIds.get(i),
+					versions.get(i).getLatestCommit().getId());
+		}
 	}
 
 	@Test

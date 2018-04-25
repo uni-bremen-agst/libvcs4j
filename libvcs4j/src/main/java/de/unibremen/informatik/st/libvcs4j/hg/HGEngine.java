@@ -48,9 +48,19 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 
 	private static final Logger log = LoggerFactory.getLogger(HGEngine.class);
 
+	private static final LocalDateTime MAX_DATETIME =
+			LocalDateTime.of(2038, 1, 1, 0, 0);
+
 	static {
 		// Disable the logger (java.util.logging) used by JavaHG.
 		LogManager.getLogManager().reset();
+
+		// ... there still is cobol software in use...
+		if (LocalDateTime.now().isAfter(MAX_DATETIME)) {
+			throw new IllegalStateException(String.format(
+					"Mercurial does not support datetime values after '%s'",
+					MAX_DATETIME));
+		}
 	}
 
 	private static final Predicate<String> SUPPORTED_PROTOCOLS =
@@ -311,9 +321,14 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 			throws IOException {
 		Validate.validState(repository != null);
 
+		LocalDateTime xUntil = pUntil;
+		if (xUntil.isAfter(MAX_DATETIME)) {
+			xUntil = MAX_DATETIME;
+		}
+
 		final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE;
 		final String since = formatter.format(pSince);
-		final String until = formatter.format(pUntil);
+		final String until = formatter.format(xUntil);
 		final String date = since + " to " + until;
 
 		// Keep in mind that 'hg log' returns changesets in the following

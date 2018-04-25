@@ -124,7 +124,7 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 	private List<String> listRevisionsImpl(int start, int end)
 			throws IOException {
 		final LocalDateTime since = VCSEngineBuilder.DEFAULT_SINCE;
-		final LocalDateTime until = LocalDateTime.of(2200, 1, 1, 0, 0);
+		final LocalDateTime until = VCSEngineBuilder.DEFAULT_UNTIL;
 		final List<String> revs = listRevisionsImpl(since, until);
 		if (start >= revs.size()) {
 			return Collections.emptyList();
