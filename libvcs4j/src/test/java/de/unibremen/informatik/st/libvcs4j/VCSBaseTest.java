@@ -50,7 +50,7 @@ public abstract class VCSBaseTest {
 		return target;
 	}
 
-	private VCSEngineBuilder createBuilder() {
+	protected VCSEngineBuilder createBuilder() {
 		VCSEngineBuilder builder = VCSEngineBuilder.of(input.toString());
 		setEngine(builder);
 		return builder;
