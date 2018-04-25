@@ -2,6 +2,7 @@ package de.unibremen.informatik.st.libvcs4j;
 
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalIntervalException;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalTargetException;
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -9,11 +10,17 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -48,6 +55,13 @@ public abstract class VCSBaseTest {
 		VCSEngineBuilder builder = VCSEngineBuilder.of(input.toString());
 		setEngine(builder);
 		return builder;
+	}
+
+	private List<String> readIds() throws IOException {
+		InputStream is = getClass().getResourceAsStream("/" + getIdFile());
+		String input = IOUtils.toString(is, StandardCharsets.UTF_8);
+		String[] ids = input.split("\n");
+		return Arrays.asList(ids);
 	}
 
 	@Test
@@ -176,7 +190,7 @@ public abstract class VCSBaseTest {
 	}
 
 	@Test
-	public void ordinalInterval0To3() throws IOException {
+	public void rangeInterval0To3() throws IOException {
 		VCSEngine engine = createBuilder()
 				.withStart(0)
 				.withEnd(3)
@@ -200,7 +214,7 @@ public abstract class VCSBaseTest {
 	}
 
 	@Test
-	public void ordinalInterval5To9() throws IOException {
+	public void rangeInterval5To9() throws IOException {
 		VCSEngine engine = createBuilder()
 				.withStart(5)
 				.withEnd(9)
@@ -228,7 +242,7 @@ public abstract class VCSBaseTest {
 	}
 
 	@Test
-	public void ordinalIntervalTo2() throws IOException {
+	public void rangeIntervalTo2() throws IOException {
 		VCSEngine engine = createBuilder()
 				.withEnd(2)
 				.build();
@@ -246,7 +260,44 @@ public abstract class VCSBaseTest {
 		assertFalse(version.isPresent());
 	}
 
+	@Test
+	public void revisionIntervalIdx0To5() throws IOException {
+		List<String> commitIds = readIds();
+		String from = commitIds.get(0);
+		String to = commitIds.get(5);
+		VCSEngine engine = createBuilder()
+				.withFrom(from)
+				.withTo(to)
+				.build();
+		List<Version> versions = new ArrayList<>();
+		engine.forEach(versions::add);
+		assertEquals(6, versions.size());
+		for (int i = 0; i < versions.size(); i++) {
+			assertEquals(commitIds.get(i),
+					versions.get(i).getLatestCommit().getId());
+		}
+	}
+
+	@Test
+	public void revisionIntervalIdx6To8() throws IOException {
+		List<String> commitIds = readIds();
+		String from = commitIds.get(6);
+		String to = commitIds.get(8);
+		VCSEngine engine = createBuilder()
+				.withFrom(from)
+				.withTo(to)
+				.build();
+		List<Version> versions = new ArrayList<>();
+		engine.forEach(versions::add);
+		assertEquals(3, versions.size());
+		for (int i = 0; i < versions.size(); i++) {
+			assertEquals(commitIds.get(i+6),
+					versions.get(i).getLatestCommit().getId());
+		}
+	}
+
 	protected abstract String getTarGZFile();
 	protected abstract String getFolderInTarGZ();
 	protected abstract void setEngine(VCSEngineBuilder builder);
+	protected abstract String getIdFile();
 }

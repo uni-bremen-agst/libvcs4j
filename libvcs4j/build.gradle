@@ -32,6 +32,7 @@ dependencies {
 	compile 'org.slf4j:slf4j-api:1.7.22'
 	compile 'org.tmatesoft.svnkit:svnkit:1.9.1'
 	testCompile 'junit:junit:4.12'
+	testCompile 'commons-io:commons-io:2.6'
 	testCompile 'org.apache.commons:commons-compress:1.15'
 	testCompile 'org.slf4j:slf4j-simple:1.7.25'
 

@@ -166,7 +166,7 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	protected List<String> validateMapRevisions(final List<String> pRevisions) {
 		return Validate.noNullElements(pRevisions).stream()
 				.peek(r -> IllegalRevisionException.isTrue(
-						Validate.notNull(r).matches("\b[0-9a-f]{5,40}\b"),
+						Validate.notNull(r).matches("[0-9a-f]{5,40}"),
 						String.format("'%s' is not a valid commit hash", r)))
 				.collect(Collectors.toList());
 	}

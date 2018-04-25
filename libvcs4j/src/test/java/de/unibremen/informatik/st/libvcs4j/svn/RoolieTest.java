@@ -26,8 +26,13 @@ public class RoolieTest extends VCSBaseTest {
 	}
 
 	@Override
-	protected void setEngine(final VCSEngineBuilder pBuilder) {
-		pBuilder.withSVN();
+	protected void setEngine(VCSEngineBuilder builder) {
+		builder.withSVN();
+	}
+
+	@Override
+	protected String getIdFile() {
+		return "roolie_ids.txt";
 	}
 
 	///////////////////////// Datetime interval tests /////////////////////////
@@ -796,5 +801,17 @@ public class RoolieTest extends VCSBaseTest {
 		assertEquals(String.valueOf("41"), revisions.get(0));
 		assertEquals(String.valueOf("61"), revisions.get(1));
 		assertEquals(String.valueOf("62"), revisions.get(2));
+	}
+
+	@Test
+	public void toGreaterHEAD() throws IOException {
+		SVNEngine engine = new SVNEngine(
+				"file://" + getInput().toString(), "", getTarget(),
+				"1", "100");
+		List<String> revs = engine.listRevisions();
+		assertEquals(64, revs.size());
+		for (int i = 0; i < revs.size(); i++) {
+			assertEquals(String.valueOf(i+1), revs.get(i));
+		}
 	}
 }
