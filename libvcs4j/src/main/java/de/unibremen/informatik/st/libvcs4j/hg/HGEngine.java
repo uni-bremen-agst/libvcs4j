@@ -166,7 +166,7 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 						Integer.parseInt(r);
 					} catch (final NumberFormatException e) {
 						IllegalRevisionException.isTrue(
-								r.matches("\b[0-9a-f]{12,40}\b"),
+								r.matches("[0-9a-f]{12,40}"),
 								"'%s' is not a valid changeset value", r);
 					}
 				})
@@ -391,14 +391,14 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 						revNumber.equals(pToRev)
 						// changeset id
 						// https://www.mercurial-scm.org/wiki/ChangeSetID
-						|| revId.equals(pToRev))) {
+						|| revId.startsWith(pToRev))) {
 					include = true;
 				}
 				if (include) {
 					revisions.add(revNumber);
 				}
 				// Likewise, compare number and id.
-				if (revNumber.equals(pFromRev) || revId.equals(pFromRev)) {
+				if (revNumber.equals(pFromRev) || revId.startsWith(pFromRev)) {
 					break;
 				}
 			}
