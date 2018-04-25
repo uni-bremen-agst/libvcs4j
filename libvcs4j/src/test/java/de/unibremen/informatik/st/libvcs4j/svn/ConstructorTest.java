@@ -28,167 +28,38 @@ public class ConstructorTest extends VCSBaseTest {
 		return "roolie";
 	}
 
-	@Test
-	public void createProviderWithBuilder() throws IOException {
-		final SVNEngine engine =
-				(SVNEngine) VCSEngineBuilder
-						.of(input.toString())
-						.withSVN()
-						.build();
-		assertEquals("", engine.getRoot());
-		assertEquals(64, engine.listRevisions().size());
+	@Override
+	protected void setEngine(final VCSEngineBuilder pBuilder) {
+		pBuilder.withSVN();
+	}
+
+	private void createEngine(final String pInput) {
+		VCSEngineBuilder.ofSVN(pInput).build();
 	}
 
 	@Test
 	public void unsupportedProtocol() {
 		thrown.expect(IllegalRepositoryException.class);
-		new SVNEngine(
-				"unsupported://path",
-				"",
-				output,
-				LocalDateTime.now().minusYears(1),
-				LocalDateTime.now());
-	}
-
-	@Test
-	public void notExistingRepository() {
-		thrown.expect(IllegalRepositoryException.class);
-		new SVNEngine(
-				"file://" + "3hlkjf3l48@#%^&hwc8lv%&43pt2131",
-				"",
-				output,
-				LocalDateTime.now().minusYears(1),
-				LocalDateTime.now());
+		createEngine("unsupported://path");
 	}
 
 	@Test
 	public void regularFileRepository() throws IOException {
-		final Path file = Files.createTempFile(null, null);
+		Path file = Files.createTempFile(null, null);
 		file.toFile().deleteOnExit();
-
 		thrown.expect(IllegalRepositoryException.class);
-		new SVNEngine(
-				"file://" + file.toString(),
-				"",
-				output,
-				LocalDateTime.now().minusYears(1),
-				LocalDateTime.now());
+		createEngine("file://" + file.toString());
 	}
 
 	@Test
-	public void notExistingRoot() throws IOException {
-		final SVNEngine engine =
-                (SVNEngine) VCSEngineBuilder
-				.of(input.toString())
-				.withSVN()
-				.withRoot("yf928y298fy4f32f98fy39fy38943yf938y")
-				.build();
-		assertEquals(0, engine.listRevisions().size());
-	}
-
-	@Test
-	public void existingTarget() throws IOException {
-		final Path target = Files.createTempDirectory(null);
-		target.toFile().deleteOnExit();
-
-		thrown.expect(IllegalTargetException.class);
-		new SVNEngine(
-				"file://" + input.toString(),
-				"",
-				target,
-				LocalDateTime.now().minusYears(1),
-				LocalDateTime.now());
-
-	}
-
-	@Test
-	public void untilBeforeSince() {
-		final LocalDateTime now = LocalDateTime.now();
-		thrown.expect(IllegalIntervalException.class);
-		new SVNEngine(
-				"file://" + input.toString(),
-				"",
-				output,
-				now,
-				now.minusSeconds(1));
-	}
-
-	@Test
-	public void untilEqualsSince() throws IOException {
-		final LocalDateTime now = LocalDateTime.now();
-		final SVNEngine engine = new SVNEngine(
-				"file://" + input.toString(),
-				"",
-				output,
-				now,
-				now);
-		assertEquals(1, engine.listRevisions().size());
-	}
-
-	@Test
-	public void toBeforeFrom() throws IOException {
+	public void toGreaterHEAD() throws IOException {
 		SVNEngine engine = new SVNEngine(
-				"file://" + input.toString(),
-				"",
-				output,
-				"100",
-				"1");
-		assertEquals(0, engine.listRevisions().size());
-	}
-
-	@Test
-	public void toEqualsFrom() throws IOException {
-		for (int i = 1; i <= 64; i++) {
-			final String rev = String.valueOf(i);
-			final SVNEngine provider = new SVNEngine(
-					"file://" + input.toString(),
-					"",
-					output,
-					rev,
-					rev);
-			assertEquals(1, provider.listRevisions().size());
-			assertEquals(String.valueOf(i), provider.listRevisions().get(0));
-		}
-	}
-
-	@Test
-	public void invalidMinimumDate() throws IOException {
-		final SVNEngine provider = new SVNEngine(
-		        "file://" + input.toString(),
-                "",
-                output,
-                LocalDateTime.of(1900, 1, 1, 0, 0),
-                LocalDateTime.of(3000, 1, 1, 0, 0));
-		assertEquals(64, provider.listRevisions().size());
-	}
-
-	@Test
-	public void negativeFrom() throws IOException {
-		final SVNEngine provider =
-                (SVNEngine) VCSEngineBuilder
-				.of(input.toString())
-				.withSVN()
-				.withFrom("-10")
-				.withTo("64")
-				.build();
-		final List<String> revisions = provider.listRevisions();
-		for (int i = 0; i < revisions.size(); i++) {
-			assertEquals(String.valueOf(i+1), revisions.get(i));
-		}
-	}
-
-	@Test
-	public void moreThanMaximumTo() throws IOException {
-		final SVNEngine provider =
-                (SVNEngine) VCSEngineBuilder
-				.of(input.toString())
-				.withSVN()
-				.withFrom("1")
-				.withTo("100")
-				.build();
-		final List<String> revisions = provider.listRevisions();
-		for (int i = 0; i < revisions.size(); i++) {
-			assertEquals(String.valueOf(i+1), revisions.get(i));
+				"file://" + getInput().toString(), "", getTarget(),
+				"1", "100");
+		List<String> revs = engine.listRevisions();
+		assertEquals(64, revs.size());
+		for (int i = 0; i < revs.size(); i++) {
+			assertEquals(String.valueOf(i+1), revs.get(i));
 		}
 	}
 }

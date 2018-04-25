@@ -222,13 +222,13 @@ public class VCSEngineBuilder {
 	}
 
 	public VCSEngineBuilder withStart(final int pStart) {
-		start = Math.max(AbstractIntervalVCSEngine.MIN_START, pStart);
+		start = pStart;
 		interval = Interval.RANGE;
 		return this;
 	}
 
 	public VCSEngineBuilder withEnd(final int pEnd) {
-		end = Math.max(AbstractIntervalVCSEngine.MIN_START + 1, pEnd);
+		end = pEnd;
 		interval = Interval.RANGE;
 		return this;
 	}

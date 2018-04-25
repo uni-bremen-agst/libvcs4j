@@ -1,9 +1,6 @@
 package de.unibremen.informatik.st.libvcs4j.svn;
 
-import de.unibremen.informatik.st.libvcs4j.FileChange;
-import de.unibremen.informatik.st.libvcs4j.VCSBaseTest;
-import de.unibremen.informatik.st.libvcs4j.VCSEngine;
-import de.unibremen.informatik.st.libvcs4j.Version;
+import de.unibremen.informatik.st.libvcs4j.*;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -28,6 +25,11 @@ public class RoolieTest extends VCSBaseTest {
 		return "roolie";
 	}
 
+	@Override
+	protected void setEngine(final VCSEngineBuilder pBuilder) {
+		pBuilder.withSVN();
+	}
+
 	///////////////////////// Datetime interval tests /////////////////////////
 
 	private SVNEngine createProvider(
@@ -35,9 +37,9 @@ public class RoolieTest extends VCSBaseTest {
 			final String pFrom,
 			final String pTo) {
 		return new SVNEngine(
-				"file://" + input.toString(),
+				"file://" + getInput().toString(),
 				pRoot,
-				output,
+				getTarget(),
 				pFrom, pTo);
 	}
 
@@ -126,7 +128,7 @@ public class RoolieTest extends VCSBaseTest {
 		assertEquals(1, changes.size());
 		assertEquals(FileChange.Type.MODIFY, changes.get(0).getType());
 
-		final String expected = Paths.get(output.toAbsolutePath().toString(),
+		final String expected = Paths.get(getTarget().toAbsolutePath().toString(),
 				"Roolie/src/org/roolie/RulesEngine.java").toString();
 		assertEquals(expected, changes.get(0).getOldFile().get().getPath());
 		assertEquals(expected, changes.get(0).getNewFile().get().getPath());
@@ -747,9 +749,9 @@ public class RoolieTest extends VCSBaseTest {
 	private SVNEngine createProvider(
 			final String pRoot, final int pFrom, final int pTo) {
 		return new SVNEngine(
-				"file://" + input.toString(),
+				"file://" + getInput().toString(),
 				pRoot,
-				output,
+				getTarget(),
 				String.valueOf(pFrom),
 				String.valueOf(pTo));
 	}
