@@ -343,6 +343,8 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	@Override
 	protected List<String> listRevisionsImpl(
 			final String pFrom, final String pTo) throws IOException {
+		final boolean fromIsEmpty = pFrom.isEmpty();
+
 		// Keep in mind that 'git log' returns commits in the following
 		// order: [HEAD, HEAD^1, ..., initial]
 
@@ -363,7 +365,7 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 				if (include) {
 					revs.add(rv.getName());
 				}
-				if (rv.getName().startsWith(pFrom)) {
+				if (!fromIsEmpty && rv.getName().startsWith(pFrom)) {
 					break;
 				}
 			}

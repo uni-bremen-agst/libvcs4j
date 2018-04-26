@@ -352,6 +352,7 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 			throws IOException {
 		Validate.validState(repository != null);
 
+		final boolean fromIsEmpty = pFromRev.isEmpty();
 		final boolean fromIsInteger = isInteger(pFromRev);
 		final boolean toIsInteger = isInteger(pToRev);
 
@@ -394,7 +395,9 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 				// Likewise, compare number and id.
 				if (fromIsInteger && revNumber.equals(pFromRev)
 					||
-					!fromIsInteger && revId.startsWith(pFromRev)) {
+					!fromIsInteger &&
+							!fromIsEmpty &&
+							revId.startsWith(pFromRev)) {
 					break;
 				}
 			}

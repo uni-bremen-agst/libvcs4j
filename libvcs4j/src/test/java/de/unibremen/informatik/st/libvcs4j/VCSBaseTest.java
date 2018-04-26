@@ -308,6 +308,22 @@ public abstract class VCSBaseTest {
 		}
 	}
 
+	@Test
+	public void revisionIntervalIdxTo3() throws IOException {
+		List<String> commitIds = readIds();
+		String to = commitIds.get(3);
+		VCSEngine engine = createBuilder()
+				.withTo(to)
+				.build();
+		List<Version> versions = new ArrayList<>();
+		engine.forEach(versions::add);
+		assertEquals(4, versions.size());
+		for (int i = 0; i < versions.size(); i++) {
+			assertEquals(commitIds.get(i),
+					versions.get(i).getLatestCommit().getId());
+		}
+	}
+
 	protected abstract String getTarGZFile();
 	protected abstract String getFolderInTarGZ();
 	protected abstract void setEngine(VCSEngineBuilder builder);
