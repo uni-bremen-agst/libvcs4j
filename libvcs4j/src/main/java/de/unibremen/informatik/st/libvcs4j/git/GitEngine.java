@@ -436,7 +436,7 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 
 		final CommitImpl commit = new CommitImpl();
 		commit.setAuthor(rc.getAuthorIdent().getName());
-		commit.setMessage(rc.getFullMessage());
+		commit.setMessage(rc.getFullMessage().replaceAll("\r\n$|\n$", ""));
 		commit.setDateTime(dt);
 		commit.setParentIds(parentIds);
 		return commit;

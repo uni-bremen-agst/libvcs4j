@@ -61,7 +61,7 @@ public class JavaCPPTest extends VCSBaseTest {
 				"Samuel Audet",
 				commit.getAuthor());
 		assertEquals(
-				"Fix potential compilation error with VectorAdapter\n",
+				"Fix potential compilation error with VectorAdapter",
 				commit.getMessage());
 		assertEquals(
 				LocalDateTime.of(2016, 4, 7, 13, 31, 20),
@@ -91,7 +91,7 @@ public class JavaCPPTest extends VCSBaseTest {
 				commit.getAuthor());
 		assertEquals(
 				" * Arguments of `Pointer` type now get handled as `char*` in cases when the `position` can be used for arithmetic\n" +
-				" * Worked around bug of `InputStream.available()` always returning 0 with the `http` protocol in `Loader.extractResource(URL)`\n",
+				" * Worked around bug of `InputStream.available()` always returning 0 with the `http` protocol in `Loader.extractResource(URL)`",
 				commit.getMessage());
 		assertEquals(
 				LocalDateTime.of(2013, 3, 24, 10, 33, 42),
