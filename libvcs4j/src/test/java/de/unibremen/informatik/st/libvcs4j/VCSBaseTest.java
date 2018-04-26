@@ -17,11 +17,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public abstract class VCSBaseTest {
 
@@ -56,8 +54,8 @@ public abstract class VCSBaseTest {
 		return builder;
 	}
 
-	private List<String> readIds() throws IOException {
-		InputStream is = getClass().getResourceAsStream("/" + getIdFile());
+	private List<String> readIds(String idFile) throws IOException {
+		InputStream is = getClass().getResourceAsStream("/" + idFile);
 		String input = IOUtils.toString(is, StandardCharsets.UTF_8);
 		String[] ids = input.split("\n");
 		return Arrays.asList(ids);
@@ -190,91 +188,93 @@ public abstract class VCSBaseTest {
 
 	@Test
 	public void processAll() throws IOException {
-		List<String> commitIds = readIds();
+		List<String> commitIds = readIds(getIdFile());
 		VCSEngine engine = createBuilder().build();
 		List<Version> versions = new ArrayList<>();
 		engine.forEach(versions::add);
 		assertEquals(commitIds.size(), versions.size());
 		for (int i = 0; i < versions.size(); i++) {
-			assertEquals(commitIds.get(i),
-					versions.get(i).getLatestCommit().getId());
+			Version v = versions.get(i);
+			assertEquals(i + 1, v.getOrdinal());
+			assertEquals(commitIds.get(i), v.getLatestCommit().getId());
 		}
 	}
 
 	@Test
 	public void rangeInterval0To3() throws IOException {
+		List<String> commitIds = readIds(getIdFile());
 		VCSEngine engine = createBuilder()
 				.withStart(0)
 				.withEnd(3)
 				.build();
-		Optional<Version> version;
 
-		version = engine.next();
-		assertTrue(version.isPresent());
-		assertTrue(version.get().getOrdinal() == 1);
-
-		version = engine.next();
-		assertTrue(version.isPresent());
-		assertTrue(version.get().getOrdinal() == 2);
-
-		version = engine.next();
-		assertTrue(version.isPresent());
-		assertTrue(version.get().getOrdinal() == 3);
-
-		version = engine.next();
-		assertFalse(version.isPresent());
+		List<Version> versions = new ArrayList<>();
+		engine.forEach(versions::add);
+		assertEquals(3, versions.size());
+		for (int i = 3; i < versions.size(); i++) {
+			Version v = versions.get(i);
+			assertEquals(i + 1, v.getOrdinal());
+			assertEquals(commitIds.get(i), v.getLatestCommit().getId());
+		}
 	}
 
 	@Test
 	public void rangeInterval5To9() throws IOException {
+		List<String> commitIds = readIds(getIdFile());
 		VCSEngine engine = createBuilder()
 				.withStart(5)
 				.withEnd(9)
 				.build();
-		Optional<Version> version;
 
-		version = engine.next();
-		assertTrue(version.isPresent());
-		assertTrue(version.get().getOrdinal() == 1);
-
-		version = engine.next();
-		assertTrue(version.isPresent());
-		assertTrue(version.get().getOrdinal() == 2);
-
-		version = engine.next();
-		assertTrue(version.isPresent());
-		assertTrue(version.get().getOrdinal() == 3);
-
-		version = engine.next();
-		assertTrue(version.isPresent());
-		assertTrue(version.get().getOrdinal() == 4);
-
-		version = engine.next();
-		assertFalse(version.isPresent());
+		List<Version> versions = new ArrayList<>();
+		engine.forEach(versions::add);
+		assertEquals(4, versions.size());
+		for (int i = 0; i < versions.size(); i++) {
+			Version v = versions.get(i);
+			assertEquals(i + 1, v.getOrdinal());
+			assertEquals(commitIds.get(i + 5), v.getLatestCommit().getId());
+		}
 	}
 
 	@Test
 	public void rangeIntervalTo2() throws IOException {
+		List<String> commitIds = readIds(getIdFile());
 		VCSEngine engine = createBuilder()
 				.withEnd(2)
 				.build();
-		Optional<Version> version;
 
-		version = engine.next();
-		assertTrue(version.isPresent());
-		assertTrue(version.get().getOrdinal() == 1);
+		List<Version> versions = new ArrayList<>();
+		engine.forEach(versions::add);
+		assertEquals(2, versions.size());
+		for (int i = 0; i < versions.size(); i++) {
+			Version v = versions.get(i);
+			assertEquals(i + 1, v.getOrdinal());
+			assertEquals(commitIds.get(i), v.getLatestCommit().getId());
+		}
+	}
 
-		version = engine.next();
-		assertTrue(version.isPresent());
-		assertTrue(version.get().getOrdinal() == 2);
+	@Test
+	public void rangeIntervalLast3() throws IOException {
+		List<String> commitIds = readIds(getIdFile());
+		int start = commitIds.size() - 3;
+		VCSEngine engine = createBuilder()
+				.withStart(start)
+				.build();
 
-		version = engine.next();
-		assertFalse(version.isPresent());
+		List<Version> versions = new ArrayList<>();
+		engine.forEach(versions::add);
+		assertEquals(3, versions.size());
+		for (int i = 0; i < versions.size(); i++) {
+			Version v = versions.get(i);
+			assertEquals(i + 1, v.getOrdinal());
+			assertEquals(commitIds.get(i + start),
+					v.getLatestCommit().getId());
+		}
 	}
 
 	@Test
 	public void revisionIntervalIdx0To5() throws IOException {
-		List<String> commitIds = readIds();
+		List<String> commitIds = readIds(getIdFile());
 		String from = commitIds.get(0);
 		String to = commitIds.get(5);
 		VCSEngine engine = createBuilder()
@@ -292,7 +292,7 @@ public abstract class VCSBaseTest {
 
 	@Test
 	public void revisionIntervalIdx6To8() throws IOException {
-		List<String> commitIds = readIds();
+		List<String> commitIds = readIds(getIdFile());
 		String from = commitIds.get(6);
 		String to = commitIds.get(8);
 		VCSEngine engine = createBuilder()
@@ -310,7 +310,7 @@ public abstract class VCSBaseTest {
 
 	@Test
 	public void revisionIntervalIdxTo3() throws IOException {
-		List<String> commitIds = readIds();
+		List<String> commitIds = readIds(getIdFile());
 		String to = commitIds.get(3);
 		VCSEngine engine = createBuilder()
 				.withTo(to)
@@ -321,6 +321,25 @@ public abstract class VCSBaseTest {
 		for (int i = 0; i < versions.size(); i++) {
 			assertEquals(commitIds.get(i),
 					versions.get(i).getLatestCommit().getId());
+		}
+	}
+
+	@Test
+	public void revisionIntervalLast4() throws IOException {
+		List<String> commitIds = readIds(getIdFile());
+		int start = commitIds.size() - 4;
+		VCSEngine engine = createBuilder()
+				.withFrom(commitIds.get(start))
+				.build();
+
+		List<Version> versions = new ArrayList<>();
+		engine.forEach(versions::add);
+		assertEquals(4, versions.size());
+		for (int i = 0; i < versions.size(); i++) {
+			Version v = versions.get(i);
+			assertEquals(i + 1, v.getOrdinal());
+			assertEquals(commitIds.get(i + start),
+					v.getLatestCommit().getId());
 		}
 	}
 
