@@ -65,4 +65,25 @@ public class JavaHGTest extends VCSBaseTest {
 				Arrays.asList("809"),
 				commit.getParentIds());
 	}
+
+	@Test
+	public void commit30467fac2239() throws IOException {
+		VCSEngine engine = createBuilder()
+				.withFrom("30467fac2239")
+				.withTo("30467fac2239")
+				.build();
+
+		Optional<Version> version = engine.next();
+		assertTrue(version.isPresent());
+
+		Commit commit = version.get().getLatestCommit();assertEquals(
+				"560",
+				commit.getId());
+		assertEquals(
+				"Jan Sorensen",
+				commit.getAuthor());
+		assertEquals(
+				"JavaHgTestMercurialExtensionTest: Fixed todo and test case for long messages written to stderr",
+				commit.getMessage());
+	}
 }

@@ -171,14 +171,14 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 					}
 				})
 				.map(r -> {
-					try {
+					if (isInteger(r)) {
 						final int rev = Integer.parseInt(r);
 						if (rev < 0) {
-							log.debug("Mapping changeset value '{}' to '{}'",
+							log.debug("Mapping changeset number '{}' to '{}'",
 									r, 0);
 							return "0";
 						}
-					} catch (final NumberFormatException ignored) {}
+					}
 					return r;
 				})
 				.collect(Collectors.toList());
@@ -199,6 +199,15 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 
 	private String toAbsolutePath(final String pPath) {
 		return getTarget().resolve(pPath).toString();
+	}
+
+	private boolean isInteger(final String pValue) {
+		try {
+			Integer.parseInt(pValue);
+			return true;
+		} catch (final NumberFormatException e) {
+			return false;
+		}
 	}
 
 	///////////////////////////////////////////////////////////////////////////
@@ -362,6 +371,9 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 			throws IOException {
 		Validate.validState(repository != null);
 
+		final boolean fromIsInteger = isInteger(pFromRev);
+		final boolean toIsInteger = isInteger(pToRev);
+
 		// Keep in mind that 'hg log' returns changesets in the following
 		// order: [n, n-1, ..., 0] (or corresponding changeset id)
 
@@ -388,17 +400,20 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 				if (!include && (
 						// changeset number
 						// https://www.mercurial-scm.org/wiki/RevisionNumber
-						revNumber.equals(pToRev)
+						toIsInteger && revNumber.equals(pToRev)
+						||
 						// changeset id
 						// https://www.mercurial-scm.org/wiki/ChangeSetID
-						|| revId.startsWith(pToRev))) {
+						!toIsInteger && revId.startsWith(pToRev))) {
 					include = true;
 				}
 				if (include) {
 					revisions.add(revNumber);
 				}
 				// Likewise, compare number and id.
-				if (revNumber.equals(pFromRev) || revId.startsWith(pFromRev)) {
+				if (fromIsInteger && revNumber.equals(pFromRev)
+					||
+					!fromIsInteger && revId.startsWith(pFromRev)) {
 					break;
 				}
 			}
