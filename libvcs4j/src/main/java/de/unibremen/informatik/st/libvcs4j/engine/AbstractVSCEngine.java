@@ -460,6 +460,15 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 		return path;
 	}
 
+	protected boolean isInteger(final String pValue) {
+		try {
+			Integer.parseInt(pValue);
+			return true;
+		} catch (final NumberFormatException e) {
+			return false;
+		}
+	}
+
 	/////////////////////////// optional overrides ////////////////////////////
 
 	protected void initImpl() throws IOException {}

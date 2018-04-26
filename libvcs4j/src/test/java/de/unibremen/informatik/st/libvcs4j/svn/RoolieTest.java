@@ -50,7 +50,7 @@ public class RoolieTest extends VCSBaseTest {
 
 	private SVNEngine createProvider(
 			final String pRoot) {
-		return createProvider(pRoot, "0", "1000");
+		return createProvider(pRoot, "1", "1000");
 	}
 
 	@Test

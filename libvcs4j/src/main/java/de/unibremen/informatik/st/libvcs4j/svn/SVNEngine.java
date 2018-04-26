@@ -151,24 +151,11 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 	@Override
 	protected List<String> validateMapRevisions(final List<String> pRevisions) {
 		return Validate.noNullElements(pRevisions).stream()
-				.peek(r -> {
-					try {
-						//noinspection ResultOfMethodCallIgnored
-						Integer.parseInt(r);
-					} catch (final NumberFormatException e) {
-						IllegalRevisionException.isTrue(false,
-								"'%s' is not a valid svn revision", r);
-					}
-				})
+				.peek(r -> IllegalRevisionException.isTrue(isInteger(r),
+						"'%s' is not a valid svn revision", r))
 				.map(Integer::parseInt)
-				.map(r -> {
-					if (r < 1) {
-						log.debug("Mapping revision value '{}' to '{}'", r, 1);
-						return 1;
-					} else {
-						return r;
-					}
-				})
+				.peek(r -> IllegalRevisionException.isTrue(r >= 1,
+						"%d < 1", r))
 				.map(String::valueOf)
 				.collect(Collectors.toList());
 	}

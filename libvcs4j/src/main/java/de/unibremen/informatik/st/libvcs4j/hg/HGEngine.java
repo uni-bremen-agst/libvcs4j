@@ -161,25 +161,15 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	protected List<String> validateMapRevisions(final List<String> pRevisions) {
 		return Validate.noNullElements(pRevisions).stream()
 				.peek(r -> {
-					try {
-						//noinspection ResultOfMethodCallIgnored
-						Integer.parseInt(r);
-					} catch (final NumberFormatException e) {
-						IllegalRevisionException.isTrue(
-								r.matches("[0-9a-f]{12,40}"),
-								"'%s' is not a valid changeset value", r);
-					}
-				})
-				.map(r -> {
 					if (isInteger(r)) {
 						final int rev = Integer.parseInt(r);
-						if (rev < 0) {
-							log.debug("Mapping changeset number '{}' to '{}'",
-									r, 0);
-							return "0";
-						}
+						IllegalRevisionException.isTrue(rev >= 0,
+								"'%d' is not a valid changeset number", rev);
+					} else {
+						IllegalRevisionException.isTrue(
+								r.matches("[0-9a-f]{12,40}"),
+								"'%s' is not a valid changeset id", r);
 					}
-					return r;
 				})
 				.collect(Collectors.toList());
 	}
@@ -199,15 +189,6 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 
 	private String toAbsolutePath(final String pPath) {
 		return getTarget().resolve(pPath).toString();
-	}
-
-	private boolean isInteger(final String pValue) {
-		try {
-			Integer.parseInt(pValue);
-			return true;
-		} catch (final NumberFormatException e) {
-			return false;
-		}
 	}
 
 	///////////////////////////////////////////////////////////////////////////
