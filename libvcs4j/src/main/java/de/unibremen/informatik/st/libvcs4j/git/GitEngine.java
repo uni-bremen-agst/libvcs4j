@@ -357,13 +357,13 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 			// If `pTo` is empty, we assume HEAD.
 			boolean include = pTo.isEmpty();
 			for (final RevCommit rv : logCmd.call()) {
-				if (!include && rv.getName().equals(pTo)) {
+				if (!include && rv.getName().startsWith(pTo)) {
 					include = true;
 				}
 				if (include) {
 					revs.add(rv.getName());
 				}
-				if (rv.getName().equals(pFrom)) {
+				if (rv.getName().startsWith(pFrom)) {
 					break;
 				}
 			}

@@ -43,11 +43,10 @@ public class JavaCPPTest extends VCSBaseTest {
 	}
 
 	@Test
-	public void commit29208f7369e95219830b60fb37e90bb1e5bd9448()
-			throws IOException {
+	public void commit29208() throws IOException {
 		VCSEngine engine = createBuilder()
-				.withFrom("29208f7369e95219830b60fb37e90bb1e5bd9448")
-				.withTo("29208f7369e95219830b60fb37e90bb1e5bd9448")
+				.withFrom("29208")
+				.withTo("29208")
 				.build();
 
 		Optional<Version> version = engine.next();
@@ -72,11 +71,10 @@ public class JavaCPPTest extends VCSBaseTest {
 	}
 
 	@Test
-	public void commit3934c45285d7de75c7c827b3a104cbe89658d6aa()
-			throws IOException {
+	public void commit3934c45285d() throws IOException {
 		VCSEngine engine = createBuilder()
-				.withFrom("3934c45285d7de75c7c827b3a104cbe89658d6aa")
-				.withTo("3934c45285d7de75c7c827b3a104cbe89658d6aa")
+				.withFrom("3934c45285d")
+				.withTo("3934c45285d")
 				.build();
 
 		Optional<Version> version = engine.next();
@@ -102,11 +100,10 @@ public class JavaCPPTest extends VCSBaseTest {
 	}
 
 	@Test
-	public void changesb6cf70463402133a4c62b9bc0b8ba224e0b05d0f()
-			throws IOException {
+	public void changesb6cf7() throws IOException {
 		VCSEngine engine = createBuilder()
-				.withFrom("7c53985d8e9d5311b478e903e80c7ff7c5fde277")
-				.withTo("b6cf70463402133a4c62b9bc0b8ba224e0b05d0f")
+				.withFrom("7c539")
+				.withTo("b6cf7")
 				.build();
 
 		engine.next();
