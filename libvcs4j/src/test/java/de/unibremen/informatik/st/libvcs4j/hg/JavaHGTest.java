@@ -51,13 +51,13 @@ public class JavaHGTest extends VCSBaseTest {
 				"810",
 				commit.getId());
 		assertEquals(
-				"Amenel Voglozin <waav_zoungla-bbb6@yahoo.fr>",
+				"Amenel Voglozin",
 				commit.getAuthor());
 		assertEquals(
 				"README.text edited online with Bitbucket",
 				commit.getMessage());
-		// We can not check the datetime because
-		// JavaHG does not provide a zone id.
+		// We can not assert the datetime because
+		// JavaHG does not provide a proper zone id.
 //		assertEquals(
 //				LocalDateTime.of(2016, 12, 21, 1, 26, 3),
 //				commit.getDateTime());

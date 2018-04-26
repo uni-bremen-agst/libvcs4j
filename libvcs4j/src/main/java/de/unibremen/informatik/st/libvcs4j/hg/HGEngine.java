@@ -299,7 +299,7 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 		final Changeset changeset = changes.get(0);
 
 		final CommitImpl commit = new CommitImpl();
-		commit.setAuthor(changeset.getUser());
+		commit.setAuthor(changeset.getUser().replaceAll(" <.*@.*>$", ""));
 		commit.setMessage(changeset.getMessage());
 		final List<String> parents = new ArrayList<>();
 		Stream.of(changeset.getParent1(), changeset.getParent2())
