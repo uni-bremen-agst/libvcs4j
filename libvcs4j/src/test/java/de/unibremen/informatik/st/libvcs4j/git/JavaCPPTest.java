@@ -2,6 +2,7 @@ package de.unibremen.informatik.st.libvcs4j.git;
 
 import de.unibremen.informatik.st.libvcs4j.Commit;
 import de.unibremen.informatik.st.libvcs4j.FileChange;
+import de.unibremen.informatik.st.libvcs4j.Revision;
 import de.unibremen.informatik.st.libvcs4j.VCSBaseTest;
 import de.unibremen.informatik.st.libvcs4j.VCSEngine;
 import de.unibremen.informatik.st.libvcs4j.VCSEngineBuilder;
@@ -13,11 +14,15 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class JavaCPPTest extends VCSBaseTest {
@@ -153,5 +158,75 @@ public class JavaCPPTest extends VCSBaseTest {
 		assertTrue(pathChange3.equals(path1)
 				|| pathChange3.equals(path2)
 				|| pathChange3.equals(path3));
+	}
+
+	@Test
+	public void includeGitIgnoreInFile() throws IOException {
+		VCSEngine engine = createBuilder()
+				.withFrom("1380e19f51dd12b7083356e3601f6b5fc763da35")
+				.withTo("1380e19f51dd12b7083356e3601f6b5fc763da35")
+				.build();
+
+		Optional<Version> version = engine.next();
+		assertTrue(version.isPresent());
+
+		List<String> files = version.get()
+				.getRevision()
+				.getFiles()
+				.stream()
+				.map(VCSFile::toRelativePath)
+				.map(Path::getFileName)
+				.map(Path::toString)
+				.collect(Collectors.toList());
+		assertTrue(files.contains(".gitignore"));
+	}
+
+	@Test
+	public void doesNotIncludeGitDir() throws IOException {
+		VCSEngine engine = createBuilder()
+				.withEnd(10)
+				.build();
+
+		List<Version> versions = new ArrayList<>();
+		engine.forEach(versions::add);
+		assertEquals(10, versions.size());
+
+		versions.stream()
+				.map(Version::getRevision)
+				.map(Revision::getFiles)
+				.flatMap(Collection::stream)
+				.map(VCSFile::toRelativePath)
+				.map(Path::toString)
+				.forEach(f -> assertFalse(f.startsWith(".git")));
+	}
+
+	@Test
+	public void branch_gh_pages() throws IOException {
+		VCSEngine engine = createBuilder()
+				.withBranch("gh-pages")
+				.build();
+
+		List<Version> versions = new ArrayList<>();
+		engine.forEach(versions::add);
+		assertEquals(9, versions.size());
+
+		assertEquals("9b2c67502aaf168b1dbfee640a38a897cd02a6ec",
+				versions.get(0).getRevision().getId());
+		assertEquals("369203faee219272bc658333c71ffc7dc9117efb",
+				versions.get(1).getRevision().getId());
+		assertEquals("6b95f2bc0b443299e6dbfbf9774fd807c8e8b2c4",
+				versions.get(2).getRevision().getId());
+		assertEquals("320baec0f14f99c2284bb69e0dc6df52677f1474",
+				versions.get(3).getRevision().getId());
+		assertEquals("fbdff9f6014d31f6bd7a5424f510ebd77d0b7c16",
+				versions.get(4).getRevision().getId());
+		assertEquals("4e6011ac12f6e3f7ed9464814cbd7d0a09065273",
+				versions.get(5).getRevision().getId());
+		assertEquals("1106d44879310a9aa658ac73120ea4aaa67d0ab0",
+				versions.get(6).getRevision().getId());
+		assertEquals("1c08928b9b4e0f6529760cf7dbc607383afa7fa5",
+				versions.get(7).getRevision().getId());
+		assertEquals("32510a922ab069d52c312b3fb8668fb9dfda5e5f",
+				versions.get(8).getRevision().getId());
 	}
 }

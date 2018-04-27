@@ -454,6 +454,7 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 			Git.cloneRepository()
 					.setURI(getRepository())
 					.setDirectory(getTarget().toFile())
+					.setBranchesToClone(Collections.singleton(branch))
 					.setBranch(branch)
 					.call();
 		} catch (final GitAPIException e) {
@@ -463,7 +464,6 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 
 	@Override
 	public FilenameFilter createVCSFileFilter() {
-		return (pDir, pName) -> !pName.equals(".git") &&
-				!pName.equals(".gitignore");
+		return (pDir, pName) -> !pName.equals(".git");
 	}
 }
