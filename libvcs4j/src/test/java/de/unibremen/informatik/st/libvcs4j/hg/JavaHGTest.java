@@ -8,7 +8,9 @@ import de.unibremen.informatik.st.libvcs4j.Version;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
@@ -95,5 +97,33 @@ public class JavaHGTest extends VCSBaseTest {
 		assertEquals(
 				"JavaHgTestMercurialExtensionTest: Fixed todo and test case for long messages written to stderr",
 				commit.getMessage());
+	}
+
+	@Test
+	public void branch_1485179654809() throws IOException {
+		VCSEngine engine = createBuilder()
+				.withBranch("g-pechorin/readmetext-edited-online-with-bitbucket-1485179654809")
+				.build();
+
+		List<Version> versions = new ArrayList<>();
+		engine.forEach(versions::add);
+		assertEquals(1, versions.size());
+		assertEquals("544c5168e4d3d314a996699692d8099ffa6419b2",
+				versions.get(0).getRevision().getId());
+	}
+
+	@Test
+	public void branch_1485179654809_withRevisionInterval() throws IOException {
+		VCSEngine engine = createBuilder()
+				.withBranch("g-pechorin/readmetext-edited-online-with-bitbucket-1485179654809")
+				.withFrom("820")
+				.withTo("820")
+				.build();
+
+		List<Version> versions = new ArrayList<>();
+		engine.forEach(versions::add);
+		assertEquals(1, versions.size());
+		assertEquals("544c5168e4d3d314a996699692d8099ffa6419b2",
+				versions.get(0).getRevision().getId());
 	}
 }

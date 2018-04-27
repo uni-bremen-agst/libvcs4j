@@ -62,6 +62,8 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	private static final Predicate<String> FILE_PROTOCOL =
 			Pattern.compile("file://.*").asPredicate();
 
+	private static final String DEFAULT_BRANCH = "master";
+
 	/**
 	 * Examined branch, for instance, 'master'.
 	 */
@@ -79,7 +81,7 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 			throws NullPointerException, IllegalRepositoryException,
 			IllegalTargetException {
 		super(pRepository, pRoot, pTarget, pSince, pUntil);
-		branch = Validate.notEmpty(pBranch);
+		branch = pBranch == null ? DEFAULT_BRANCH : pBranch;
 	}
 
 	/**
@@ -93,7 +95,7 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 			throws NullPointerException, IllegalRepositoryException,
 			IllegalTargetException {
 		super(pRepository, pRoot, pTarget, pFrom, pTo);
-		branch = Validate.notEmpty(pBranch);
+		branch = pBranch == null ? DEFAULT_BRANCH : pBranch;
 	}
 
 	/**
@@ -106,7 +108,7 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 			final String pBranch, final int pStart, final int pEnd)
 			throws NullPointerException, IllegalIntervalException {
 		super(pRepository, pRoot, pTarget, pStart, pEnd);
-		branch = Validate.notEmpty(pBranch);
+		branch = pBranch == null ? DEFAULT_BRANCH : pBranch;
 	}
 
 	/**
@@ -119,7 +121,7 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 			final String pBranch, final List<String> pRevisions)
 			throws NullPointerException, IllegalArgumentException {
 		super(pRepository, pRoot, pTarget, pRevisions);
-		branch = Validate.notEmpty(pBranch);
+		branch = pBranch == null ? DEFAULT_BRANCH : pBranch;
 	}
 
 	///////////////////////// Validation and mapping //////////////////////////

@@ -10,7 +10,6 @@ import com.aragost.javahg.commands.flags.CatCommandFlags;
 import com.aragost.javahg.commands.flags.LogCommandFlags;
 import com.aragost.javahg.commands.flags.StatusCommandFlags;
 import com.aragost.javahg.commands.flags.UpdateCommandFlags;
-import com.google.common.collect.Streams;
 import de.unibremen.informatik.st.libvcs4j.VCSEngineBuilder;
 import de.unibremen.informatik.st.libvcs4j.engine.AbstractIntervalVCSEngine;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalIntervalException;
@@ -69,6 +68,8 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	private static final Predicate<String> FILE_PROTOCOL =
 			Pattern.compile("file://.*").asPredicate();
 
+	private final String branch;
+
 	private Repository repository = null;
 
 	/**
@@ -78,9 +79,11 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	@SuppressWarnings("DeprecatedIsStillUsed")
 	public HGEngine(
 			final String pRepository, final String pRoot, final Path pTarget,
-			final LocalDateTime pSince, final LocalDateTime pUntil)
+			final String pBranch, final LocalDateTime pSince,
+			final LocalDateTime pUntil)
 			throws NullPointerException, IllegalIntervalException {
 		super(pRepository, pRoot,pTarget, pSince, pUntil);
+		branch = pBranch;
 	}
 
 	/**
@@ -90,8 +93,10 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	@SuppressWarnings("DeprecatedIsStillUsed")
 	public HGEngine(
 			final String pRepository, final String pRoot, final Path pTarget,
-			final String pFrom, final String pTo) throws NullPointerException {
+			final String pBranch, final String pFrom, final String pTo)
+			throws NullPointerException {
 		super(pRepository, pRoot,pTarget, pFrom, pTo);
+		branch = pBranch;
 	}
 
 	/**
@@ -101,9 +106,10 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	@SuppressWarnings("DeprecatedIsStillUsed")
 	public HGEngine(
 			final String pRepository, final String pRoot, final Path pTarget,
-			final int pStart, final int pEnd) throws NullPointerException,
-			IllegalIntervalException {
+			final String pBranch, final int pStart, final int pEnd)
+			throws NullPointerException, IllegalIntervalException {
 		super(pRepository, pRoot,pTarget, pStart, pEnd);
+		branch = pBranch;
 	}
 
 	/**
@@ -113,9 +119,10 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	@SuppressWarnings("DeprecatedIsStillUsed")
 	public HGEngine(
 			final String pRepository, final String pRoot, final Path pTarget,
-			final List<String> pRevisions) throws NullPointerException,
-			IllegalArgumentException {
+			final String pBranch, final List<String> pRevisions)
+			throws NullPointerException, IllegalArgumentException {
 		super(pRepository, pRoot,pTarget, pRevisions);
+		branch = pBranch;
 	}
 
 	///////////////////////// Validation and mapping //////////////////////////
@@ -327,8 +334,13 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 
 		final List<String> revisions;
 		try {
-			revisions = LogCommandFlags.on(repository)
-					.date(date)
+			final LogCommand cmd = LogCommandFlags
+					.on(repository)
+					.date(date);
+			if (branch != null) {
+				cmd.branch(branch);
+			}
+			revisions = cmd
 					.execute(getRoot())
 					.stream()
 					.map(Changeset::getNode)
@@ -357,7 +369,12 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 
 		final List<String> revisions = new ArrayList<>();
 		try {
-			List<Changeset> changesets = LogCommandFlags.on(repository)
+			final LogCommand cmd = LogCommandFlags
+					.on(repository);
+			if (branch != null) {
+				cmd.branch(branch);
+			}
+			List<Changeset> changesets = cmd
 					.execute(getRoot())
 					.stream()
 					.collect(Collectors.toList());

@@ -40,9 +40,6 @@ public class VCSEngineBuilder {
 
 	public static final String DEFAULT_ROOT = "";
 
-	// Usually, 'master' is the default development branch.
-	public static final String DEFAULT_BRANCH = "master";
-
 	// Only SVN has restrictions regarding the minimum date.
 	public static final LocalDateTime DEFAULT_SINCE =
 			SVNEngine.MINIMUM_DATETIME;
@@ -71,7 +68,7 @@ public class VCSEngineBuilder {
 
 	private String target = defaultTarget;
 
-	private String branch = DEFAULT_BRANCH;
+	private String branch = null;
 
 	private Interval interval = Interval.DATE;
 
@@ -160,8 +157,7 @@ public class VCSEngineBuilder {
 	}
 
 	public VCSEngineBuilder withBranch(final String pBranch) {
-		branch = pBranch == null ? DEFAULT_BRANCH : pBranch.trim();
-		branch = branch.isEmpty() ? DEFAULT_BRANCH : branch;
+		branch = pBranch;
 		return this;
 	}
 
@@ -300,16 +296,19 @@ public class VCSEngineBuilder {
 					vcsEngine = new HGEngine(
 							repo, root,
 							Paths.get(target),
+							branch,
 							since, until);
 				} else if (interval == Interval.REVISION) {
 					vcsEngine = new HGEngine(
 							repo, root,
 							Paths.get(target),
+							branch,
 							from, to);
 				} else if (interval == Interval.RANGE) {
 					vcsEngine = new HGEngine(
 							repo, root,
 							Paths.get(target),
+							branch,
 							start, end);
 				} else {
 					throw new IllegalStateException(String.format(
