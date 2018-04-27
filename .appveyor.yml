@@ -1,2 +1,6 @@
+install:
+    - ps: choco install -y -r hg
+    - ps: choco install -y -r gradle
+
 build_script:
     - gradle build
