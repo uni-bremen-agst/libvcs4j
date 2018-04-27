@@ -31,8 +31,18 @@ public class RoolieTest extends VCSBaseTest {
 	}
 
 	@Override
-	protected String getIdFile() {
+	protected String getRootCommitIdFile() {
 		return "roolie_ids.txt";
+	}
+
+	@Override
+	protected String getSubDir() {
+		return "roolie-core/src/main/java/net/sf/roolie/core/util";
+	}
+
+	@Override
+	protected String getSubDirCommitIdFile() {
+		return "roolie_util_ids.txt";
 	}
 
 	///////////////////////// Datetime interval tests /////////////////////////

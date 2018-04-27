@@ -38,8 +38,18 @@ public class JavaCPPTest extends VCSBaseTest {
 	}
 
 	@Override
-	protected String getIdFile() {
+	protected String getRootCommitIdFile() {
 		return "javacpp_master_ids.txt";
+	}
+
+	@Override
+	protected String getSubDir() {
+		return "src/main/java/org/bytedeco/javacpp/tools";
+	}
+
+	@Override
+	protected String getSubDirCommitIdFile() {
+		return "javacpp_master_tools_ids.txt";
 	}
 
 	@Test

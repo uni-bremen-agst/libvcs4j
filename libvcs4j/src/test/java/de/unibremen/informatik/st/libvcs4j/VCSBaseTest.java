@@ -20,7 +20,14 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
+/**
+ * This class defines several basic tests for {@link VCSEngine}
+ * implementations. Each engine should extend this test class and implement the
+ * required methods.
+ */
+@SuppressWarnings("Duplicates")
 public abstract class VCSBaseTest {
 
 	private Path input;
@@ -188,7 +195,10 @@ public abstract class VCSBaseTest {
 
 	@Test
 	public void processAll() throws IOException {
-		List<String> commitIds = readIds(getIdFile());
+		List<String> commitIds = readIds(getRootCommitIdFile());
+		List<String> revisionIds = readIds(getRootRevisionIdFile());
+		assertEquals(commitIds.size(), revisionIds.size());
+		assertTrue(commitIds.size() >= 20);
 		VCSEngine engine = createBuilder().build();
 		List<Version> versions = new ArrayList<>();
 		engine.forEach(versions::add);
@@ -197,12 +207,34 @@ public abstract class VCSBaseTest {
 			Version v = versions.get(i);
 			assertEquals(i + 1, v.getOrdinal());
 			assertEquals(commitIds.get(i), v.getLatestCommit().getId());
+			assertEquals(revisionIds.get(i), v.getRevision().getId());
+		}
+	}
+
+	@Test
+	public void processSubDir() throws IOException {
+		List<String> commitIds = readIds(getSubDirCommitIdFile());
+		List<String> revisionIds = readIds(getSubDirRevisionIdFile());
+		assertEquals(commitIds.size(), revisionIds.size());
+		assertFalse(commitIds.isEmpty());
+		assertTrue(commitIds.size() < readIds(getRootCommitIdFile()).size());
+		VCSEngine engine = createBuilder().withRoot(getSubDir()).build();
+		List<Version> versions = new ArrayList<>();
+		engine.forEach(versions::add);
+		assertEquals(commitIds.size(), versions.size());
+		for (int i = 0; i < versions.size(); i++) {
+			Version v = versions.get(i);
+			assertEquals(i + 1, v.getOrdinal());
+			assertEquals(commitIds.get(i), v.getLatestCommit().getId());
+			assertEquals(revisionIds.get(i), v.getRevision().getId());
 		}
 	}
 
 	@Test
 	public void rangeInterval0To3() throws IOException {
-		List<String> commitIds = readIds(getIdFile());
+		List<String> commitIds = readIds(getRootCommitIdFile());
+		List<String> revisionIds = readIds(getRootRevisionIdFile());
+		assertEquals(commitIds.size(), revisionIds.size());
 		VCSEngine engine = createBuilder()
 				.withStart(0)
 				.withEnd(3)
@@ -215,12 +247,15 @@ public abstract class VCSBaseTest {
 			Version v = versions.get(i);
 			assertEquals(i + 1, v.getOrdinal());
 			assertEquals(commitIds.get(i), v.getLatestCommit().getId());
+			assertEquals(revisionIds.get(i), v.getRevision().getId());
 		}
 	}
 
 	@Test
 	public void rangeInterval5To9() throws IOException {
-		List<String> commitIds = readIds(getIdFile());
+		List<String> commitIds = readIds(getRootCommitIdFile());
+		List<String> revisionIds = readIds(getRootRevisionIdFile());
+		assertEquals(commitIds.size(), revisionIds.size());
 		VCSEngine engine = createBuilder()
 				.withStart(5)
 				.withEnd(9)
@@ -233,12 +268,15 @@ public abstract class VCSBaseTest {
 			Version v = versions.get(i);
 			assertEquals(i + 1, v.getOrdinal());
 			assertEquals(commitIds.get(i + 5), v.getLatestCommit().getId());
+			assertEquals(revisionIds.get(i + 5), v.getRevision().getId());
 		}
 	}
 
 	@Test
 	public void rangeIntervalTo2() throws IOException {
-		List<String> commitIds = readIds(getIdFile());
+		List<String> commitIds = readIds(getRootCommitIdFile());
+		List<String> revisionIds = readIds(getRootRevisionIdFile());
+		assertEquals(commitIds.size(), revisionIds.size());
 		VCSEngine engine = createBuilder()
 				.withEnd(2)
 				.build();
@@ -250,12 +288,15 @@ public abstract class VCSBaseTest {
 			Version v = versions.get(i);
 			assertEquals(i + 1, v.getOrdinal());
 			assertEquals(commitIds.get(i), v.getLatestCommit().getId());
+			assertEquals(revisionIds.get(i), v.getRevision().getId());
 		}
 	}
 
 	@Test
 	public void rangeIntervalLast3() throws IOException {
-		List<String> commitIds = readIds(getIdFile());
+		List<String> commitIds = readIds(getRootCommitIdFile());
+		List<String> revisionIds = readIds(getRootRevisionIdFile());
+		assertEquals(commitIds.size(), revisionIds.size());
 		int start = commitIds.size() - 3;
 		VCSEngine engine = createBuilder()
 				.withStart(start)
@@ -269,12 +310,16 @@ public abstract class VCSBaseTest {
 			assertEquals(i + 1, v.getOrdinal());
 			assertEquals(commitIds.get(i + start),
 					v.getLatestCommit().getId());
+			assertEquals(revisionIds.get(i + start),
+					v.getRevision().getId());
 		}
 	}
 
 	@Test
 	public void revisionIntervalIdx0To5() throws IOException {
-		List<String> commitIds = readIds(getIdFile());
+		List<String> commitIds = readIds(getRootCommitIdFile());
+		List<String> revisionIds = readIds(getRootRevisionIdFile());
+		assertEquals(commitIds.size(), revisionIds.size());
 		String from = commitIds.get(0);
 		String to = commitIds.get(5);
 		VCSEngine engine = createBuilder()
@@ -285,14 +330,17 @@ public abstract class VCSBaseTest {
 		engine.forEach(versions::add);
 		assertEquals(6, versions.size());
 		for (int i = 0; i < versions.size(); i++) {
-			assertEquals(commitIds.get(i),
-					versions.get(i).getLatestCommit().getId());
+			Version v = versions.get(i);
+			assertEquals(commitIds.get(i), v.getLatestCommit().getId());
+			assertEquals(revisionIds.get(i), v.getRevision().getId());
 		}
 	}
 
 	@Test
 	public void revisionIntervalIdx6To8() throws IOException {
-		List<String> commitIds = readIds(getIdFile());
+		List<String> commitIds = readIds(getRootCommitIdFile());
+		List<String> revisionIds = readIds(getRootRevisionIdFile());
+		assertEquals(commitIds.size(), revisionIds.size());
 		String from = commitIds.get(6);
 		String to = commitIds.get(8);
 		VCSEngine engine = createBuilder()
@@ -303,14 +351,17 @@ public abstract class VCSBaseTest {
 		engine.forEach(versions::add);
 		assertEquals(3, versions.size());
 		for (int i = 0; i < versions.size(); i++) {
-			assertEquals(commitIds.get(i+6),
-					versions.get(i).getLatestCommit().getId());
+			Version v = versions.get(i);
+			assertEquals(commitIds.get(i + 6), v.getLatestCommit().getId());
+			assertEquals(revisionIds.get(i + 6), v.getRevision().getId());
 		}
 	}
 
 	@Test
 	public void revisionIntervalIdxTo3() throws IOException {
-		List<String> commitIds = readIds(getIdFile());
+		List<String> commitIds = readIds(getRootCommitIdFile());
+		List<String> revisionIds = readIds(getRootRevisionIdFile());
+		assertEquals(commitIds.size(), revisionIds.size());
 		String to = commitIds.get(3);
 		VCSEngine engine = createBuilder()
 				.withTo(to)
@@ -319,14 +370,17 @@ public abstract class VCSBaseTest {
 		engine.forEach(versions::add);
 		assertEquals(4, versions.size());
 		for (int i = 0; i < versions.size(); i++) {
-			assertEquals(commitIds.get(i),
-					versions.get(i).getLatestCommit().getId());
+			Version v = versions.get(i);
+			assertEquals(commitIds.get(i), v.getLatestCommit().getId());
+			assertEquals(revisionIds.get(i), v.getRevision().getId());
 		}
 	}
 
 	@Test
 	public void revisionIntervalLast4() throws IOException {
-		List<String> commitIds = readIds(getIdFile());
+		List<String> commitIds = readIds(getRootCommitIdFile());
+		List<String> revisionIds = readIds(getRootRevisionIdFile());
+		assertEquals(commitIds.size(), revisionIds.size());
 		int start = commitIds.size() - 4;
 		VCSEngine engine = createBuilder()
 				.withFrom(commitIds.get(start))
@@ -340,11 +394,92 @@ public abstract class VCSBaseTest {
 			assertEquals(i + 1, v.getOrdinal());
 			assertEquals(commitIds.get(i + start),
 					v.getLatestCommit().getId());
+			assertEquals(revisionIds.get(i + start),
+					v.getRevision().getId());
 		}
 	}
 
+	/**
+	 * Returns the path of the archive to extract, i.e. 'javacpp.tar.gz'.
+	 *
+	 * @return
+	 * 		The path of the archive to extract.
+	 */
 	protected abstract String getTarGZFile();
+
+	/**
+	 * Returns the path within {@link #getTarGZFile()} containing the VCS.
+	 *
+	 * @return
+	 * 		The path within {@link #getTarGZFile()} containing the VCS.
+	 */
 	protected abstract String getFolderInTarGZ();
+
+	/**
+	 * Returns the path of the file containing the commit ids of the root
+	 * directory of the VCS to process, i.e. 'javacpp_ids.txt'. It is assumed
+	 * that the file is UTF-8 encoded, contains at least 20 ids, and stores the
+	 * ids in ascending order.
+	 *
+	 * @return
+	 * 		The path of the file containing the commit ids of the root
+	 * 		directory of the VCS to process.
+	 */
+	protected abstract String getRootCommitIdFile();
+
+	/**
+	 * Same as {@link #getRootCommitIdFile()}, but for revision ids. The
+	 * default implementation returns {@link #getRootCommitIdFile()} as most
+	 * VCS do not differ between commit and revision ids.
+	 *
+	 * @return
+	 * 		Same as {@link #getRootCommitIdFile()}, but for revision ids.
+	 */
+	protected String getRootRevisionIdFile() {
+		return getRootCommitIdFile();
+	}
+
+	/**
+	 * Returns the path of the subdirectory corresponding to
+	 * {@link #getSubDirCommitIdFile()}. The path will be passed to
+	 * {@link VCSEngineBuilder#withRoot(String)}.
+	 *
+	 * @return
+	 * 		The path of the subdirectory corresponding to
+	 * 		{@link #getSubDirCommitIdFile()}.
+	 */
+	protected abstract String getSubDir();
+
+	/**
+	 * Returns the path of the file containing the commit ids of an arbitrary
+	 * subdirectory of the VCS to process, i.e. 'javacpp_subdir_ids.txt'. It is
+	 * assumed that the file is UTF-8 encoded, contains less ids than the file
+	 * returned by {@link #getRootCommitIdFile()} (but still more than 0), and
+	 * stores the ids in ascending order.
+	 *
+	 * @return
+	 * 		The path of the file containing the commit ids of an arbitrary
+	 * 		subdirectory of the VCS to process.
+	 */
+	protected abstract String getSubDirCommitIdFile();
+
+	/**
+	 * Same as {@link #getSubDirCommitIdFile()}, but for revision ids. The
+	 * default implementation returns {@link #getSubDirCommitIdFile()} as most
+	 * VCS do not differ between commit and revision ids.
+	 *
+	 * @return
+	 * 		Same as {@link #getSubDirCommitIdFile()}, but for revision ids.
+	 */
+	protected String getSubDirRevisionIdFile() {
+		return getSubDirCommitIdFile();
+	}
+
+	/**
+	 * Sets the engine used to process the VCS.
+	 *
+	 * @param builder
+	 * 		The builder whose engine is set.
+	 */
 	protected abstract void setEngine(VCSEngineBuilder builder);
-	protected abstract String getIdFile();
 }

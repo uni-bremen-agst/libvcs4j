@@ -32,8 +32,18 @@ public class JavaHGTest extends VCSBaseTest {
 	}
 
 	@Override
-	protected String getIdFile() {
+	protected String getRootCommitIdFile() {
 		return "javahg_master_ids.txt";
+	}
+
+	@Override
+	protected String getSubDir() {
+		return "src/main/java/com/aragost/javahg/commands";
+	}
+
+	@Override
+	protected String getSubDirCommitIdFile() {
+		return "javahg_master_commands_ids.txt";
 	}
 
 	@Test
@@ -48,7 +58,7 @@ public class JavaHGTest extends VCSBaseTest {
 
 		Commit commit = version.get().getLatestCommit();
 		assertEquals(
-				"810",
+				"af30b413d2d26edfaacfe5732c2e56d6197acb04",
 				commit.getId());
 		assertEquals(
 				"Amenel Voglozin",
@@ -77,7 +87,7 @@ public class JavaHGTest extends VCSBaseTest {
 		assertTrue(version.isPresent());
 
 		Commit commit = version.get().getLatestCommit();assertEquals(
-				"560",
+				"30467fac22392fe643e2f0ea6a9e88db40e43f12",
 				commit.getId());
 		assertEquals(
 				"Jan Sorensen",

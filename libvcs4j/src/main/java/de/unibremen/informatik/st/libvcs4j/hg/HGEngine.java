@@ -329,14 +329,9 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 		try {
 			revisions = LogCommandFlags.on(repository)
 					.date(date)
-					.execute()
+					.execute(getRoot())
 					.stream()
-					.filter(cs -> Streams.concat(
-								cs.getAddedFiles().stream(),
-								cs.getDeletedFiles().stream(),
-								cs.getModifiedFiles().stream())
-							.anyMatch(p -> p.startsWith(getRoot())))
-					.map(Changeset::getRevision)
+					.map(Changeset::getNode)
 					.map(String::valueOf)
 					.collect(Collectors.toList());
 		} catch (final RuntimeException e) {
@@ -363,13 +358,8 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 		final List<String> revisions = new ArrayList<>();
 		try {
 			List<Changeset> changesets = LogCommandFlags.on(repository)
-					.execute()
+					.execute(getRoot())
 					.stream()
-					.filter(cs -> Streams.concat(
-								cs.getAddedFiles().stream(),
-								cs.getDeletedFiles().stream(),
-								cs.getModifiedFiles().stream())
-							.anyMatch(p -> p.startsWith(getRoot())))
 					.collect(Collectors.toList());
 
 			// The following code does not fail if `pFromRev` > `pToRev`, but
@@ -391,7 +381,7 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 					include = true;
 				}
 				if (include) {
-					revisions.add(revNumber);
+					revisions.add(revId);
 				}
 				// Likewise, compare number and id.
 				if (fromIsInteger && revNumber.equals(pFromRev)
