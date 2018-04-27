@@ -160,7 +160,7 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	@Override
 	protected List<String> validateMapRevisions(final List<String> pRevisions) {
 		return Validate.noNullElements(pRevisions).stream()
-				.peek(r -> {
+				.map(r -> {
 					if (isInteger(r)) {
 						final int rev = Integer.parseInt(r);
 						IllegalRevisionException.isTrue(rev >= 0,
@@ -170,6 +170,7 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 								r.matches("[0-9a-f]{12,40}"),
 								"'%s' is not a valid changeset id", r);
 					}
+					return r;
 				})
 				.collect(Collectors.toList());
 	}
