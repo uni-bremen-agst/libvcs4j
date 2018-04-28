@@ -88,8 +88,11 @@ public class Extractor {
                 if (entry.isDirectory()) {
                     Files.createDirectory(path);
                 } else if (entry.isSymbolicLink()) {
-                    final Path target = Paths.get(entry.getLinkName());
-                    Files.createSymbolicLink(path, target);
+                    // Creating a symlink fails on Windows.
+                    // Instead, copy the file.
+                    final Path from = path.getParent()
+                            .resolve(entry.getLinkName());
+                    linksToCopy.add(new SimpleEntry<>(from , path));
                 } else if (entry.isLink()) {
                     final Path from = Paths.get(tmpDir.toString(),
                             entry.getLinkName());

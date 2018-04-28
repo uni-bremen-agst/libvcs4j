@@ -15,7 +15,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -63,9 +62,7 @@ public abstract class VCSBaseTest {
 
 	private List<String> readIds(String idFile) throws IOException {
 		InputStream is = getClass().getResourceAsStream("/" + idFile);
-		String input = IOUtils.toString(is, StandardCharsets.UTF_8);
-		String[] ids = input.split("\n");
-		return Arrays.asList(ids);
+		return IOUtils.readLines(is, StandardCharsets.UTF_8);
 	}
 
 	@Test
