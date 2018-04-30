@@ -222,7 +222,10 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	protected void checkoutImpl(final String pRevision) throws IOException {
 		Validate.validState(repository != null);
 		try {
-			UpdateCommandFlags.on(repository).rev(pRevision).execute();
+			UpdateCommandFlags.on(repository)
+					.rev(pRevision)
+					.clean() // this is required by OSX
+					.execute();
 		} catch (final RuntimeException e) {
 			throw new IOException(e);
 		}
