@@ -389,7 +389,9 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 			log.addRange(SvnRevisionRange.create(revision, revision));
 			log.setSingleTarget(input);
 			log.setReceiver((__, entry) -> {
-				commit.setAuthor(entry.getAuthor());
+				final String author = entry.getAuthor() == null
+						? "(no author)" : entry.getAuthor();
+				commit.setAuthor(author);
 				commit.setMessage(entry.getMessage());
 				commit.setDateTime(LocalDateTime.ofInstant(
 						entry.getDate().toInstant(),
