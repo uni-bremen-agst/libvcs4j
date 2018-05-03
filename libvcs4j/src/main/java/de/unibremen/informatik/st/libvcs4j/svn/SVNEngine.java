@@ -271,7 +271,11 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 			checkout.setSingleTarget(target);
 			checkout.run();
 		} catch (final SVNException e) {
-			throw new IOException(e);
+			if (e.getErrorMessage()
+					.getErrorCode()
+					.getCode() != 155000) {
+				throw new IOException(e);
+			}
 		} finally {
 			factory.dispose();
 		}
@@ -382,7 +386,7 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 		try {
 			final SVNRevision revision = createSVNRevision(pRevision);
 			final SvnTarget input = SvnTarget.fromURL(
-					createSVNURL(getInput()), revision);
+					createSVNURL(getRepository()), revision);
 			final CommitImpl commit = new CommitImpl();
 
 			final SvnLog log = factory.createLog();
