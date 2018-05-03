@@ -44,7 +44,7 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 	}
 
 	/**
-	 * Datetime interval constructor. Validates that pSince <= pUntil.
+	 * Datetime interval constructor. Validates that {@code pSince <= pUntil}.
 	 */
 	public AbstractIntervalVCSEngine(
 			final String pRepository, final String pRoot, final Path pTarget,
@@ -60,7 +60,7 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 	}
 
 	/**
-	 * Revision interval constructor. Does NOT validate if pFrom <= pTo.
+	 * Revision interval constructor. Does NOT validate if {@code pFrom <= pTo}.
 	 */
 	public AbstractIntervalVCSEngine(
 			final String pRepository, final String pRoot, final Path pTarget,
@@ -76,7 +76,7 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 	}
 
 	/**
-	 * Range interval constructor. Validates that 0 <= pStart < pEnd.
+	 * Range interval constructor. Validates that {@code 0 <= pStart < pEnd}.
 	 */
 	public AbstractIntervalVCSEngine(
 			final String pRepository, final String pRoot, final Path pTarget,
