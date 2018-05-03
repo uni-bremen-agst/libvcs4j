@@ -52,6 +52,10 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 	from sourceSets.main.allSource
 }
 
+javadoc {
+        exclude 'bmsi/util'
+}
+
 task javadocJar(type: Jar, dependsOn: javadoc) {
 	classifier = 'javadoc'
 	from javadoc.destinationDir
@@ -59,6 +63,7 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 
 artifacts {
 	archives sourcesJar
+	archives javadocJar
 }
 
 build {

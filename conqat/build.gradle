@@ -12,3 +12,7 @@ repositories {
 
 dependencies {
 }
+
+javadoc {
+	exclude 'org/conqat'
+}
