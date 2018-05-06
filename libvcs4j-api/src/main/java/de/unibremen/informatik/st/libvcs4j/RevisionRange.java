@@ -13,49 +13,40 @@ import java.util.stream.Collectors;
 import static de.unibremen.informatik.st.libvcs4j.FileChange.Type.*;
 
 /**
- * This class represents a single version extracted by a call of
- * {@link VCSEngine#next()}. We use the term "Version" instead of "Revision" to
- * differ between the state of a repository at a certain point in time, and
- * this class, that allows to retrieve the changes between two revisions. That
- * being said, there is a class {@link Revision} that is supposed to represent
- * the sate of a VCS and is accessible with, for instance,
- * {@link #getRevision()} and {@link #getPredecessorRevision()}.
+ * This class represents the state transition between two revisions. The "from"
+ * revision (if any) is available with {@link #getPredecessorRevision()}. The
+ * "to" revision is available with {@link #getRevision()}.
  *
- * Note: A version must not necessarily track the changes between consecutive
- * revisions but track the changes between arbitrary revisions of a single VCS.
- * Thus, a version may subsume several commits.
+ * A single range may subsume several commits to merge commits on, for
+ * instance, a monthly basis.
  */
 @SuppressWarnings("unused")
-public interface Version {
+public interface RevisionRange {
 
 	/**
-	 * Returns the ordinal of this version. Ordinals are used to identify
-	 * individual versions with a serial number when processing a VCS. The
-	 * origin is 1.
+	 * Returns the ordinal of this range. Ordinals are used to identify
+	 * individual ranges with a serial number when processing a VCS. The origin
+	 * is 1.
 	 *
 	 * @return
-	 * 		The ordinal of this version ({@code >= 1}).
+	 * 		The ordinal of this range ({@code >= 1}).
 	 */
 	int getOrdinal();
 
 	/**
-	 * Returns the "to" {@link Revision} the file changes of this version
-	 * belong to. The {@link Revision} returned by this method is considered as
-	 * "the revision of this version".
+	 * Returns the "to" revision the file changes of this range belong to.
 	 *
 	 * @return
-	 * 		The "to" {@link Revision} the file changes of this version belong
-	 * 		to.
+	 * 		The "to" revision the file changes of this range belong to.
 	 */
 	Revision getRevision();
 
 	/**
-	 * Returns the "from" {@link Revision} the file changes of this version
-	 * belong to.
+	 * Returns the "from" revision the file changes of this range belong to.
 	 *
 	 * @return
-	 * 		The "from" {@link Revision} the file changes of this version belong
-	 * 		to or an empty {@link Optional} if this is the first version.
+	 * 		The "from" revision the file changes of this range belong to or an
+	 * 		empty {@link Optional} if this is the first range.
 	 */
 	Optional<Revision> getPredecessorRevision();
 
@@ -243,20 +234,6 @@ public interface Version {
 	}
 
 	/**
-	 * Returns all files that have been added, modified, or relocated. This
-	 * method is in particular useful when processing file changes providing a
-	 * new file ({@link FileChange#getNewFile()}).
-	 *
-	 * @return
-	 * 		All files that have been added, modified, or relocated.
-	 */
-	default List<FileChange> getOutdatedFiles() {
-		return getFileChanges().stream()
-				.filter(fc -> fc.getType() != REMOVE)
-				.collect(Collectors.toList());
-	}
-
-	/**
 	 * Filters the list of file changes returned by {@link #getFileChanges()}
 	 * and returns only those whose old or the new relative file path ends with
 	 * {@code suffix}.
@@ -320,14 +297,14 @@ public interface Version {
 	}
 
 	/**
-	 * Returns whether this version is the first one. That is, there is no
-	 * predecessor {@link Revision} and, consequently, all changes returned by
+	 * Returns whether this range is the first one. That is, there is no
+	 * predecessor revision and, consequently, all changes returned by
 	 * {@link #getFileChanges()} are additions. The default implementation
 	 * simply checks whether {@link #getPredecessorRevision()} returns an empty
 	 * {@link Optional}.
 	 *
 	 * @return
-	 * 		{@code true} if this version is the first one, {@code false}
+	 * 		{@code true} if this range is the first one, {@code false}
 	 * 		otherwise.
 	 */
 	default boolean isFirst() {
@@ -335,24 +312,24 @@ public interface Version {
 	}
 
 	/**
-	 * Runs the given action if this version is the first one.
+	 * Runs the given action if this range is the first one.
 	 *
 	 * @param action
-	 * 		The action to run if this is the first version.
+	 * 		The action to run if this is the first range.
 	 */
-	default void ifFirst(final Consumer<Version> action) {
+	default void ifFirst(final Consumer<RevisionRange> action) {
 		if (isFirst()) {
 			action.accept(this);
 		}
 	}
 
 	/**
-	 * Runs the given action if this version is not the first one.
+	 * Runs the given action if this range is not the first one.
 	 *
 	 * @param action
-	 * 		The action to run if this is not the first version.
+	 * 		The action to run if this is not the first range.
 	 */
-	default void ifNotFirst(final Consumer<Version> action) {
+	default void ifNotFirst(final Consumer<RevisionRange> action) {
 		if (!isFirst()) {
 			action.accept(this);
 		}

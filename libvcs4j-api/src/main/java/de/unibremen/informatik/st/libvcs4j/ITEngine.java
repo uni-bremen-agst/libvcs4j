@@ -42,8 +42,8 @@ public interface ITEngine {
 	Optional<Issue> getIssueById(String id) throws IOException;
 
 	/**
-	 * Returns all issues referenced by the given {@link Commit}. This method
-	 * does not fail if {@code commit} is {@code null}.
+	 * Returns all issues referenced by the given commit. This method does not
+	 * fail if {@code commit} is {@code null}.
 	 *
 	 * The default implementation delegates {@code commit} to
 	 * {@link #getIssuesFor(List)}.
@@ -91,25 +91,25 @@ public interface ITEngine {
 	}
 
 	/**
-	 * Returns all issues referenced by the given version. This method does not
-	 * fail if {@code version} is {@code null}.
+	 * Returns all issues referenced by the given revision range. This method
+	 * does not fail if {@code range} is {@code null}.
 	 *
 	 * The default implementations delegates the referenced commits
-	 * ({@link Version#getCommits()}) to {@link #getIssuesFor(List)}.
+	 * ({@link RevisionRange#getCommits()}) to {@link #getIssuesFor(List)}.
 	 *
-	 * @param version
-	 *      The version to parse.
+	 * @param range
+	 *      The revision range to parse.
 	 * @return
 	 *      The referenced issues.
 	 * @throws IOException
 	 *      If an error occurred while retrieving an issue.
 	 */
-	default List<Issue> getIssuesFor(final Version version)
+	default List<Issue> getIssuesFor(final RevisionRange range)
 			throws IOException {
-		if (version == null) {
+		if (range == null) {
 			return new ArrayList<>();
 		} else {
-			return getIssuesFor(version.getCommits());
+			return getIssuesFor(range.getCommits());
 		}
 	}
 

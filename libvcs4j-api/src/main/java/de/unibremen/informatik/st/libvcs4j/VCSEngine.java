@@ -16,11 +16,12 @@ import java.util.Optional;
 
 /**
  * A {@link VCSEngine} is supposed to extract a linear sequence of
- * {@link Version} instances for arbitrary version control systems (VCS) as
- * well as single input files and directories. In order to calculate the file
- * changes of a particular {@link Version}, real VCS (or similar) operations
- * are performed. Consequently, all files of the currently processed version
- * are physically available at {@link #getTarget()} and {@link #getOutput()}.
+ * {@link RevisionRange} instances for arbitrary version control systems (VCS)
+ * as well as single input files and directories. In order to calculate the
+ * file changes of a particular {@link RevisionRange}, real VCS (or similar)
+ * operations are performed. Consequently, all files of the currently processed
+ * revision are physically available at {@link #getTarget()} and
+ * {@link #getOutput()}.
  *
  * Due to the complexity of some VCS, the generated sequence of versions is a
  * "one-way-iterator" that allows forward directed processing only.
@@ -50,19 +51,19 @@ import java.util.Optional;
  * is, one may read any file in any state.
  */
 @SuppressWarnings("unused")
-public interface VCSEngine extends Iterable<Version> {
+public interface VCSEngine extends Iterable<RevisionRange> {
 
 	/**
-	 * Extracts the next {@link Version}, if any. If necessary, the first call
+	 * Extracts the next revision range, if any. If necessary, the first call
 	 * of this method initializes the repository---for instance, cloning the
 	 * repository to {@link #getTarget()}.
 	 *
 	 * @return
-	 * 		The next {@link Version}, if any.
+	 * 		The next revisioni range, if any.
 	 * @throws IOException
-	 * 		If an error occurred while extracting the next {@link Version}.
+	 * 		If an error occurred while extracting the next revision range.
 	 */
-	Optional<Version> next() throws IOException;
+	Optional<RevisionRange> next() throws IOException;
 
 	/**
 	 * Reads the contents of the given file. This method does not depend on the
