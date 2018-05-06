@@ -88,4 +88,47 @@ public interface Size {
 	 *      Number of comment tokens.
 	 */
 	int getCNOT();
+
+	/**
+	 * Returns the sum of this and the given size metrics.
+	 *
+	 * @param size
+	 * 		The other metrics.
+	 * @return
+	 * 		A new instance containing the sum of this and the given size
+	 * 		metrics.
+	 */
+	default Size add(final Size size) {
+		return new Size() {
+			@Override
+			public int getLOC() {
+				return Size.this.getLOC() + size.getLOC();
+			}
+
+			@Override
+			public int getSLOC() {
+				return Size.this.getSLOC() + size.getSLOC();
+			}
+
+			@Override
+			public int getCLOC() {
+				return Size.this.getCLOC() + size.getCLOC();
+			}
+
+			@Override
+			public int getNOT() {
+				return Size.this.getNOT() + size.getNOT();
+			}
+
+			@Override
+			public int getSNOT() {
+				return Size.this.getSNOT() + size.getSNOT();
+			}
+
+			@Override
+			public int getCNOT() {
+				return Size.this.getCNOT() + size.getCNOT();
+			}
+		};
+	}
 }

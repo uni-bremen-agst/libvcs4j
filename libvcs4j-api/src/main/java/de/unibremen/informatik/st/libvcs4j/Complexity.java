@@ -176,6 +176,39 @@ public interface Complexity {
 		default double getBugs() {
 			return Math.pow(getEffort(), 2.0/3.0) / 3000;
 		}
+
+		/**
+		 * Returns the sum of this and the given halstead metric.
+		 *
+		 * @param halstead
+		 * 		The other metric.
+		 * @return
+		 * 		A new instance containing the sum of this and the given
+		 * 		halstead metric.
+		 */
+		default Halstead add(final Halstead halstead) {
+			return new Halstead() {
+				@Override
+				public int getn1() {
+					return Halstead.this.getn1() + halstead.getn1();
+				}
+
+				@Override
+				public int getn2() {
+					return Halstead.this.getn2() + halstead.getn2();
+				}
+
+				@Override
+				public int getN1() {
+					return Halstead.this.getN1() + halstead.getN1();
+				}
+
+				@Override
+				public int getN2() {
+					return Halstead.this.getN2() + halstead.getN2();
+				}
+			};
+		}
 	}
 
 	/**
@@ -193,4 +226,28 @@ public interface Complexity {
 	 * 		The McCabe metric.
 	 */
 	int getMcCabe();
+
+	/**
+	 * Returns the sum of this and the given complexity metrics.
+	 *
+	 * @param complexity
+	 * 		The other metrics.
+	 * @return
+	 * 		A new instance containing the sum of this and the given complexity
+	 * 		metrics.
+	 */
+	default Complexity add(final Complexity complexity) {
+		return new Complexity() {
+			@Override
+			public Halstead getHalstead() {
+				return Complexity.this.getHalstead()
+						.add(complexity.getHalstead());
+			}
+
+			@Override
+			public int getMcCabe() {
+				return Complexity.this.getMcCabe() + complexity.getMcCabe();
+			}
+		};
+	}
 }
