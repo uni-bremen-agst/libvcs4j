@@ -1,6 +1,6 @@
 @Grapes([
-	@Grab(group='commons-codec', module='commons-codec', version='1.11'),
-	@Grab(group='de.uni-bremen.informatik.st', module='libvcs4j', version='1.0.1')])
+	@Grab(group='de.uni-bremen.informatik.st', module='libvcs4j', version='1.0.1')
+])
 
 import de.unibremen.informatik.st.libvcs4j.*
 
