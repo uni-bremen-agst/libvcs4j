@@ -7,6 +7,41 @@ package de.unibremen.informatik.st.libvcs4j;
 public interface Size {
 
 	/**
+	 * An empty (default) size instance.
+	 */
+	Size EMPTY_SIZE = new Size() {
+		@Override
+		public int getLOC() {
+			return 0;
+		}
+
+		@Override
+		public int getSLOC() {
+			return 0;
+		}
+
+		@Override
+		public int getCLOC() {
+			return 0;
+		}
+
+		@Override
+		public int getNOT() {
+			return 0;
+		}
+
+		@Override
+		public int getSNOT() {
+			return 0;
+		}
+
+		@Override
+		public int getCNOT() {
+			return 0;
+		}
+	};
+
+	/**
 	 * Returns the lines of code including comments and whitespaces
 	 *
 	 * @return

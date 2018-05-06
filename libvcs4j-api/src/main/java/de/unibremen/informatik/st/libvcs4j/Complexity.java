@@ -7,9 +7,49 @@ package de.unibremen.informatik.st.libvcs4j;
 public interface Complexity {
 
 	/**
+	 * An empty (default) complexity instance.
+	 */
+	Complexity EMPTY_COMPLEXITY = new Complexity() {
+		@Override
+		public Halstead getHalstead() {
+			return Halstead.EMPTY_HALSTEAD;
+		}
+
+		@Override
+		public int getMcCabe() {
+			return 0;
+		}
+	};
+
+	/**
 	 * Represents a halstead metric.
 	 */
 	interface Halstead {
+
+		/**
+		 * An empty (default) halstead instance.
+		 */
+		Halstead EMPTY_HALSTEAD = new Halstead() {
+			@Override
+			public int getn1() {
+				return 0;
+			}
+
+			@Override
+			public int getn2() {
+				return 0;
+			}
+
+			@Override
+			public int getN1() {
+				return 0;
+			}
+
+			@Override
+			public int getN2() {
+				return 0;
+			}
+		};
 
 		/**
 		 * Returns the number of distinct operators.
