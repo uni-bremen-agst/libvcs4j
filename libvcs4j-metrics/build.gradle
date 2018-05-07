@@ -10,7 +10,23 @@ repositories {
 	mavenCentral()
 }
 
+configurations {
+	extraLibs
+}
+
 dependencies {
+	extraLibs project(':conqat')
+	compile 'de.uni-bremen.informatik.st:libvcs4j-api:1.0.0'
+	compile 'org.apache.commons:commons-lang3:3.4'
+	configurations.compile.extendsFrom(configurations.extraLibs)
+}
+
+jar {
+	from {
+		configurations.extraLibs.collect {
+			it.isDirectory() ? it : zipTree(it)
+		}
+	}
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

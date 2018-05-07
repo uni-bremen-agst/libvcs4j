@@ -1,0 +1,2 @@
+include ':conqat'
+project(':conqat').projectDir = new File(settingsDir, '../conqat')
