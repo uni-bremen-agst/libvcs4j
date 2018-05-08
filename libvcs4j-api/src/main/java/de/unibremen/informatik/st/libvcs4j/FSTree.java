@@ -1,7 +1,11 @@
 package de.unibremen.informatik.st.libvcs4j;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -10,33 +14,49 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * Allows to represent a collection of {@link VCSFile} instances as a file
- * system tree.
+ * system tree with a generic value that may be attached to a file.
+ *
+ * @param <V>
+ *     The attached value.
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
-public class FSTree {
+public class FSTree<V> {
+
+	/**
+	 * This path is used for empty trees.
+	 */
+	public static final String EMPTY_DIRECTORY = "<empty>";
+
+	/**
+	 * This path is used for trees with multiple root nodes.
+	 */
+	public static final String ROOT_DIRECTORY = "/";
 
 	/**
 	 * A simple visitor to process {@link FSTree} instances.
 	 */
-	public static class Visitor {
+	public class Visitor {
 
 		/**
 		 * Delegates {@code pTree} to {@link #visitDirectory(FSTree)} or
-		 * {@link #visitFile(FSTree, VCSFile)} depending on whether
-		 * {@code pTree} represents a directory or a file.
+		 * {@link #visitFile(FSTree)} depending on whether {@code pTree}
+		 * represents a directory or a file.
 		 *
 		 * @param pTree
 		 * 		The tree to visit and delegate.
 		 */
-		public void visit(final FSTree pTree) {
-			if (pTree.nodes != null) {
+		public void visit(final FSTree<V> pTree) {
+			if (pTree.isDirectory()) {
 				visitDirectory(pTree);
 			} else {
-				visitFile(pTree, pTree.file);
+				visitFile(pTree);
 			}
 		}
 
@@ -46,26 +66,35 @@ public class FSTree {
 		 * @param pDirectory
 		 * 		The directory to visit.
 		 */
-		protected void visitDirectory(final FSTree pDirectory) {
+		protected void visitDirectory(final FSTree<V> pDirectory) {
+			assert pDirectory.nodes != null;
 			pDirectory.nodes.forEach(this::visit);
 		}
 
 		/**
 		 * Visits the given file.
 		 *
-		 * @param pTree
-		 * 		The tree containing {@code pFile}.
+		 * @param pFile
+		 * 		The tree containing the file to visit.
+		 */
+		protected void visitFile(final FSTree<V> pFile) {
+			visitFile(pFile.file);
+		}
+
+		/**
+		 * Visits the given file.
+		 *
 		 * @param pFile
 		 * 		The file to visit.
 		 */
-		protected void visitFile(final FSTree pTree, final VCSFile pFile) {
+		protected void visitFile(final VCSFile pFile) {
 		}
 	}
 
 	/**
 	 * The parent of this tree. Is {@code null} for the root node.
 	 */
-	private final FSTree parent;
+	private final FSTree<V> parent;
 
 	/**
 	 * The relative path (relative to {@link VCSEngine#getRoot()}) of the
@@ -77,64 +106,122 @@ public class FSTree {
 	/**
 	 * The referenced file. Is {@code null} if {@link #nodes} is present.
 	 */
-	private VCSFile file = null;
+	private final VCSFile file;
+
+	/**
+	 * The value attached to {@link #file} (if {@link #file} is present). May
+	 * be {@code null}.
+	 */
+	private final V value;
 
 	/**
 	 * The referenced sub files and directories. Is {@code null} if
 	 * {@link #file} is present.
 	 */
-	private List<FSTree> nodes = null;
+	private final List<FSTree<V>> nodes;
 
 	/**
-	 * Creates a FSTree with given parent and relative path.
+	 * Is used to calculate the value of a directory by aggregating the values
+	 * of all sub files and directories.
+	 */
+	private final BiFunction<V, V, V> aggregator;
+
+	/**
+	 * Creates a file with given parent, {@link VCSFile}, and value function.
 	 *
 	 * @param pParent
-	 * 		The parent of the tree to create. Use {@code null} for root nodes.
-	 * @param pPath
-	 *      The relative path of the file or directory.
+	 * 		The parent of the file to create. Use {@code null} for root nodes.
+	 * @param pFile
+	 * 		The referenced {@link VCSFile} instance.
+	 * @param pValueOf
+	 * 		The function that is used to map a file to its value. The function
+	 * 		may return {@code null}.
 	 * @throws NullPointerException
-	 *      If {@code pPath} is {@code null}.
+	 *      If {@code pFile} or {@code pValueOf} is {@code null}.
 	 */
-	private FSTree(final FSTree pParent, final String pPath) {
+	private FSTree(final FSTree<V> pParent, final VCSFile pFile,
+				   final Function<VCSFile, V> pValueOf) {
 		parent = pParent;
-		path = Objects.requireNonNull(pPath);
+		file = Objects.requireNonNull(pFile);
+		path = file.toRelativePath().toString();
+		value = Objects.requireNonNull(pValueOf).apply(file);
+		nodes = null;
+		aggregator = null;
 	}
 
 	/**
-	 * Creates a new tree of the given files.
+	 * Creates a directory with given parent, relative path, and aggregation
+	 * function.
+	 *
+	 * @param pParent
+	 * 		The parent of the directory to create. Use {@code null} for root
+	 * 		nodes.
+	 * @param pPath
+	 *      The relative path of the directory.
+	 * @param pAggregator
+	 * 		The aggregation function used to calculate the value of a
+	 * 		directory. The function must not handle {@code null} values.
+	 * @throws NullPointerException
+	 *      If {@code pPath} or {@code pAggregator} is {@code null}.
+	 */
+	private FSTree(final FSTree<V> pParent, final String pPath,
+				   final BiFunction<V, V, V> pAggregator) {
+		parent = pParent;
+		path = Objects.requireNonNull(pPath);
+		nodes = new ArrayList<>();
+		aggregator = Objects.requireNonNull(pAggregator);
+		file = null;
+		value = null;
+	}
+
+	/**
+	 * Creates a tree from the given list of {@link VCSFile} instances.
 	 *
 	 * @param pFiles
-	 *      The files to create the tree from.
+	 * 		The files to create the tree from.
+	 * @param pValueOf
+	 * 		The function that is used to map a file to its value. The function
+	 * 		may return {@code null}.
+	 * @param pAggregator
+	 * 		The aggregation function used to calculate the value of a
+	 * 		directory. The function must not handle {@code null} values.
+	 * @param <V>
+	 *     	The type of the values attached to files.
 	 * @return
-	 *      The generated tree.
+	 * 		A tree representing the list of files.
 	 * @throws NullPointerException
-	 *      If {@code pFiles} is {@code null}.
+	 * 		If any of the given arguments is {@code null}.
 	 * @throws IllegalArgumentException
-	 *      If {@code pFiles} contains {@code null} values.
+	 * 		If {@code pFiles} contains {@code null}.
 	 */
-	public static FSTree of(final Collection<VCSFile> pFiles) {
-		if (pFiles == null) {
-			throw new NullPointerException();
-		} else if (pFiles.stream().anyMatch(Objects::isNull)) {
+	public static <V> FSTree<V> of(
+			final Collection<VCSFile> pFiles,
+			final Function<VCSFile, V> pValueOf,
+			final BiFunction<V, V, V> pAggregator)
+			throws NullPointerException, IllegalArgumentException {
+		Objects.requireNonNull(pFiles);
+		Objects.requireNonNull(pValueOf);
+		Objects.requireNonNull(pAggregator);
+		if (pFiles.contains(null)) {
 			throw new IllegalArgumentException();
 		}
 
-		final Set<FSTree> treesWithoutParent = new HashSet<>();
-		final Map<String, FSTree> cache = new HashMap<>();
+		final Set<FSTree<V>> treesWithoutParent = new HashSet<>();
+		final Map<String, FSTree<V>> cache = new HashMap<>();
 		pFiles.forEach(f -> {
 			// (1) "home/user/file.txt" -> "home", "user", "file.txt"
-			List<String> parts = new ArrayList<>();
-			f.toRelativePath().forEach(p -> parts.add(p.toString()));
+			final Path relativePath = f.toRelativePath();
+			final List<String> parts = new ArrayList<>();
+			relativePath.forEach(p -> parts.add(p.toString()));
 
 			// (2) For each directory ("home", "user")...
-			FSTree parent = null;
+			FSTree<V> parent = null;
 			for (int i = 0; i < parts.size() - 1; i++) {
 				final String path = String.join(
 						File.separator, parts.subList(0, i + 1));
-				FSTree dir = cache.get(path);
+				FSTree<V> dir = cache.get(path);
 				if (dir == null) {
-					dir = new FSTree(parent, path);
-					dir.nodes = new ArrayList<>();
+					dir = new FSTree<>(parent, path, pAggregator);
 					cache.put(path, dir);
 					if (parent != null) {
 						parent.nodes.add(dir);
@@ -147,26 +234,25 @@ public class FSTree {
 			}
 
 			// (3) Add file ("file.txt").
-			final String path = String.join(File.separator, parts);
-			FSTree file = cache.get(path);
+			final String relativePathStr = relativePath.toString();
+			FSTree<V> file = cache.get(relativePathStr);
 			if (file == null) {
-				file = new FSTree(parent, path);
-				cache.put(path, file);
+				file = new FSTree<>(parent, f, pValueOf);
+				cache.put(relativePathStr, file);
 				if (parent != null) {
 					parent.nodes.add(file);
 				}
 			}
-			file.file = f;
 			if (parent == null) {
 				treesWithoutParent.add(file);
 			}
 		});
 
 		if (treesWithoutParent.isEmpty()) {
-			return new FSTree(null, "");
+			return new FSTree<>(null, EMPTY_DIRECTORY, pAggregator);
 		} else if (treesWithoutParent.size() > 1) {
-			final FSTree root = new FSTree(null, "/");
-			root.nodes = new ArrayList<>();
+			final FSTree<V> root = new FSTree<>(
+					null, ROOT_DIRECTORY, pAggregator);
 			root.nodes.addAll(treesWithoutParent);
 			return root;
 		} else {
@@ -180,7 +266,7 @@ public class FSTree {
 	 * @return
 	 * 		The parent of this tree.
 	 */
-	public Optional<FSTree> getParent() {
+	public Optional<FSTree<V>> getParent() {
 		return Optional.ofNullable(parent);
 	}
 
@@ -207,22 +293,30 @@ public class FSTree {
 	}
 
 	/**
-	 * Returns all files of this tree.
+	 * Either returns the value of this file (if this tree represents a file)
+	 * or the aggregated values of all (recursively) sub files (if this tree
+	 * represents a directory).
 	 *
 	 * @return
-	 * 		All files of this tree.
+	 * 		The value of this file or the aggregated values of all
+	 * 		(recursively) sub files. If a file has no value or a directory
+	 * 		contains only files without a value, an empty {@link Optional} is
+	 * 		returned.
 	 */
-	public List<VCSFile> getFiles() {
-		final List<VCSFile> files = new ArrayList<>();
+	public Optional<V> getValue() {
+		final List<V> values = new ArrayList<>();
 		final Visitor visitor = new Visitor() {
 			@Override
-			protected void visitFile(final FSTree pTree, final VCSFile pFile) {
-				files.add(pFile);
-				super.visitFile(pTree, pFile);
+			protected void visitFile(final FSTree<V> pTree) {
+				if (pTree.value != null) {
+					values.add(pTree.value);
+				}
+				super.visitFile(pTree);
 			}
 		};
 		visitor.visit(this);
-		return files;
+		return values.parallelStream()
+				.reduce(aggregator::apply);
 	}
 
 	/**
@@ -232,10 +326,29 @@ public class FSTree {
 	 * @return
 	 *      The sub files and directories of this tree.
 	 */
-	public List<FSTree> getNodes() {
+	public List<FSTree<V>> getNodes() {
 		return nodes == null
 				? Collections.emptyList()
 				: new ArrayList<>(nodes);
+	}
+
+	/**
+	 * Returns all files of this tree.
+	 *
+	 * @return
+	 * 		All files of this tree.
+	 */
+	public List<VCSFile> getFiles() {
+		final List<VCSFile> files = new ArrayList<>();
+		final Visitor visitor = new Visitor() {
+			@Override
+			protected void visitFile(final VCSFile pFile) {
+				files.add(pFile);
+				super.visitFile(pFile);
+			}
+		};
+		visitor.visit(this);
+		return files;
 	}
 
 	/**
@@ -244,12 +357,74 @@ public class FSTree {
 	 * @return
 	 * 		The root of this tree.
 	 */
-	public FSTree getRoot() {
-		FSTree root = this;
+	public FSTree<V> getRoot() {
+		FSTree<V> root = this;
 		while (root.getParent().isPresent()) {
 			root = root.getParent().get();
 		}
 		return root;
+	}
+
+	/**
+	 * Navigates to the tree located at {@code pPath}. Unlike conventional
+	 * navigation rules, this method allows to navigate "beyond" a regular
+	 * file. That is, for instance, a file's parent may be addressed like this:
+	 *
+	 *     "src/A.java/.."
+	 *
+	 * where "A.java" is a regular file and ".." points to its parent. If
+	 * {@code pPath} is empty, {@code this} is returned.
+	 *
+	 * @param pPath
+	 * 		The relative path of the tree to navigate to.
+	 * @return
+	 * 		The tree located at {@code pPath}, if such a tree exists.
+	 */
+	public Optional<FSTree<V>> navigateTo(final String pPath) {
+		if (pPath.isEmpty()) {
+			return Optional.of(this);
+		}
+
+		final Queue<String> parts = new ArrayDeque<>();
+		parts.addAll(Arrays.asList(pPath.replace("\\", "/").split("/")));
+		final String head = parts.poll();
+		final String tail = String.join("/", parts);
+
+		switch (head) {
+			case ".":
+				return navigateTo(tail);
+			case "..":
+				final Optional<FSTree<V>> parent = getParent();
+				return parent.isPresent()
+						? parent.get().navigateTo(tail)
+						: navigateTo(tail);
+			default:
+				if (isFile()) {
+					return tail.isEmpty() && hasFileName(head)
+							? Optional.of(this) : Optional.empty();
+				} else {
+					for (final FSTree<V> node : nodes) {
+						if (node.hasFileName(head)) {
+							return node.navigateTo(tail);
+						}
+					}
+					return Optional.empty();
+				}
+		}
+	}
+
+	/**
+	 * Returns whether the file name of this tree matches the given file name.
+	 *
+	 * @param pFileName
+	 * 		The file name to match with the file name of this tree.
+	 * @return
+	 * 		{@code true} if the file of this tree matches {@code pFileName},
+	 * 		{@code false} otherwise.
+	 */
+	private boolean hasFileName(final String pFileName) {
+		final String fileName = Paths.get(path).getFileName().toString();
+		return fileName.equals(pFileName);
 	}
 
 	/**
@@ -281,6 +456,6 @@ public class FSTree {
 	 * 		{@code false} otherwise.
 	 */
 	public boolean isVirtualRoot() {
-		return path.isEmpty() || path.equals("/");
+		return path.equals(EMPTY_DIRECTORY) || path.equals("/");
 	}
 }
