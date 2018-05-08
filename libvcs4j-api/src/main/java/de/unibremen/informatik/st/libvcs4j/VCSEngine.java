@@ -23,24 +23,22 @@ import java.util.Optional;
  * revision are physically available at {@link #getTarget()} and
  * {@link #getOutput()}.
  *
- * Due to the complexity of some VCS, the generated sequence of versions is a
- * "one-way-iterator" that allows forward directed processing only.
+ * Due to the complexity of some VCS, the generated sequence of revision ranges
+ * is a "one-way-iterator" that allows forward directed processing only.
  *
  * By extending the {@link Iterable} interface, a {@link VCSEngine} allows to
- * retrieve versions using foreach loops. There are several things to consider,
- * though. First of all, {@link java.util.Iterator} instances returned by
- * {@link #iterator()} depend on the state of the corresponding engine.
- * Consequently, calling {@link #next()} on an engine {@code e}, modifies all
- * available iterators of {@code e}, too. Similarly, calling
+ * retrieve revision ranges using foreach loops. There are several things to
+ * consider, though. First of all, {@link java.util.Iterator} instances
+ * returned by {@link #iterator()} depend on the state of the corresponding
+ * engine. Consequently, calling {@link #next()} on an engine {@code e},
+ * modifies all available iterators of {@code e}, too. Similarly, calling
  * {@link java.util.Iterator#next()} on an iterator {@code i}, modifies any
  * other iterator sharing {@code i's} engine. Due to the circumstance that
  * {@link java.util.Iterator#hasNext()} and {@link java.util.Iterator#next()}
  * perform real VCS (or similar) operations an {@link IOException} may be
  * thrown by these methods which, in order to fulfill the {@link Iterable}
- * interface, is encapsulated in an {@link java.io.UncheckedIOException}.
- * Furthermore, {@link java.util.Iterator#hasNext()} initializes the repository
- * of an engine, if necessary (similar to {@link #next()} and. Long story
- * short, you should not use several iterators at once.
+ * interface, is encapsulated in an {@link java.io.UncheckedIOException}. Long
+ * story short, you should not use several iterators at once.
  *
  * Note: Neither {@link #getRepository()} nor {@link #getRoot()} nor
  * {@link #getTarget()} nor {@link #getOutput()} may change at any time. This

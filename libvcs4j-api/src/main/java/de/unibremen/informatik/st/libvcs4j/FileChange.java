@@ -48,7 +48,7 @@ public interface FileChange {
 	 * checked out by {@link VCSEngine#next()}.
 	 *
 	 * @return
-	 * 		The old version of the file or an empty {@link Optional} if this
+	 * 		The old state of the file or an empty {@link Optional} if this
 	 * 		{@link FileChange} is an addition ({@link Type#ADD}).
 	 */
 	Optional<VCSFile> getOldFile();
@@ -58,7 +58,7 @@ public interface FileChange {
 	 * checked out by {@link VCSEngine#next()}.
 	 *
 	 * @return
-	 * 		The new version of the file or an empty {@link Optional} if this
+	 * 		The new state of the file or an empty {@link Optional} if this
 	 * 		{@link FileChange} is a removal ({@link Type#REMOVE}).
 	 */
 	Optional<VCSFile> getNewFile();
