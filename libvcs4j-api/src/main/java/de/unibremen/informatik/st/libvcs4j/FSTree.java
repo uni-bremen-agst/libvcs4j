@@ -261,6 +261,24 @@ public class FSTree<V> {
 	}
 
 	/**
+	 * Creates a tree from the given list of {@link VCSFile} instances where
+	 * the files have to values.
+	 *
+	 * @param pFiles
+	 * 		The files to create the tree from.
+	 * @return
+	 * 		A tree representing the list of files.
+	 * @throws NullPointerException
+	 * 		If {@code pFile} is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If {@code pFiles} contains {@code null}.
+	 */
+	public static FSTree<Void> of(final Collection<VCSFile> pFiles)
+			throws NullPointerException, IllegalArgumentException {
+		return of(pFiles, f -> null, (v1, v2) -> null);
+	}
+
+	/**
 	 * Returns the parent of this tree.
 	 *
 	 * @return
