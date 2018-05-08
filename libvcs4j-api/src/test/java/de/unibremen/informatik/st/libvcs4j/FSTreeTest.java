@@ -15,11 +15,7 @@ public class FSTreeTest {
 
 	@Test
 	public void emptyTree() {
-		FSTree<Void> tree = FSTree.of(
-				Collections.emptyList(),
-				f -> null,
-				(f1, f2) -> null);
-
+		FSTree<Void> tree = FSTree.of(Collections.emptyList());
 		assertThat(tree.getPath()).isEqualTo(FSTree.EMPTY_DIRECTORY);
 	}
 
@@ -32,10 +28,7 @@ public class FSTreeTest {
 		VCSFile c = mock(VCSFile.class);
 		when(c.toRelativePath()).thenReturn(Paths.get("src", "C.java"));
 
-		FSTree<Integer> tree = FSTree.of(
-				Arrays.asList(a, b, c),
-				f -> null,
-				Integer::sum);
+		FSTree<Void> tree = FSTree.of(Arrays.asList(a, b, c));
 
 		assertThat(tree.getPath()).isEqualTo("src");
 		assertThat(tree.getNodes())
