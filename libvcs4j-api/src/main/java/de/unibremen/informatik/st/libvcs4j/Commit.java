@@ -7,7 +7,7 @@ import java.util.List;
  * Represents a single commit.
  */
 @SuppressWarnings("unused")
-public interface Commit {
+public interface Commit extends VCSModelElement {
 
 	/**
 	 * Returns the commit id.

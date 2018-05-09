@@ -19,6 +19,11 @@ public class RevisionRangeTest {
         }
 
         @Override
+        public VCSEngine getVCSEngine() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public int getOrdinal() {
             throw new UnsupportedOperationException();
         }

@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
  * Represents the state of a VCS at a certain point in time.
  */
 @SuppressWarnings("unused")
-public interface Revision {
+public interface Revision extends VCSModelElement {
 
 	/**
 	 * Returns the id of this revision. Usually, it is the id of the commit

@@ -21,7 +21,7 @@ import static de.unibremen.informatik.st.libvcs4j.FileChange.Type.*;
  * instance, a monthly basis.
  */
 @SuppressWarnings("unused")
-public interface RevisionRange {
+public interface RevisionRange extends VCSModelElement {
 
 	/**
 	 * Returns the ordinal of this range. Ordinals are used to identify
@@ -163,8 +163,8 @@ public interface RevisionRange {
 						final FileChange match = matches.poll();
 						iter.set(new FileChange() {
 							@Override
-							public VCSEngine getEngine() {
-								return change.getEngine();
+							public VCSEngine getVCSEngine() {
+								return change.getVCSEngine();
 							}
 
 							@Override
