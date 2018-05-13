@@ -7,12 +7,12 @@ import java.util.List;
  * Represents an issue from an issue tracker.
  */
 @SuppressWarnings("unused")
-public interface Issue extends ITEngine {
+public interface Issue extends ITModelElement {
 
 	/**
 	 * Represents a comment attached to an {@link Issue}.
 	 */
-	interface Comment extends ITEngine {
+	interface Comment extends ITModelElement {
 
 		/**
 		 * Returns the author of this comment.
