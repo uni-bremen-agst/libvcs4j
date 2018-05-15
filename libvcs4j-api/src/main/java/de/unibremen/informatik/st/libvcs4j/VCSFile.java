@@ -19,9 +19,9 @@ import java.util.Scanner;
  */
 public interface VCSFile extends VCSModelElement {
 
-    /**
+	/**
 	 * Represents a position within a file.
-     */
+	 */
 	class Position {
 
 		/**
