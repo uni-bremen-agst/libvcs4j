@@ -2,19 +2,19 @@ package de.unibremen.informatik.st.libvcs4j.engine;
 
 import bmsi.util.Diff;
 import de.unibremen.informatik.st.libvcs4j.Commit;
-import de.unibremen.informatik.st.libvcs4j.data.FileChangeImpl;
-import de.unibremen.informatik.st.libvcs4j.data.VCSFileImpl;
 import de.unibremen.informatik.st.libvcs4j.FileChange;
 import de.unibremen.informatik.st.libvcs4j.ITEngine;
 import de.unibremen.informatik.st.libvcs4j.LineChange;
 import de.unibremen.informatik.st.libvcs4j.Revision;
+import de.unibremen.informatik.st.libvcs4j.RevisionRange;
 import de.unibremen.informatik.st.libvcs4j.VCSEngine;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
-import de.unibremen.informatik.st.libvcs4j.Version;
+import de.unibremen.informatik.st.libvcs4j.data.FileChangeImpl;
+import de.unibremen.informatik.st.libvcs4j.data.VCSFileImpl;
 import de.unibremen.informatik.st.libvcs4j.data.CommitImpl;
 import de.unibremen.informatik.st.libvcs4j.data.LineChangeImpl;
 import de.unibremen.informatik.st.libvcs4j.data.RevisionImpl;
-import de.unibremen.informatik.st.libvcs4j.data.VersionImpl;
+import de.unibremen.informatik.st.libvcs4j.data.RevisionRangeImpl;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalReturnException;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -104,7 +104,7 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 	}
 
 	@Override
-	public final Optional<Version> next() throws IOException {
+	public final Optional<RevisionRange> next() throws IOException {
 		init();
 
 		revisionIdx++;
@@ -134,9 +134,9 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 			changes = createChangesImpl(getPreviousRevision(), revision);
 			//validate(changes);
 		}
-		final Version version = createVersion(changes);
-		currentRevision = version.getRevision();
-		return Optional.of(version);
+		final RevisionRange range = createRevisionRange(changes);
+		currentRevision = range.getRevision();
+		return Optional.of(range);
 	}
 
 	@Override
@@ -159,8 +159,8 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 	}
 
 	@Override
-	public final Iterator<Version> iterator() {
-		return new Iterator<Version>() {
+	public final Iterator<RevisionRange> iterator() {
+		return new Iterator<RevisionRange>() {
 			@Override
 			public boolean hasNext() {
 				try {
@@ -173,17 +173,17 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 			}
 
 			@Override
-			public Version next() {
+			public RevisionRange next() {
 				try {
-					final Optional<Version> version =
+					final Optional<RevisionRange> range =
 							AbstractVSCEngine.this.next();
-					if (!version.isPresent()) {
+					if (!range.isPresent()) {
 						throw new NoSuchElementException();
 					}
-					return version.get();
+					return range.get();
 				} catch (final IOException e) {
 					throw new UncheckedIOException(
-							"Error while reading next version", e);
+							"Error while reading next revision", e);
 				}
 			}
 		};
@@ -271,16 +271,16 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 		}
 		final Path relPath = output.relativize(pPath);
 
-		final VCSFileImpl file = new VCSFileImpl(this);
-		file.setPath(pPath.toString());
+		final VCSFileImpl file = new VCSFileImpl();
+		file.setVCSEngine(this);
 		file.setRelativePath(relPath.toString());
 		file.setRevision(pRevision);
 		return file;
 	}
 
-	private Revision createRevision() throws NullPointerException,
-			IllegalArgumentException, IOException {
-		final RevisionImpl rev = new RevisionImpl(this);
+	private Revision createRevision() throws IOException {
+		final RevisionImpl rev = new RevisionImpl();
+		rev.setVCSEngine(this);
 		final List<VCSFile> files = listFilesInOutput().stream()
 				.map(f -> createFile(f, rev))
 				.collect(Collectors.toList());
@@ -357,12 +357,14 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 //		}
 //	}
 
-	private Version createVersion(final Changes pChanges) throws IOException {
+	private RevisionRange createRevisionRange(final Changes pChanges)
+			throws IOException {
 		final Revision rev = createRevision();
-		final VersionImpl version = new VersionImpl();
-		version.setOrdinal(ordinal++);
-		version.setRevision(rev);
-		version.setPredecessorRevision(currentRevision);
+		final RevisionRangeImpl range = new RevisionRangeImpl();
+		range.setVCSEngine(this);
+		range.setOrdinal(ordinal++);
+		range.setRevision(rev);
+		range.setPredecessorRevision(currentRevision);
 
 		final Map<Path, VCSFile> path2File = new HashMap<>();
 		rev.getFiles().forEach(f -> path2File.put(f.toPath(), f));
@@ -371,7 +373,7 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 				.map(Paths::get)
 				.map(a -> {
 					final FileChangeImpl fc = new FileChangeImpl();
-					fc.setEngine(this);
+					fc.setVCSEngine(this);
 					fc.setNewFile(path2File.computeIfAbsent(
 							a, p -> createFile(p, rev)));
 					return fc;
@@ -383,7 +385,7 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 					.map(Paths::get)
 					.map(r -> {
 						final FileChangeImpl fc = new FileChangeImpl();
-						fc.setEngine(this);
+						fc.setVCSEngine(this);
 						fc.setOldFile(path2File.computeIfAbsent(
 								r, p -> createFile(p, currentRevision)));
 						return fc;
@@ -393,7 +395,7 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 					.map(Paths::get)
 					.map(m -> {
 						final FileChangeImpl fc = new FileChangeImpl();
-						fc.setEngine(this);
+						fc.setVCSEngine(this);
 						fc.setOldFile(createFile(m, currentRevision));
 						fc.setNewFile(path2File.computeIfAbsent(
 								m, p -> createFile(p, rev)));
@@ -408,7 +410,7 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 						final Path old = e.getKey();
 						final Path nev = e.getValue();
 						final FileChangeImpl fc = new FileChangeImpl();
-						fc.setEngine(this);
+						fc.setVCSEngine(this);
 						fc.setOldFile(path2File.computeIfAbsent(
 								old, p -> createFile(p, currentRevision)));
 						fc.setNewFile(path2File.computeIfAbsent(
@@ -419,13 +421,14 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 		}
 
 		final Commit commit = createCommit(fileChanges);
-		version.setCommits(Collections.singletonList(commit));
-		return version;
+		range.setCommits(Collections.singletonList(commit));
+		return range;
 	}
 
 	private Commit createCommit(final List<FileChange> pFileChanges)
 			throws IOException {
 		final CommitImpl commit = createCommitImpl(revision);
+		commit.setVCSEngine(this);
 		IllegalReturnException.notNull(commit);
 		IllegalReturnException.notNull(commit.getAuthor());
 		IllegalReturnException.notNull(commit.getMessage());
