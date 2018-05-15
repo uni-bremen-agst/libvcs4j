@@ -1,8 +1,8 @@
 package de.unibremen.informatik.st.libvcs4j.single;
 
 import de.unibremen.informatik.st.libvcs4j.FileChange;
+import de.unibremen.informatik.st.libvcs4j.RevisionRange;
 import de.unibremen.informatik.st.libvcs4j.VCSEngine;
-import de.unibremen.informatik.st.libvcs4j.Version;
 import de.unibremen.informatik.st.libvcs4j.VCSEngineBuilder;
 import de.unibremen.informatik.st.libvcs4j.filesystem.SingleEngine;
 import org.junit.Assert;
@@ -40,12 +40,12 @@ public class SingleEngineTest {
 		assertEquals(1, engine.listFilesInOutput().size());
 		assertEquals(pathOfFile, engine.listFilesInOutput().get(0));
 
-		final Optional<Version> optional = engine.next();
+		final Optional<RevisionRange> optional = engine.next();
 		Assert.assertTrue(optional.isPresent());
-		final Version version = optional.get();
-		assertEquals(1, version.getFileChanges().size());
+		final RevisionRange range = optional.get();
+		assertEquals(1, range.getFileChanges().size());
 
-		final FileChange fileChange = version.getFileChanges().get(0);
+		final FileChange fileChange = range.getFileChanges().get(0);
 		assertEquals(FileChange.Type.ADD, fileChange.getType());
 		assertEquals(pathOfFile, fileChange.getNewFile().get().toPath());
 		// there is no relative path for a single file
@@ -61,12 +61,12 @@ public class SingleEngineTest {
 		assertEquals(1, engine.listFilesInOutput().size());
 		assertEquals(path, engine.listFilesInOutput().get(0));
 
-		final Optional<Version> optional = engine.next();
+		final Optional<RevisionRange> optional = engine.next();
 		Assert.assertTrue(optional.isPresent());
-		final Version version = optional.get();
-		assertEquals(1, version.getFileChanges().size());
+		final RevisionRange range = optional.get();
+		assertEquals(1, range.getFileChanges().size());
 
-		final FileChange fileChange = version.getFileChanges().get(0);
+		final FileChange fileChange = range.getFileChanges().get(0);
 		assertEquals(FileChange.Type.ADD, fileChange.getType());
 		assertEquals(path, fileChange.getNewFile().get().toPath());
 		assertEquals("file.java",
@@ -88,13 +88,13 @@ public class SingleEngineTest {
 		assertTrue(engine.listFilesInOutput().contains(first));
 		assertTrue(engine.listFilesInOutput().contains(second));
 
-		final Optional<Version> optional = engine.next();
+		final Optional<RevisionRange> optional = engine.next();
 		Assert.assertTrue(optional.isPresent());
-		final Version version = optional.get();
-		assertEquals(2, version.getFileChanges().size());
+		final RevisionRange range = optional.get();
+		assertEquals(2, range.getFileChanges().size());
 
-		final FileChange fc1 = version.getFileChanges().get(0);
-		final FileChange fc2 = version.getFileChanges().get(1);
+		final FileChange fc1 = range.getFileChanges().get(0);
+		final FileChange fc2 = range.getFileChanges().get(1);
 		assertEquals(FileChange.Type.ADD, fc1.getType());
 		assertEquals(FileChange.Type.ADD, fc2.getType());
 	}

@@ -197,14 +197,14 @@ public abstract class VCSBaseTest {
 		assertEquals(commitIds.size(), revisionIds.size());
 		assertTrue(commitIds.size() >= 20);
 		VCSEngine engine = createBuilder().build();
-		List<Version> versions = new ArrayList<>();
-		engine.forEach(versions::add);
-		assertEquals(commitIds.size(), versions.size());
-		for (int i = 0; i < versions.size(); i++) {
-			Version v = versions.get(i);
-			assertEquals(i + 1, v.getOrdinal());
-			assertEquals(commitIds.get(i), v.getLatestCommit().getId());
-			assertEquals(revisionIds.get(i), v.getRevision().getId());
+		List<RevisionRange> ranges = new ArrayList<>();
+		engine.forEach(ranges::add);
+		assertEquals(commitIds.size(), ranges.size());
+		for (int i = 0; i < ranges.size(); i++) {
+			RevisionRange r = ranges.get(i);
+			assertEquals(i + 1, r.getOrdinal());
+			assertEquals(commitIds.get(i), r.getLatestCommit().getId());
+			assertEquals(revisionIds.get(i), r.getRevision().getId());
 		}
 	}
 
@@ -216,14 +216,14 @@ public abstract class VCSBaseTest {
 		assertFalse(commitIds.isEmpty());
 		assertTrue(commitIds.size() < readIds(getRootCommitIdFile()).size());
 		VCSEngine engine = createBuilder().withRoot(getSubDir()).build();
-		List<Version> versions = new ArrayList<>();
-		engine.forEach(versions::add);
-		assertEquals(commitIds.size(), versions.size());
-		for (int i = 0; i < versions.size(); i++) {
-			Version v = versions.get(i);
-			assertEquals(i + 1, v.getOrdinal());
-			assertEquals(commitIds.get(i), v.getLatestCommit().getId());
-			assertEquals(revisionIds.get(i), v.getRevision().getId());
+		List<RevisionRange> ranges = new ArrayList<>();
+		engine.forEach(ranges::add);
+		assertEquals(commitIds.size(), ranges.size());
+		for (int i = 0; i < ranges.size(); i++) {
+			RevisionRange r = ranges.get(i);
+			assertEquals(i + 1, r.getOrdinal());
+			assertEquals(commitIds.get(i), r.getLatestCommit().getId());
+			assertEquals(revisionIds.get(i), r.getRevision().getId());
 		}
 	}
 
@@ -237,14 +237,14 @@ public abstract class VCSBaseTest {
 				.withEnd(3)
 				.build();
 
-		List<Version> versions = new ArrayList<>();
-		engine.forEach(versions::add);
-		assertEquals(3, versions.size());
-		for (int i = 3; i < versions.size(); i++) {
-			Version v = versions.get(i);
-			assertEquals(i + 1, v.getOrdinal());
-			assertEquals(commitIds.get(i), v.getLatestCommit().getId());
-			assertEquals(revisionIds.get(i), v.getRevision().getId());
+		List<RevisionRange> ranges = new ArrayList<>();
+		engine.forEach(ranges::add);
+		assertEquals(3, ranges.size());
+		for (int i = 3; i < ranges.size(); i++) {
+			RevisionRange r = ranges.get(i);
+			assertEquals(i + 1, r.getOrdinal());
+			assertEquals(commitIds.get(i), r.getLatestCommit().getId());
+			assertEquals(revisionIds.get(i), r.getRevision().getId());
 		}
 	}
 
@@ -258,14 +258,14 @@ public abstract class VCSBaseTest {
 				.withEnd(9)
 				.build();
 
-		List<Version> versions = new ArrayList<>();
-		engine.forEach(versions::add);
-		assertEquals(4, versions.size());
-		for (int i = 0; i < versions.size(); i++) {
-			Version v = versions.get(i);
-			assertEquals(i + 1, v.getOrdinal());
-			assertEquals(commitIds.get(i + 5), v.getLatestCommit().getId());
-			assertEquals(revisionIds.get(i + 5), v.getRevision().getId());
+		List<RevisionRange> ranges = new ArrayList<>();
+		engine.forEach(ranges::add);
+		assertEquals(4, ranges.size());
+		for (int i = 0; i < ranges.size(); i++) {
+			RevisionRange r = ranges.get(i);
+			assertEquals(i + 1, r.getOrdinal());
+			assertEquals(commitIds.get(i + 5), r.getLatestCommit().getId());
+			assertEquals(revisionIds.get(i + 5), r.getRevision().getId());
 		}
 	}
 
@@ -278,14 +278,14 @@ public abstract class VCSBaseTest {
 				.withEnd(2)
 				.build();
 
-		List<Version> versions = new ArrayList<>();
-		engine.forEach(versions::add);
-		assertEquals(2, versions.size());
-		for (int i = 0; i < versions.size(); i++) {
-			Version v = versions.get(i);
-			assertEquals(i + 1, v.getOrdinal());
-			assertEquals(commitIds.get(i), v.getLatestCommit().getId());
-			assertEquals(revisionIds.get(i), v.getRevision().getId());
+		List<RevisionRange> ranges = new ArrayList<>();
+		engine.forEach(ranges::add);
+		assertEquals(2, ranges.size());
+		for (int i = 0; i < ranges.size(); i++) {
+			RevisionRange r = ranges.get(i);
+			assertEquals(i + 1, r.getOrdinal());
+			assertEquals(commitIds.get(i), r.getLatestCommit().getId());
+			assertEquals(revisionIds.get(i), r.getRevision().getId());
 		}
 	}
 
@@ -299,16 +299,16 @@ public abstract class VCSBaseTest {
 				.withStart(start)
 				.build();
 
-		List<Version> versions = new ArrayList<>();
-		engine.forEach(versions::add);
-		assertEquals(3, versions.size());
-		for (int i = 0; i < versions.size(); i++) {
-			Version v = versions.get(i);
-			assertEquals(i + 1, v.getOrdinal());
+		List<RevisionRange> ranges = new ArrayList<>();
+		engine.forEach(ranges::add);
+		assertEquals(3, ranges.size());
+		for (int i = 0; i < ranges.size(); i++) {
+			RevisionRange r = ranges.get(i);
+			assertEquals(i + 1, r.getOrdinal());
 			assertEquals(commitIds.get(i + start),
-					v.getLatestCommit().getId());
+					r.getLatestCommit().getId());
 			assertEquals(revisionIds.get(i + start),
-					v.getRevision().getId());
+					r.getRevision().getId());
 		}
 	}
 
@@ -323,13 +323,13 @@ public abstract class VCSBaseTest {
 				.withFrom(from)
 				.withTo(to)
 				.build();
-		List<Version> versions = new ArrayList<>();
-		engine.forEach(versions::add);
-		assertEquals(6, versions.size());
-		for (int i = 0; i < versions.size(); i++) {
-			Version v = versions.get(i);
-			assertEquals(commitIds.get(i), v.getLatestCommit().getId());
-			assertEquals(revisionIds.get(i), v.getRevision().getId());
+		List<RevisionRange> ranges = new ArrayList<>();
+		engine.forEach(ranges::add);
+		assertEquals(6, ranges.size());
+		for (int i = 0; i < ranges.size(); i++) {
+			RevisionRange r = ranges.get(i);
+			assertEquals(commitIds.get(i), r.getLatestCommit().getId());
+			assertEquals(revisionIds.get(i), r.getRevision().getId());
 		}
 	}
 
@@ -344,13 +344,13 @@ public abstract class VCSBaseTest {
 				.withFrom(from)
 				.withTo(to)
 				.build();
-		List<Version> versions = new ArrayList<>();
-		engine.forEach(versions::add);
-		assertEquals(3, versions.size());
-		for (int i = 0; i < versions.size(); i++) {
-			Version v = versions.get(i);
-			assertEquals(commitIds.get(i + 6), v.getLatestCommit().getId());
-			assertEquals(revisionIds.get(i + 6), v.getRevision().getId());
+		List<RevisionRange> ranges = new ArrayList<>();
+		engine.forEach(ranges::add);
+		assertEquals(3, ranges.size());
+		for (int i = 0; i < ranges.size(); i++) {
+			RevisionRange r = ranges.get(i);
+			assertEquals(commitIds.get(i + 6), r.getLatestCommit().getId());
+			assertEquals(revisionIds.get(i + 6), r.getRevision().getId());
 		}
 	}
 
@@ -363,13 +363,13 @@ public abstract class VCSBaseTest {
 		VCSEngine engine = createBuilder()
 				.withTo(to)
 				.build();
-		List<Version> versions = new ArrayList<>();
-		engine.forEach(versions::add);
-		assertEquals(4, versions.size());
-		for (int i = 0; i < versions.size(); i++) {
-			Version v = versions.get(i);
-			assertEquals(commitIds.get(i), v.getLatestCommit().getId());
-			assertEquals(revisionIds.get(i), v.getRevision().getId());
+		List<RevisionRange> ranges = new ArrayList<>();
+		engine.forEach(ranges::add);
+		assertEquals(4, ranges.size());
+		for (int i = 0; i < ranges.size(); i++) {
+			RevisionRange r = ranges.get(i);
+			assertEquals(commitIds.get(i), r.getLatestCommit().getId());
+			assertEquals(revisionIds.get(i), r.getRevision().getId());
 		}
 	}
 
@@ -383,16 +383,16 @@ public abstract class VCSBaseTest {
 				.withFrom(commitIds.get(start))
 				.build();
 
-		List<Version> versions = new ArrayList<>();
-		engine.forEach(versions::add);
-		assertEquals(4, versions.size());
-		for (int i = 0; i < versions.size(); i++) {
-			Version v = versions.get(i);
-			assertEquals(i + 1, v.getOrdinal());
+		List<RevisionRange> ranges = new ArrayList<>();
+		engine.forEach(ranges::add);
+		assertEquals(4, ranges.size());
+		for (int i = 0; i < ranges.size(); i++) {
+			RevisionRange r = ranges.get(i);
+			assertEquals(i + 1, r.getOrdinal());
 			assertEquals(commitIds.get(i + start),
-					v.getLatestCommit().getId());
+					r.getLatestCommit().getId());
 			assertEquals(revisionIds.get(i + start),
-					v.getRevision().getId());
+					r.getRevision().getId());
 		}
 	}
 

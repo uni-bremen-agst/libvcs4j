@@ -104,8 +104,8 @@ public class RoolieTest extends VCSBaseTest {
 	@Test
 	public void forEachIteration() {
 		int i = 1;
-		for (final Version v : createProvider("")) {
-			assertEquals(String.valueOf(i++), v.getRevision().getId());
+		for (final RevisionRange r : createProvider("")) {
+			assertEquals(String.valueOf(i++), r.getRevision().getId());
 		}
 	}
 
@@ -113,7 +113,7 @@ public class RoolieTest extends VCSBaseTest {
 	public void nextIteration() throws IOException {
 		final VCSEngine engine = createProvider("");
 		int i = 1;
-		for (Optional<Version> optional = engine.next();
+		for (Optional<RevisionRange> optional = engine.next();
 			 optional.isPresent();
 			 optional = engine.next()) {
 			assertEquals(String.valueOf(i++),
@@ -125,7 +125,7 @@ public class RoolieTest extends VCSBaseTest {
 	public void commitMessage36() throws IOException {
 		final VCSEngine engine = createProvider("", "35", "37");
 		engine.next();
-		final Optional<Version> optional = engine.next();
+		final Optional<RevisionRange> optional = engine.next();
 		assertTrue(optional.isPresent());
 		assertEquals(
 			"Added more arguments to test and now tests another rule.",
@@ -136,10 +136,10 @@ public class RoolieTest extends VCSBaseTest {
 	public void changes36() throws IOException {
 		final VCSEngine engine = createProvider("", "35", "37");
 		engine.next();
-		final Optional<Version> optional = engine.next();
+		final Optional<RevisionRange> optional = engine.next();
 		assertTrue(optional.isPresent());
-		final Version version = optional.get();
-		final List<FileChange> changes = version.getFileChanges();
+		final RevisionRange range = optional.get();
+		final List<FileChange> changes = range.getFileChanges();
 		assertEquals(1, changes.size());
 		assertEquals(FileChange.Type.MODIFY, changes.get(0).getType());
 
@@ -153,10 +153,10 @@ public class RoolieTest extends VCSBaseTest {
 	public void fileContent36() throws IOException {
 		final VCSEngine engine = createProvider("", "35", "37");
 		engine.next();
-		final Optional<Version> optional = engine.next();
+		final Optional<RevisionRange> optional = engine.next();
 		assertTrue(optional.isPresent());
-		final Version version = optional.get();
-		final List<FileChange> changes = version.getFileChanges();
+		final RevisionRange range = optional.get();
+		final List<FileChange> changes = range.getFileChanges();
 		assertEquals(1, changes.size());
 		final String oldContent= "///////////////////////////////////////////////////////////////////////////////\n" +
 				"//  Copyright 2010 Ryan Kennedy <rallyredevo AT users DOT sourceforge DOT net>\n" +
@@ -723,7 +723,7 @@ public class RoolieTest extends VCSBaseTest {
 	public void commitMessage41() throws IOException {
 		final VCSEngine engine = createProvider("", "40", "42");
 		engine.next();
-		final Optional<Version> optional = engine.next();
+		final Optional<RevisionRange> optional = engine.next();
 		assertTrue(optional.isPresent());
 		assertEquals("", optional.get().getCommits().get(0).getMessage());
 	}
@@ -732,10 +732,10 @@ public class RoolieTest extends VCSBaseTest {
 	public void changes41() throws IOException {
 		final VCSEngine engine = createProvider("", "40", "42");
 		engine.next();
-		final Optional<Version> optional = engine.next();
+		final Optional<RevisionRange> optional = engine.next();
 		assertTrue(optional.isPresent());
-		final Version version = optional.get();
-		final List<FileChange> changes = version.getFileChanges();
+		final RevisionRange range = optional.get();
+		final List<FileChange> changes = range.getFileChanges();
 		assertEquals(46, changes.size());
 		for (final FileChange fc : changes) {
 			assertEquals(FileChange.Type.ADD, fc.getType());
@@ -748,7 +748,7 @@ public class RoolieTest extends VCSBaseTest {
 	public void commitMessage61() throws IOException {
 		final VCSEngine engine = createProvider("", "60", "62");
 		engine.next();
-		final Optional<Version> optional = engine.next();
+		final Optional<RevisionRange> optional = engine.next();
 		assertTrue(optional.isPresent());
 		assertEquals("v1.1 - 12/12/2013\n" +
 			"* Added support for making rule-defs out of other rule-defs.\n" +

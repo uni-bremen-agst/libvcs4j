@@ -1,13 +1,6 @@
 package de.unibremen.informatik.st.libvcs4j.git;
 
-import de.unibremen.informatik.st.libvcs4j.Commit;
-import de.unibremen.informatik.st.libvcs4j.FileChange;
-import de.unibremen.informatik.st.libvcs4j.Revision;
-import de.unibremen.informatik.st.libvcs4j.VCSBaseTest;
-import de.unibremen.informatik.st.libvcs4j.VCSEngine;
-import de.unibremen.informatik.st.libvcs4j.VCSEngineBuilder;
-import de.unibremen.informatik.st.libvcs4j.VCSFile;
-import de.unibremen.informatik.st.libvcs4j.Version;
+import de.unibremen.informatik.st.libvcs4j.*;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -64,10 +57,10 @@ public class JavaCPPTest extends VCSBaseTest {
 				.withTo("29208")
 				.build();
 
-		Optional<Version> version = engine.next();
-		assertTrue(version.isPresent());
+		Optional<RevisionRange> range = engine.next();
+		assertTrue(range.isPresent());
 
-		Commit commit = version.get().getLatestCommit();
+		Commit commit = range.get().getLatestCommit();
 		assertEquals(
 				"29208f7369e95219830b60fb37e90bb1e5bd9448",
 				commit.getId());
@@ -92,10 +85,10 @@ public class JavaCPPTest extends VCSBaseTest {
 				.withTo("3934c45285d")
 				.build();
 
-		Optional<Version> version = engine.next();
-		assertTrue(version.isPresent());
+		Optional<RevisionRange> range = engine.next();
+		assertTrue(range.isPresent());
 
-		Commit commit = version.get().getLatestCommit();
+		Commit commit = range.get().getLatestCommit();
 		assertEquals(
 				"3934c45285d7de75c7c827b3a104cbe89658d6aa",
 				commit.getId());
@@ -122,10 +115,10 @@ public class JavaCPPTest extends VCSBaseTest {
 				.build();
 
 		engine.next();
-		Optional<Version> version = engine.next();
-		assertTrue(version.isPresent());
+		Optional<RevisionRange> range = engine.next();
+		assertTrue(range.isPresent());
 
-		List<FileChange> fileChanges = version.get().getFileChanges();
+		List<FileChange> fileChanges = range.get().getFileChanges();
 		assertEquals(3, fileChanges.size());
 
 		Path path1 = Paths.get(
@@ -167,10 +160,10 @@ public class JavaCPPTest extends VCSBaseTest {
 				.withTo("1380e19f51dd12b7083356e3601f6b5fc763da35")
 				.build();
 
-		Optional<Version> version = engine.next();
-		assertTrue(version.isPresent());
+		Optional<RevisionRange> range = engine.next();
+		assertTrue(range.isPresent());
 
-		List<String> files = version.get()
+		List<String> files = range.get()
 				.getRevision()
 				.getFiles()
 				.stream()
@@ -187,12 +180,12 @@ public class JavaCPPTest extends VCSBaseTest {
 				.withEnd(10)
 				.build();
 
-		List<Version> versions = new ArrayList<>();
-		engine.forEach(versions::add);
-		assertEquals(10, versions.size());
+		List<RevisionRange> ranges = new ArrayList<>();
+		engine.forEach(ranges::add);
+		assertEquals(10, ranges.size());
 
-		versions.stream()
-				.map(Version::getRevision)
+		ranges.stream()
+				.map(RevisionRange::getRevision)
 				.map(Revision::getFiles)
 				.flatMap(Collection::stream)
 				.map(VCSFile::toRelativePath)
@@ -206,27 +199,27 @@ public class JavaCPPTest extends VCSBaseTest {
 				.withBranch("gh-pages")
 				.build();
 
-		List<Version> versions = new ArrayList<>();
-		engine.forEach(versions::add);
-		assertEquals(9, versions.size());
+		List<RevisionRange> ranges = new ArrayList<>();
+		engine.forEach(ranges::add);
+		assertEquals(9, ranges.size());
 
 		assertEquals("9b2c67502aaf168b1dbfee640a38a897cd02a6ec",
-				versions.get(0).getRevision().getId());
+				ranges.get(0).getRevision().getId());
 		assertEquals("369203faee219272bc658333c71ffc7dc9117efb",
-				versions.get(1).getRevision().getId());
+				ranges.get(1).getRevision().getId());
 		assertEquals("6b95f2bc0b443299e6dbfbf9774fd807c8e8b2c4",
-				versions.get(2).getRevision().getId());
+				ranges.get(2).getRevision().getId());
 		assertEquals("320baec0f14f99c2284bb69e0dc6df52677f1474",
-				versions.get(3).getRevision().getId());
+				ranges.get(3).getRevision().getId());
 		assertEquals("fbdff9f6014d31f6bd7a5424f510ebd77d0b7c16",
-				versions.get(4).getRevision().getId());
+				ranges.get(4).getRevision().getId());
 		assertEquals("4e6011ac12f6e3f7ed9464814cbd7d0a09065273",
-				versions.get(5).getRevision().getId());
+				ranges.get(5).getRevision().getId());
 		assertEquals("1106d44879310a9aa658ac73120ea4aaa67d0ab0",
-				versions.get(6).getRevision().getId());
+				ranges.get(6).getRevision().getId());
 		assertEquals("1c08928b9b4e0f6529760cf7dbc607383afa7fa5",
-				versions.get(7).getRevision().getId());
+				ranges.get(7).getRevision().getId());
 		assertEquals("32510a922ab069d52c312b3fb8668fb9dfda5e5f",
-				versions.get(8).getRevision().getId());
+				ranges.get(8).getRevision().getId());
 	}
 }
