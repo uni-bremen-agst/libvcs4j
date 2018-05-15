@@ -8,13 +8,6 @@ licensed under GNU General Public License
 
 --------------------------------------------------------------------------------
 
-LibVCS4j includes ConQAT
- (https://www.cqse.eu/en/products/conqat/overview),
-licensed under Apache License 2.0
- (https://opensource.org/licenses/Apache-2.0).
-
---------------------------------------------------------------------------------
-
 LibVCS4j uses JavaHG
  (https://www.mercurial-scm.org/wiki/JavaHg),
 licensed under MIT Licence
