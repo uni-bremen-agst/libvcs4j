@@ -7,13 +7,15 @@ import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Some tests must be adjusted if new files are added or existing files are
@@ -60,67 +62,56 @@ public class VCSEngineTest {
 
 	@Test
 	public void testListFilesInOutput() throws IOException {
-		VCSEngine vp = new TestVCSEngine() {
-			@Override
-			public Path getOutput() {
-				return folder.getRoot().toPath();
-			}
-		};
-		assertEquals(10, vp.listFilesInOutput().size());
+		VCSEngine engine = mock(VCSEngine.class);
+		when(engine.getOutput()).thenReturn(folder.getRoot().toPath());
+		when(engine.listFilesInOutput()).thenCallRealMethod();
+		when(engine.createVCSFileFilter()).thenCallRealMethod();
+
+		assertThat(engine.listFilesInOutput()).hasSize(10);
 	}
 
 	@Test
 	public void testListFilesInOutputSingleFile() throws IOException {
+		VCSEngine engine = mock(VCSEngine.class);
+		when(engine.getOutput()).thenReturn(
+				folder.getRoot().toPath().resolve("c").resolve("c1"));
+		when(engine.listFilesInOutput()).thenCallRealMethod();
+		when(engine.createVCSFileFilter()).thenCallRealMethod();
 
-		VCSEngine vp = new TestVCSEngine() {
-			@Override
-			public Path getOutput() {
-				return folder.getRoot().toPath().resolve("c").resolve("c1");
-			}
-		};
-		assertEquals(1, vp.listFilesInOutput().size());
+		assertThat(engine.listFilesInOutput()).hasSize(1);
 	}
 
-	@Test(expected = FileNotFoundException.class)
+	@Test
 	public void testNonExistingOutputDir() throws IOException {
-		String p = "asdfhalf324hr789erher9c78vh3cr72ny48t784r7c8tycn87c3";
-		new TestVCSEngine() {
-			@Override
-			public Path getOutput() {
-				return Paths.get(p);
-			}
-		}.listFilesInOutput();
+		String path = "asdfhalf324hr789erher9c78vh3cr72ny48t784r7c8tycn87c3";
+		VCSEngine engine = mock(VCSEngine.class);
+		when(engine.getOutput()).thenReturn(Paths.get(path));
+		when(engine.listFilesInOutput()).thenCallRealMethod();
+		when(engine.createVCSFileFilter()).thenCallRealMethod();
+
+		assertThatExceptionOfType(FileNotFoundException.class)
+				.isThrownBy(engine::listFilesInOutput);
 	}
 
 	@Test
 	public void testSimpleFileFilter() throws IOException {
-		VCSEngine vp = new TestVCSEngine() {
-			@Override
-			public Path getOutput() {
-				return folder.getRoot().toPath();
-			}
+		VCSEngine engine = mock(VCSEngine.class);
+		when(engine.getOutput()).thenReturn(folder.getRoot().toPath());
+		when(engine.listFilesInOutput()).thenCallRealMethod();
+		when(engine.createVCSFileFilter()).thenReturn(
+				(dir, name) -> !name.startsWith("f"));
 
-			@Override
-			public FilenameFilter createVCSFileFilter() {
-				return (dir, name) -> !name.startsWith("f");
-			}
-		};
-		assertEquals(7, vp.listFilesInOutput().size());
+		assertThat(engine.listFilesInOutput()).hasSize(7);
 	}
 
 	@Test
 	public void testSimpleDirectoryFilter() throws IOException {
-		VCSEngine vp = new TestVCSEngine() {
-			@Override
-			public Path getOutput() {
-				return folder.getRoot().toPath();
-			}
+		VCSEngine engine = mock(VCSEngine.class);
+		when(engine.getOutput()).thenReturn(folder.getRoot().toPath());
+		when(engine.listFilesInOutput()).thenCallRealMethod();
+		when(engine.createVCSFileFilter()).thenReturn(
+				(dir, name) -> !dir.getName().equals("c"));
 
-			@Override
-			public FilenameFilter createVCSFileFilter() {
-				return (dir, name) -> !dir.getName().equals("c");
-			}
-		};
-		assertEquals(7, vp.listFilesInOutput().size());
+		assertThat(engine.listFilesInOutput()).hasSize(7);
 	}
 }
