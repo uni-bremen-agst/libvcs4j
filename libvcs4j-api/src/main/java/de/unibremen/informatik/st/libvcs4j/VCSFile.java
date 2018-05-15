@@ -2,9 +2,12 @@ package de.unibremen.informatik.st.libvcs4j;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -14,6 +17,31 @@ import java.util.Optional;
  */
 @SuppressWarnings("unused")
 public interface VCSFile extends VCSModelElement {
+
+	class Position {
+
+		private final int line;
+		private final int column;
+		private final int tabSize;
+
+		public Position(final int line, final int column, final int tabSize) {
+			this.line = line;
+			this.column = column;
+			this.tabSize = tabSize;
+		}
+
+		public int getLine() {
+			return line;
+		}
+
+		public int getColumn() {
+			return column;
+		}
+
+		public int getTabSize() {
+			return tabSize;
+		}
+	}
 
 	/**
 	 * Returns the relative path of this file as it was like when its
@@ -85,6 +113,40 @@ public interface VCSFile extends VCSModelElement {
 		return new String(readAllBytes(), charset);
 	}
 
+	default List<String> readLinesWithEOL() throws IOException {
+		final StringReader reader = new StringReader(readeContent());
+		final List<String> lines = new ArrayList<>();
+		final StringBuilder builder = new StringBuilder();
+		int code;
+		while ((code = reader.read()) != -1) {
+			char ch = (char) code;
+			builder.append(ch);
+
+			if (ch == '\n') { // Unix EOL
+				lines.add(builder.toString());
+				builder.setLength(0);
+			} else if ( ch == '\r') {
+				reader.mark(1);
+				code = reader.read();
+				ch = (char) code;
+
+				if (ch == '\n') { // Windows EOL
+					builder.append(ch);
+				} else if (code == -1) { // old Mac EOL followed by EOF
+					break;
+				} else { // old Mac EOL followed by regular char
+					reader.reset();
+				}
+				lines.add(builder.toString());
+				builder.setLength(0);
+			}
+		}
+		if (builder.length() > 0) { // skip empty lines
+			lines.add(builder.toString());
+		}
+		return lines;
+	}
+
 	/**
 	 * Returns a {@link File} object (absolute path) representing this file.
 	 *
@@ -123,5 +185,48 @@ public interface VCSFile extends VCSModelElement {
 	 */
 	default Path toRelativePath() {
 		return Paths.get(getRelativePath());
+	}
+
+	default Position getPosition(final int offset, final int tabSize)
+			throws IOException {
+		if (offset < 0) {
+			throw new IllegalArgumentException("offset < 0");
+		} else if (tabSize < 1) {
+			throw new IllegalArgumentException("tab size < 1");
+		}
+
+		final List<String> lines = readLinesWithEOL();
+
+		int line = 1;
+		int offs = offset;
+		while (line <= lines.size()) {
+			final String lineStr = lines.get(line - 1);
+			// find number of tabs in line
+			int tabs = 0;
+			for (int i = 0; i < lineStr.length(); i++) {
+				if (lineStr.charAt(i) == '\t') {
+					tabs++;
+				}
+			}
+			// calculate line length based on the number of tabs
+			final int length = lineStr.length() + (tabs * (tabSize - 1));
+			if (length <= offs) {
+				line++;
+				offs -= length;
+			} else {
+				final String offsStr = lineStr.substring(0, offs + 1);
+				// find number of tabs in sub-line
+				tabs = 0;
+				for (int i = 0; i < offsStr.length(); i++) {
+					if (lineStr.charAt(i) == '\t') {
+						tabs++;
+					}
+				}
+				// calculate column based on the number of tabs
+				final int column = offsStr.length() + (tabs * (tabSize - 1));
+				return new Position(line, column, tabSize);
+			}
+		}
+		throw new IndexOutOfBoundsException("offset: " + offset);
 	}
 }

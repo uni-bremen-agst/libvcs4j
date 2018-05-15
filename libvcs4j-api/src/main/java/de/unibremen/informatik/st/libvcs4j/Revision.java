@@ -26,7 +26,9 @@ public interface Revision extends VCSModelElement {
 	 * @return
 	 * 		The path to the tracked files and directories.
 	 */
-	Path getOutput();
+	default Path getOutput() {
+		return getVCSEngine().getOutput();
+	}
 
 	/**
 	 * Returns all non-VCS-specific files.
