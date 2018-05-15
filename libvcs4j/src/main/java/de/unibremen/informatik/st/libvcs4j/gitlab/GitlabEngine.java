@@ -48,6 +48,7 @@ public class GitlabEngine extends AbstractITEngine {
 
 	private Issue createIssue(final GitlabIssue pGLIssue) {
 		final IssueImpl issue = new IssueImpl();
+		issue.setITEngine(this);
 		issue.setId(String.valueOf(pGLIssue.getId()));
 		String author = pGLIssue.getAuthor().getName();
 		if (author == null) {
@@ -63,6 +64,7 @@ public class GitlabEngine extends AbstractITEngine {
 		issue.setDateTime(dateTime);
 
 		final CommentImpl comment = new CommentImpl();
+		comment.setITEngine(this);
 		comment.setAuthor(author);
 		comment.setDateTime(dateTime);
 		comment.setMessage(pGLIssue.getDescription());

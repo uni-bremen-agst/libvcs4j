@@ -13,16 +13,7 @@ import java.util.Optional;
  * collisions with {@link File}.
  */
 @SuppressWarnings("unused")
-public interface VCSFile {
-
-	/**
-	 * Returns the absolute path of this file as it was like when its
-	 * corresponding revision was checked out by {@link VCSEngine#next()}.
-	 *
-	 * @return
-	 * 		The absolute path of this file.
-	 */
-	String getPath();
+public interface VCSFile extends VCSModelElement {
 
 	/**
 	 * Returns the relative path of this file as it was like when its
@@ -54,24 +45,16 @@ public interface VCSFile {
 	Optional<Charset> guessCharset() throws IOException;
 
 	/**
-	 * Tries to compute the size of this file.
+	 * Returns the absolute path of this file as it was like when its
+	 * corresponding revision was checked out by {@link VCSEngine#next()}.
 	 *
 	 * @return
-	 * 		The size of this file.
-	 * @throws IOException
-	 * 		If an error occurred while reading the content of this file.
+	 * 		The absolute path of this file.
 	 */
-	Optional<Size> computeSize() throws IOException;
-
-	/**
-	 * Tries to compute the complexity of this file.
-	 *
-	 * @return
-	 * 		The complexity of this file.
-	 * @throws IOException
-	 * 		If an error occurred while reading the content of this file.
-	 */
-	Optional<Complexity> computeComplexity() throws IOException;
+	default String getPath() {
+		return getVCSEngine().getOutput()
+				.resolve(getRelativePath()).toString();
+	}
 
 	/**
 	 * Returns the contents of this file.
@@ -81,7 +64,9 @@ public interface VCSFile {
 	 * @throws IOException
 	 * 		If an error occurred while reading the contents.
 	 */
-	byte[] readAllBytes() throws IOException;
+	default byte[] readAllBytes() throws IOException {
+		return getVCSEngine().readAllBytes(this);
+	}
 
 	/**
 	 * Returns the content of this file as String. The default implementation

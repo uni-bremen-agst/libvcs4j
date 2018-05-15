@@ -3,6 +3,9 @@ package de.unibremen.informatik.st.libvcs4j.data;
 import de.unibremen.informatik.st.libvcs4j.Commit;
 import de.unibremen.informatik.st.libvcs4j.FileChange;
 import de.unibremen.informatik.st.libvcs4j.Issue;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 import org.apache.commons.lang3.Validate;
 
 import java.time.LocalDateTime;
@@ -11,60 +14,70 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Implementation for {@link Commit}.
+ * Pojo Implementation of {@link Commit}.
  */
-public class CommitImpl implements Commit {
+@Getter
+@Setter
+public class CommitImpl extends VCSModelElementImpl implements Commit {
 
+	/**
+	 * The id of a commit.
+	 */
+	@NonNull
 	private String id;
+
+	/**
+	 * The author of a commit.
+	 */
+	@NonNull
 	private String author;
+
+	/**
+	 * The message of a commit.
+	 */
+	@NonNull
 	private String message;
+
+	/**
+	 * The datetime of a commit.
+	 */
+	@NonNull
 	private LocalDateTime dateTime;
+
+	/**
+	 * The parents of a commit.
+	 */
+	@NonNull
 	private List<String> parentIds = Collections.emptyList();
+
+	/**
+	 * The file changes of a commit.
+	 */
+	@NonNull
 	private List<FileChange> fileChanges = Collections.emptyList();
+
+	/**
+	 * The issues of a commit.
+	 */
+	@NonNull
 	private List<Issue> issues = Collections.emptyList();
-
-	@Override
-	public String getId() {
-		return id;
-	}
-
-	public void setId(final String pId) {
-		id = Validate.notNull(pId);
-	}
-
-	@Override
-	public String getAuthor() {
-		return author;
-	}
-
-	public void setAuthor(final String pAuthor) {
-		author = Validate.notNull(pAuthor);
-	}
-
-	@Override
-	public String getMessage() {
-		return message;
-	}
-
-	public void setMessage(final String pMessage) {
-		message = Validate.notNull(pMessage);
-	}
-
-	@Override
-	public LocalDateTime getDateTime() {
-		return dateTime;
-	}
-
-	public void setDateTime(final LocalDateTime pDateTime) {
-		dateTime = Validate.notNull(pDateTime);
-	}
 
 	@Override
 	public List<String> getParentIds() {
 		return new ArrayList<>(parentIds);
 	}
 
-	public void setParentIds(List<String> pParentIds) {
+	/**
+	 * Sets the parent ids of this commit.
+	 *
+	 * @param pParentIds
+	 * 		The ids to set.
+	 * @throws NullPointerException
+	 * 		If {@code pParentIds} is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If {@code pParents} contains {@code null}.
+	 */
+	public void setParentIds(final List<String> pParentIds) {
 		Validate.noNullElements(pParentIds);
 		parentIds = new ArrayList<>(pParentIds);
 	}
@@ -74,6 +87,16 @@ public class CommitImpl implements Commit {
 		return new ArrayList<>(fileChanges);
 	}
 
+	/**
+	 * Sets the file changes of this commit.
+	 *
+	 * @param pFileChanges
+	 * 		The file changes to set.
+	 * @throws NullPointerException
+	 * 		If {@code pFileChanges} is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If {@code pFileChanges} contains {@code null}.
+	 */
 	public void setFileChanges(final List<FileChange> pFileChanges) {
 		Validate.noNullElements(pFileChanges);
 		fileChanges = new ArrayList<>(pFileChanges);
@@ -84,6 +107,16 @@ public class CommitImpl implements Commit {
 		return new ArrayList<>(issues);
 	}
 
+	/**
+	 * Sets the issues of this commit.
+	 *
+	 * @param pIssues
+	 * 		The issues to set.
+	 * @throws NullPointerException
+	 * 		If {@code pIssues} is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If {@code pIssues} contains {@code null}.
+	 */
 	public void setIssues(final List<Issue> pIssues) {
 		Validate.noNullElements(pIssues);
 		issues = new ArrayList<>(pIssues);

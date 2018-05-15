@@ -45,15 +45,15 @@ public class VCSEngineTest {
 		 */
 		folder.newFile("a");
 		folder.newFile("b");
-		final File c = folder.newFolder("c");
+		File c = folder.newFolder("c");
 		Files.createFile(c.toPath().resolve("c1"));
 		Files.createFile(c.toPath().resolve("c2"));
 		Files.createFile(c.toPath().resolve("c3"));
 		folder.newFile("d");
 		folder.newFile("e");
-		final File f = folder.newFolder("f");
+		File f = folder.newFolder("f");
 		Files.createFile(f.toPath().resolve("f1"));
-		final Path ff = Files.createDirectory(f.toPath().resolve("ff"));
+		Path ff = Files.createDirectory(f.toPath().resolve("ff"));
 		Files.createFile(ff.resolve("ff1"));
 		Files.createFile(ff.resolve("ff2"));
 	}

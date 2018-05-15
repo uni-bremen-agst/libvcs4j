@@ -81,6 +81,7 @@ public class GithubEngine extends AbstractITEngine {
 
 	private Issue createIssue(final GHIssue pGHIssue) throws IOException {
 		final IssueImpl issue = new IssueImpl();
+		issue.setITEngine(this);
 		issue.setId(String.valueOf(pGHIssue.getNumber()));
 		String author = pGHIssue.getUser().getName();
 		if (author == null) {
@@ -105,6 +106,7 @@ public class GithubEngine extends AbstractITEngine {
 	private Comment createComment(final GHIssueComment pComment)
 			throws IOException {
 		final CommentImpl comment = new CommentImpl();
+		comment.setITEngine(this);
 		comment.setAuthor(pComment.getUser().getName());
 		final LocalDateTime dateTime = pComment
 				.getCreatedAt()

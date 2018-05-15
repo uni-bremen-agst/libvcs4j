@@ -10,10 +10,23 @@ repositories {
 	mavenCentral()
 }
 
+configurations {
+	extraLibs
+}
+
 dependencies {
-	testCompile 'junit:junit:4.12'
-	testCompile 'org.mockito:mockito-all:2.0.2-beta'
-	testCompile 'org.assertj:assertj-core:3.8.0'
+	extraLibs project(':conqat')
+	compile 'de.uni-bremen.informatik.st:libvcs4j-api:1.0.0'
+	compile 'org.apache.commons:commons-lang3:3.4'
+	configurations.compile.extendsFrom(configurations.extraLibs)
+}
+
+jar {
+	from {
+		configurations.extraLibs.collect {
+			it.isDirectory() ? it : zipTree(it)
+		}
+	}
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
@@ -35,8 +48,8 @@ build {
 	doLast {
 		pom {
 			project {
-				name 'libvcs4j-api'
-				description 'A Java Library for Repository Mining (API)'
+				name 'libvcs4j-metrics'
+				description 'The Metrics Module of LibVCS4j'
 				url 'https://github.com/uni-bremen-agst/libvcs4j'
 				licenses {
 					license {

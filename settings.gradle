@@ -1,1 +1,1 @@
-include 'conqat', 'libvcs4j-api', 'libvcs4j'
+include 'conqat', 'libvcs4j-api', 'libvcs4j-metrics', 'libvcs4j'

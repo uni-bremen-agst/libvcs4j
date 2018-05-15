@@ -8,7 +8,7 @@ import java.util.Optional;
  * Represents a change of a single file.
  */
 @SuppressWarnings("unused")
-public interface FileChange {
+public interface FileChange extends VCSModelElement {
 
 	/**
 	 * The type of a {@link FileChange}.
@@ -36,19 +36,11 @@ public interface FileChange {
 	}
 
 	/**
-	 * Returns the engine used to extract this file change.
-	 *
-	 * @return
-	 * 		The engine used to extract this file change.
-	 */
-	VCSEngine getEngine();
-
-	/**
 	 * Returns the file as it was like when its corresponding revision was
 	 * checked out by {@link VCSEngine#next()}.
 	 *
 	 * @return
-	 * 		The old version of the file or an empty {@link Optional} if this
+	 * 		The old state of the file or an empty {@link Optional} if this
 	 * 		{@link FileChange} is an addition ({@link Type#ADD}).
 	 */
 	Optional<VCSFile> getOldFile();
@@ -58,7 +50,7 @@ public interface FileChange {
 	 * checked out by {@link VCSEngine#next()}.
 	 *
 	 * @return
-	 * 		The new version of the file or an empty {@link Optional} if this
+	 * 		The new state of the file or an empty {@link Optional} if this
 	 * 		{@link FileChange} is a removal ({@link Type#REMOVE}).
 	 */
 	Optional<VCSFile> getNewFile();
@@ -101,7 +93,7 @@ public interface FileChange {
 	 *      file (see {@link VCSFile#readeContent()}).
 	 */
 	default List<LineChange> computeDiff() throws IOException {
-		return getEngine().computeDiff(this);
+		return getVCSEngine().computeDiff(this);
 	}
 
 	/**

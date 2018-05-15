@@ -1,10 +1,6 @@
 package de.unibremen.informatik.st.libvcs4j.hg;
 
-import de.unibremen.informatik.st.libvcs4j.Commit;
-import de.unibremen.informatik.st.libvcs4j.VCSBaseTest;
-import de.unibremen.informatik.st.libvcs4j.VCSEngine;
-import de.unibremen.informatik.st.libvcs4j.VCSEngineBuilder;
-import de.unibremen.informatik.st.libvcs4j.Version;
+import de.unibremen.informatik.st.libvcs4j.*;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -55,10 +51,10 @@ public class JavaHGTest extends VCSBaseTest {
 				.withTo("af30b413d2d2")
 				.build();
 
-		Optional<Version> version = engine.next();
-		assertTrue(version.isPresent());
+		Optional<RevisionRange> range = engine.next();
+		assertTrue(range.isPresent());
 
-		Commit commit = version.get().getLatestCommit();
+		Commit commit = range.get().getLatestCommit();
 		assertEquals(
 				"af30b413d2d26edfaacfe5732c2e56d6197acb04",
 				commit.getId());
@@ -85,10 +81,10 @@ public class JavaHGTest extends VCSBaseTest {
 				.withTo("30467fac2239")
 				.build();
 
-		Optional<Version> version = engine.next();
-		assertTrue(version.isPresent());
+		Optional<RevisionRange> range = engine.next();
+		assertTrue(range.isPresent());
 
-		Commit commit = version.get().getLatestCommit();assertEquals(
+		Commit commit = range.get().getLatestCommit();assertEquals(
 				"30467fac22392fe643e2f0ea6a9e88db40e43f12",
 				commit.getId());
 		assertEquals(
@@ -105,11 +101,11 @@ public class JavaHGTest extends VCSBaseTest {
 				.withBranch("g-pechorin/readmetext-edited-online-with-bitbucket-1485179654809")
 				.build();
 
-		List<Version> versions = new ArrayList<>();
-		engine.forEach(versions::add);
-		assertEquals(1, versions.size());
+		List<RevisionRange> ranges = new ArrayList<>();
+		engine.forEach(ranges::add);
+		assertEquals(1, ranges.size());
 		assertEquals("544c5168e4d3d314a996699692d8099ffa6419b2",
-				versions.get(0).getRevision().getId());
+				ranges.get(0).getRevision().getId());
 	}
 
 	@Test
@@ -120,10 +116,10 @@ public class JavaHGTest extends VCSBaseTest {
 				.withTo("820")
 				.build();
 
-		List<Version> versions = new ArrayList<>();
-		engine.forEach(versions::add);
-		assertEquals(1, versions.size());
+		List<RevisionRange> ranges = new ArrayList<>();
+		engine.forEach(ranges::add);
+		assertEquals(1, ranges.size());
 		assertEquals("544c5168e4d3d314a996699692d8099ffa6419b2",
-				versions.get(0).getRevision().getId());
+				ranges.get(0).getRevision().getId());
 	}
 }

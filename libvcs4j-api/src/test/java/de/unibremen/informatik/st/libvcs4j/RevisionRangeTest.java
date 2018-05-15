@@ -9,13 +9,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class VersionTest {
+public class RevisionRangeTest {
 
-    private class VersionStub implements Version {
+    private class RevisionRangeStub implements RevisionRange {
         List<Commit> commits;
 
-        VersionStub(Commit... cs) {
+        RevisionRangeStub(Commit... cs) {
             commits = new ArrayList<>(Arrays.asList(cs));
+        }
+
+        @Override
+        public VCSEngine getVCSEngine() {
+            throw new UnsupportedOperationException();
         }
 
         @Override
@@ -64,8 +69,8 @@ public class VersionTest {
         Commit c2 = mock(Commit.class);
         when(c2.getFileChanges()).thenReturn(singletonList(remove));
 
-        Version v = new VersionStub(c1, c2);
-        assertThat(v.getFileChanges()).hasSize(0);
+        RevisionRange rr = new RevisionRangeStub(c1, c2);
+        assertThat(rr.getFileChanges()).hasSize(0);
     }
 
     @Test
@@ -100,8 +105,8 @@ public class VersionTest {
         Commit c3 = mock(Commit.class);
         when(c3.getFileChanges()).thenReturn(singletonList(remove));
 
-        Version v1 = new VersionStub(c1, c2);
-        assertThat(v1.getFileChanges())
+        RevisionRange rr1 = new RevisionRangeStub(c1, c2);
+        assertThat(rr1.getFileChanges())
                 .hasSize(1)
                 .first()
                 .matches(fc -> fc.getType() == FileChange.Type.ADD)
@@ -110,8 +115,8 @@ public class VersionTest {
                         .toPath()
                         .equals(to.toPath()));
 
-        Version v2 = new VersionStub(c1, c2, c3);
-        assertThat(v2.getFileChanges()).hasSize(0);
+        RevisionRange rr2 = new RevisionRangeStub(c1, c2, c3);
+        assertThat(rr2.getFileChanges()).hasSize(0);
     }
 
     @Test
@@ -156,8 +161,8 @@ public class VersionTest {
         Commit c3 = mock(Commit.class);
         when(c3.getFileChanges()).thenReturn(singletonList(r3));
 
-        Version v1 = new VersionStub(c1, c2);
-        assertThat(v1.getFileChanges())
+        RevisionRange rr1 = new RevisionRangeStub(c1, c2);
+        assertThat(rr1.getFileChanges())
                 .hasSize(1)
                 .first()
                 .matches(fc -> fc.getType() == FileChange.Type.RELOCATE)
@@ -170,8 +175,8 @@ public class VersionTest {
                         .toPath()
                         .equals(c.toPath()));
 
-        Version v2 = new VersionStub(c1, c2, c3);
-        assertThat(v2.getFileChanges())
+        RevisionRange rr2 = new RevisionRangeStub(c1, c2, c3);
+        assertThat(rr2.getFileChanges())
                 .hasSize(1)
                 .first()
                 .matches(fc -> fc.getType() == FileChange.Type.RELOCATE)
@@ -227,7 +232,7 @@ public class VersionTest {
         Commit c3 = mock(Commit.class);
         when(c3.getFileChanges()).thenReturn(singletonList(r3));
 
-        Version v = new VersionStub(c1, c2, c3);
-        assertThat(v.getFileChanges()).hasSize(3);
+        RevisionRange rr = new RevisionRangeStub(c1, c2, c3);
+        assertThat(rr.getFileChanges()).hasSize(3);
     }
 }

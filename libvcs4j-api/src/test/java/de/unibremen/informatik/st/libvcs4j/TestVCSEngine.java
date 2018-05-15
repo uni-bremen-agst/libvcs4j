@@ -12,7 +12,7 @@ import java.util.Optional;
  */
 class TestVCSEngine implements VCSEngine {
 	@Override
-	public Optional<Version> next() throws IOException {
+	public Optional<RevisionRange> next() throws IOException {
 		throw new UnsupportedOperationException();
 	}
 
@@ -65,7 +65,7 @@ class TestVCSEngine implements VCSEngine {
 	}
 
 	@Override
-	public Iterator<Version> iterator() {
+	public Iterator<RevisionRange> iterator() {
 		throw new UnsupportedOperationException();
 	}
 }

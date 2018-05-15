@@ -1,53 +1,52 @@
 package de.unibremen.informatik.st.libvcs4j.data;
 
-import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.LineChange;
+import de.unibremen.informatik.st.libvcs4j.VCSFile;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 import org.apache.commons.lang3.Validate;
 
 /**
- * Implementation for {@link LineChange}.
+ * Pojo implementation of {@link LineChange}.
  */
-public class LineChangeImpl implements LineChange {
+@Getter
+@Setter
+public class LineChangeImpl extends VCSModelElementImpl implements LineChange {
 
+	/**
+	 * The type of a line change.
+	 */
+	@NonNull
 	private Type type;
+
+	/**
+	 * The line number of a line change.
+	 */
 	private int line;
+
+	/**
+	 * The content of a line change.
+	 */
+	@NonNull
 	private String content;
+
+	/**
+	 * The file a line change belongs to.
+	 */
+	@NonNull
 	private VCSFile file;
 
-	@Override
-	public Type getType() {
-		return type;
-	}
-
-	public void setType(Type pType) {
-		type = Validate.notNull(pType);
-	}
-
-	@Override
-	public int getLine() {
-		return line;
-	}
-
-	public void setLine(int pLine) {
-		Validate.isTrue(pLine >= 0, "%d < 0", pLine);
+	/**
+	 * Sets the line number of this line change.
+	 *
+	 * @param pLine
+	 * 		The line number to set.
+	 * @throws IllegalArgumentException
+	 * 		If {@code pLine < 1}.
+	 */
+	public void setLine(final int pLine) {
+		Validate.isTrue(pLine >= 1, "line < 1");
 		line = pLine;
-	}
-
-	@Override
-	public String getContent() {
-		return content;
-	}
-
-	public void setContent(String pContent) {
-		content = Validate.notNull(pContent);
-	}
-
-	@Override
-	public VCSFile getFile() {
-		return file;
-	}
-
-	public void setFile(VCSFile pFile) {
-		file = Validate.notNull(pFile);
 	}
 }

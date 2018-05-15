@@ -16,30 +16,29 @@ import java.util.Optional;
 
 /**
  * A {@link VCSEngine} is supposed to extract a linear sequence of
- * {@link Version} instances for arbitrary version control systems (VCS) as
- * well as single input files and directories. In order to calculate the file
- * changes of a particular {@link Version}, real VCS (or similar) operations
- * are performed. Consequently, all files of the currently processed version
- * are physically available at {@link #getTarget()} and {@link #getOutput()}.
+ * {@link RevisionRange} instances for arbitrary version control systems (VCS)
+ * as well as single input files and directories. In order to calculate the
+ * file changes of a particular {@link RevisionRange}, real VCS (or similar)
+ * operations are performed. Consequently, all files of the currently processed
+ * revision are physically available at {@link #getTarget()} and
+ * {@link #getOutput()}.
  *
- * Due to the complexity of some VCS, the generated sequence of versions is a
- * "one-way-iterator" that allows forward directed processing only.
+ * Due to the complexity of some VCS, the generated sequence of revision ranges
+ * is a "one-way-iterator" that allows forward directed processing only.
  *
  * By extending the {@link Iterable} interface, a {@link VCSEngine} allows to
- * retrieve versions using foreach loops. There are several things to consider,
- * though. First of all, {@link java.util.Iterator} instances returned by
- * {@link #iterator()} depend on the state of the corresponding engine.
- * Consequently, calling {@link #next()} on an engine {@code e}, modifies all
- * available iterators of {@code e}, too. Similarly, calling
+ * retrieve revision ranges using foreach loops. There are several things to
+ * consider, though. First of all, {@link java.util.Iterator} instances
+ * returned by {@link #iterator()} depend on the state of the corresponding
+ * engine. Consequently, calling {@link #next()} on an engine {@code e},
+ * modifies all available iterators of {@code e}, too. Similarly, calling
  * {@link java.util.Iterator#next()} on an iterator {@code i}, modifies any
  * other iterator sharing {@code i's} engine. Due to the circumstance that
  * {@link java.util.Iterator#hasNext()} and {@link java.util.Iterator#next()}
  * perform real VCS (or similar) operations an {@link IOException} may be
  * thrown by these methods which, in order to fulfill the {@link Iterable}
- * interface, is encapsulated in an {@link java.io.UncheckedIOException}.
- * Furthermore, {@link java.util.Iterator#hasNext()} initializes the repository
- * of an engine, if necessary (similar to {@link #next()} and. Long story
- * short, you should not use several iterators at once.
+ * interface, is encapsulated in an {@link java.io.UncheckedIOException}. Long
+ * story short, you should not use several iterators at once.
  *
  * Note: Neither {@link #getRepository()} nor {@link #getRoot()} nor
  * {@link #getTarget()} nor {@link #getOutput()} may change at any time. This
@@ -50,19 +49,19 @@ import java.util.Optional;
  * is, one may read any file in any state.
  */
 @SuppressWarnings("unused")
-public interface VCSEngine extends Iterable<Version> {
+public interface VCSEngine extends Iterable<RevisionRange> {
 
 	/**
-	 * Extracts the next {@link Version}, if any. If necessary, the first call
+	 * Extracts the next revision range, if any. If necessary, the first call
 	 * of this method initializes the repository---for instance, cloning the
 	 * repository to {@link #getTarget()}.
 	 *
 	 * @return
-	 * 		The next {@link Version}, if any.
+	 * 		The next revisioni range, if any.
 	 * @throws IOException
-	 * 		If an error occurred while extracting the next {@link Version}.
+	 * 		If an error occurred while extracting the next revision range.
 	 */
-	Optional<Version> next() throws IOException;
+	Optional<RevisionRange> next() throws IOException;
 
 	/**
 	 * Reads the contents of the given file. This method does not depend on the

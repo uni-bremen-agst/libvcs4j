@@ -1,7 +1,7 @@
 package de.unibremen.informatik.st.libvcs4j.engine;
 
+import de.unibremen.informatik.st.libvcs4j.RevisionRange;
 import de.unibremen.informatik.st.libvcs4j.VCSEngine;
-import de.unibremen.informatik.st.libvcs4j.Version;
 import de.unibremen.informatik.st.libvcs4j.data.CommitImpl;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.Before;
@@ -53,44 +53,44 @@ public class IntegrationTest {
 	@Test
 	public void testFetchNextVersion() throws IOException {
 		final VCSEngine vp = new TestClass(folder.getRoot().toPath());
-		Optional<Version> optional;
-		Version version;
+		Optional<RevisionRange> optional;
+		RevisionRange range;
 
 		optional = vp.next();
 		assertTrue(optional.isPresent());
-		version = optional.get();
-		assertEquals("1", version.getRevision().getId());
-		assertEquals(6, version.getFileChanges().size());
-		assertTrue(version.isFirst());
+		range = optional.get();
+		assertEquals("1", range.getRevision().getId());
+		assertEquals(6, range.getFileChanges().size());
+		assertTrue(range.isFirst());
 
 		optional = vp.next();
 		assertTrue(optional.isPresent());
-		version = optional.get();
-		assertEquals("2", version.getRevision().getId());
-		assertFalse(version.isFirst());
-		assertEquals(7, version.getFileChanges().size());
-		assertEquals(2, version.getFileChanges().stream()
+		range = optional.get();
+		assertEquals("2", range.getRevision().getId());
+		assertFalse(range.isFirst());
+		assertEquals(7, range.getFileChanges().size());
+		assertEquals(2, range.getFileChanges().stream()
 			.filter(fileChange -> fileChange.getType() == ADD).count());
-		assertEquals(1, version.getFileChanges().stream()
+		assertEquals(1, range.getFileChanges().stream()
 			.filter(fileChange -> fileChange.getType() == REMOVE).count());
-		assertEquals(3, version.getFileChanges().stream()
+		assertEquals(3, range.getFileChanges().stream()
 			.filter(fileChange -> fileChange.getType() == MODIFY).count());
-		assertEquals(1, version.getFileChanges().stream()
+		assertEquals(1, range.getFileChanges().stream()
 			.filter(fileChange -> fileChange.getType() == RELOCATE).count());
 	}
 
 	@Test
 	public void testIterator() {
-		final VCSEngine vp = new TestClass(folder.getRoot().toPath());
+		final VCSEngine engine = new TestClass(folder.getRoot().toPath());
 
-		for (final Version v : vp) {
-			if (v.isFirst()) {
-				assertEquals(6, v.getFileChanges().size());
+		for (final RevisionRange range : engine) {
+			if (range.isFirst()) {
+				assertEquals(6, range.getFileChanges().size());
 			} else {
-				assertEquals(7, v.getFileChanges().size());
+				assertEquals(7, range.getFileChanges().size());
 			}
 		}
-		assertFalse(vp.iterator().hasNext());
+		assertFalse(engine.iterator().hasNext());
 	}
 
 	@Test
