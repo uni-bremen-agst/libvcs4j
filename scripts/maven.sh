@@ -24,7 +24,7 @@ do
 	pushd "$BASE_DIR/$module/build/libs" > /dev/null
 		for file in *
 		do
-			echo "$PASSPHRASE" | gpg --passphrase-fd 0 -u 0B9BB494 --detach-sign -o "$file.asc" "$file"
+			echo "$PASSPHRASE" | gpg --no-tty --passphrase-fd 0 -u 0B9BB494 --detach-sign -o "$file.asc" "$file"
 		done
 	popd > /dev/null
 done
