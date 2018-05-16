@@ -3,46 +3,18 @@ package de.unibremen.informatik.st.libvcs4j;
 import org.junit.Test;
 
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 public class RevisionRangeTest {
-
-    private class RevisionRangeStub implements RevisionRange {
-        List<Commit> commits;
-
-        RevisionRangeStub(Commit... cs) {
-            commits = new ArrayList<>(Arrays.asList(cs));
-        }
-
-        @Override
-        public VCSEngine getVCSEngine() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public int getOrdinal() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Revision getRevision() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Optional<Revision> getPredecessorRevision() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public List<Commit> getCommits() {
-            return new ArrayList<>(commits);
-        }
-    }
 
     private <T> List<T> singletonList(T t) {
         return new ArrayList<>(Collections.singletonList(t));
@@ -69,8 +41,9 @@ public class RevisionRangeTest {
         Commit c2 = mock(Commit.class);
         when(c2.getFileChanges()).thenReturn(singletonList(remove));
 
-        RevisionRange rr = new RevisionRangeStub(c1, c2);
-        assertThat(rr.getFileChanges()).hasSize(0);
+        RevisionRange range = spy(RevisionRange.class);
+        when(range.getCommits()).thenReturn(Arrays.asList(c1, c2));
+        assertThat(range.getFileChanges()).isEmpty();
     }
 
     @Test
@@ -105,8 +78,9 @@ public class RevisionRangeTest {
         Commit c3 = mock(Commit.class);
         when(c3.getFileChanges()).thenReturn(singletonList(remove));
 
-        RevisionRange rr1 = new RevisionRangeStub(c1, c2);
-        assertThat(rr1.getFileChanges())
+        RevisionRange range1 = spy(RevisionRange.class);
+        when(range1.getCommits()).thenReturn(Arrays.asList(c1, c2));
+        assertThat(range1.getFileChanges())
                 .hasSize(1)
                 .first()
                 .matches(fc -> fc.getType() == FileChange.Type.ADD)
@@ -115,8 +89,9 @@ public class RevisionRangeTest {
                         .toPath()
                         .equals(to.toPath()));
 
-        RevisionRange rr2 = new RevisionRangeStub(c1, c2, c3);
-        assertThat(rr2.getFileChanges()).hasSize(0);
+        RevisionRange range2 = spy(RevisionRange.class);
+        when(range2.getCommits()).thenReturn(Arrays.asList(c1, c2, c3));
+        assertThat(range2.getFileChanges()).isEmpty();
     }
 
     @Test
@@ -161,8 +136,9 @@ public class RevisionRangeTest {
         Commit c3 = mock(Commit.class);
         when(c3.getFileChanges()).thenReturn(singletonList(r3));
 
-        RevisionRange rr1 = new RevisionRangeStub(c1, c2);
-        assertThat(rr1.getFileChanges())
+        RevisionRange range1 = spy(RevisionRange.class);
+        when(range1.getCommits()).thenReturn(Arrays.asList(c1, c2));
+        assertThat(range1.getFileChanges())
                 .hasSize(1)
                 .first()
                 .matches(fc -> fc.getType() == FileChange.Type.RELOCATE)
@@ -175,8 +151,9 @@ public class RevisionRangeTest {
                         .toPath()
                         .equals(c.toPath()));
 
-        RevisionRange rr2 = new RevisionRangeStub(c1, c2, c3);
-        assertThat(rr2.getFileChanges())
+        RevisionRange range2 = spy(RevisionRange.class);
+        when(range2.getCommits()).thenReturn(Arrays.asList(c1, c2, c3));
+        assertThat(range2.getFileChanges())
                 .hasSize(1)
                 .first()
                 .matches(fc -> fc.getType() == FileChange.Type.RELOCATE)
@@ -232,7 +209,8 @@ public class RevisionRangeTest {
         Commit c3 = mock(Commit.class);
         when(c3.getFileChanges()).thenReturn(singletonList(r3));
 
-        RevisionRange rr = new RevisionRangeStub(c1, c2, c3);
-        assertThat(rr.getFileChanges()).hasSize(3);
+        RevisionRange range = spy(RevisionRange.class);
+        when(range.getCommits()).thenReturn(Arrays.asList(c1, c2, c3));
+        assertThat(range.getFileChanges()).containsExactly(r1, r2, r3);
     }
 }
