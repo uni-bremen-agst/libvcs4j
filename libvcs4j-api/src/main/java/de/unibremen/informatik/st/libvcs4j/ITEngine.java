@@ -43,7 +43,8 @@ public interface ITEngine {
 
 	/**
 	 * Returns all issues referenced by the given commit. This method does not
-	 * fail if {@code commit} is {@code null}.
+	 * fail if {@code commit} is {@code null} and does not return the same
+	 * issue (according to {@link Issue#getId()}) twice.
 	 *
 	 * The default implementation delegates {@code commit} to
 	 * {@link #getIssuesFor(List)}.
@@ -62,7 +63,8 @@ public interface ITEngine {
 	/**
 	 * Returns all issues referenced by the given list of commits. This method
 	 * does not fail if {@code commits} is {@code null} or contains
-	 * {@code null} values.
+	 * {@code null} values and does not return the same issue (according to
+	 * {@link Issue#getId()}) twice.
 	 *
 	 * The default implementation parses the commit messages using
 	 * {@link #parseIssueIds(String)} and creates an {@link Issue} instance for
@@ -85,14 +87,18 @@ public interface ITEngine {
 				.collect(Collectors.toList());
 		final Map<String, Issue> issues = new HashMap<>();
 		for (final String id : ids) {
-			getIssueById(id).ifPresent(i -> issues.put(i.getId(), i));
+			if (!issues.containsKey(id)) {
+				issues.put(id, getIssueById(id).orElse(null));
+			}
 		}
+		issues.values().removeIf(Objects::isNull);
 		return new ArrayList<>(issues.values());
 	}
 
 	/**
 	 * Returns all issues referenced by the given revision range. This method
-	 * does not fail if {@code range} is {@code null}.
+	 * does not fail if {@code range} is {@code null} and does not return the
+	 * same issue (according to {@link Issue#getId()}) twice.
 	 *
 	 * The default implementations delegates the referenced commits
 	 * ({@link RevisionRange#getCommits()}) to {@link #getIssuesFor(List)}.

@@ -3,9 +3,12 @@ package de.unibremen.informatik.st.libvcs4j;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -294,6 +297,26 @@ public interface RevisionRange extends VCSModelElement {
 					return old || nev;
 				})
 				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Returns the issues referenced by the commits of this range. To enable
+	 * this feature when processing a repository, set the appropriate
+	 * {@link ITEngine} with {@link VCSEngine#setITEngine(ITEngine)}. The
+	 * returned list does not contain the same issue (according to
+	 * {@link Issue#getId()}) twice.
+	 *
+	 * @return
+	 * 		The issues referenced by the commits of this range.
+	 */
+	default List<Issue> getIssues() {
+		final List<Issue> issues = getCommits().stream()
+				.map(Commit::getIssues)
+				.flatMap(Collection::stream)
+				.collect(Collectors.toList());
+		final Map<String, Issue> idToIssue = new HashMap<>();
+		issues.forEach(i -> idToIssue.put(i.getId(), i));
+		return new ArrayList<>(idToIssue.values());
 	}
 
 	/**
