@@ -2,6 +2,7 @@ package de.unibremen.informatik.st.libvcs4j;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -16,7 +17,6 @@ import java.util.stream.Collectors;
  * This engine is supposed to extract issues from an issue tracker, such as
  * Github, Gitlab, and so on.
  */
-@SuppressWarnings("unused")
 public interface ITEngine {
 
 	/**
@@ -81,10 +81,12 @@ public interface ITEngine {
 			throws IOException {
 		final List<String> ids =
 				(commits == null ? Collections.<Commit>emptyList() : commits)
-				.stream()
-				.filter(Objects::nonNull)
-				.map(Commit::getId)
-				.collect(Collectors.toList());
+						.stream()
+						.filter(Objects::nonNull)
+						.map(Commit::getMessage)
+						.map(this::parseIssueIds)
+						.flatMap(Collection::stream)
+						.collect(Collectors.toList());
 		final Map<String, Issue> issues = new HashMap<>();
 		for (final String id : ids) {
 			if (!issues.containsKey(id)) {
