@@ -14,7 +14,7 @@ import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 /**
@@ -62,21 +62,17 @@ public class VCSEngineTest {
 
 	@Test
 	public void testListFilesInOutput() throws IOException {
-		VCSEngine engine = mock(VCSEngine.class);
+		VCSEngine engine = spy(VCSEngine.class);
 		when(engine.getOutput()).thenReturn(folder.getRoot().toPath());
-		when(engine.listFilesInOutput()).thenCallRealMethod();
-		when(engine.createVCSFileFilter()).thenCallRealMethod();
 
 		assertThat(engine.listFilesInOutput()).hasSize(10);
 	}
 
 	@Test
 	public void testListFilesInOutputSingleFile() throws IOException {
-		VCSEngine engine = mock(VCSEngine.class);
+		VCSEngine engine = spy(VCSEngine.class);
 		when(engine.getOutput()).thenReturn(
 				folder.getRoot().toPath().resolve("c").resolve("c1"));
-		when(engine.listFilesInOutput()).thenCallRealMethod();
-		when(engine.createVCSFileFilter()).thenCallRealMethod();
 
 		assertThat(engine.listFilesInOutput()).hasSize(1);
 	}
@@ -84,10 +80,8 @@ public class VCSEngineTest {
 	@Test
 	public void testNonExistingOutputDir() throws IOException {
 		String path = "asdfhalf324hr789erher9c78vh3cr72ny48t784r7c8tycn87c3";
-		VCSEngine engine = mock(VCSEngine.class);
+		VCSEngine engine = spy(VCSEngine.class);
 		when(engine.getOutput()).thenReturn(Paths.get(path));
-		when(engine.listFilesInOutput()).thenCallRealMethod();
-		when(engine.createVCSFileFilter()).thenCallRealMethod();
 
 		assertThatExceptionOfType(FileNotFoundException.class)
 				.isThrownBy(engine::listFilesInOutput);
@@ -95,9 +89,8 @@ public class VCSEngineTest {
 
 	@Test
 	public void testSimpleFileFilter() throws IOException {
-		VCSEngine engine = mock(VCSEngine.class);
+		VCSEngine engine = spy(VCSEngine.class);
 		when(engine.getOutput()).thenReturn(folder.getRoot().toPath());
-		when(engine.listFilesInOutput()).thenCallRealMethod();
 		when(engine.createVCSFileFilter()).thenReturn(
 				(dir, name) -> !name.startsWith("f"));
 
@@ -106,9 +99,8 @@ public class VCSEngineTest {
 
 	@Test
 	public void testSimpleDirectoryFilter() throws IOException {
-		VCSEngine engine = mock(VCSEngine.class);
+		VCSEngine engine = spy(VCSEngine.class);
 		when(engine.getOutput()).thenReturn(folder.getRoot().toPath());
-		when(engine.listFilesInOutput()).thenCallRealMethod();
 		when(engine.createVCSFileFilter()).thenReturn(
 				(dir, name) -> !dir.getName().equals("c"));
 
