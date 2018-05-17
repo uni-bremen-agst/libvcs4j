@@ -396,6 +396,26 @@ public abstract class VCSBaseTest {
 		}
 	}
 
+	@Test
+	public void iterateFirst7() throws IOException {
+		List<String> commitIds = readIds(getRootCommitIdFile());
+		List<String> revisionIds = readIds(getRootRevisionIdFile());
+		assertEquals(commitIds.size(), revisionIds.size());
+		VCSEngine engine = createBuilder()
+				.withTo(commitIds.get(6))
+				.build();
+
+		int i = 0;
+		for (RevisionRange range : engine) {
+			assertEquals(i + 1, range.getOrdinal());
+			assertEquals(commitIds.get(i),
+					range.getLatestCommit().getId());
+			assertEquals(revisionIds.get(i),
+					range.getRevision().getId());
+			i++;
+		}
+	}
+
 	/**
 	 * Returns the path of the archive to extract, i.e. 'javacpp.tar.gz'.
 	 *

@@ -38,6 +38,7 @@ dependencies {
 	testCompile 'junit:junit:4.12'
 	testCompile 'commons-io:commons-io:2.6'
 	testCompile 'org.apache.commons:commons-compress:1.15'
+	testCompile 'org.assertj:assertj-core:3.8.0'
 	testCompile 'org.slf4j:slf4j-simple:1.7.25'
 
 	configurations.compile.extendsFrom(configurations.extraLibs)
