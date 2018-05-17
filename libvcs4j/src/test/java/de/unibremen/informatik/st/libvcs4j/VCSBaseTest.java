@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -26,7 +27,7 @@ import static org.junit.Assert.assertTrue;
  * implementations. Each engine should extend this test class and implement the
  * required methods.
  */
-@SuppressWarnings("Duplicates")
+@SuppressWarnings({"Duplicates", "ConstantConditions"})
 public abstract class VCSBaseTest {
 
 	private Path input;
@@ -194,17 +195,51 @@ public abstract class VCSBaseTest {
 	public void processAll() throws IOException {
 		List<String> commitIds = readIds(getRootCommitIdFile());
 		List<String> revisionIds = readIds(getRootRevisionIdFile());
+
 		assertEquals(commitIds.size(), revisionIds.size());
 		assertTrue(commitIds.size() >= 20);
+
 		VCSEngine engine = createBuilder().build();
 		List<RevisionRange> ranges = new ArrayList<>();
-		engine.forEach(ranges::add);
-		assertEquals(commitIds.size(), ranges.size());
+		for (RevisionRange range : engine) {
+			ranges.add(range);
+			assertThat(range.getFileChanges())
+					.allSatisfy(fc -> {
+						if (fc.getType() == FileChange.Type.ADD) {
+							assertThat(fc.getNewFile().get().toPath())
+									.isRegularFile();
+						} else if (fc.getType() == FileChange.Type.REMOVE) {
+							assertThat(fc.getOldFile().get().toPath())
+									.doesNotExist();
+						} else if (fc.getType() == FileChange.Type.MODIFY) {
+							assertThat(fc.getOldFile().get().toPath())
+									.isRegularFile();
+							assertThat(fc.getNewFile().get().toPath())
+									.isRegularFile();
+							assertThat(fc.getOldFile().get().toPath())
+									.isEqualTo(fc.getNewFile()
+											.get().toPath());
+						} else if (fc.getType() == FileChange.Type.RELOCATE) {
+							assertThat(fc.getOldFile().get().toPath())
+									.doesNotExist();
+							assertThat(fc.getNewFile().get().toPath())
+									.isRegularFile();
+							assertThat(fc.getOldFile().get().toPath())
+									.isNotEqualTo(fc.getNewFile()
+											.get().toPath());
+						}
+					});
+		}
+
+		assertThat(ranges).hasSize(commitIds.size());
 		for (int i = 0; i < ranges.size(); i++) {
 			RevisionRange r = ranges.get(i);
-			assertEquals(i + 1, r.getOrdinal());
-			assertEquals(commitIds.get(i), r.getLatestCommit().getId());
-			assertEquals(revisionIds.get(i), r.getRevision().getId());
+			assertThat(r.getOrdinal())
+					.isEqualTo(i + 1);
+			assertThat(r.getLatestCommit().getId())
+					.isEqualTo(commitIds.get(i));
+			assertThat(r.getRevision().getId())
+					.isEqualTo(revisionIds.get(i));
 		}
 	}
 
