@@ -263,23 +263,30 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 
 	///////////////////////////// helping methods /////////////////////////////
 
-	private void mapChanges(final Changes pChanges) {
-		final List<Path> added = pChanges.getAdded().stream()
-				.map(Paths::get)
-				.collect(Collectors.toList());
-		final List<Path> removed = pChanges.getRemoved().stream()
-				.map(Paths::get)
-				.collect(Collectors.toList());
-		final Set<Path> mapToUpdate = new HashSet<>(added);
-		mapToUpdate.retainAll(removed);
-		mapToUpdate.stream()
-				.forEach(p -> {
-					pChanges.getAdded().removeIf(
-							a -> Paths.get(a).equals(p));
-					pChanges.getRemoved().removeIf(
-							r -> Paths.get(r).equals(p));
-					pChanges.getModified().add(p.toString());
-				});
+	private void mapChanges(final Changes pChanges) throws IOException {
+		// canonical path -> path
+		final Map<String, String> added = new HashMap<>();
+		for (final String a : pChanges.getAdded()) {
+			added.put(Paths.get(a).toFile().getCanonicalPath(), a);
+		}
+		// canonical path -> path
+		final Map<String, String> removed = new HashMap<>();
+		for (final String r : pChanges.getRemoved()) {
+			removed.put(Paths.get(r).toFile().getCanonicalPath(), r);
+		}
+		// add (path) -> remove (path)
+		final Map<String, String> addRemoveMatches = new HashMap<>();
+		added.forEach((ak, av) -> {
+			final String rv = removed.get(ak);
+			if (rv != null) {
+				addRemoveMatches.put(av, rv);
+			}
+		});
+		addRemoveMatches.forEach((a, r) -> {
+			pChanges.getAdded().remove(a);
+			pChanges.getRemoved().remove(r);
+			pChanges.getModified().add(a);
+		});
 	}
 
 	private VCSFile createFile(final Path pPath, final Revision pRevision) {
