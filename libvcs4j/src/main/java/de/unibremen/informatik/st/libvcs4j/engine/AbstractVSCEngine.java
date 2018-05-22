@@ -32,11 +32,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -132,6 +134,7 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 					.forEach(f -> changes.getAdded().add(f));
 		} else {
 			changes = createChangesImpl(getPreviousRevision(), revision);
+			mapChanges(changes);
 			//validate(changes);
 		}
 		final RevisionRange range = createRevisionRange(changes);
@@ -260,6 +263,25 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 
 	///////////////////////////// helping methods /////////////////////////////
 
+	private void mapChanges(final Changes pChanges) {
+		final List<Path> added = pChanges.getAdded().stream()
+				.map(Paths::get)
+				.collect(Collectors.toList());
+		final List<Path> removed = pChanges.getRemoved().stream()
+				.map(Paths::get)
+				.collect(Collectors.toList());
+		final Set<Path> mapToUpdate = new HashSet<>(added);
+		mapToUpdate.retainAll(removed);
+		mapToUpdate.stream()
+				.forEach(p -> {
+					pChanges.getAdded().removeIf(
+							a -> Paths.get(a).equals(p));
+					pChanges.getRemoved().removeIf(
+							r -> Paths.get(r).equals(p));
+					pChanges.getModified().add(p.toString());
+				});
+	}
+
 	private VCSFile createFile(final Path pPath, final Revision pRevision) {
 		final Path output = getOutput();
 		if (!pPath.isAbsolute()) {
@@ -299,63 +321,6 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 			initialized = true;
 		}
 	}
-
-//	private void validate(final Changes pChanges) throws IOException {
-//		Validate.validState(revisionIdx > 0);
-//
-//		if (revisionIdx == 0) {
-//			Validate.validState(pChanges.getRemoved().isEmpty(),
-//					"Detected removals in first version");
-//			Validate.validState(pChanges.getModified().isEmpty(),
-//					"Detected modifications in first version");
-//			Validate.validState(pChanges.getRelocated().isEmpty(),
-//					"Detected relocations in first version");
-//		}
-//
-//		Iterator<String> it;
-//		it = pChanges.getAdded().iterator();
-//		while (it.hasNext()) {
-//			final Path add = Paths.get(it.next());
-//			IllegalReturnException.isTrue(add.isAbsolute(),
-//				"'%s' is not an absolute path", add);
-//			IllegalReturnException.isTrue(Files.exists(add),
-//				"'%s' has been recorded as added but does not exist", add);
-//		}
-//		it = pChanges.getRemoved().iterator();
-//		while (it.hasNext()) {
-//			final Path remove = Paths.get(it.next());
-//			IllegalReturnException.isTrue(remove.isAbsolute(),
-//				"'%s' is not an absolute path", remove);
-//			IllegalReturnException.isTrue(Files.notExists(remove),
-//				"'%s' has been recorded as removed but exists", remove);
-//		}
-//		it = pChanges.getModified().iterator();
-//		while (it.hasNext()) {
-//			final Path modify = Paths.get(it.next());
-//			IllegalReturnException.isTrue(modify.isAbsolute(),
-//					"'%s' is not an absolute path", modify);
-//			IllegalReturnException.isTrue(Files.exists(modify),
-//					"'%s' has been recorded as modified but does not exist",
-//					modify);
-//		}
-//		Iterator<Entry<String, String>> itr =
-//				pChanges.getRelocated().iterator();
-//		while (itr.hasNext()) {
-//			final Entry<String, String> relocate = itr.next();
-//			final Path from = Paths.get(relocate.getKey());
-//			final Path to = Paths.get(relocate.getValue());
-//			IllegalReturnException.isTrue(from.isAbsolute(),
-//					"'%s' is not an absolute path", from);
-//			IllegalReturnException.isTrue(to.isAbsolute(),
-//					"'%s' is not an absolute path", from);
-//			IllegalReturnException.isTrue(Files.notExists(from),
-//					"'%s' has been recorded as relocation to '%s' but exists",
-//					from, to);
-//			IllegalReturnException.isTrue(Files.exists(to),
-//					"'%s' has been recorded as relocation from '%s' but does not exist",
-//					to, from);
-//		}
-//	}
 
 	private RevisionRange createRevisionRange(final Changes pChanges)
 			throws IOException {
