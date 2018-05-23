@@ -103,7 +103,7 @@ The following issue tracker (and authentication mechanisms) are supported:
 - Github: anonymous, username/password, token
 - Gitlab: token
 
-Note that, due to the server limitations of some providers, extracting issues from an issue tracker may noticeably slow down an analysis (1 -- 2 seconds per request). Hence, enable this feature only if required (see Quickstart). Also, some providers permit a maximum number of requests per day. If exceeded, subsequent requests are ignored.
+Note that, due to the server limitations of some providers, extracting issues from an issue tracker may noticeably slow down an analysis (1 -- 2 seconds per request). Hence, it is recommended to enable this feature only if required (see Quickstart). Also, some providers permit only a certain number of requests per day. If exceeded, subsequent requests are ignored.
 
 ### Installation
 
