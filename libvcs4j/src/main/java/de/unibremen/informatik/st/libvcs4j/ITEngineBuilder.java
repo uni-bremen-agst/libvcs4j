@@ -33,17 +33,17 @@ public class ITEngineBuilder {
 		repository = Validate.notEmpty(pRepository);
 	}
 
-	public ITEngineBuilder of(final String pRepository) {
+	public static ITEngineBuilder of(final String pRepository) {
 		return new ITEngineBuilder(pRepository);
 	}
 
-	public ITEngineBuilder ofGitlab(
+	public static ITEngineBuilder ofGitlab(
 			final String pHost, final String pRepository) {
 		return of(pRepository).withHost(pHost).withGitlab();
 	}
 
-	public ITEngineBuilder ofGithub(final String pRepository) {
-		return of(repository).withGithub();
+	public static ITEngineBuilder ofGithub(final String pRepository) {
+		return of(pRepository).withGithub();
 	}
 
 	/////////////////////////////// Fluent API ////////////////////////////////
