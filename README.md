@@ -75,4 +75,28 @@ If no target directory is specified, a temporary directory is created (and delet
 
 ### Project Structure
 
-The library is divided into an API and implementation as well as other subprojects providing additional features (e.g. aggregation of different metrics). The API has no external dependencies and allows you to decouple your analysis tool from particular repository systems. The implementation, on the other hand, provides all features necessary to setup and process different version control systems and issue trackers.
+The library is divided into an API and implementation, as well as further submodules providing additional features (e.g. aggregation of different metrics). The API has no external dependencies and defines a common data model that allows to decouple analysis tools from particular repository systems. The implementation, on the other hand, provides the actual version control system engines (`GitEngine`, `HGEngine`, `SVNEngine`, `SinlgeEngine`), issue tracker engines (`GithubEngine`, `GitlabEngine`), and engine builder (`VCSEngineBuilder` and `ITEngineBuilder`) that are used to configure the repository to process (see Quickstart).
+
+### Installation
+
+Releases are available at [Maven Central](https://repo1.maven.org/maven2/de/uni-bremen/informatik/st/).
+
+To add the API submodule to your classpath, paste the following snippet into your pom.xml:
+
+```xml
+<dependency>
+  <groupId>de.uni-bremen.informatik.st</groupId>
+  <artifactId>libvcs4j-api</artifactId>
+  <version>1.1.1</version>
+</dependency>
+```
+
+Likewise, the implementation submodule is added as follows:
+
+```xml
+<dependency>
+  <groupId>de.uni-bremen.informatik.st</groupId>
+  <artifactId>libvcs4j</artifactId>
+  <version>1.1.1</version>
+</dependency>
+```
