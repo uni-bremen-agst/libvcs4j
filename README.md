@@ -59,7 +59,7 @@ for (RevisionRange range : vcs) {
     range.getRevision().getOutput();
 
     // Returns the files of the currenlty checked out revision as list.
-    range.getFiles();
+    range.getRevision().getFiles();
 }
 ```
 
