@@ -75,7 +75,35 @@ If no target directory is specified, a temporary directory is created (and delet
 
 ### Project Structure
 
-The library is divided into an API and implementation, as well as further submodules providing additional features (e.g. aggregation of different metrics). The API has no external dependencies and defines a common data model that allows to decouple analysis tools from particular repository systems. The implementation, on the other hand, provides the actual version control system engines (`GitEngine`, `HGEngine`, `SVNEngine`, `SinlgeEngine`), issue tracker engines (`GithubEngine`, `GitlabEngine`), and engine builder (`VCSEngineBuilder` and `ITEngineBuilder`) that are used to configure the repository to process (see Quickstart).
+The library is divided into an API and implementation, as well as further submodules providing additional features (e.g. aggregation of different metrics). The API has no external dependencies and defines a common data model that allows to decouple analysis tools from particular repository systems. The implementation, on the other hand, provides the actual version control system engines (`GitEngine`, `HGEngine`, `SVNEngine`, `SingleEngine`), issue tracker engines (`GithubEngine`, `GitlabEngine`), and engine builder (`VCSEngineBuilder` and `ITEngineBuilder`) that are used to configure the repository to process (see Quickstart).
+
+### Supported Repositories
+
+#### Version Control Systems
+
+The following version control systems (and protocols) are supported:
+
+- Git: `file://`, `http(s)://`, `ssh://`, `git@`
+- Mercurial: `file://`, `http(s)://`, `ssh://`
+- Subversion: `file://`, `http(s)://`, `svn://`, `svn+ssh://`
+
+The `VCSEngineBuilder`, for the sake of convenience, automatically maps regular file paths to the `file://` protocol. For example, a local Mercurial repository may be configured with:
+
+```java
+// The path is mapped to 'file:///path/to/repository'.
+VCSEngineBuilder.ofHG("/path/to/repository")
+```
+
+There is a special engine called `SingleEngine`. It is used to process a local directory or file. When using this engine, a single Revision is generated where all files are reported as *added*.
+
+#### Issue Tracker
+
+The following issue tracker (and authentication mechanisms) are supported:
+
+- Github: anonymous, username/password, token
+- Gitlab: token
+
+Note that, due to the server limitations of some providers, extracting issues from an issue tracker may noticeably slow down an analysis (1 -- 2 seconds per request). Hence, enable this feature only if required (see Quickstart). Also, some providers permit a maximum number of requests per day. If exceeded, subsequent requests are ignored.
 
 ### Installation
 
