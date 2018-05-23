@@ -43,7 +43,7 @@ VCSEngine vcs = ...
 vcs.setITEngine(it);
 
 for (RevisionRange range : vcs) {
-    // Returns an empty list if no ITEngine has been assigned to `vcs`.
+    // Returns an empty list if no ITEngine is assigned to `vcs`.
     range.getLatestCommit().getIssues();
     ...
 }
