@@ -94,7 +94,7 @@ The `VCSEngineBuilder`, for the sake of convenience, automatically maps regular 
 VCSEngineBuilder.ofHG("/path/to/repository")
 ```
 
-There is a special engine called `SingleEngine`. It is used to process a local directory or file. When using this engine, a single Revision is generated where all files are reported as *added*.
+There is a special engine called `SingleEngine`. It is used to process a local directory or file. When using this engine, a single revision is generated where all files are reported as *added*.
 
 #### Issue Tracker
 
