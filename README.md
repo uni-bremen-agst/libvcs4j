@@ -75,7 +75,7 @@ If no target directory is specified, a temporary directory is created (and delet
 
 ### Project Structure
 
-The library is divided into an API and implementation, as well as further submodules providing additional features (e.g. aggregation of different metrics). The API has no external dependencies and defines a common data model that allows to decouple analysis tools from particular repository systems. The implementation, on the other hand, provides the actual version control system engines (`GitEngine`, `HGEngine`, `SVNEngine`, `SingleEngine`), issue tracker engines (`GithubEngine`, `GitlabEngine`), and engine builder (`VCSEngineBuilder` and `ITEngineBuilder`) that are used to configure the repository to process (see Quickstart).
+The library is divided into an API and implementation, as well as further submodules providing additional features (e.g. aggregation of different metrics). The API has no external dependencies and defines a common data model that allows to decouple analysis tools from particular repository systems. The implementation, on the other hand, provides the actual version control system engines (`GitEngine`, `HGEngine`, `SVNEngine`, `SingleEngine`), issue tracker engines (`GithubEngine`, `GitlabEngine`), and engine builder (`VCSEngineBuilder` and `ITEngineBuilder`).
 
 ### Supported Repositories
 
@@ -94,7 +94,7 @@ The `VCSEngineBuilder`, for the sake of convenience, automatically maps regular 
 VCSEngineBuilder.ofHG("/path/to/repository")
 ```
 
-There is a special engine called `SingleEngine`. It is used to process a local directory or file. When using this engine, a single revision is generated where all files are reported as *added*.
+There is a special engine called `SingleEngine`. It is used to process a local directory or file. When using this engine, a single revision is generated with all files being reported as *added*.
 
 #### Issue Tracker
 
