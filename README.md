@@ -43,10 +43,35 @@ VCSEngine vcs = ...
 vcs.setITEngine(it);
 
 for (RevisionRange range : vcs) {
+    // Returns an empty list if no ITEngine has been assigned to `vcs`.
     range.getLatestCommit().getIssues();
     ...
 }
 ```
+
+While processing a repository, LibVCS4j not only generates different metadata such as file change information, but also allows to access the files of the currently checked out revision:
+
+```java
+VCSEngine vcs = ...
+
+for (RevisionRange range : vcs) {
+    // Path to the root of the currently checked out revivion.
+    range.getRevision().getOutput();
+
+    // Returns the files of the currenlty checked out revision as list.
+    range.getFiles();
+}
+```
+
+If required, the target directory (i.e. the SVN working copy or the Git/Mercurial clone directory) can be configured as follows:
+
+```java
+VCSEngine vcs = VCSEngineBuilder
+    .ofGit("https://github.com/amaembo/streamex.git")
+    .withTarget("path/to/clone/directory")
+    .build();
+```
+If no target directory is specified, a temporary directory is created (and deleted using a [shutdown hook](https://docs.oracle.com/javase/8/docs/api/java/lang/Runtime.html#addShutdownHook-java.lang.Thread-)).
 
 ### Project Structure
 
