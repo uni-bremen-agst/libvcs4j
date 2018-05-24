@@ -1,10 +1,14 @@
 # LibVCS4j
 [![Build Status](https://travis-ci.org/uni-bremen-agst/libvcs4j.svg?branch=master)](https://travis-ci.org/uni-bremen-agst/libvcs4j)
 [![Build status](https://ci.appveyor.com/api/projects/status/qn2vd6h6o3t9wk9e/branch/master?svg=true)](https://ci.appveyor.com/project/msteinbeck/libvcs4j/branch/master)
-[![Maven Central](https://img.shields.io/maven-central/v/de.uni-bremen.informatik.st/libvcs4j-api.svg)](https://maven-badges.herokuapp.com/maven-central/de.uni-bremen.informatik.st/libvcs4j-api)
-[![Javadocs](https://www.javadoc.io/badge/de.uni-bremen.informatik.st/libvcs4j-api.svg)](https://www.javadoc.io/doc/de.uni-bremen.informatik.st/libvcs4j-api)
 
 LibVCS4j is a Java programming library for repository mining with a common API for different version control systems and issue trackers. The library integrates existing software (e.g. JGit) to access repository routines, adds additional features for data analysis, and, ultimately, makes subsequent analysis tools independent from particular repository systems.
+
+API: [![Maven Central](https://img.shields.io/maven-central/v/de.uni-bremen.informatik.st/libvcs4j-api.svg)](https://maven-badges.herokuapp.com/maven-central/de.uni-bremen.informatik.st/libvcs4j-api)
+[![Javadocs](https://www.javadoc.io/badge/de.uni-bremen.informatik.st/libvcs4j-api.svg)](https://www.javadoc.io/doc/de.uni-bremen.informatik.st/libvcs4j-api)
+
+Implementation: [![Maven Central](https://img.shields.io/maven-central/v/de.uni-bremen.informatik.st/libvcs4j.svg)](https://maven-badges.herokuapp.com/maven-central/de.uni-bremen.informatik.st/libvcs4j)
+[![Javadocs](https://www.javadoc.io/badge/de.uni-bremen.informatik.st/libvcs4j.svg)](https://www.javadoc.io/doc/de.uni-bremen.informatik.st/libvcs4j)
 
 ### Quickstart
 
