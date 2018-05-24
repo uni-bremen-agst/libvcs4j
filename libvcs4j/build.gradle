@@ -1,8 +1,10 @@
 plugins {
 	id 'java'
 	id 'maven'
+	id 'jacoco'
 	id "com.github.johnrengelman.shadow" version "2.0.3"
 	id 'io.franzbecker.gradle-lombok' version '1.14'
+	id 'com.github.kt3k.coveralls' version '2.6.3'
 }
 
 group = 'de.uni-bremen.informatik.st'
@@ -44,8 +46,19 @@ dependencies {
 	configurations.compile.extendsFrom(configurations.extraLibs)
 }
 
-import io.franzbecker.gradle.lombok.task.DelombokTask
+jacocoTestReport {
+	reports {
+		xml.enabled = true // required by Coveralls
+		html.enabled = true
+	}
+	afterEvaluate {
+		classDirectories = files(classDirectories.files.collect {
+			fileTree(dir: it, exclude: 'bmsi/**')
+		})
+	}
+}
 
+import io.franzbecker.gradle.lombok.task.DelombokTask
 task delombok(type: DelombokTask) {
 	dependsOn compileJava
 	ext.outputDir = file("$buildDir/delombok")

@@ -13,3 +13,6 @@ before_install:
 
 script:
     - gradle build
+
+after_success:
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then gradle jacocoTestReport coveralls; fi
