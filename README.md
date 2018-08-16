@@ -38,7 +38,7 @@ VCSEngine vcs = VCSEngineBuilder
     .build();
 ```
 
-In order to extract issues referenced in commit messages, you need assign an `ITEngine`:
+In order to extract issues referenced in commit messages, you need to assign an `ITEngine`:
 
 ```java
 ITEngine it = ITEngineBuilder
