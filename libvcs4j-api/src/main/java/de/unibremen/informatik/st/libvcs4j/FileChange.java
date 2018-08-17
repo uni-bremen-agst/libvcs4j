@@ -7,7 +7,6 @@ import java.util.Optional;
 /**
  * Represents a change of a single file.
  */
-@SuppressWarnings("unused")
 public interface FileChange extends VCSModelElement {
 
 	/**

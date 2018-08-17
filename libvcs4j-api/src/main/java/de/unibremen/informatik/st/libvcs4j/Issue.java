@@ -6,7 +6,6 @@ import java.util.List;
 /**
  * Represents an issue from an issue tracker.
  */
-@SuppressWarnings("unused")
 public interface Issue extends ITModelElement {
 
 	/**

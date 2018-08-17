@@ -23,7 +23,6 @@ import static de.unibremen.informatik.st.libvcs4j.FileChange.Type.*;
  * A single range may subsume several commits to merge commits on, for
  * instance, a monthly basis.
  */
-@SuppressWarnings("unused")
 public interface RevisionRange extends VCSModelElement {
 
 	/**

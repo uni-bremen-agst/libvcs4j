@@ -6,7 +6,6 @@ import java.util.List;
 /**
  * Represents a single commit.
  */
-@SuppressWarnings("unused")
 public interface Commit extends VCSModelElement {
 
 	/**

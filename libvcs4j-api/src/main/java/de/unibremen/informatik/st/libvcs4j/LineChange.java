@@ -3,7 +3,6 @@ package de.unibremen.informatik.st.libvcs4j;
 /**
  * Represents a change of a single line of text.
  */
-@SuppressWarnings("unused")
 public interface LineChange extends VCSModelElement {
 
 	/**

@@ -48,7 +48,6 @@ import java.util.Optional;
  * Note 2: {@link #readAllBytes(VCSFile)} must be a stateless operation. That
  * is, one may read any file in any state.
  */
-@SuppressWarnings("unused")
 public interface VCSEngine extends Iterable<RevisionRange> {
 
 	/**
@@ -57,7 +56,7 @@ public interface VCSEngine extends Iterable<RevisionRange> {
 	 * repository to {@link #getTarget()}.
 	 *
 	 * @return
-	 * 		The next revisioni range, if any.
+	 * 		The next revision range, if any.
 	 * @throws IOException
 	 * 		If an error occurred while extracting the next revision range.
 	 */

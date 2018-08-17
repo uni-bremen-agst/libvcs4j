@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 /**
  * Represents the state of a VCS at a certain point in time.
  */
-@SuppressWarnings("unused")
 public interface Revision extends VCSModelElement {
 
 	/**

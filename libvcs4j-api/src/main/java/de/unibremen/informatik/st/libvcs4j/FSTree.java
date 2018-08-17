@@ -26,7 +26,6 @@ import java.util.function.Function;
  * @param <V>
  *     The attached value.
  */
-@SuppressWarnings({"WeakerAccess", "unused"})
 public class FSTree<V> {
 
 	/**
