@@ -85,7 +85,7 @@ The library is divided into an API and implementation, as well as further submod
 
 ### Data Model
 
-The following UML diagram depicts the data model defined by the API submodule. For the sake of clarity, the modifier of the attributes and methods are not shown since they are all public anyway. Furthermore, all attributes are readonly.
+The following UML diagram depicts the data model defined by the API submodule. For the sake of clarity, the modifier of the attributes and methods are not shown since they are public anyway (in fact attributes are not public, but can be accessed with corresponding getter methods which, in turn, are public). Furthermore, all attributes are readonly.
 
 ![Data Model](res/model.svg)
 
