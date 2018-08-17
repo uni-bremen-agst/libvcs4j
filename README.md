@@ -81,7 +81,13 @@ If no target directory is specified, a temporary directory is created (and delet
 
 ### Project Structure
 
-The library is divided into an API and implementation, as well as further submodules providing additional features (e.g. aggregation of different metrics). The API has no external dependencies and defines a common data model that allows to decouple analysis tools from particular repository systems. The implementation, on the other hand, provides the actual version control system engines (`GitEngine`, `HGEngine`, `SVNEngine`, `SingleEngine`), issue tracker engines (`GithubEngine`, `GitlabEngine`), and engine builder (`VCSEngineBuilder` and `ITEngineBuilder`).
+The library is divided into an API and implementation, as well as further submodules that are supposed to provide additional features (e.g. aggregation of different metrics). The API has no external dependencies and defines a common data model that allows to decouple analysis tools from particular repository systems. The implementation, on the other hand, provides the actual version control system engines (`GitEngine`, `HGEngine`, `SVNEngine`, `SingleEngine`), issue tracker engines (`GithubEngine`, `GitlabEngine`), and engine builder (`VCSEngineBuilder` and `ITEngineBuilder`).
+
+### Data Model
+
+The following UML diagram depicts the data model defined by the API submodule. For the sake of clarity, the modifier of the attributes and methods are not shown since they are all public anyway. Furthermore, all attributes are readonly.
+
+![Data Model](res/model.svg)
 
 ### Supported Repositories
 
