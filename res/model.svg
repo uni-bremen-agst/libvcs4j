@@ -113,7 +113,7 @@
       <line stroke-linecap="square" clip-path="url(#clipPath6)" fill="none" x1="706" x2="933" y1="680" y2="680" stroke-miterlimit="10"/>
       <line stroke-linecap="square" clip-path="url(#clipPath6)" fill="none" x1="706" x2="933" y1="690" y2="690" stroke-miterlimit="10"/>
       <text x="710.375" xml:space="preserve" y="706.5215" clip-path="url(#clipPath6)" font-family="sans-serif" stroke="none">computeDiff(): List&lt;LineChange&gt;</text>
-      <text x="710.375" xml:space="preserve" y="720.4902" clip-path="url(#clipPath6)" font-family="sans-serif" stroke="none">computeLineDelta: int</text>
+      <text x="710.375" xml:space="preserve" y="720.4902" clip-path="url(#clipPath6)" font-family="sans-serif" stroke="none">computeLineDelta(): int</text>
     </g>
     <g fill="white" text-rendering="geometricPrecision" shape-rendering="geometricPrecision" transform="matrix(1,0,0,1,-128,-292)" stroke="white">
       <rect x="1029.625" width="139" height="113" y="634.75" clip-path="url(#clipPath2)" stroke="none"/>
@@ -312,7 +312,7 @@
     <g text-rendering="geometricPrecision" stroke-miterlimit="1.45" shape-rendering="geometricPrecision" font-family="sans-serif" transform="matrix(1,0,0,1,-128,-292) translate(699,309)" stroke-linecap="butt">
       <text x="0" xml:space="preserve" y="12" clip-path="url(#clipPath19)" stroke="none">computes issues based</text>
       <text x="149" xml:space="preserve" y="12" clip-path="url(#clipPath19)" stroke="none"> </text>
-      <text x="0" xml:space="preserve" y="27" clip-path="url(#clipPath19)" stroke="none">on merged changes ▶</text>
+      <text x="0" xml:space="preserve" y="27" clip-path="url(#clipPath19)" stroke="none">on merged commits ▶</text>
     </g>
   </g>
 </svg>
