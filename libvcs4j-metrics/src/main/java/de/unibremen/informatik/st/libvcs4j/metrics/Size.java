@@ -5,7 +5,6 @@ import org.apache.commons.lang3.Validate;
 /**
  * Stores different size metrics.
  */
-@SuppressWarnings({"WeakerAccess", "unused"})
 public class Size {
 
 	/**

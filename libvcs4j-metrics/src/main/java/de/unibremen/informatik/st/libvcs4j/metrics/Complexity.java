@@ -5,7 +5,6 @@ import org.apache.commons.lang3.Validate;
 /**
  * Stores different complexity metrics.
  */
-@SuppressWarnings({"WeakerAccess", "unused"})
 public class Complexity {
 
 	/**
