@@ -18,6 +18,9 @@ dependencies {
 	extraLibs project(':conqat')
 	compile 'de.uni-bremen.informatik.st:libvcs4j-api:1.1.2'
 	compile 'org.apache.commons:commons-lang3:3.4'
+	testCompile 'junit:junit:4.12'
+	testCompile 'org.mockito:mockito-core:2.18.3'
+	testCompile 'org.assertj:assertj-core:3.10.0'
 	configurations.compile.extendsFrom(configurations.extraLibs)
 }
 

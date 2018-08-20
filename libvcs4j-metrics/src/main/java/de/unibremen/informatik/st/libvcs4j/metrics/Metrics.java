@@ -57,7 +57,7 @@ public class Metrics {
 				}
 				if (lastToken == null) {
 					if (comment) {
-						cloc = 1;
+						cloc = token.getText().split(LINE_SEP).length;
 					} else {
 						sloc = 1;
 					}
