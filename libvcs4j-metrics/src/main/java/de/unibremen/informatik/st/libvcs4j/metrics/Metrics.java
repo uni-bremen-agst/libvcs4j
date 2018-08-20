@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 /**
  * Provides methods to calculate different metrics.
  */
-@SuppressWarnings("unused")
 public class Metrics {
 
 	/**
@@ -28,7 +27,7 @@ public class Metrics {
 	 * @throws IOException
 	 * 		If an error occurred while reading the contents of {@code pFile}.
 	 */
-	public static Optional<Size> computeSize(final VCSFile pFile)
+	public Optional<Size> computeSize(final VCSFile pFile)
 			throws NullPointerException, IOException {
 		Validate.notNull(pFile);
 
@@ -110,7 +109,7 @@ public class Metrics {
 	 * @throws IOException
 	 * 		If an error occurred while reading the contents of {@code pFile}.
 	 */
-	public static Optional<Complexity> computeComplexity(final VCSFile pFile)
+	public Optional<Complexity> computeComplexity(final VCSFile pFile)
 			throws NullPointerException, IOException {
 		Validate.notNull(pFile);
 
@@ -172,13 +171,16 @@ public class Metrics {
 	/**
 	 * Returns whether the given token is a comment.
 	 *
+	 * You may override this method to change the behaviour of
+	 * {@link #computeSize(VCSFile)} and {@link #computeComplexity(VCSFile)}.
+	 *
 	 * @param pToken
 	 * 		The token to check.
 	 * @return
 	 * 		{@code true} if {@code pToken} is a comment, {@code false}
 	 * 		otherwise.
 	 */
-	private static boolean isCommentType(final IToken pToken) {
+	protected boolean isCommentType(final IToken pToken) {
 		final ETokenType type = pToken.getType();
 		return type == ETokenType.COMMENT ||
 				type == ETokenType.COMMENT_KEYWORD ||
@@ -191,13 +193,16 @@ public class Metrics {
 	/**
 	 * Returns whether the given token is a control flow.
 	 *
+	 * You may override this method to change the behaviour of
+	 * {@link #computeComplexity(VCSFile)}.
+	 *
 	 * @param pToken
 	 * 		The token to check.
 	 * @return
 	 * 		{@code true} if {@code pToken} is a control flow, {@code false}
 	 * 		otherwise.
 	 */
-	private static boolean isControlType(final IToken pToken) {
+	protected boolean isControlType(final IToken pToken) {
 		final ETokenType type = pToken.getType();
 		return
 				// if condition
@@ -231,14 +236,20 @@ public class Metrics {
 	/**
 	 * Tries to guess the language of the given file.
 	 *
-	 * @param file
+	 * You may override this method to adapt language detection to your
+	 * requirements. The default implementation uses
+	 * {@link ELanguage#fromFileExtension(String)} to detect the language of
+	 * of the given file and filters files of type {@link ELanguage#TEXT} and
+	 * {@link ELanguage#LINE}.
+	 *
+	 * @param pFile
 	 * 		The file to guess the language for.
 	 * @return
 	 * 		The language of {@code pFile} or an empty {@link Optional} if the
 	 * 		language is unknown.
 	 */
-	private static Optional<ELanguage> getLanguage(final VCSFile file) {
-		final ELanguage l = ELanguage.fromFile(file.toFile());
+	protected Optional<ELanguage> getLanguage(final VCSFile pFile) {
+		final ELanguage l = ELanguage.fromFile(pFile.toFile());
 		return l == null || l == ELanguage.TEXT || l == ELanguage.LINE
 				? Optional.empty()
 				: Optional.of(l);
