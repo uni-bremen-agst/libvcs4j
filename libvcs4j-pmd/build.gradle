@@ -1,0 +1,24 @@
+plugins {
+    id 'java'
+    id 'maven'
+}
+
+group = 'de.uni-bremen.informatik.st'
+version = '1.1.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'com.sun.xml.bind:jaxb-impl:2.3.0.1'
+    compile 'de.uni-bremen.informatik.st:libvcs4j-api:1.1.2'
+    compile 'net.sourceforge.pmd:pmd:5.0.0'
+    compile 'org.apache.commons:commons-lang3:3.4'
+    compile 'org.slf4j:slf4j-api:1.7.22'
+    testCompile 'de.uni-bremen.informatik.st:libvcs4j:1.1.1'
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.assertj:assertj-core:3.8.0'
+    testCompile 'org.mockito:mockito-core:2.18.3'
+    testCompile 'org.slf4j:slf4j-simple:1.7.25'
+}
