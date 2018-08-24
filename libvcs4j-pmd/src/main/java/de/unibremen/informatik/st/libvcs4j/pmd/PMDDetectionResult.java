@@ -4,8 +4,11 @@ import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import org.apache.commons.lang3.Validate;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -69,7 +72,24 @@ public class PMDDetectionResult {
 	}
 
 	/**
-	 * Returns all violations detected in {@code pRevision}.
+	 * Returns all rules that were violated. That is, the rules of all
+	 * violations of each revision are collected.
+	 *
+	 * @return
+	 * 		All rules that were violated.
+	 */
+	public Set<String> getRules() {
+		final Set<String> rules = new HashSet<>();
+		revision2Violation.values().stream()
+				.flatMap(Collection::stream)
+				.map(PMDViolation::getRule)
+				.forEach(rules::add);
+		return rules;
+	}
+
+	/**
+	 * Returns all violations detected in {@code pRevision}. Returns an empty
+	 * list if {@code pRevision} was not analyzed.
 	 *
 	 * @param pRevision
 	 * 		The revision for which the violations are returned.
@@ -86,7 +106,8 @@ public class PMDDetectionResult {
 	}
 
 	/**
-	 * Returns all violations detected in {@code pFile}.
+	 * Returns all violations detected in {@code pFile}. Returns an empty list
+	 * if {@code pFile} was not analyzed.
 	 *
 	 * @param pFile
 	 * 		The file for which the violations are returned.
@@ -108,6 +129,7 @@ public class PMDDetectionResult {
 
 	/**
 	 * Returns all violations triggered by {@code pRule} in {@code pRevision}.
+	 * Returns an empty list if {@code pRevision} was not analyzed.
 	 *
 	 * @param pRevision
 	 * 		The requested revision.
