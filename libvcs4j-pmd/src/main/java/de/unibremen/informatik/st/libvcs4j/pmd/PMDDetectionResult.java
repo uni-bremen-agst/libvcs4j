@@ -5,16 +5,31 @@ import org.apache.commons.lang3.Validate;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 /**
  * The detection result of {@link PMDRunner}.
  */
 public class PMDDetectionResult {
+
+	/**
+	 * The separator used in CSV exports.
+	 */
+	private final static String SEPARATOR = ";";
+
+	/**
+	 * The new line character used in CSV exports.
+	 */
+	private final static char NEW_LINE = '\n';
+
+	/**
+	 * The header of the revision column used in CSV exports.
+	 */
+	private final static String REVISION_HEADER = "id";
 
 	/**
 	 * Stores the detection results. Maps the analyzed revisions to
@@ -73,13 +88,15 @@ public class PMDDetectionResult {
 
 	/**
 	 * Returns all rules that were violated. That is, the rules of all
-	 * violations of each revision are collected.
+	 * violations of each revision are collected. Rules are sorted according to
+	 * {@link String#CASE_INSENSITIVE_ORDER}.
 	 *
 	 * @return
 	 * 		All rules that were violated.
 	 */
-	public Set<String> getRules() {
-		final Set<String> rules = new HashSet<>();
+	public SortedSet<String> getRules() {
+		final SortedSet<String> rules = new TreeSet<>(
+				String.CASE_INSENSITIVE_ORDER);
 		revision2Violation.values().stream()
 				.flatMap(Collection::stream)
 				.map(PMDViolation::getRule)
@@ -89,47 +106,24 @@ public class PMDDetectionResult {
 
 	/**
 	 * Returns all violations detected in {@code pRevision}. Returns an empty
-	 * list if {@code pRevision} was not analyzed.
+	 * list if {@code pRevision} is {@code null} or was not analyzed.
 	 *
 	 * @param pRevision
 	 * 		The revision for which the violations are returned.
 	 * @return
 	 * 		All violations detected in {@code pRevision}.
-	 * @throws NullPointerException
-	 * 		If {@code pRevision} is {@code null}.
 	 */
-	public List<PMDViolation> getViolationsOf(final String pRevision)
-			throws NullPointerException {
-		Validate.notNull(pRevision);
-		return new ArrayList<>(revision2Violation
-				.getOrDefault(pRevision, new ArrayList<>()));
-	}
-
-	/**
-	 * Returns all violations detected in {@code pFile}. Returns an empty list
-	 * if {@code pFile} was not analyzed.
-	 *
-	 * @param pFile
-	 * 		The file for which the violations are returned.
-	 * @return
-	 * 		All violations detected in {@code pFile}.
-	 * @throws NullPointerException
-	 * 		If {@code pFile} is {@code null}.
-	 */
-	public List<PMDViolation> getViolationsOf(final VCSFile pFile)
-			throws NullPointerException {
-		Validate.notNull(pFile);
-		final String rev = pFile.getRevision().getId();
-		return revision2Violation
-				.getOrDefault(rev, new ArrayList<>()).stream()
-				.filter(v -> v.getFile().getRelativePath()
-						.equals(pFile.getRelativePath()))
-				.collect(Collectors.toList());
+	public List<PMDViolation> getViolationsOf(final String pRevision) {
+		return pRevision == null
+				? new ArrayList<>()
+				: new ArrayList<>(revision2Violation.getOrDefault(
+						pRevision, new ArrayList<>()));
 	}
 
 	/**
 	 * Returns all violations triggered by {@code pRule} in {@code pRevision}.
-	 * Returns an empty list if {@code pRevision} was not analyzed.
+	 * Returns an empty list if {@code pRule} or {@code pRevision} is
+	 * {@code null} or if {@code pRevision} was not analyzed.
 	 *
 	 * @param pRevision
 	 * 		The requested revision.
@@ -137,16 +131,62 @@ public class PMDDetectionResult {
 	 * 		The requested rule.
 	 * @return
 	 * 		All violations triggered by {@code pRule} in {@code pRevision}.
-	 * @throws NullPointerException
-	 * 		If any of the given arguments is {@code null}.
 	 */
 	public List<PMDViolation> getViolationsOf(final String pRevision,
-			final String pRule) throws NullPointerException {
-		Validate.notNull(pRevision);
-		Validate.notNull(pRule);
-		return revision2Violation
-				.getOrDefault(pRevision, new ArrayList<>()).stream()
-				.filter(v -> v.getRule().equals(pRule))
-				.collect(Collectors.toList());
+			final String pRule) {
+		return pRule == null || pRevision == null
+				? new ArrayList<>()
+				: revision2Violation
+						.getOrDefault(pRevision, new ArrayList<>()).stream()
+						.filter(v -> v.getRule().equals(pRule))
+						.collect(Collectors.toList());
+	}
+
+	/**
+	 * Returns all violations detected in {@code pFile}. Returns an empty list
+	 * if {@code pFile} is {@code null} or was not analyzed.
+	 *
+	 * @param pFile
+	 * 		The file for which the violations are returned.
+	 * @return
+	 * 		All violations detected in {@code pFile}.
+	 */
+	public List<PMDViolation> getViolationsOf(final VCSFile pFile) {
+		if (pFile == null) {
+			return new ArrayList<>();
+		} else {
+			final String rev = pFile.getRevision().getId();
+			return revision2Violation
+					.getOrDefault(rev, new ArrayList<>()).stream()
+					.filter(v -> v.getFile().getRelativePath()
+							.equals(pFile.getRelativePath()))
+					.collect(Collectors.toList());
+		}
+	}
+
+	/**
+	 * Creates a CSV export that contains the frequency of the detected
+	 * violations for each revision.
+	 *
+	 * @return
+	 * 		A CSV export that contains the frequency of the detected violations
+	 * 		for each revision.
+	 */
+	public String toFrequencyCSV() {
+		final List<String> revs = getRevisions();
+		final SortedSet<String> rules = getRules();
+		final StringBuilder builder = new StringBuilder();
+		builder.append(REVISION_HEADER)
+				.append(SEPARATOR)
+				.append(String.join(SEPARATOR, rules))
+				.append(NEW_LINE);
+		revs.forEach(rev -> {
+			builder.append(rev);
+			rules.forEach(rule ->
+					builder.append(SEPARATOR)
+							.append(getViolationsOf(rev, rule).size()));
+			builder.append(NEW_LINE);
+		});
+		return builder.toString();
 	}
 }
