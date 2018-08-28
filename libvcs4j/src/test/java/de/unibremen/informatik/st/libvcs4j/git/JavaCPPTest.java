@@ -222,4 +222,79 @@ public class JavaCPPTest extends VCSBaseTest {
 		assertEquals("32510a922ab069d52c312b3fb8668fb9dfda5e5f",
 				ranges.get(8).getRevision().getId());
 	}
+
+	@Test
+	public void lineInfoBuildMojo3934c45285d() throws IOException {
+		VCSEngine engine = createBuilder()
+				.withFrom("3934c45285d")
+				.withTo("3934c45285d")
+				.build();
+
+		Optional<RevisionRange> range = engine.next();
+		assertTrue(range.isPresent());
+
+		Revision revision = range.get().getRevision();
+		VCSFile buildMojo = revision.getFilesBySuffix("BuildMojo.java").get(0);
+		List<LineInfo> lineInfo = buildMojo.readLineInfo();
+
+		assertEquals(
+				"a41cb1dcc6513133e9466331c1f73143dca5e422",
+				lineInfo.get(1).getId());
+		assertEquals(
+				"Samuel Audet",
+				lineInfo.get(1).getAuthor());
+		assertEquals(
+				" * Fixed callbacks not working on Android anymore (issue #30)\n * Added some Javadoc to most of the code",
+				lineInfo.get(1).getMessage());
+		assertEquals(
+				LocalDateTime.of(2013, 2, 24, 23, 38, 11),
+				lineInfo.get(1).getDateTime());
+		assertEquals(
+				2,
+				lineInfo.get(1).getLine());
+		assertEquals(
+				" * Copyright (C) 2012,2013 Arnaud Nauwynck, Samuel Audet\n",
+				lineInfo.get(1).getContent());
+		assertEquals(
+				buildMojo,
+				lineInfo.get(1).getFile());
+	}
+
+	@Test
+	public void lineInfoBuildMojo29208dSubDir() throws IOException {
+		VCSEngine engine = createBuilder()
+				.withRoot(getSubDir())
+				.withFrom("29208")
+				.withTo("29208")
+				.build();
+
+		Optional<RevisionRange> range = engine.next();
+		assertTrue(range.isPresent());
+
+		Revision revision = range.get().getRevision();
+		VCSFile buildMojo = revision.getFilesBySuffix("BuildMojo.java").get(0);
+		List<LineInfo> lineInfo = buildMojo.readLineInfo();
+
+		assertEquals(
+				"1604a0f4880f698572a241de49262556a9377138",
+				lineInfo.get(1).getId());
+		assertEquals(
+				"Samuel Audet",
+				lineInfo.get(1).getAuthor());
+		assertEquals(
+				" * Prepend \"javacpp.\" to all properties associated with Maven in `BuildMojo` to avoid name clashes",
+				lineInfo.get(1).getMessage());
+		assertEquals(
+				LocalDateTime.of(2016, 2, 7, 23, 11, 32),
+				lineInfo.get(1).getDateTime());
+		assertEquals(
+				2,
+				lineInfo.get(1).getLine());
+		assertEquals(
+				" * Copyright (C) 2012-2016 Arnaud Nauwynck, Samuel Audet\n",
+				lineInfo.get(1).getContent());
+		assertEquals(
+				buildMojo,
+				lineInfo.get(1).getFile());
+	}
 }

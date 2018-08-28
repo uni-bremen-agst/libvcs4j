@@ -1,7 +1,10 @@
 package de.unibremen.informatik.st.libvcs4j.filesystem;
 
+import de.unibremen.informatik.st.libvcs4j.LineInfo;
 import de.unibremen.informatik.st.libvcs4j.VCSEngineBuilder;
+import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.data.CommitImpl;
+import de.unibremen.informatik.st.libvcs4j.data.LineInfoImpl;
 import de.unibremen.informatik.st.libvcs4j.engine.AbstractVSCEngine;
 import de.unibremen.informatik.st.libvcs4j.engine.Changes;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalRepositoryException;
@@ -14,6 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -102,6 +106,31 @@ public class SingleEngine extends AbstractVSCEngine {
 		Validate.isTrue(Files.isRegularFile(path),
 				"'%s' is not a regular file", path);
 		return Files.readAllBytes(path);
+	}
+
+	@Override
+	public List<LineInfo> readLineInfoImpl(final VCSFile pFile)
+			throws IOException {
+		final Path path = pFile.toPath();
+		Validate.isTrue(Files.isRegularFile(path),
+				"'%s' is not a regular file", path);
+		final List<LineInfo> lineInfo = new ArrayList<>();
+		final List<String> lines = pFile.readLinesWithEOL();
+		for (int i = 0; i < lines.size(); i++) {
+			final LocalDateTime dt = LocalDateTime.ofInstant(
+					Files.getLastModifiedTime(pFile.toPath()).toInstant(),
+					ZoneId.systemDefault());
+			final LineInfo info = new LineInfoImpl(
+					DEFAULT_REVISION,
+					DEFAULT_AUTHOR,
+					DEFAULT_MESSAGE,
+					dt,
+					i + 1,
+					lines.get(i),
+					pFile);
+			lineInfo.add(info);
+		}
+		return lineInfo;
 	}
 
 	@Override

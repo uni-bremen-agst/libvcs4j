@@ -2,15 +2,21 @@ package de.unibremen.informatik.st.libvcs4j.hg;
 
 import com.aragost.javahg.Changeset;
 import com.aragost.javahg.Repository;
+import com.aragost.javahg.commands.AnnotateCommand;
+import com.aragost.javahg.commands.AnnotateLine;
 import com.aragost.javahg.commands.CatCommand;
 import com.aragost.javahg.commands.LogCommand;
 import com.aragost.javahg.commands.StatusCommand;
 import com.aragost.javahg.commands.StatusResult;
+import com.aragost.javahg.commands.flags.AnnotateCommandFlags;
 import com.aragost.javahg.commands.flags.CatCommandFlags;
 import com.aragost.javahg.commands.flags.LogCommandFlags;
 import com.aragost.javahg.commands.flags.StatusCommandFlags;
 import com.aragost.javahg.commands.flags.UpdateCommandFlags;
+import de.unibremen.informatik.st.libvcs4j.LineInfo;
 import de.unibremen.informatik.st.libvcs4j.VCSEngineBuilder;
+import de.unibremen.informatik.st.libvcs4j.VCSFile;
+import de.unibremen.informatik.st.libvcs4j.data.LineInfoImpl;
 import de.unibremen.informatik.st.libvcs4j.engine.AbstractIntervalVCSEngine;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalIntervalException;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalRepositoryException;
@@ -24,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -278,8 +285,9 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 
 		final InputStream is;
 		try {
+			final String path = Paths.get(getRoot(), pPath).toString();
 			final CatCommand cmd = CatCommandFlags.on(repository);
-			is = cmd.rev(pRevision).execute(pPath);
+			is = cmd.rev(pRevision).execute(path);
 		} catch (final RuntimeException e) {
 			throw new IOException(e);
 		}
@@ -292,6 +300,47 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 			bos.write(buffer, 0, n);
 		}
 		return bos.toByteArray();
+	}
+
+	@Override
+	protected List<LineInfo> readLineInfoImpl(final VCSFile pFile)
+			throws IOException {
+		Validate.validState(repository != null);
+
+		try {
+			final Path path = Paths.get(getRoot(), pFile.getRelativePath());
+			final List<String> lines = pFile.readLinesWithEOL();
+			final List<LineInfo> lineInfo = new ArrayList<>();
+
+			final AnnotateCommand cmd = AnnotateCommandFlags.on(repository);
+			final List<AnnotateLine> aLines = cmd
+					.rev(pFile.getRevision().getId())
+					.execute(path.toString());
+			if (aLines.size() != lines.size()) {
+				throw new IllegalArgumentException(
+						"Line length does not match");
+			}
+
+			for (int i = 0; i < lines.size(); i++) {
+				final AnnotateLine al = aLines.get(i);
+				final LocalDateTime dt = LocalDateTime.ofInstant(
+						al.getChangeset().getTimestamp().getDate().toInstant(),
+						ZoneId.systemDefault());
+				final LineInfo li = new LineInfoImpl(
+						al.getChangeset().getNode(),
+						al.getChangeset().getUser()
+								.replaceAll(" <.*@.*>$", ""),
+						al.getChangeset().getMessage(),
+						dt,
+						i + 1,
+						lines.get(i),
+						pFile);
+				lineInfo.add(li);
+			}
+			return lineInfo;
+		} catch (final RuntimeException e) {
+			throw new IOException(e);
+		}
 	}
 
 	@Override
@@ -440,5 +489,10 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 		} catch (final RuntimeException e) {
 			throw new IOException(e);
 		}
+	}
+
+	@Override
+	public FilenameFilter createVCSFileFilter() {
+		return (dir, name) -> !name.equals(".hg");
 	}
 }

@@ -5,6 +5,7 @@ import de.unibremen.informatik.st.libvcs4j.Commit;
 import de.unibremen.informatik.st.libvcs4j.FileChange;
 import de.unibremen.informatik.st.libvcs4j.ITEngine;
 import de.unibremen.informatik.st.libvcs4j.LineChange;
+import de.unibremen.informatik.st.libvcs4j.LineInfo;
 import de.unibremen.informatik.st.libvcs4j.Revision;
 import de.unibremen.informatik.st.libvcs4j.RevisionRange;
 import de.unibremen.informatik.st.libvcs4j.VCSEngine;
@@ -32,13 +33,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -159,6 +158,18 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 			IllegalReturnException.notNull(bytes);
 			return bytes;
 		}
+	}
+
+	@Override
+	public List<LineInfo> readLineInfo(final VCSFile pFile) throws
+			NullPointerException, IllegalArgumentException, IOException {
+		Validate.notNull(pFile);
+		final String rev = pFile.getRevision().getId();
+		init();
+		Validate.isTrue(revisions.contains(rev));
+		final List<LineInfo> lineInfo = readLineInfoImpl(pFile);
+		IllegalReturnException.noNullElements(lineInfo);
+		return lineInfo;
 	}
 
 	@Override
@@ -532,6 +543,12 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 	 */
 	protected abstract byte[] readAllBytesImpl(String path, String revision)
 			throws IOException;
+
+	/**
+	 * @see #readLineInfo(VCSFile)
+	 */
+	protected abstract List<LineInfo> readLineInfoImpl(final VCSFile file)
+			throws IllegalArgumentException, IOException;
 
 	/**
 	 * Creates a commit storing the engine specific values. This method is used

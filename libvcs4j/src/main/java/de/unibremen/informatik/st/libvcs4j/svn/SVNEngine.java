@@ -1,8 +1,11 @@
 package de.unibremen.informatik.st.libvcs4j.svn;
 
+import de.unibremen.informatik.st.libvcs4j.LineInfo;
 import de.unibremen.informatik.st.libvcs4j.VCSEngine;
 import de.unibremen.informatik.st.libvcs4j.VCSEngineBuilder;
+import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.data.CommitImpl;
+import de.unibremen.informatik.st.libvcs4j.data.LineInfoImpl;
 import de.unibremen.informatik.st.libvcs4j.engine.AbstractIntervalVCSEngine;
 import de.unibremen.informatik.st.libvcs4j.engine.Changes;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalIntervalException;
@@ -16,6 +19,9 @@ import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNNodeKind;
 import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
+import org.tmatesoft.svn.core.wc.ISVNAnnotateHandler;
+import org.tmatesoft.svn.core.wc.SVNClientManager;
+import org.tmatesoft.svn.core.wc.SVNLogClient;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 import org.tmatesoft.svn.core.wc.SVNStatusType;
 import org.tmatesoft.svn.core.wc2.SvnCat;
@@ -30,6 +36,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -37,6 +44,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -376,6 +384,80 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 		} finally {
 			factory.dispose();
 		}
+	}
+
+	@Override
+	public List<LineInfo> readLineInfoImpl(final VCSFile pFile)
+			throws NullPointerException, IllegalArgumentException,
+			IOException {
+		final SvnOperationFactory factory = new SvnOperationFactory();
+
+		try {
+			final List<LineInfo> lineInfo = new ArrayList<>();
+			final List<String> lines = pFile.readLinesWithEOL();
+
+			final String rev = pFile.getRevision().getId();
+			final String p = pFile.getRelativePath();
+			final SVNRevision revision = createSVNRevision(rev);
+			final SvnTarget path = SvnTarget.fromURL(
+					createSVNURL(toSVNPath(p)), revision);
+
+			SVNLogClient logClient = SVNClientManager
+					.newInstance()
+					.getLogClient();
+			logClient.doAnnotate(
+					path.getURL(),
+					revision,
+					SVNRevision.create(0),
+					revision,
+					new ISVNAnnotateHandler() {
+						@Override
+						public void handleLine(final Date pDate,
+								long pRevision, final String pAuthor,
+								final String pLine) throws SVNException {}
+
+						@Override
+						public void handleLine(final Date pDate,
+								final long pRevision, final String pAuthor,
+								final String pLine, final Date pMergedDate,
+								final long mergedRevision,
+								final String pMergedAuthor,
+								final String pMergedPath,
+								final int pLineNumber) throws SVNException {
+							try {
+								final LineInfo li = new LineInfoImpl(
+										rev,
+										pAuthor,
+										createCommitImpl(rev).getMessage(),
+										LocalDateTime.ofInstant(
+												pDate.toInstant(),
+												ZoneId.systemDefault()),
+										pLineNumber + 1,
+										pLine,
+										pFile);
+								lineInfo.add(li);
+							} catch (final IOException e) {
+								throw new UncheckedIOException(e);
+							}
+						}
+
+						@Override
+						public boolean handleRevision(final Date pDate,
+								final long pRevision, final String pAuthor,
+								final File pContents) throws SVNException {
+							return true;
+						}
+
+						@Override
+						public void handleEOF() throws SVNException {}
+			});
+			Validate.isTrue(lines.size() == lineInfo.size());
+		} catch (final SVNException | UncheckedIOException e) {
+			throw new IOException(e);
+		} finally {
+			factory.dispose();
+		}
+		return new ArrayList<>();
 	}
 
 	@Override

@@ -4,6 +4,7 @@ import de.unibremen.informatik.st.libvcs4j.*;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -121,5 +122,81 @@ public class JavaHGTest extends VCSBaseTest {
 		assertEquals(1, ranges.size());
 		assertEquals("544c5168e4d3d314a996699692d8099ffa6419b2",
 				ranges.get(0).getRevision().getId());
+	}
+
+	@Test
+	public void lineInfoAddCommandTest30b413d2d2() throws IOException {
+		VCSEngine engine = createBuilder()
+				.withFrom("af30b413d2d2")
+				.withTo("af30b413d2d2")
+				.build();
+
+		Optional<RevisionRange> range = engine.next();
+		assertTrue(range.isPresent());
+
+		Revision revision = range.get().getRevision();
+		VCSFile addCommandTest = revision
+				.getFilesBySuffix("AddCommandTest.java").get(0);
+		List<LineInfo> lineInfo = addCommandTest.readLineInfo();
+
+		assertEquals(
+				"65364bf9dfb302952541d0380601dbacddf39107",
+				lineInfo.get(38).getId());
+		assertEquals(
+				"Jan Sorensen",
+				lineInfo.get(38).getAuthor());
+		assertEquals(
+				"AddCommand: Return lsit of files added",
+				lineInfo.get(38).getMessage());
+		assertEquals(
+				LocalDateTime.of(2011, 7, 10, 20, 8, 17),
+				lineInfo.get(38).getDateTime());
+		assertEquals(
+				39,
+				lineInfo.get(38).getLine());
+		assertEquals(
+				"\n",
+				lineInfo.get(38).getContent());
+		assertEquals(
+				addCommandTest,
+				lineInfo.get(38).getFile());
+	}
+
+	@Test
+	public void lineInfoAddCommandTest1da1b235e27cSubDir() throws IOException {
+		VCSEngine engine = createBuilder()
+				.withRoot("src")
+				.withFrom("1da1b235e27c")
+				.build();
+
+		Optional<RevisionRange> range = engine.next();
+		assertTrue(range.isPresent());
+
+		Revision revision = range.get().getRevision();
+		VCSFile addCommandTest = revision
+				.getFilesBySuffix("AddCommandTest.java").get(0);
+		List<LineInfo> lineInfo = addCommandTest.readLineInfo();
+
+		assertEquals(
+				"65364bf9dfb302952541d0380601dbacddf39107",
+				lineInfo.get(38).getId());
+		assertEquals(
+				"Jan Sorensen",
+				lineInfo.get(38).getAuthor());
+		assertEquals(
+				"AddCommand: Return lsit of files added",
+				lineInfo.get(38).getMessage());
+		assertEquals(
+				LocalDateTime.of(2011, 7, 10, 20, 8, 17),
+				lineInfo.get(38).getDateTime());
+		assertEquals(
+				39,
+				lineInfo.get(38).getLine());
+		assertEquals(
+				"\n",
+				lineInfo.get(38).getContent());
+		assertEquals(
+				addCommandTest,
+				lineInfo.get(38).getFile());
 	}
 }

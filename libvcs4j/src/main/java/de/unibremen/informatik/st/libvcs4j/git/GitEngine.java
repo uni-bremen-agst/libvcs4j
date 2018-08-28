@@ -1,6 +1,9 @@
 package de.unibremen.informatik.st.libvcs4j.git;
 
+import de.unibremen.informatik.st.libvcs4j.LineInfo;
 import de.unibremen.informatik.st.libvcs4j.VCSEngineBuilder;
+import de.unibremen.informatik.st.libvcs4j.VCSFile;
+import de.unibremen.informatik.st.libvcs4j.data.LineInfoImpl;
 import de.unibremen.informatik.st.libvcs4j.engine.AbstractIntervalVCSEngine;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalRevisionException;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalTargetException;
@@ -13,6 +16,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.NoHeadException;
+import org.eclipse.jgit.blame.BlameResult;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.RenameDetector;
 import org.eclipse.jgit.lib.AnyObjectId;
@@ -20,6 +24,7 @@ import org.eclipse.jgit.lib.MutableObjectId;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.ObjectReader;
+import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
@@ -410,8 +415,48 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	}
 
 	@Override
-	protected CommitImpl createCommitImpl(final String pRevision)
+	public List<LineInfo> readLineInfoImpl(final VCSFile pFile)
 			throws IOException {
+		final String path = Paths.get(
+				getRoot(), pFile.getRelativePath()).toString();
+		final AnyObjectId rev = createId(pFile.getRevision().getId());
+		final List<String> lines = pFile.readLinesWithEOL();
+		final List<LineInfo> lineInfo = new ArrayList<>();
+		try {
+			final BlameResult result = openRepository()
+					.blame()
+					.setFilePath(path)
+					.setStartCommit(rev)
+					.call();
+			if (result == null) {
+				throw new IllegalArgumentException(
+						String.format("Unable to find '%s'", path));
+			}
+			for (int i = 0; i < lines.size(); i++) {
+				final PersonIdent pi = result.getSourceAuthor(i);
+				final RevCommit rc = result.getSourceCommit(i);
+				final LocalDateTime dt = LocalDateTime.ofInstant(
+						pi.getWhen().toInstant(),
+						pi.getTimeZone().toZoneId());
+				final LineInfo li = new LineInfoImpl(
+						rc.getName(),
+						pi.getName(),
+						rc.getFullMessage().replaceAll("\r\n$|\n$", ""),
+						dt,
+						i + 1,
+						lines.get(i),
+						pFile);
+				lineInfo.add(li);
+			}
+		} catch (final GitAPIException e) {
+			throw new IOException(e);
+		}
+		return lineInfo;
+	}
+
+	@Override
+	protected CommitImpl createCommitImpl(final String pRevision)
+			throws IllegalArgumentException, IOException {
 		final AnyObjectId rev = createId(pRevision);
 		final List<RevCommit> commits = new ArrayList<>();
 
