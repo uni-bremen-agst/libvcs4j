@@ -481,14 +481,11 @@ public abstract class VCSBaseTest {
 				for (VCSFile file : lastRevision.getFiles()) {
 					List<String> lines = file.readLinesWithEOL();
 					List<LineInfo> lineInfo = file.readLineInfo();
-					assertThat(lineInfo.size()).isEqualTo(lines.size())
-							.withFailMessage("Unexpected number of lines");
+					assertThat(lineInfo.size()).isEqualTo(lines.size());
 					for (int i = 0; i < lineInfo.size(); i++) {
 						LineInfo info = lineInfo.get(i);
-						assertThat(info.getLine()).isEqualTo(i + 1)
-								.withFailMessage("Unexpected line number");
-						assertThat(lines.get(i)).startsWith(info.getContent())
-								.withFailMessage("Unexpected Content");
+						assertThat(info.getLine()).isEqualTo(i + 1);
+						assertThat(lines.get(i)).startsWith(info.getContent());
 					}
 				}
 			}
