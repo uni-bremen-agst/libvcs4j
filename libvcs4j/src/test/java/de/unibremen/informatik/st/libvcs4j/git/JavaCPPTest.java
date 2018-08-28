@@ -253,7 +253,7 @@ public class JavaCPPTest extends VCSBaseTest {
 				2,
 				lineInfo.get(1).getLine());
 		assertEquals(
-				" * Copyright (C) 2012,2013 Arnaud Nauwynck, Samuel Audet\n",
+				" * Copyright (C) 2012,2013 Arnaud Nauwynck, Samuel Audet",
 				lineInfo.get(1).getContent());
 		assertEquals(
 				buildMojo,
@@ -291,7 +291,7 @@ public class JavaCPPTest extends VCSBaseTest {
 				2,
 				lineInfo.get(1).getLine());
 		assertEquals(
-				" * Copyright (C) 2012-2016 Arnaud Nauwynck, Samuel Audet\n",
+				" * Copyright (C) 2012-2016 Arnaud Nauwynck, Samuel Audet",
 				lineInfo.get(1).getContent());
 		assertEquals(
 				buildMojo,

@@ -452,12 +452,12 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 						public void handleEOF() throws SVNException {}
 			});
 			Validate.isTrue(lines.size() == lineInfo.size());
+			return lineInfo;
 		} catch (final SVNException | UncheckedIOException e) {
 			throw new IOException(e);
 		} finally {
 			factory.dispose();
 		}
-		return new ArrayList<>();
 	}
 
 	@Override

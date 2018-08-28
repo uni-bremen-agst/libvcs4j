@@ -451,6 +451,67 @@ public abstract class VCSBaseTest {
 		}
 	}
 
+	@Test
+	public void readAllBytesOfOldRevision() throws IOException {
+		VCSEngine engine = createBuilder()
+				.withEnd(5)
+				.build();
+
+		Revision lastRevision = null;
+		for (RevisionRange range : engine) {
+			if (lastRevision != null) {
+				for (VCSFile file : lastRevision.getFiles()) {
+					file.readAllBytes();
+				}
+			}
+			lastRevision = range.getRevision();
+		}
+	}
+
+	@Test
+	public void readLineInfoOfOldRevision() throws IOException {
+		VCSEngine engine = createBuilder()
+				.withStart(3)
+				.withEnd(7)
+				.build();
+
+		Revision lastRevision = null;
+		for (RevisionRange range : engine) {
+			if (lastRevision != null) {
+				for (VCSFile file : lastRevision.getFiles()) {
+					List<String> lines = file.readLinesWithEOL();
+					List<LineInfo> lineInfo = file.readLineInfo();
+					assertThat(lineInfo.size()).isEqualTo(lines.size());
+					for (int i = 0; i < lineInfo.size(); i++) {
+						LineInfo info = lineInfo.get(i);
+						assertThat(info.getLine()).isEqualTo(i + 1);
+						assertThat(lines.get(i)).startsWith(info.getContent());
+					}
+				}
+			}
+			lastRevision = range.getRevision();
+		}
+	}
+
+	@Test
+	public void computeDiffOfOldRange() throws IOException {
+		VCSEngine engine = createBuilder()
+				.withStart(5)
+				.withEnd(9)
+				.build();
+
+		RevisionRange lastRange = null;
+		for (RevisionRange range : engine) {
+			if (lastRange != null) {
+				for (FileChange fChange : lastRange.getFileChanges()) {
+					List<LineChange> lChange = fChange.computeDiff();
+					assertThat(lChange).isNotEmpty();
+				}
+			}
+			lastRange = range;
+		}
+	}
+
 	/**
 	 * Returns the path of the archive to extract, i.e. 'javacpp.tar.gz'.
 	 *

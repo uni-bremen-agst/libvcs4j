@@ -155,7 +155,7 @@ public class JavaHGTest extends VCSBaseTest {
 				39,
 				lineInfo.get(38).getLine());
 		assertEquals(
-				"\n",
+				"",
 				lineInfo.get(38).getContent());
 		assertEquals(
 				addCommandTest,
@@ -193,7 +193,7 @@ public class JavaHGTest extends VCSBaseTest {
 				39,
 				lineInfo.get(38).getLine());
 		assertEquals(
-				"\n",
+				"",
 				lineInfo.get(38).getContent());
 		assertEquals(
 				addCommandTest,

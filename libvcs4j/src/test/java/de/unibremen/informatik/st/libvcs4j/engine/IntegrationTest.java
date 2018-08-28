@@ -1,7 +1,9 @@
 package de.unibremen.informatik.st.libvcs4j.engine;
 
+import de.unibremen.informatik.st.libvcs4j.LineInfo;
 import de.unibremen.informatik.st.libvcs4j.RevisionRange;
 import de.unibremen.informatik.st.libvcs4j.VCSEngine;
+import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.data.CommitImpl;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.Before;
@@ -215,6 +217,12 @@ public class IntegrationTest {
 		@Override
 		public byte[] readAllBytesImpl(String s, String s1) {
 			return new byte[0];
+		}
+
+		@Override
+		protected List<LineInfo> readLineInfoImpl(VCSFile file)
+				throws IOException {
+			return Collections.emptyList();
 		}
 
 		@Override

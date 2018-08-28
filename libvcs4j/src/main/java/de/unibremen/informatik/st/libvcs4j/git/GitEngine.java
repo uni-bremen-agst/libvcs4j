@@ -444,7 +444,7 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 						rc.getFullMessage().replaceAll("\r\n$|\n$", ""),
 						dt,
 						i + 1,
-						lines.get(i),
+						result.getResultContents().getString(i),
 						pFile);
 				lineInfo.add(li);
 			}

@@ -126,7 +126,7 @@ public class SingleEngine extends AbstractVSCEngine {
 					DEFAULT_MESSAGE,
 					dt,
 					i + 1,
-					lines.get(i),
+					lines.get(i).replaceAll("\r\n$|\n$", ""),
 					pFile);
 			lineInfo.add(info);
 		}

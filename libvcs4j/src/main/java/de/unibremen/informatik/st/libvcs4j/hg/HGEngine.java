@@ -333,7 +333,7 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 						al.getChangeset().getMessage(),
 						dt,
 						i + 1,
-						lines.get(i),
+						al.getLine(),
 						pFile);
 				lineInfo.add(li);
 			}
