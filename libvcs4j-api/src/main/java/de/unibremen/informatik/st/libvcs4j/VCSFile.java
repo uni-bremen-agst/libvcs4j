@@ -209,6 +209,18 @@ public interface VCSFile extends VCSModelElement {
 	}
 
 	/**
+	 * Reads the line information of this file.
+	 *
+	 * @return
+	 * 		The line information of this file.
+	 * @throws IOException
+	 * 		If an error occurred while reading the the information.
+	 */
+	default List<LineInfo> readLineInfo() throws IOException {
+		return getVCSEngine().readLineInfo(this);
+	}
+
+	/**
 	 * Returns a {@link File} object (absolute path) representing this file.
 	 *
 	 * @return

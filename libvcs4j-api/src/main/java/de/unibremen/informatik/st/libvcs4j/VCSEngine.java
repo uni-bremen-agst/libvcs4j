@@ -73,11 +73,28 @@ public interface VCSEngine extends Iterable<RevisionRange> {
 	 * @throws NullPointerException
 	 * 		If {@code file} is {@code null}.
 	 * @throws IllegalArgumentException
-	 * 		if {@code file} is unknown to this engine.
+	 * 		If {@code file} is unknown to this engine.
 	 * @throws IOException
 	 * 		If an error occurred while reading the contents.
 	 */
 	byte[] readAllBytes(VCSFile file) throws NullPointerException,
+			IllegalArgumentException, IOException;
+
+	/**
+	 * Reads the line information of the given file.
+	 *
+	 * @param file
+	 * 		The file to read the line information from.
+	 * @return
+	 * 		The line information of {@code file}.
+	 * @throws NullPointerException
+	 * 		If {@code file} is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If {@code file} is unknown to this engine.
+	 * @throws IOException
+	 * 		If an error occurred while reading the line information.
+	 */
+	List<LineInfo> readLineInfo(VCSFile file) throws NullPointerException,
 			IllegalArgumentException, IOException;
 
 	/**
