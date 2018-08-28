@@ -149,9 +149,6 @@ public class JavaHGTest extends VCSBaseTest {
 				"AddCommand: Return lsit of files added",
 				lineInfo.get(38).getMessage());
 		assertEquals(
-				LocalDateTime.of(2011, 7, 10, 20, 8, 17),
-				lineInfo.get(38).getDateTime());
-		assertEquals(
 				39,
 				lineInfo.get(38).getLine());
 		assertEquals(
@@ -186,9 +183,6 @@ public class JavaHGTest extends VCSBaseTest {
 		assertEquals(
 				"AddCommand: Return lsit of files added",
 				lineInfo.get(38).getMessage());
-		assertEquals(
-				LocalDateTime.of(2011, 7, 10, 20, 8, 17),
-				lineInfo.get(38).getDateTime());
 		assertEquals(
 				39,
 				lineInfo.get(38).getLine());
