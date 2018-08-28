@@ -224,6 +224,11 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 		return Git.open(getTarget().toFile());
 	}
 
+	private String toGitPath(final String pPath) {
+		Validate.notNull(pPath);
+		return normalizePath(Paths.get(getRoot(), pPath).toString());
+	}
+
 	///////////////////////////////////////////////////////////////////////////
 
 	@Override
@@ -391,7 +396,7 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	@Override
 	protected byte[] readAllBytesImpl(
 			final String pPath, final String pRevision) throws IOException {
-		final String path = Paths.get(getRoot(), pPath).toString();
+		final String path = toGitPath(pPath);
 		final AnyObjectId rev = createId(pRevision);
 		final Repository repo = openRepository().getRepository();
 
@@ -417,8 +422,7 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	@Override
 	public List<LineInfo> readLineInfoImpl(final VCSFile pFile)
 			throws IOException {
-		final String path = Paths.get(
-				getRoot(), pFile.getRelativePath()).toString();
+		final String path = toGitPath(pFile.getRelativePath());
 		final AnyObjectId rev = createId(pFile.getRevision().getId());
 		final List<String> lines = pFile.readLinesWithEOL();
 		final List<LineInfo> lineInfo = new ArrayList<>();
