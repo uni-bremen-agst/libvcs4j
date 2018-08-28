@@ -45,6 +45,14 @@ public interface LineInfo {
 	LocalDateTime getDateTime();
 
 	/**
+	 * Returns the line number (1 origin).
+	 *
+	 * @return
+	 * 		The line number (1 origin).
+	 */
+	int getLine();
+
+	/**
 	 * Returns the content of this line.
 	 *
 	 * @return
