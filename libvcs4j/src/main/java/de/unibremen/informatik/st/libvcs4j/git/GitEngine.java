@@ -79,10 +79,9 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	 */
 	@Deprecated
 	@SuppressWarnings("DeprecatedIsStillUsed")
-	public GitEngine(
-			final String pRepository, final String pRoot, final Path pTarget,
-			final String pBranch, final LocalDateTime pSince,
-			final LocalDateTime pUntil)
+	public GitEngine(final String pRepository, final String pRoot,
+			final Path pTarget, final String pBranch,
+			final LocalDateTime pSince, final LocalDateTime pUntil)
 			throws NullPointerException, IllegalRepositoryException,
 			IllegalTargetException {
 		super(pRepository, pRoot, pTarget, pSince, pUntil);
@@ -94,11 +93,10 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	 */
 	@Deprecated
 	@SuppressWarnings("DeprecatedIsStillUsed")
-	public GitEngine(
-			final String pRepository, final String pRoot, final Path pTarget,
-			final String pBranch, final String pFrom, final String pTo)
-			throws NullPointerException, IllegalRepositoryException,
-			IllegalTargetException {
+	public GitEngine(final String pRepository, final String pRoot,
+			final Path pTarget, final String pBranch, final String pFrom,
+			final String pTo) throws NullPointerException,
+			IllegalRepositoryException, IllegalTargetException {
 		super(pRepository, pRoot, pTarget, pFrom, pTo);
 		branch = pBranch == null ? DEFAULT_BRANCH : pBranch;
 	}
@@ -108,10 +106,10 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	 */
 	@Deprecated
 	@SuppressWarnings("DeprecatedIsStillUsed")
-	public GitEngine(
-			final String pRepository, final String pRoot, final Path pTarget,
-			final String pBranch, final int pStart, final int pEnd)
-			throws NullPointerException, IllegalIntervalException {
+	public GitEngine(final String pRepository, final String pRoot,
+			final Path pTarget, final String pBranch, final int pStart,
+			final int pEnd) throws NullPointerException,
+			IllegalIntervalException {
 		super(pRepository, pRoot, pTarget, pStart, pEnd);
 		branch = pBranch == null ? DEFAULT_BRANCH : pBranch;
 	}
@@ -121,10 +119,10 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	 */
 	@Deprecated
 	@SuppressWarnings("DeprecatedIsStillUsed")
-	public GitEngine(
-			final String pRepository, final String pRoot, final Path pTarget,
-			final String pBranch, final List<String> pRevisions)
-			throws NullPointerException, IllegalArgumentException {
+	public GitEngine(final String pRepository, final String pRoot,
+			final Path pTarget, final String pBranch,
+			final List<String> pRevisions) throws NullPointerException,
+			IllegalArgumentException {
 		super(pRepository, pRoot, pTarget, pRevisions);
 		branch = pBranch == null ? DEFAULT_BRANCH : pBranch;
 	}
@@ -249,8 +247,8 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	}
 
 	@Override
-	protected Changes createChangesImpl(
-			final String fromRev, final String toRev) throws IOException {
+	protected Changes createChangesImpl(final String fromRev,
+			final String toRev) throws IOException {
 		final AnyObjectId from = createId(fromRev);
 		final AnyObjectId to = createId(toRev);
 		final Repository repo = openRepository().getRepository();
@@ -326,9 +324,8 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	}
 
 	@Override
-	protected List<String> listRevisionsImpl(
-			final LocalDateTime pSince, final LocalDateTime pUntil)
-			throws IOException {
+	protected List<String> listRevisionsImpl(final LocalDateTime pSince,
+			final LocalDateTime pUntil) throws IOException {
 		final Date since = toDate(pSince);
 		final Date until = toDate(pUntil);
 
@@ -356,8 +353,8 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	}
 
 	@Override
-	protected List<String> listRevisionsImpl(
-			final String pFrom, final String pTo) throws IOException {
+	protected List<String> listRevisionsImpl(final String pFrom,
+			final String pTo) throws IOException {
 		final boolean fromIsEmpty = pFrom.isEmpty();
 
 		// Keep in mind that 'git log' returns commits in the following
@@ -394,8 +391,8 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	}
 
 	@Override
-	protected byte[] readAllBytesImpl(
-			final String pPath, final String pRevision) throws IOException {
+	protected byte[] readAllBytesImpl(final String pPath,
+			final String pRevision) throws IOException {
 		final String path = toGitPath(pPath);
 		final AnyObjectId rev = createId(pRevision);
 		final Repository repo = openRepository().getRepository();
@@ -408,10 +405,7 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 				treeWalk.addTree(tree);
 				treeWalk.setRecursive(true);
 				treeWalk.setFilter(PathFilter.create(path));
-				if (!treeWalk.next()) {
-					throw new IllegalArgumentException(
-							String.format("Unable to find '%s'", pPath));
-				}
+				Validate.isTrue(treeWalk.next(), "Unable to find '%s'", pPath);
 				final ObjectId id = treeWalk.getObjectId(0);
 				final ObjectLoader loader = repo.open(id);
 				return loader.getBytes();
@@ -432,10 +426,7 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 					.setFilePath(path)
 					.setStartCommit(rev)
 					.call();
-			if (result == null) {
-				throw new IllegalArgumentException(
-						String.format("Unable to find '%s'", path));
-			}
+			Validate.isTrue(result != null, "Unable to find '%s'", path);
 			for (int i = 0; i < lines.size(); i++) {
 				final PersonIdent pi = result.getSourceAuthor(i);
 				final RevCommit rc = result.getSourceCommit(i);
