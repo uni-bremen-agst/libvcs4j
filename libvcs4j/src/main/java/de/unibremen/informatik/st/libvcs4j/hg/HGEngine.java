@@ -333,7 +333,10 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 						al.getChangeset().getMessage(),
 						dt,
 						i + 1,
-						al.getLine(),
+						// JavaHG does not handle non-ASCII chars very well as
+						// it uses the system encoding to decode the line.
+						// al.getLine(),
+						lines.get(i).replaceAll("\r\n$|\n$", ""),
 						pFile);
 				lineInfo.add(li);
 			}
