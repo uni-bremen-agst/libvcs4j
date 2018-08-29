@@ -84,10 +84,9 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	 */
 	@Deprecated
 	@SuppressWarnings("DeprecatedIsStillUsed")
-	public HGEngine(
-			final String pRepository, final String pRoot, final Path pTarget,
-			final String pBranch, final LocalDateTime pSince,
-			final LocalDateTime pUntil)
+	public HGEngine(final String pRepository, final String pRoot,
+			final Path pTarget, final String pBranch,
+			final LocalDateTime pSince, final LocalDateTime pUntil)
 			throws NullPointerException, IllegalIntervalException {
 		super(pRepository, pRoot,pTarget, pSince, pUntil);
 		branch = pBranch;
@@ -98,10 +97,9 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	 */
 	@Deprecated
 	@SuppressWarnings("DeprecatedIsStillUsed")
-	public HGEngine(
-			final String pRepository, final String pRoot, final Path pTarget,
-			final String pBranch, final String pFrom, final String pTo)
-			throws NullPointerException {
+	public HGEngine(final String pRepository, final String pRoot,
+			final Path pTarget, final String pBranch, final String pFrom,
+			final String pTo) throws NullPointerException {
 		super(pRepository, pRoot,pTarget, pFrom, pTo);
 		branch = pBranch;
 	}
@@ -111,10 +109,10 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	 */
 	@Deprecated
 	@SuppressWarnings("DeprecatedIsStillUsed")
-	public HGEngine(
-			final String pRepository, final String pRoot, final Path pTarget,
-			final String pBranch, final int pStart, final int pEnd)
-			throws NullPointerException, IllegalIntervalException {
+	public HGEngine(final String pRepository, final String pRoot,
+			final Path pTarget, final String pBranch, final int pStart,
+			final int pEnd) throws NullPointerException,
+			IllegalIntervalException {
 		super(pRepository, pRoot,pTarget, pStart, pEnd);
 		branch = pBranch;
 	}
@@ -124,10 +122,10 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	 */
 	@Deprecated
 	@SuppressWarnings("DeprecatedIsStillUsed")
-	public HGEngine(
-			final String pRepository, final String pRoot, final Path pTarget,
-			final String pBranch, final List<String> pRevisions)
-			throws NullPointerException, IllegalArgumentException {
+	public HGEngine(final String pRepository, final String pRoot,
+			final Path pTarget, final String pBranch,
+			final List<String> pRevisions) throws NullPointerException,
+			IllegalArgumentException {
 		super(pRepository, pRoot,pTarget, pRevisions);
 		branch = pBranch;
 	}
@@ -239,9 +237,8 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	}
 
 	@Override
-	protected Changes createChangesImpl(
-			final String pFromRev, final String pToRev)
-			throws IOException {
+	protected Changes createChangesImpl(final String pFromRev,
+			final String pToRev) throws IOException {
 		Validate.validState(repository != null);
 
 		final StatusResult result;
@@ -278,9 +275,8 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	}
 
 	@Override
-	protected byte[] readAllBytesImpl(
-			final String pPath, final String pRevision)
-			throws IOException {
+	protected byte[] readAllBytesImpl(final String pPath,
+			final String pRevision) throws IOException {
 		Validate.validState(repository != null);
 
 		final InputStream is;
@@ -381,9 +377,8 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	}
 
 	@Override
-	protected List<String> listRevisionsImpl(
-			final LocalDateTime pSince, final LocalDateTime pUntil)
-			throws IOException {
+	protected List<String> listRevisionsImpl(final LocalDateTime pSince,
+			final LocalDateTime pUntil) throws IOException {
 		Validate.validState(repository != null);
 
 		LocalDateTime xUntil = pUntil;
@@ -422,9 +417,8 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	}
 
 	@Override
-	protected List<String> listRevisionsImpl(
-			final String pFromRev, final String pToRev)
-			throws IOException {
+	protected List<String> listRevisionsImpl(final String pFromRev,
+			final String pToRev) throws IOException {
 		Validate.validState(repository != null);
 
 		final boolean fromIsEmpty = pFromRev.isEmpty();
