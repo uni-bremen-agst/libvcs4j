@@ -28,6 +28,8 @@ dependencies {
 	extraLibs fileTree(dir: 'libs', include: '*.jar')
 	// required by JavaHG
 	compile 'com.google.guava:guava:24.1-jre'
+	// override 1.9, see https://github.com/uni-bremen-agst/libvcs4j/issues/2
+	compile ("commons-codec:commons-codec:1.11") { force = true }
 
 	compile 'com.ibm.icu:icu4j:59.1'
 	compile 'de.uni-bremen.informatik.st:libvcs4j-api:1.2.0'
