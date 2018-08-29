@@ -72,7 +72,8 @@ public class SingleEngine extends AbstractVSCEngine {
 	}
 
 	@Override
-	protected List<String> validateMapRevisions(final List<String> pRevisions) {
+	protected List<String> validateMapRevisions(
+			final List<String> pRevisions) {
 		Validate.validState(false, "This method should not have been called");
 		return null; // just for the compiler
 	}
@@ -93,15 +94,15 @@ public class SingleEngine extends AbstractVSCEngine {
 	protected void checkoutImpl(final String revision) {}
 
 	@Override
-	protected Changes createChangesImpl(
-			final String fromRev, final String toRev) {
+	protected Changes createChangesImpl(final String fromRev,
+			final String toRev) throws IllegalStateException {
 		throw new IllegalStateException(
 				"This method should not have been called");
 	}
 
 	@Override
-	protected byte[] readAllBytesImpl(
-			final String pPath, final String pRevision) throws IOException {
+	protected byte[] readAllBytesImpl(final String pPath,
+			final String pRevision) throws IOException {
 		final Path path = getOutput().resolve(pPath);
 		Validate.isTrue(Files.isRegularFile(path),
 				"'%s' is not a regular file", path);
