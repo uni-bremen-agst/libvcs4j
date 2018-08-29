@@ -12,6 +12,9 @@ import de.unibremen.informatik.st.libvcs4j.exception.IllegalIntervalException;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalRepositoryException;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalRevisionException;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalTargetException;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NonNull;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +24,6 @@ import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
 import org.tmatesoft.svn.core.wc.ISVNAnnotateHandler;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
-import org.tmatesoft.svn.core.wc.SVNLogClient;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 import org.tmatesoft.svn.core.wc.SVNStatusType;
 import org.tmatesoft.svn.core.wc2.SvnCat;
@@ -76,11 +78,11 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 	 */
 	@Deprecated
 	@SuppressWarnings("DeprecatedIsStillUsed")
-	public SVNEngine(
-			final String pRepository, final String pRoot, final Path pTarget,
-			final LocalDateTime pSince, final LocalDateTime pUntil)
-			throws NullPointerException, IllegalRepositoryException,
-			IllegalTargetException, IllegalIntervalException {
+	public SVNEngine(final String pRepository, final String pRoot,
+			final Path pTarget, final LocalDateTime pSince,
+			final LocalDateTime pUntil) throws NullPointerException,
+			IllegalRepositoryException, IllegalTargetException,
+			IllegalIntervalException {
 		super(pRepository, pRoot, pTarget, pSince, pUntil);
 	}
 
@@ -89,9 +91,8 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 	 */
 	@Deprecated
 	@SuppressWarnings("DeprecatedIsStillUsed")
-	public SVNEngine(
-			final String pRepository, final String pRoot, final Path pTarget,
-			final String pFrom, final String pTo)
+	public SVNEngine(final String pRepository, final String pRoot,
+			final Path pTarget, final String pFrom, final String pTo)
 			throws NullPointerException, IllegalRepositoryException,
 			IllegalTargetException, IllegalIntervalException {
 		super(pRepository, pRoot, pTarget, pFrom, pTo);
@@ -102,10 +103,9 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 	 */
 	@Deprecated
 	@SuppressWarnings("DeprecatedIsStillUsed")
-	public SVNEngine(
-			final String pRepository, final String pRoot, final Path pTarget,
-			final int pStart, int pEnd) throws NullPointerException,
-			IllegalIntervalException {
+	public SVNEngine(final String pRepository, final String pRoot,
+			final Path pTarget, final int pStart, int pEnd)
+			throws NullPointerException, IllegalIntervalException {
 		super(pRepository, pRoot, pTarget, pStart, pEnd);
 	}
 
@@ -114,10 +114,9 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 	 */
 	@Deprecated
 	@SuppressWarnings("DeprecatedIsStillUsed")
-	public SVNEngine(
-			final String pRepository, final String pRoot, final Path pTarget,
-			final List<String> pRevisions) throws NullPointerException,
-			IllegalArgumentException {
+	public SVNEngine(final String pRepository, final String pRoot,
+			final Path pTarget, final List<String> pRevisions)
+			throws NullPointerException, IllegalArgumentException {
 		super(pRepository, pRoot, pTarget, pRevisions);
 	}
 
@@ -223,8 +222,8 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 		return getTarget().toFile();
 	}
 
-	private List<String> listRevisions(
-			final SVNRevision from, final SVNRevision to) throws IOException {
+	private List<String> listRevisions(final SVNRevision from,
+			final SVNRevision to) throws IOException {
 		final SvnOperationFactory factory = new SvnOperationFactory();
 		final List<String> revs = new ArrayList<>();
 		try {
@@ -253,6 +252,55 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 			factory.dispose();
 		}
 		return revs;
+	}
+
+	@AllArgsConstructor
+	private class AnnotateHandler implements ISVNAnnotateHandler {
+
+		@NonNull
+		private final String revision;
+
+		@NonNull
+		private final VCSFile file;
+
+		@Getter
+		private final List<LineInfo> lineInfoList = new ArrayList<>();
+
+		@Override
+		@SuppressWarnings("deprecation")
+		public void handleLine(final Date pDate, long pRevision,
+				final String pAuthor, final String pLine)
+				throws SVNException {}
+
+		@Override
+		public void handleLine(final Date pDate, final long pRevision,
+				final String pAuthor, final String pLine,
+				final Date pMergedDate, final long mergedRevision,
+				final String pMergedAuthor, final String pMergedPath,
+				final int pLineNumber) throws SVNException {
+			try {
+				final LineInfo li = new LineInfoImpl(
+						revision, pAuthor,
+						createCommitImpl(revision).getMessage(),
+						LocalDateTime.ofInstant(
+								pDate.toInstant(),
+								ZoneId.systemDefault()),
+						pLineNumber + 1, pLine, file);
+				lineInfoList.add(li);
+			} catch (final IOException e) {
+				throw new UncheckedIOException(e);
+			}
+		}
+
+		@Override
+		public boolean handleRevision(final Date pDate, final long pRevision,
+				final String pAuthor, final File pContents)
+				throws SVNException {
+			return true;
+		}
+
+		@Override
+		public void handleEOF() throws SVNException {}
 	}
 
 	///////////////////////////////////////////////////////////////////////////
@@ -290,8 +338,8 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 	}
 
 	@Override
-	protected Changes createChangesImpl(
-			final String fromRev, final String toRev) throws IOException {
+	protected Changes createChangesImpl(final String fromRev,
+			final String toRev) throws IOException {
 		final SvnOperationFactory factory = new SvnOperationFactory();
 
 		final Changes changes = new Changes();
@@ -330,17 +378,16 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 	}
 
 	@Override
-	protected List<String> listRevisionsImpl(
-			final LocalDateTime pSince, final LocalDateTime pUntil)
-			throws IOException {
+	protected List<String> listRevisionsImpl(final LocalDateTime pSince,
+			final LocalDateTime pUntil) throws IOException {
 		final SVNRevision since = createSVNRevision(pSince);
 		final SVNRevision until = createSVNRevision(pUntil);
 		return listRevisions(since, until);
 	}
 
 	@Override
-	protected List<String> listRevisionsImpl(
-			final String pFrom, final String pTo) throws IOException {
+	protected List<String> listRevisionsImpl(final String pFrom,
+			final String pTo) throws IOException {
 		final long head;
 		try {
 			head = SVNRepositoryFactory
@@ -363,8 +410,8 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 	}
 
 	@Override
-	protected byte[] readAllBytesImpl(
-			final String pPath, final String pRevision) throws IOException {
+	protected byte[] readAllBytesImpl(final String pPath,
+			final String pRevision) throws IOException {
 		final SvnOperationFactory factory = new SvnOperationFactory();
 
 		try {
@@ -393,66 +440,22 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 		final SvnOperationFactory factory = new SvnOperationFactory();
 
 		try {
-			final List<LineInfo> lineInfo = new ArrayList<>();
-			final List<String> lines = pFile.readLinesWithEOL();
-
 			final String rev = pFile.getRevision().getId();
-			final String p = pFile.getRelativePath();
+			final String relPath = pFile.getRelativePath();
 			final SVNRevision revision = createSVNRevision(rev);
 			final SvnTarget path = SvnTarget.fromURL(
-					createSVNURL(toSVNPath(p)), revision);
+					createSVNURL(toSVNPath(relPath)), revision);
+			final AnnotateHandler handler = new AnnotateHandler(rev, pFile);
 
-			SVNLogClient logClient = SVNClientManager
+			SVNClientManager
 					.newInstance()
-					.getLogClient();
-			logClient.doAnnotate(
-					path.getURL(),
-					revision,
-					SVNRevision.create(0),
-					revision,
-					new ISVNAnnotateHandler() {
-						@Override
-						public void handleLine(final Date pDate,
-								long pRevision, final String pAuthor,
-								final String pLine) throws SVNException {}
-
-						@Override
-						public void handleLine(final Date pDate,
-								final long pRevision, final String pAuthor,
-								final String pLine, final Date pMergedDate,
-								final long mergedRevision,
-								final String pMergedAuthor,
-								final String pMergedPath,
-								final int pLineNumber) throws SVNException {
-							try {
-								final LineInfo li = new LineInfoImpl(
-										rev,
-										pAuthor,
-										createCommitImpl(rev).getMessage(),
-										LocalDateTime.ofInstant(
-												pDate.toInstant(),
-												ZoneId.systemDefault()),
-										pLineNumber + 1,
-										pLine,
-										pFile);
-								lineInfo.add(li);
-							} catch (final IOException e) {
-								throw new UncheckedIOException(e);
-							}
-						}
-
-						@Override
-						public boolean handleRevision(final Date pDate,
-								final long pRevision, final String pAuthor,
-								final File pContents) throws SVNException {
-							return true;
-						}
-
-						@Override
-						public void handleEOF() throws SVNException {}
-			});
-			Validate.isTrue(lines.size() == lineInfo.size());
-			return lineInfo;
+					.getLogClient()
+					.doAnnotate(path.getURL(), revision,
+					SVNRevision.create(0), revision, handler);
+			final List<String> lines = pFile.readLinesWithEOL();
+			final List<LineInfo> lineInfoList = handler.lineInfoList;
+			Validate.validState(lines.size() == lineInfoList.size());
+			return lineInfoList;
 		} catch (final SVNException | UncheckedIOException e) {
 			throw new IOException(e);
 		} finally {
@@ -499,6 +502,6 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 
 	@Override
 	public FilenameFilter createVCSFileFilter() {
-		return (pDir, pName) -> !pName.endsWith(".svn");
+		return (dir, name) -> !name.endsWith(".svn");
 	}
 }
