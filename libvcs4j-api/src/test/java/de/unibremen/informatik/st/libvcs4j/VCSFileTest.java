@@ -3,6 +3,8 @@ package de.unibremen.informatik.st.libvcs4j;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -13,7 +15,7 @@ import static org.mockito.Mockito.when;
 public class VCSFileTest {
 
 	@Test
-	public void readLinesUnixEOL() throws IOException {
+	public void readLinesEOLUnixEOL() throws IOException {
 		VCSFile file = mock(VCSFile.class);
 		when(file.readeContent()).thenReturn("first line\nsecond line\n");
 		when(file.readLinesWithEOL()).thenCallRealMethod();
@@ -25,7 +27,7 @@ public class VCSFileTest {
 	}
 
 	@Test
-	public void readLinesWindowsEOL() throws IOException {
+	public void readLinesEOLWindowsEOL() throws IOException {
 		VCSFile file = mock(VCSFile.class);
 		when(file.readeContent()).thenReturn("first line\r\nsecond line\r\n");
 		when(file.readLinesWithEOL()).thenCallRealMethod();
@@ -37,7 +39,7 @@ public class VCSFileTest {
 	}
 
 	@Test
-	public void readLinesOldMacEOL() throws IOException {
+	public void readLinesEOLOldMacEOL() throws IOException {
 		VCSFile file = mock(VCSFile.class);
 		when(file.readeContent()).thenReturn("first line\rsecond line\r");
 		when(file.readLinesWithEOL()).thenCallRealMethod();
@@ -49,7 +51,7 @@ public class VCSFileTest {
 	}
 
 	@Test
-	public void readLinesMixedEOL() throws IOException {
+	public void readLinesEOLMixedEOL() throws IOException {
 		VCSFile file = mock(VCSFile.class);
 		when(file.readeContent()).thenReturn("first\rsecond\r\nthird\n");
 		when(file.readLinesWithEOL()).thenCallRealMethod();
@@ -61,7 +63,7 @@ public class VCSFileTest {
 	}
 
 	@Test
-	public void readLinesWithoutLastEOL() throws IOException {
+	public void readLinesEOLWithoutLastEOL() throws IOException {
 		VCSFile file = mock(VCSFile.class);
 		when(file.readeContent()).thenReturn("foo\nbar");
 		when(file.readLinesWithEOL()).thenCallRealMethod();
@@ -73,13 +75,36 @@ public class VCSFileTest {
 	}
 
 	@Test
-	public void readLinesEmptyContent() throws IOException {
+	public void readLinesEOLEmptyContent() throws IOException {
 		VCSFile file = mock(VCSFile.class);
 		when(file.readeContent()).thenReturn("");
 		when(file.readLinesWithEOL()).thenCallRealMethod();
 
 		List<String> lines = file.readLinesWithEOL();
 		assertThat(lines).isEmpty();
+	}
+
+	@Test
+	public void readLinesMixedEOL() throws IOException {
+		VCSFile file = mock(VCSFile.class);
+		when(file.readeContent()).thenReturn("first\rsecond\r\nthird\n");
+		when(file.readLines()).thenCallRealMethod();
+
+		List<String> lines = file.readLines();
+		assertThat(lines)
+				.hasSize(3)
+				.contains("first", "second", "third");
+	}
+
+	@Test
+	public void isBinaryFromString() throws IOException {
+		VCSFile file = mock(VCSFile.class);
+		when(file.readAllBytes()).thenReturn(
+				"Some arbitrary text".getBytes(StandardCharsets.UTF_8));
+		when(file.toPath()).thenReturn(Paths.get("Mock.java"));
+		when(file.isBinary()).thenCallRealMethod();
+
+		assertThat(file.isBinary()).isFalse();
 	}
 
 	@Test

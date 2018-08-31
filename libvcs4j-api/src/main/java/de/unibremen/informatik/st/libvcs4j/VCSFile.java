@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -166,6 +167,24 @@ public interface VCSFile extends VCSModelElement {
 	}
 
 	/**
+	 * Returns the content of this file as a list of strings excluding EOL
+	 * characters.
+	 *
+	 * @return
+	 * 		The content of this file as a list of strings excluding EOLs.
+	 * @throws IOException
+	 * 		If an error occurred while reading the file content.
+	 */
+	default List<String> readLines() throws IOException {
+		final List<String> lines = new ArrayList<>();
+		final Scanner scanner = new Scanner(readeContent());
+		while (scanner.hasNextLine()) {
+			lines.add(scanner.nextLine());
+		}
+		return lines;
+	}
+
+	/**
 	 * Returns the content of this file as a list of strings including EOL
 	 * characters. The following EOLs are supported: '\n', '\r\n', '\r'.
 	 *
@@ -218,6 +237,35 @@ public interface VCSFile extends VCSModelElement {
 	 */
 	default List<LineInfo> readLineInfo() throws IOException {
 		return getVCSEngine().readLineInfo(this);
+	}
+
+	/**
+	 * Tries to guess whether this file is a binary file. The default
+	 * implementation uses {@link Files#probeContentType(Path)} to check
+	 * whether the detected type (if any) starts with 'text'.
+	 *
+	 * @return
+	 * 		{@code true} if this file is a binary file, {@code false}
+	 * 		otherwise.
+	 * @throws IOException
+	 * 		If an error occurred while reading the file contents.
+	 */
+	default boolean isBinary() throws IOException {
+		// Some detectors parse a file's extension to guess its type.
+		// Thus, use the file name as suffix for the temporarily created file.
+		final Path tmp = Files.createTempFile(null,
+				toPath().getFileName().toString());
+		try {
+			Files.write(tmp, readAllBytes());
+			final String type = Files.probeContentType(tmp);
+			return type == null || !type.startsWith("text");
+		} finally {
+			try {
+				Files.delete(tmp);
+			} catch (final Exception e) {
+				/* ignored */
+			}
+		}
 	}
 
 	/**
