@@ -180,7 +180,7 @@
       <text x="148.75" xml:space="preserve" y="896.8652" clip-path="url(#clipPath10)" font-family="sans-serif" stroke="none">readLines(): List&lt;String&gt;</text>
       <text x="148.75" xml:space="preserve" y="910.834" clip-path="url(#clipPath10)" font-family="sans-serif" stroke="none">readLinesWithEOL(): List&lt;String&gt;</text>
       <text x="148.75" xml:space="preserve" y="924.8027" clip-path="url(#clipPath10)" font-family="sans-serif" stroke="none">readLineInfo(): List&lt;LineInfo&gt;</text>
-      <text x="148.75" xml:space="preserve" y="938.7715" clip-path="url(#clipPath10)" font-family="sans-serif" stroke="none">isBinary() : boolean</text>
+      <text x="148.75" xml:space="preserve" y="938.7715" clip-path="url(#clipPath10)" font-family="sans-serif" stroke="none">isBinary(): boolean</text>
       <text x="148.75" xml:space="preserve" y="952.7402" clip-path="url(#clipPath10)" font-family="sans-serif" stroke="none">toFile(): File</text>
       <text x="148.75" xml:space="preserve" y="966.709" clip-path="url(#clipPath10)" font-family="sans-serif" stroke="none">toRelativeFile(): File</text>
       <text x="148.75" xml:space="preserve" y="980.6777" clip-path="url(#clipPath10)" font-family="sans-serif" stroke="none">toPath(): Path</text>

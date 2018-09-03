@@ -199,7 +199,7 @@ readContent(): String
 readLines(): List&lt;String&gt;
 readLinesWithEOL(): List&lt;String&gt;
 readLineInfo(): List&lt;LineInfo&gt;
-isBinary() : boolean
+isBinary(): boolean
 toFile(): File
 toRelativeFile(): File
 toPath(): Path
