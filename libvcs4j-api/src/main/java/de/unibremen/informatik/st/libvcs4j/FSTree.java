@@ -24,7 +24,7 @@ import java.util.function.Function;
  * system tree with a generic value that may be attached to a file.
  *
  * @param <V>
- *     The attached value.
+ * 		The attached value.
  */
 public class FSTree<V> {
 
@@ -40,8 +40,11 @@ public class FSTree<V> {
 
 	/**
 	 * A simple visitor to process {@link FSTree} instances.
+	 *
+	 * @param <E>
+	 * 		The value attached to a file.
 	 */
-	public class Visitor {
+	public static class Visitor<E> {
 
 		/**
 		 * Delegates {@code pTree} to {@link #visitDirectory(FSTree)} or
@@ -51,7 +54,7 @@ public class FSTree<V> {
 		 * @param pTree
 		 * 		The tree to visit and delegate.
 		 */
-		public void visit(final FSTree<V> pTree) {
+		public void visit(final FSTree<E> pTree) {
 			if (pTree.isDirectory()) {
 				visitDirectory(pTree);
 			} else {
@@ -65,7 +68,7 @@ public class FSTree<V> {
 		 * @param pDirectory
 		 * 		The directory to visit.
 		 */
-		protected void visitDirectory(final FSTree<V> pDirectory) {
+		protected void visitDirectory(final FSTree<E> pDirectory) {
 			assert pDirectory.nodes != null;
 			pDirectory.nodes.forEach(this::visit);
 		}
@@ -76,7 +79,7 @@ public class FSTree<V> {
 		 * @param pFile
 		 * 		The tree containing the file to visit.
 		 */
-		protected void visitFile(final FSTree<V> pFile) {
+		protected void visitFile(final FSTree<E> pFile) {
 			visitFile(pFile.file);
 		}
 
@@ -322,7 +325,7 @@ public class FSTree<V> {
 	 */
 	public Optional<V> getValue() {
 		final List<V> values = new ArrayList<>();
-		final Visitor visitor = new Visitor() {
+		final Visitor<V> visitor = new Visitor<V>() {
 			@Override
 			protected void visitFile(final FSTree<V> pTree) {
 				if (pTree.value != null) {
@@ -357,7 +360,7 @@ public class FSTree<V> {
 	 */
 	public List<VCSFile> getFiles() {
 		final List<VCSFile> files = new ArrayList<>();
-		final Visitor visitor = new Visitor() {
+		final Visitor<V> visitor = new Visitor<V>() {
 			@Override
 			protected void visitFile(final VCSFile pFile) {
 				files.add(pFile);

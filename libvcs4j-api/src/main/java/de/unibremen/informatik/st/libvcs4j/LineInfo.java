@@ -2,6 +2,9 @@ package de.unibremen.informatik.st.libvcs4j;
 
 import java.time.LocalDateTime;
 
+/**
+ * Stores the commit information of a single line of a {@link VCSFile}.
+ */
 public interface LineInfo {
 
 	/**
