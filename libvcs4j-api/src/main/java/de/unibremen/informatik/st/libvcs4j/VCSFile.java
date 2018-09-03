@@ -262,7 +262,7 @@ public interface VCSFile extends VCSModelElement {
 			Files.write(tmp, bytes);
 			final String type = Files.probeContentType(tmp);
 			if (type != null && type.startsWith("text")) {
-				return true;
+				return false;
 			}
 			// Apply heuristic.
 			int numASCII = 0;
