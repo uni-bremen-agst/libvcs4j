@@ -418,35 +418,47 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 			throws IOException {
 		final String path = toGitPath(pFile.getRelativePath());
 		final AnyObjectId rev = createId(pFile.getRevision().getId());
-		final List<String> lines = pFile.readLinesWithEOL();
-		final List<LineInfo> lineInfo = new ArrayList<>();
+
 		try {
 			final BlameResult result = openRepository()
 					.blame()
 					.setFilePath(path)
 					.setStartCommit(rev)
 					.call();
+
 			Validate.isTrue(result != null, "Unable to find '%s'", path);
-			for (int i = 0; i < lines.size(); i++) {
+			final int blameNumLines = result.getResultContents().size();
+			final List<String> lines = pFile.readLines();
+			final List<LineInfo> lineInfo = new ArrayList<>();
+
+			/* Copy result from blame. */
+			for (int i = 0; i < blameNumLines; i++) {
 				final PersonIdent pi = result.getSourceAuthor(i);
 				final RevCommit rc = result.getSourceCommit(i);
 				final LocalDateTime dt = LocalDateTime.ofInstant(
 						pi.getWhen().toInstant(),
 						pi.getTimeZone().toZoneId());
 				final LineInfo li = new LineInfoImpl(
-						rc.getName(),
-						pi.getName(),
+						rc.getName(), pi.getName(),
 						rc.getFullMessage().replaceAll("\r\n$|\n$", ""),
-						dt,
-						i + 1,
-						result.getResultContents().getString(i),
-						pFile);
+						dt, i + 1, lines.get(i), pFile);
 				lineInfo.add(li);
 			}
+			/* Handle EOL fails by duplicating the last blame result. */
+			if (blameNumLines > 0) { // Consider empty files.
+				for (int i = blameNumLines; i < lines.size(); i++) {
+					final LineInfo prev = lineInfo.get(i - 1);
+					final LineInfo next = new LineInfoImpl(
+							prev.getId(), prev.getAuthor(), prev.getMessage(),
+							prev.getDateTime(), prev.getLine(),
+							lines.get(i), prev.getFile());
+					lineInfo.add(next);
+				}
+			}
+			return lineInfo;
 		} catch (final GitAPIException e) {
 			throw new IOException(e);
 		}
-		return lineInfo;
 	}
 
 	@Override
