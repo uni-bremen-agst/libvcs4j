@@ -242,7 +242,9 @@ public interface VCSFile extends VCSModelElement {
 	/**
 	 * Tries to guess whether this file is a binary file. The default
 	 * implementation uses {@link Files#probeContentType(Path)} to check
-	 * whether the detected type (if any) starts with 'text'.
+	 * whether the detected file type (if any) starts with 'text'. If
+	 * {@link Files#probeContentType(Path)} is unable to detect the file type,
+	 * the number of ASCII and non-ASCII chars is counted and evaluated.
 	 *
 	 * @return
 	 * 		{@code true} if this file is a binary file, {@code false}
@@ -251,14 +253,36 @@ public interface VCSFile extends VCSModelElement {
 	 * 		If an error occurred while reading the file contents.
 	 */
 	default boolean isBinary() throws IOException {
-		// Some detectors parse a file's extension to guess its type.
+		// Some detectors parse the file extension to guess the file type.
 		// Thus, use the file name as suffix for the temporarily created file.
 		final Path tmp = Files.createTempFile(null,
 				toPath().getFileName().toString());
 		try {
-			Files.write(tmp, readAllBytes());
+			final byte[] bytes = readAllBytes();
+			Files.write(tmp, bytes);
 			final String type = Files.probeContentType(tmp);
-			return type == null || !type.startsWith("text");
+			if (type != null && type.startsWith("text")) {
+				return true;
+			}
+			// Apply heuristic.
+			int numASCII = 0;
+			int numNonASCII = 0;
+			for (final byte b : bytes) {
+				if (b < 0x09) { // less than \t
+					return true;
+				} else if (b == 0x09 || // \t
+						b == 0x0A ||    // \n
+						b == 0x0C ||    // \f
+						b == 0x0D) {    // \r
+					numASCII++;
+				} else if (b >= 0x20 && b <= 0x7E) { // regular char
+					numASCII++;
+				} else { // something else
+					numNonASCII++;
+				}
+			}
+			return numNonASCII != 0 &&
+					100 * numNonASCII / (numASCII + numNonASCII) > 95;
 		} finally {
 			try {
 				Files.delete(tmp);
