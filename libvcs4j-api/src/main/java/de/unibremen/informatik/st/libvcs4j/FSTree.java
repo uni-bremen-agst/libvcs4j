@@ -24,7 +24,7 @@ import java.util.function.Function;
  * system tree with a generic value that may be attached to a file.
  *
  * @param <V>
- * 		The attached value.
+ * 		The type of the values attached to the files.
  */
 public class FSTree<V> {
 
@@ -42,7 +42,7 @@ public class FSTree<V> {
 	 * A simple visitor to process {@link FSTree} instances.
 	 *
 	 * @param <E>
-	 * 		The value attached to a file.
+	 * 		The type of the values attached to the files.
 	 */
 	public static class Visitor<E> {
 
@@ -94,14 +94,16 @@ public class FSTree<V> {
 	}
 
 	/**
-	 * The parent of this tree. Is {@code null} for the root node.
+	 * The parent of a tree. Is {@code null} for the root node.
 	 */
 	private final FSTree<V> parent;
 
 	/**
-	 * The relative path (relative to {@link VCSEngine#getRoot()}) of the
-	 * referenced file (if {@link #file} is present) or directory (if
-	 * {@link #nodes} is present).
+	 * The relative path of the referenced file (if {@link #file} is present)
+	 * or directory (if {@link #nodes} is present). The path is relative to
+	 * {@link VCSEngine#getRoot()}, except for the root node which may use
+	 * {@link #ROOT_DIRECTORY} in case of a tree with multiple (actual) root
+	 * nodes or {@link #EMPTY_DIRECTORY} in case of an "empty" tree.
 	 */
 	private final String path;
 
@@ -111,8 +113,7 @@ public class FSTree<V> {
 	private final VCSFile file;
 
 	/**
-	 * The value attached to {@link #file} (if {@link #file} is present). May
-	 * be {@code null}.
+	 * The value attached to {@link #file}. May be {@code null}.
 	 */
 	private final V value;
 
@@ -132,7 +133,7 @@ public class FSTree<V> {
 	 * Creates a file with given parent, {@link VCSFile}, and value function.
 	 *
 	 * @param pParent
-	 * 		The parent of the file to create. Use {@code null} for root nodes.
+	 * 		The parent of the file to create. Pass {@code null} for root nodes.
 	 * @param pFile
 	 * 		The referenced {@link VCSFile} instance.
 	 * @param pValueOf
@@ -142,7 +143,7 @@ public class FSTree<V> {
 	 *      If {@code pFile} or {@code pValueOf} is {@code null}.
 	 */
 	private FSTree(final FSTree<V> pParent, final VCSFile pFile,
-				   final Function<VCSFile, V> pValueOf) {
+			final Function<VCSFile, V> pValueOf) {
 		parent = pParent;
 		file = Objects.requireNonNull(pFile);
 		path = file.toRelativePath().toString();
@@ -156,10 +157,10 @@ public class FSTree<V> {
 	 * function.
 	 *
 	 * @param pParent
-	 * 		The parent of the directory to create. Use {@code null} for root
+	 * 		The parent of the directory to create. Pass {@code null} for root
 	 * 		nodes.
 	 * @param pPath
-	 *      The relative path of the directory.
+	 *      The relative path of the directory to create.
 	 * @param pAggregator
 	 * 		The aggregation function used to calculate the value of a
 	 * 		directory. The function must not handle {@code null} values.
@@ -167,7 +168,7 @@ public class FSTree<V> {
 	 *      If {@code pPath} or {@code pAggregator} is {@code null}.
 	 */
 	private FSTree(final FSTree<V> pParent, final String pPath,
-				   final BiFunction<V, V, V> pAggregator) {
+			final BiFunction<V, V, V> pAggregator) {
 		parent = pParent;
 		path = Objects.requireNonNull(pPath);
 		nodes = new ArrayList<>();
@@ -178,6 +179,8 @@ public class FSTree<V> {
 
 	/**
 	 * Creates a tree from the given list of {@link VCSFile} instances.
+	 * {@code null} values and duplicates (according to
+	 * {@link VCSFile#equals(Object)}) are filtered.
 	 *
 	 * @param pFiles
 	 * 		The files to create the tree from.
@@ -193,24 +196,18 @@ public class FSTree<V> {
 	 * 		A tree representing the list of files.
 	 * @throws NullPointerException
 	 * 		If any of the given arguments is {@code null}.
-	 * @throws IllegalArgumentException
-	 * 		If {@code pFiles} contains {@code null}.
 	 */
-	public static <V> FSTree<V> of(
-			final Collection<VCSFile> pFiles,
+	public static <V> FSTree<V> of(final Collection<VCSFile> pFiles,
 			final Function<VCSFile, V> pValueOf,
-			final BiFunction<V, V, V> pAggregator)
-			throws NullPointerException, IllegalArgumentException {
+			final BiFunction<V, V, V> pAggregator) throws NullPointerException,
+			IllegalArgumentException {
 		Objects.requireNonNull(pFiles);
 		Objects.requireNonNull(pValueOf);
 		Objects.requireNonNull(pAggregator);
-		if (pFiles.contains(null)) {
-			throw new IllegalArgumentException();
-		}
 
 		final Set<FSTree<V>> treesWithoutParent = new HashSet<>();
 		final Map<String, FSTree<V>> cache = new HashMap<>();
-		pFiles.forEach(f -> {
+		pFiles.stream().filter(Objects::nonNull).distinct().forEach(f -> {
 			// (1) "home/user/file.txt" -> "home", "user", "file.txt"
 			final Path relativePath = f.toRelativePath();
 			final List<String> parts = new ArrayList<>();
@@ -263,8 +260,9 @@ public class FSTree<V> {
 	}
 
 	/**
-	 * Creates a tree from the given list of {@link VCSFile} instances where
-	 * the files have to values.
+	 * Creates a tree from the given list of {@link VCSFile} instances. The
+	 * created tree has no value ({@link #getValue()}). {@code null} values and
+	 * duplicates (according to {@link VCSFile#equals(Object)}) are filtered.
 	 *
 	 * @param pFiles
 	 * 		The files to create the tree from.
@@ -272,8 +270,6 @@ public class FSTree<V> {
 	 * 		A tree representing the list of files.
 	 * @throws NullPointerException
 	 * 		If {@code pFile} is {@code null}.
-	 * @throws IllegalArgumentException
-	 * 		If {@code pFiles} contains {@code null}.
 	 */
 	public static FSTree<Void> of(final Collection<VCSFile> pFiles)
 			throws NullPointerException, IllegalArgumentException {
@@ -291,22 +287,34 @@ public class FSTree<V> {
 	}
 
 	/**
-	 * Returns the relative path (relative to {@link VCSEngine#getRoot()}) of
-	 * this file (if {@link #getFile()} is present) or directory (if
-	 * {@link #getNodes()} is present).
+	 * Returns the relative path of this file (if {@link #getFile()} is
+	 * present) or directory (if {@link #getNodes()} is present).
 	 *
 	 * @return
-	 *      The relative path of this file or directory.
+	 * 		The relative path of this file or directory.
 	 */
 	public String getPath() {
 		return path;
 	}
 
 	/**
+	 * Returns the name of this file (if {@link #getFile()} is present) or
+	 * directory (if {@link #getNodes()} is present).
+	 *
+	 * @return
+	 * 		The name of this file or directory.
+	 */
+	public String getName() {
+		return isVirtualRoot()
+				? path
+				: Paths.get(path).getFileName().toString();
+	}
+
+	/**
 	 * Returns the referenced {@link VCSFile} if this tree is a file.
 	 *
 	 * @return
-	 *      The referenced {@link VCSFile}.
+	 * 		The referenced {@link VCSFile}.
 	 */
 	public Optional<VCSFile> getFile() {
 		return Optional.ofNullable(file);
@@ -335,13 +343,18 @@ public class FSTree<V> {
 			}
 		};
 		visitor.visit(this);
-		return values.parallelStream()
-				.reduce(aggregator::apply);
+		if (values.isEmpty()) {
+			return Optional.empty();
+		} else if (values.size() == 1) {
+			return Optional.ofNullable(values.get(0));
+		} else {
+			return values.stream().reduce(aggregator::apply);
+		}
 	}
 
 	/**
-	 * Returns the sub files and directories if this tree is a directory. If
-	 * this tree is a file, an empty list is returned.
+	 * Returns the sub files and directories of this tree if this tree is a
+	 * directory. If this tree is a file, an empty list is returned.
 	 *
 	 * @return
 	 *      The sub files and directories of this tree.
@@ -350,25 +363,6 @@ public class FSTree<V> {
 		return nodes == null
 				? Collections.emptyList()
 				: new ArrayList<>(nodes);
-	}
-
-	/**
-	 * Returns all files of this tree.
-	 *
-	 * @return
-	 * 		All files of this tree.
-	 */
-	public List<VCSFile> getFiles() {
-		final List<VCSFile> files = new ArrayList<>();
-		final Visitor<V> visitor = new Visitor<V>() {
-			@Override
-			protected void visitFile(final VCSFile pFile) {
-				files.add(pFile);
-				super.visitFile(pFile);
-			}
-		};
-		visitor.visit(this);
-		return files;
 	}
 
 	/**
@@ -399,8 +393,11 @@ public class FSTree<V> {
 	 * 		The relative path of the tree to navigate to.
 	 * @return
 	 * 		The tree located at {@code pPath}, if such a tree exists.
+	 * @throws NullPointerException
+	 * 		If {@code pPath} is {@code null}.
 	 */
 	public Optional<FSTree<V>> navigateTo(final String pPath) {
+		Objects.requireNonNull(pPath);
 		if (pPath.isEmpty()) {
 			return Optional.of(this);
 		}
@@ -434,6 +431,65 @@ public class FSTree<V> {
 	}
 
 	/**
+	 * Compacts this tree such that each node is either a file, or a directory containing
+	 * only files or at least two sub directories. If {@code pTree} is a sequence of
+	 * single directories, an "empty" directory is returned. This method does not modify
+	 * {@code pTree} or any of its sub nodes, but creates a flat copy it.
+	 *
+	 * @return
+	 * 		A Tree consisting of files, and directories containing only files or at
+	 * 		least two sub directories. An "empty" directory if {@code pTree} is a
+	 * 		sequence of single directories.
+	 */
+	public FSTree<V> compact() {
+		return compact(this, null);
+	}
+
+	/**
+	 * Recursively computes the result specified by {@link #compact()}.
+	 *
+	 * @param pTree
+	 * 		The tree to compact.
+	 * @param pParent
+	 * 		The parent to use.
+	 * @param <T>
+	 *     	The type of the values attached to the files.
+	 * @return
+	 * 		The compacted version of {@code pTree}.
+	 */
+	private static <T> FSTree<T> compact(final FSTree<T> pTree,
+			final FSTree<T> pParent) {
+		// Compact pTree...
+		FSTree<T> current = pTree;
+		// ...if it is a directory...
+		while (current.isDirectory()
+				// ...containing a single directory.
+				&& current.nodes.size() == 1
+				&& current.nodes.get(0).isDirectory()) {
+			current = current.nodes.get(0);
+		}
+		final String path = current.path;
+		final T value = current.value;
+		final BiFunction<T, T, T> aggregator = current.aggregator;
+		final FSTree<T> compacted = current.isDirectory()
+				? new FSTree<>(pParent, path, aggregator)
+				: new FSTree<>(pParent, current.file, f -> value);
+
+		// Compact sub nodes in case of a directory. Ignore empty directories.
+		if (compacted.isDirectory()) {
+			current.nodes.forEach(node -> {
+				// compactedNode may be an empty directory.
+				final FSTree<T> compactedNode = compact(node, compacted);
+				if (compactedNode.isFile() || !compactedNode.nodes.isEmpty()) {
+					compacted.nodes.add(compactedNode);
+				}
+			});
+		}
+
+		return compacted;
+	}
+
+	/**
 	 * Returns whether the file name of this tree matches the given file name.
 	 *
 	 * @param pFileName
@@ -443,8 +499,7 @@ public class FSTree<V> {
 	 * 		{@code false} otherwise.
 	 */
 	private boolean hasFileName(final String pFileName) {
-		final String fileName = Paths.get(path).getFileName().toString();
-		return fileName.equals(pFileName);
+		return getName().equals(pFileName);
 	}
 
 	/**
@@ -468,6 +523,16 @@ public class FSTree<V> {
 	}
 
 	/**
+	 * Returns whether this tree is a root node.
+	 *
+	 * @return
+	 * 		{@code true} if this tree is a root node, {@code false} otherwise.
+	 */
+	public boolean isRoot() {
+		return parent == null;
+	}
+
+	/**
 	 * Returns whether this tree is a virtual root directory that has been
 	 * created to cover multiple actual roots.
 	 *
@@ -476,6 +541,6 @@ public class FSTree<V> {
 	 * 		{@code false} otherwise.
 	 */
 	public boolean isVirtualRoot() {
-		return path.equals(EMPTY_DIRECTORY) || path.equals("/");
+		return path.equals(EMPTY_DIRECTORY) || path.equals(ROOT_DIRECTORY);
 	}
 }
