@@ -180,7 +180,7 @@ public class FSTree<V> {
 	/**
 	 * Creates a tree from the given list of {@link VCSFile} instances.
 	 * {@code null} values and duplicates (according to
-	 * {@link VCSFile#equals(Object)}) are filtered.
+	 * {@link Object#equals(Object)}) are filtered.
 	 *
 	 * @param pFiles
 	 * 		The files to create the tree from.
@@ -262,7 +262,7 @@ public class FSTree<V> {
 	/**
 	 * Creates a tree from the given list of {@link VCSFile} instances. The
 	 * created tree has no value ({@link #getValue()}). {@code null} values and
-	 * duplicates (according to {@link VCSFile#equals(Object)}) are filtered.
+	 * duplicates (according to {@link Object#equals(Object)}) are filtered.
 	 *
 	 * @param pFiles
 	 * 		The files to create the tree from.
