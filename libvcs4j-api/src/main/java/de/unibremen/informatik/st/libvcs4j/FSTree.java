@@ -199,8 +199,8 @@ public class FSTree<V> {
 	 */
 	public static <V> FSTree<V> of(final Collection<VCSFile> pFiles,
 			final Function<VCSFile, V> pValueOf,
-			final BiFunction<V, V, V> pAggregator) throws NullPointerException,
-			IllegalArgumentException {
+			final BiFunction<V, V, V> pAggregator)
+			throws NullPointerException {
 		Objects.requireNonNull(pFiles);
 		Objects.requireNonNull(pValueOf);
 		Objects.requireNonNull(pAggregator);
@@ -272,7 +272,7 @@ public class FSTree<V> {
 	 * 		If {@code pFile} is {@code null}.
 	 */
 	public static FSTree<Void> of(final Collection<VCSFile> pFiles)
-			throws NullPointerException, IllegalArgumentException {
+			throws NullPointerException {
 		return of(pFiles, f -> null, (v1, v2) -> null);
 	}
 
