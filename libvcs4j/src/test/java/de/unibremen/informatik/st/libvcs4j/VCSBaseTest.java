@@ -2,6 +2,7 @@ package de.unibremen.informatik.st.libvcs4j;
 
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalIntervalException;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalTargetException;
+import junit.framework.AssertionFailedError;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Rule;
@@ -510,6 +511,28 @@ public abstract class VCSBaseTest {
 			}
 			lastRange = range;
 		}
+	}
+
+	@Test
+	public void latestRevision() throws IOException {
+		List<String> revisionIds = readIds(getRootRevisionIdFile());
+		VCSEngine engine = createBuilder()
+				.withLatestRevision()
+				.build();
+
+		RevisionRange range = engine.next()
+				.orElseThrow(AssertionFailedError::new);
+		assertThat(range.getRevision().getId())
+				.isEqualTo(revisionIds.get(revisionIds.size() - 1));
+	}
+
+	@Test
+	public void latestRevisionWithNotExistingRoot() throws IOException {
+		VCSEngine engine = createBuilder()
+				.withLatestRevision()
+				.withRoot("yf928y298fy4f32f98fy39fy38943yf938y")
+				.build();
+		assertFalse(engine.next().isPresent());
 	}
 
 	/**

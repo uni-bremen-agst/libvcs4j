@@ -48,6 +48,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -73,6 +74,18 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	 * Examined branch, for instance, 'master'.
 	 */
 	private final String branch;
+
+	/**
+	 * Use {@link VCSEngineBuilder} instead.
+	 */
+	@Deprecated
+	@SuppressWarnings("DeprecatedIsStillUsed")
+	public GitEngine(final String pRepository, final String pRoot,
+			final Path pTarget, final String pBranch)
+			throws NullPointerException, IllegalArgumentException {
+		super(pRepository, pRoot, pTarget);
+		branch = pBranch == null ? DEFAULT_BRANCH : pBranch;
+	}
 
 	/**
 	 * Use {@link VCSEngineBuilder} instead.
@@ -321,6 +334,27 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 			throw new IOException(e);
 		}
 		return changes;
+	}
+
+	@Override
+	protected Optional<String> getLatestRevision() throws IOException {
+		// Keep in mind that 'git log' returns commits in the following
+		// order: [HEAD, HEAD^1, ..., initial]
+
+		try {
+			final LogCommand logCmd = openRepository().log();
+			final Iterable<RevCommit> iter = addRootPath(logCmd).call();
+			//noinspection LoopStatementThatDoesntLoop
+			for (RevCommit rv : iter) {
+				// Return first
+				return Optional.of(rv.getName());
+			}
+			return Optional.empty();
+		} catch (NoHeadException e) {
+			return Optional.empty();
+		} catch (final GitAPIException e) {
+			throw new IOException(e);
+		}
 	}
 
 	@Override

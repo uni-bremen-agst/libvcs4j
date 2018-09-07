@@ -34,7 +34,7 @@ public class VCSEngineBuilder {
 
 	private enum Engine { SINGLE, SVN, GIT, HG }
 
-	private enum Interval { DATE, REVISION, RANGE }
+	private enum Interval { DATE, REVISION, RANGE, LATEST }
 
 	//////////////////////////////// Defaults /////////////////////////////////
 
@@ -229,6 +229,11 @@ public class VCSEngineBuilder {
 		return this;
 	}
 
+	public VCSEngineBuilder withLatestRevision() {
+		interval = Interval.LATEST;
+		return this;
+	}
+
 	public VCSEngineBuilder withITEngine(final ITEngine pITEngine) {
 		itEngine = pITEngine;
 		return this;
@@ -264,6 +269,10 @@ public class VCSEngineBuilder {
 							repo, root,
 							Paths.get(target),
 							start, end);
+				} else if (interval == Interval.LATEST) {
+					vcsEngine = new SVNEngine(
+							repo, root,
+							Paths.get(target));
 				} else {
 					throw new IllegalStateException(String.format(
 							"Unknown interval '%s'", interval));
@@ -287,6 +296,11 @@ public class VCSEngineBuilder {
 							Paths.get(target),
 							branch,
 							start, end);
+				} else if (interval == Interval.LATEST) {
+					vcsEngine = new GitEngine(
+							repo, root,
+							Paths.get(target),
+							branch);
 				} else {
 					throw new IllegalStateException(String.format(
 							"Unknown interval '%s'", interval));
@@ -310,6 +324,11 @@ public class VCSEngineBuilder {
 							Paths.get(target),
 							branch,
 							start, end);
+				} else if (interval == Interval.LATEST) {
+					vcsEngine = new HGEngine(
+							repo, root,
+							Paths.get(target),
+							branch);
 				} else {
 					throw new IllegalStateException(String.format(
 							"Unknown interval '%s'", interval));

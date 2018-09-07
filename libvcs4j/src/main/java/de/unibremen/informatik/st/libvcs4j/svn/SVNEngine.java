@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -72,6 +73,17 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 
 	public static final LocalDateTime MINIMUM_DATETIME =
 			LocalDateTime.of(1980, 1, 1, 0, 0, 0);
+
+	/**
+	 * Use {@link VCSEngineBuilder} instead.
+	 */
+	@Deprecated
+	@SuppressWarnings("DeprecatedIsStillUsed")
+	public SVNEngine(final String pRepository, final String pRoot,
+			final Path pTarget) throws NullPointerException,
+			IllegalArgumentException {
+		super(pRepository, pRoot, pTarget);
+	}
 
 	/**
 	 * Use {@link VCSEngineBuilder} instead.
@@ -375,6 +387,15 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 			factory.dispose();
 		}
 		return changes;
+	}
+
+	@Override
+	protected Optional<String> getLatestRevision() throws IOException {
+		final List<String> revs = listRevisions(
+				SVNRevision.HEAD, SVNRevision.HEAD);
+		return revs.isEmpty()
+				? Optional.empty()
+				: Optional.of(revs.get(0));
 	}
 
 	@Override

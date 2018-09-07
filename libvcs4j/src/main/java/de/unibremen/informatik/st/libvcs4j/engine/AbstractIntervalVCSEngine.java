@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * An {@link AbstractVSCEngine} with interval fields. Three different kinds of
@@ -31,10 +32,22 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 	private final int start, end;
 
 	/**
+	 * Latest revision constructor.
+	 */
+	public AbstractIntervalVCSEngine(final String pRepository,
+			final String pRoot, final Path pTarget)
+			throws NullPointerException, IllegalArgumentException {
+		super(pRepository, pRoot, pTarget);
+		since = until = null;
+		from = to = null;
+		start = end = -1;
+	}
+
+	/**
 	 * Interval constructor with given revision list.
 	 */
-	public AbstractIntervalVCSEngine(
-			final String pRepository, final String pRoot, final Path pTarget,
+	public AbstractIntervalVCSEngine(final String pRepository,
+			final String pRoot, final Path pTarget,
 			final List<String> pRevisions) throws NullPointerException,
 			IllegalArgumentException {
 		super(pRepository, pRoot, pTarget, pRevisions);
@@ -46,10 +59,10 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 	/**
 	 * Datetime interval constructor. Validates that {@code pSince <= pUntil}.
 	 */
-	public AbstractIntervalVCSEngine(
-			final String pRepository, final String pRoot, final Path pTarget,
-			final LocalDateTime pSince, final LocalDateTime pUntil)
-			throws NullPointerException, IllegalIntervalException {
+	public AbstractIntervalVCSEngine(final String pRepository,
+			final String pRoot, final Path pTarget, final LocalDateTime pSince,
+			final LocalDateTime pUntil) throws NullPointerException,
+			IllegalIntervalException {
 		super(pRepository, pRoot, pTarget);
 		from = to = null;
 		start = end = -1;
@@ -62,10 +75,9 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 	/**
 	 * Revision interval constructor. Does NOT validate if {@code pFrom <= pTo}.
 	 */
-	public AbstractIntervalVCSEngine(
-			final String pRepository, final String pRoot, final Path pTarget,
-			final String pFrom, final String pTo)
-			throws NullPointerException {
+	public AbstractIntervalVCSEngine(final String pRepository,
+			final String pRoot, final Path pTarget, final String pFrom,
+			final String pTo) throws NullPointerException {
 		super(pRepository, pRoot, pTarget);
 		since = until = null;
 		start = end = -1;
@@ -78,10 +90,10 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 	/**
 	 * Range interval constructor. Validates that {@code 0 <= pStart < pEnd}.
 	 */
-	public AbstractIntervalVCSEngine(
-			final String pRepository, final String pRoot, final Path pTarget,
-			final int pStart, final int pEnd)
-			throws NullPointerException, IllegalIntervalException {
+	public AbstractIntervalVCSEngine(final String pRepository,
+			final String pRoot, final Path pTarget, final int pStart,
+			final int pEnd) throws NullPointerException,
+			IllegalIntervalException {
 		super(pRepository, pRoot, pTarget);
 		since = until = null;
 		from = to = null;
@@ -115,7 +127,9 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 		} else if (isRangeInterval()) {
 			revisions = listRevisionsImpl(start, end);
 		} else {
-			throw new IllegalStateException("Unknown interval type");
+			final Optional<String> latest = getLatestRevision();
+			return latest.map(Collections::singletonList)
+					.orElseGet(Collections::emptyList);
 		}
 		IllegalReturnException.noNullElements(revisions);
 		return revisions;
@@ -132,8 +146,10 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 		return revs.subList(start, Math.min(end, revs.size()));
 	}
 
-	protected abstract List<String> listRevisionsImpl(
-			LocalDateTime since, LocalDateTime until) throws IOException;
+	protected abstract Optional<String> getLatestRevision() throws IOException;
+
+	protected abstract List<String> listRevisionsImpl(LocalDateTime since,
+			LocalDateTime until) throws IOException;
 
 	protected abstract List<String> listRevisionsImpl(String from, String to)
 			throws IOException;

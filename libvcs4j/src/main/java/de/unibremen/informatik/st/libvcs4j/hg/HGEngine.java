@@ -44,6 +44,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.logging.LogManager;
 import java.util.regex.Pattern;
@@ -78,6 +79,18 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	private final String branch;
 
 	private Repository repository = null;
+
+	/**
+	 * Use {@link VCSEngineBuilder} instead.
+	 */
+	@Deprecated
+	@SuppressWarnings("DeprecatedIsStillUsed")
+	public HGEngine(final String pRepository, final String pRoot,
+			final Path pTarget, final String pBranch)
+			throws NullPointerException, IllegalArgumentException {
+		super(pRepository, pRoot, pTarget);
+		branch = pBranch;
+	}
 
 	/**
 	 * Use {@link VCSEngineBuilder} instead.
@@ -374,6 +387,26 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 				ZoneId.systemDefault());
 		commit.setDateTime(dateTime);
 		return commit;
+	}
+
+	@Override
+	protected Optional<String> getLatestRevision() throws IOException {
+		// Keep in mind that 'hg log' returns changesets in the following
+		// order: [n, n-1, ..., 0] (or corresponding changeset id)
+
+		try {
+			final LogCommand cmd = LogCommandFlags.on(repository);
+			if (branch != null) {
+				cmd.branch(branch);
+			}
+			return cmd.execute(getRoot())
+					.stream()
+					.map(Changeset::getNode)
+					.map(String::valueOf)
+					.findFirst();
+		} catch (final RuntimeException e) {
+			throw new IOException(e);
+		}
 	}
 
 	@Override

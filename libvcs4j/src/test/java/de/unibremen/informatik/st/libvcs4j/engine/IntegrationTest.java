@@ -236,6 +236,12 @@ public class IntegrationTest {
 		}
 
 		@Override
+		protected Optional<String> getLatestRevision() throws IOException {
+			final List<String> revs = listRevisionsImpl();
+			return Optional.of(revs.get(revs.size() - 1));
+		}
+
+		@Override
 		protected List<String> listRevisionsImpl(
 				final LocalDateTime pSince,
 				final LocalDateTime pUntil) {
