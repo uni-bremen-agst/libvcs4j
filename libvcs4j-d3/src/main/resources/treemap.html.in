@@ -9,6 +9,34 @@
             background: #ddd;
         }
 
+        #tooltip h3 {
+            margin:2px;
+            font-size:14px;
+        }
+
+        #tooltip {
+            position: absolute;
+            background:rgba(255,255,255,1);
+            text-align: left;
+            border:1px;
+            border-radius:5px;
+            font: 12px sans-serif;
+            width:auto;
+            padding:4px;
+            color:black;
+            opacity:0;
+            pointer-events: none;
+        }
+
+        #tooltip table {
+            table-layout:fixed;
+        }
+
+        #tooltip tr td {
+            padding:0;
+            margin:0;
+        }
+
         text {
             pointer-events: none;
             fill: #5e5e5e;
@@ -168,11 +196,32 @@
           .attr("class", "child")
           .call(rect);
 
+      d3.select("#chart").select("#tooltip").remove();
+      var div = d3.select("#chart").append("div")
+                  .attr("id", "tooltip")
+                  .style("opacity", 0);
+
       g.append("rect")
           .attr("class", "parent")
           .call(rect)
-        .append("title")
-          .text(function(d) { return formatNumber(d.value); });
+          .on("mousemove", function(d) {
+              d3.select("#tooltip")
+                .transition()
+                .duration(200)
+                .style("opacity", 1);
+              d3.select("#tooltip")
+                .html("<h3>"+d.name+"</h3><table>"+
+                      "<tr><td>Size: "+d.value+"</td></tr>"+
+                      "<tr><td>Value: "+d.color+"</td></tr>"+
+                      "</table>")
+                .style("left", (d3.event.pageX-document.getElementById('chart').offsetLeft + 20) + "px")
+                .style("top", (d3.event.pageY-document.getElementById('chart').offsetTop - 60) + "px");
+          })
+          .on("mouseout", function(d) {
+              d3.select("#tooltip").transition()
+                .duration(500)
+                .style("opacity", 0);
+          })
 
       g.append("text")
           .attr("dy", ".75em")
