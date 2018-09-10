@@ -263,7 +263,8 @@ public interface VCSFile extends VCSModelElement {
 			Files.write(tmp, bytes);
 			final String type = Files.probeContentType(tmp);
 			if (type != null) {
-				return type.startsWith("text") ||
+				return !(
+						type.startsWith("text") ||
 						// Bash
 						type.equals("application/x-sh") ||
 						// C-Shell
@@ -287,7 +288,7 @@ public interface VCSFile extends VCSModelElement {
 						// Typescript
 						type.equals("application/typescript") ||
 						// XML
-						type.equals("application/xml");
+						type.equals("application/xml"));
 			}
 			// Apply heuristic.
 			int numASCII = 0;
