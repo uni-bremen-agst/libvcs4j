@@ -242,9 +242,10 @@ public interface VCSFile extends VCSModelElement {
 	/**
 	 * Tries to guess whether this file is a binary file. The default
 	 * implementation uses {@link Files#probeContentType(Path)} to check
-	 * whether the detected file type (if any) starts with 'text'. If
-	 * {@link Files#probeContentType(Path)} is unable to detect the file type,
-	 * the number of ASCII and non-ASCII chars is counted and evaluated.
+	 * whether the detected file type (if any) matches one of the predefined
+	 * values. If {@link Files#probeContentType(Path)} is unable to detect the
+	 * file type, the number of ASCII and non-ASCII chars is counted and
+	 * evaluated.
 	 *
 	 * @return
 	 * 		{@code true} if this file is a binary file, {@code false}
@@ -261,8 +262,32 @@ public interface VCSFile extends VCSModelElement {
 			final byte[] bytes = readAllBytes();
 			Files.write(tmp, bytes);
 			final String type = Files.probeContentType(tmp);
-			if (type != null && type.startsWith("text")) {
-				return false;
+			if (type != null) {
+				return type.startsWith("text") ||
+						// Bash
+						type.equals("application/x-sh") ||
+						// C-Shell
+						type.equals("application/x-csh") ||
+						// JavaScript
+						type.equals("application/javascript") ||
+						// JSF
+						type.equals("application/xhtml+xml") ||
+						// JSON
+						type.equals("application/json") ||
+						// Latex
+						type.equals("application/x-latex") ||
+						// PHP
+						type.equals("application/x-httpd-php") ||
+						// RTF
+						type.equals("application/rtf") ||
+						// Tex
+						type.equals("application/x-tex") ||
+						// Texinfo
+						type.equals("application/x-texinfo") ||
+						// Typescript
+						type.equals("application/typescript") ||
+						// XML
+						type.equals("application/xml");
 			}
 			// Apply heuristic.
 			int numASCII = 0;
