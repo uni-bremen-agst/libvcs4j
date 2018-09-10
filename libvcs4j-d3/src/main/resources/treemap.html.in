@@ -68,7 +68,7 @@
         .range([0, height]);
 
     var color = d3.scale.linear()
-        .domain([0, 1])
+        .domain([@MIN_COLOR@, @MAX_COLOR@])
         .range(["#FFFFFF","#FF0000"]);
 
     var treemap = d3.layout.treemap()

@@ -20,9 +20,12 @@ import java.util.stream.Collectors;
 public class TreeMap {
 
 	/**
-	 * Stores the values that are required to build the TreeMap. Subclasses may override
-	 * {@link #minColor()}, {@link #maxColor()}, and {@link #aggregate(Cell, Cell)} to
-	 * adapt the default behavior.
+	 * Used to check equality of double values.
+	 */
+	private static final double EPSILON = 0.0001;
+
+	/**
+	 * Stores the values that are required to build the TreeMap.
 	 */
 	public static class Cell {
 
@@ -35,14 +38,12 @@ public class TreeMap {
 
 		/**
 		 * Defines the color intensity of the corresponding rectangle.
-		 *
-		 * {@code minColor() <= color <= maxColor()}.
 		 */
 		private final double color;
 
 		/**
-		 * Creates a new cell with given size and color. Fits {@code pSize} and
-		 * {@code pColor} to their domains.
+		 * Creates a new cell with given size and color. Negative size values
+		 * are fit to {@code 0}.
 		 *
 		 * @param pSize
 		 * 		The size of the cell to create.
@@ -50,20 +51,19 @@ public class TreeMap {
 		 * 		The color of the cell to create.
 		 */
 		public Cell(final double pSize, double pColor) {
-			if (pSize < 0) {
-				throw new IllegalArgumentException("size < 0");
-			}
 			size = Math.max(0, pSize);
-			color = Math.max(Math.min(maxColor(), pColor), minColor());
+			color = pColor;
 		}
 
 		/**
 		 * Returns the size of this cell.
 		 *
+		 * {@code size >= 0}
+		 *
 		 * @return
 		 * 		The size of this cell.
 		 */
-		public double getSize() {
+		public final double getSize() {
 			return size;
 		}
 
@@ -78,37 +78,10 @@ public class TreeMap {
 		}
 
 		/**
-		 * Returns the minimum color value.
+		 * Aggregates {@code c1} and {@code c2}.
 		 *
-		 * The default implementation returns {@code 0}.
-		 *
-		 * @return
-		 * 		The minimum color value.
-		 */
-		protected double minColor() {
-			return 0;
-		}
-
-		/**
-		 * Returns the maximum color value.
-		 *
-		 * The default implementation returns {@code 1}.
-		 *
-		 * @return
-		 * 		The maximum color value.
-		 */
-		protected double maxColor() {
-			return 1;
-		}
-
-		/**
-		 * Aggregates {@code c1} and {@code c2}. This method assumes that the color
-		 * values of {@code c1} and {@code c2} have the same domain ({@link #minColor()})
-		 * and {@link #maxColor()}). Likewise, the domain of the returned cell must be
-		 * compatible to {@code c1} and {@code c2}.
-		 *
-		 * The default implementation adds the size and color of {@code c1} and
-		 * {@code c2} and fits the resulting values to their domains.
+		 * The default implementation simply adds the size and color of
+		 * {@code c1} and {@code c2}.
 		 *
 		 * @param c1
 		 * 		The first value to aggregate.
@@ -118,22 +91,21 @@ public class TreeMap {
 		 * 		The aggregation of {@code c1} and {@code c2}.
 		 */
 		protected Cell aggregate(final Cell c1, final Cell c2) {
-			final double size = Math.max(0, c1.getSize() + c2.getSize());
-			final double color = Math.max(Math.min(maxColor(),
-					c1.getColor() + c2.getColor()), minColor());
+			final double size = c1.getSize() + c2.getSize();
+			final double color = c1.getColor() + c2.getColor();
 			return new Cell(size, color);
 		}
 	}
 
 	/**
-	 * A cell whose color intensity is in proportion to its size. Accordingly, the domain
-	 * of {@link #color} is [0, 1].
+	 * A cell whose color intensity is in proportion to its size. Accordingly,
+	 * the domain of {@link #color} is [0, 1].
 	 */
 	public static class RateCell extends Cell {
 
 		/**
-		 * Creates a new cell with given size and rate. Fits {@code pSize} and
-		 * {@code pRate} to their domains.
+		 * Creates a new cell with given size and rate. Fits {@code pRate} to
+		 * its domains.
 		 *
 		 * @param pSize
 		 * 		The size of the cell to create.
@@ -141,17 +113,12 @@ public class TreeMap {
 		 * 		The rate of the cell to create.
 		 */
 		public RateCell(final double pSize, final double pRate) {
-			super(pSize, pRate);
+			super(pSize, Math.min(Math.max(0, pRate), 1));
 		}
 
 		@Override
-		protected final double minColor() {
-			return 0;
-		}
-
-		@Override
-		protected final double maxColor() {
-			return 1;
+		public final double getColor() {
+			return super.getColor();
 		}
 
 		@Override
@@ -170,22 +137,46 @@ public class TreeMap {
 	private final FSTree<Cell> tree;
 
 	/**
-	 * Creates a TreeMap of the given files and mapping function. {@code null}
-	 * values in {@code pFiles}, duplicates (according to
-	 * {@link VCSFile#equals(Object)}) and files without an associated cell are
-	 * filtered.
+	 * The minimum color intensity value.
+	 */
+	private final double minColor;
+
+	/**
+	 * The maximum color intensity value.
+	 */
+	private final double maxColor;
+
+	/**
+	 * Creates a new TreeMap. {@code null} values in {@code pFiles}, duplicates
+	 * (according to {@link Object#equals(Object)}), files without an
+	 * associated cell, and files with size {@code 0} are filtered. The
+	 * resulting TreeMap is compacted using {@link FSTree#compact()}.
 	 *
 	 * @param pFiles
 	 * 		The files to visualize.
 	 * @param pValue
 	 * 		The function that is used to map a file to its cell.
+	 * @param pMinColor
+	 * 		The minimum color intensity value.
+	 * @param pMaxColor
+	 * 		The maximum color intensity value.
 	 * @throws NullPointerException
 	 * 		If any of the given arguments is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If {@code pMinColor > pMaxColor}.
 	 */
 	public TreeMap(final List<VCSFile> pFiles,
-			final Function<VCSFile, ? extends Cell> pValue) {
+			final Function<VCSFile, ? extends Cell> pValue,
+			final double pMinColor, final double pMaxColor) {
 		Objects.requireNonNull(pFiles);
 		Objects.requireNonNull(pValue);
+		if (pMinColor > pMaxColor) {
+			throw new IllegalArgumentException(String.format(
+					"Minimum color value (%f) > maximum color value (%f)",
+					pMinColor, pMaxColor));
+		}
+		minColor = pMinColor;
+		maxColor = pMaxColor;
 		final List<VCSFile> files = pFiles.stream()
 				.filter(Objects::nonNull)
 				.distinct()
@@ -197,12 +188,16 @@ public class TreeMap {
 			final Cell cell = pValue.apply(file);
 			if (cell == null) {
 				iter.remove();
+			} else if (Math.abs(cell.getSize()) < EPSILON) {
+				iter.remove();
 			} else {
 				mapping.put(file, cell);
 			}
 		}
-		tree = FSTree
-				.of(files,mapping::get, (c1, c2) -> c1.aggregate(c1, c2))
+		tree = FSTree.of(
+					files,
+					mapping::get,
+					(c1, c2) -> c1.aggregate(c1, c2))
 				.compact();
 	}
 
@@ -251,6 +246,8 @@ public class TreeMap {
 		final String json = generateJSON();
 		final String d3 = readD3File();
 		return readHTMLFile()
+				.replace("@MIN_COLOR@", String.valueOf(minColor))
+				.replace("@MAX_COLOR@", String.valueOf(maxColor))
 				.replace("@D3_SCRIPT@", d3)
 				.replace("@JSON_STRING@", json);
 	}
