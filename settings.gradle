@@ -1,1 +1,6 @@
-include 'conqat', 'libvcs4j-api', 'libvcs4j-metrics', 'libvcs4j-pmd', 'libvcs4j'
+include 'conqat',
+        'libvcs4j-api',
+        'libvcs4j-d3',
+        'libvcs4j-metrics',
+        'libvcs4j-pmd',
+        'libvcs4j'
