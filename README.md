@@ -128,7 +128,7 @@ To add the API submodule to your classpath, paste the following snippet into you
 <dependency>
   <groupId>de.uni-bremen.informatik.st</groupId>
   <artifactId>libvcs4j-api</artifactId>
-  <version>1.1.2</version>
+  <version>1.3.2</version>
 </dependency>
 ```
 
@@ -138,6 +138,6 @@ Likewise, the implementation submodule is added as follows:
 <dependency>
   <groupId>de.uni-bremen.informatik.st</groupId>
   <artifactId>libvcs4j</artifactId>
-  <version>1.1.1</version>
+  <version>1.3.2</version>
 </dependency>
 ```
