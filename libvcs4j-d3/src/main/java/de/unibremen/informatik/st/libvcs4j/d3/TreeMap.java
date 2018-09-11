@@ -4,18 +4,19 @@ import de.unibremen.informatik.st.libvcs4j.FSTree;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 
 import java.io.BufferedInputStream;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Scanner;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * Generates a HTML export that depicts a collection of {@link VCSFile}
- * instances as a TreeMap with a HeatMap layer.
+ * Generates a HTML export that visualizes a collection of {@link VCSFile}
+ * instances as a TreeMap with a HeatMap layer. The visualization is created by
+ * mapping a file to a {@link Cell} (or a subclass of it), providing the
+ * metrics {@link Cell#size} and {@link Cell#color} which are required to setup
+ * the layout and fill the areas. While generating the HTML export,
+ * {@code null} files, duplicates according to {@link Object#equals(Object)},
+ * files without an associated cell, and files with size {@code 0} are
+ * filtered.
  */
 public class TreeMap {
 
@@ -132,29 +133,31 @@ public class TreeMap {
 	}
 
 	/**
-	 * The tree to visualize.
+	 * The files to visualize.
 	 */
-	private final FSTree<Cell> tree;
+	private final List<VCSFile> files;
 
 	/**
-	 * The minimum color intensity value.
+	 * Maps a file to its cell.
+	 */
+	private final Function<VCSFile, ? extends Cell> cells;
+
+	/**
+	 * The minimum color intensity value. {@code < maxColor}
 	 */
 	private final double minColor;
 
 	/**
-	 * The maximum color intensity value.
+	 * The maximum color intensity value. {@code > minColor}
 	 */
 	private final double maxColor;
 
 	/**
-	 * Creates a new TreeMap. {@code null} values in {@code pFiles}, duplicates
-	 * (according to {@link Object#equals(Object)}), files without an
-	 * associated cell, and files with size {@code 0} are filtered. The
-	 * resulting TreeMap is compacted using {@link FSTree#compact()}.
+	 * Creates a new TreeMap.
 	 *
 	 * @param pFiles
 	 * 		The files to visualize.
-	 * @param pValue
+	 * @param pCellFunction
 	 * 		The function that is used to map a file to its cell.
 	 * @param pMinColor
 	 * 		The minimum color intensity value.
@@ -165,40 +168,41 @@ public class TreeMap {
 	 * @throws IllegalArgumentException
 	 * 		If {@code pMinColor > pMaxColor}.
 	 */
-	public TreeMap(final List<VCSFile> pFiles,
-			final Function<VCSFile, ? extends Cell> pValue,
-			final double pMinColor, final double pMaxColor) {
+	public TreeMap(final Collection<VCSFile> pFiles,
+			final Function<VCSFile, ? extends Cell> pCellFunction,
+			final double pMinColor, final double pMaxColor)
+			throws NullPointerException, IllegalArgumentException {
 		Objects.requireNonNull(pFiles);
-		Objects.requireNonNull(pValue);
+		Objects.requireNonNull(pCellFunction);
 		if (pMinColor > pMaxColor) {
 			throw new IllegalArgumentException(String.format(
 					"Minimum color value (%f) > maximum color value (%f)",
 					pMinColor, pMaxColor));
 		}
-		minColor = pMinColor;
-		maxColor = pMaxColor;
-		final List<VCSFile> files = pFiles.stream()
+
+		files = pFiles.stream()
 				.filter(Objects::nonNull)
 				.distinct()
 				.collect(Collectors.toList());
-		final Map<VCSFile, Cell> mapping = new HashMap<>();
-		final Iterator<VCSFile> iter = files.iterator();
-		while (iter.hasNext()) {
-			final VCSFile file = iter.next();
-			final Cell cell = pValue.apply(file);
-			if (cell == null) {
-				iter.remove();
-			} else if (Math.abs(cell.getSize()) < EPSILON) {
-				iter.remove();
-			} else {
-				mapping.put(file, cell);
-			}
-		}
-		tree = FSTree.of(
-					files,
-					mapping::get,
-					(c1, c2) -> c1.aggregate(c1, c2))
-				.compact();
+		cells = pCellFunction;
+		minColor = pMinColor;
+		maxColor = pMaxColor;
+	}
+
+	/**
+	 * Creates a new TreeMap with color domain [0, 1].
+	 *
+	 * @param pFiles
+	 * 		The files to visualize.
+	 * @param pCellFunction
+	 * 		The function that is used to map a file to its cell.
+	 * @throws NullPointerException
+	 * 		If any of the given arguments is {@code null}.
+	 */
+	public TreeMap(final Collection<VCSFile> pFiles,
+			final Function<VCSFile, ? extends RateCell> pCellFunction)
+			throws NullPointerException {
+		this(pFiles, pCellFunction, 0, 1);
 	}
 
 	/**
@@ -237,7 +241,7 @@ public class TreeMap {
 	}
 
 	/**
-	 * Generated the resulting HTML page as a string.
+	 * Generates the resulting HTML page as a string.
 	 *
 	 * @return
 	 * 		The resulting HTML page as a string.
@@ -253,13 +257,14 @@ public class TreeMap {
 	}
 
 	/**
-	 * Generates the resulting JSON string that is used by the HTML page.
+	 * Generates the JSON string that is used by the HTML page.
 	 *
 	 * @return
-	 * 		The resulting JSON string that is used by the HTML page.
+	 * 		The JSON string that is used by the HTML page.
 	 */
 	public String generateJSON() {
 		final StringBuilder builder = new StringBuilder();
+		final FSTree<Cell> tree = createTree();
 		final FSTree.Visitor<Cell> visitor = new FSTree.Visitor<Cell>() {
 			@Override
 			public void visit(final FSTree<Cell> pTree) {
@@ -339,5 +344,31 @@ public class TreeMap {
 		try (Scanner scanner = new Scanner(bis)) {
 			return scanner.useDelimiter("\\A").next();
 		}
+	}
+
+	/**
+	 * Creates the tree that is parsed by {@link #generateJSON()}.
+	 *
+	 * @return
+	 * 		The tree that is parsed by {@link #generateJSON()}.
+	 */
+	private FSTree<Cell> createTree() {
+		final Map<VCSFile, Cell> mapping = new HashMap<>();
+		final Iterator<VCSFile> iter = files.iterator();
+		while (iter.hasNext()) {
+			final VCSFile file = iter.next();
+			final Cell cell = cells.apply(file);
+			if (cell == null) {
+				iter.remove();
+			} else if (Math.abs(cell.getSize()) < EPSILON) {
+				iter.remove();
+			} else {
+				mapping.put(file, cell);
+			}
+		}
+		return FSTree.of(files,
+				mapping::get,
+				(c1, c2) -> c1.aggregate(c1, c2))
+				.compact();
 	}
 }
