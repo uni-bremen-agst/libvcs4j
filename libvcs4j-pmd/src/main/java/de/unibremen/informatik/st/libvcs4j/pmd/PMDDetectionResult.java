@@ -1,5 +1,6 @@
 package de.unibremen.informatik.st.libvcs4j.pmd;
 
+import de.unibremen.informatik.st.libvcs4j.Revision;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import org.apache.commons.lang3.Validate;
 
@@ -7,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -32,41 +34,39 @@ public class PMDDetectionResult {
 	private final static String REVISION_HEADER = "id";
 
 	/**
-	 * Stores the detection results. Maps the analyzed revisions to
-	 * {@link PMDViolation}s
+	 * Stores the detection results. Maps the id of a revision
+	 * ({@link Revision#getId()}) to a list of {@link PMDViolation}.
 	 */
 	private LinkedHashMap<String, List<PMDViolation>>
 			revision2Violation = new LinkedHashMap<>();
 
 	/**
 	 * Similar to the {@link java.util.Map} interface, adds a mapping for the
-	 * given revision and list of violations. Overrides previous mappings.
-	 * Creates a deep copy of {@code pViolations} and all its elements.
+	 * given revision id and list of violations. Overrides previous mappings.
+	 * Creates a copy of {@code pViolations} and filters {@code null} values.
 	 *
 	 * @param pRevision
-	 * 		The revision to map.
+	 * 		The revision id to map.
 	 * @param pViolations
 	 * 		The violations detected in {@code pRevision}.
 	 * @throws NullPointerException
 	 * 		If any of the given arguments is {@code null}.
-	 * @throws IllegalArgumentException
-	 * 		If {@code pViolations} contains {@code null} values.
 	 */
 	public void put(final String pRevision,
-			final List<PMDViolation> pViolations) throws NullPointerException,
-			IllegalArgumentException {
+			final List<PMDViolation> pViolations) throws NullPointerException {
 		Validate.notNull(pRevision);
-		Validate.noNullElements(pViolations);
-		final List<PMDViolation> violations = new ArrayList<>();
-		pViolations.forEach(v -> violations.add(new PMDViolation(v)));
+		Validate.notNull(pViolations);
+		final List<PMDViolation> violations = pViolations.stream()
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
 		revision2Violation.put(pRevision, violations);
 	}
 
 	/**
-	 * Returns a deep copy of the internal map.
+	 * Returns a copy of the internal map.
 	 *
 	 * @return
-	 * 		A deep copy of the internal map.
+	 * 		A copy of the internal map.
 	 */
 	public LinkedHashMap<String, List<PMDViolation>> getViolations() {
 		final LinkedHashMap<String, List<PMDViolation>>
@@ -106,10 +106,11 @@ public class PMDDetectionResult {
 
 	/**
 	 * Returns all violations detected in {@code pRevision}. Returns an empty
-	 * list if {@code pRevision} is {@code null} or was not analyzed.
+	 * list if {@code pRevision} is {@code null} or if there is no mapping for
+	 * it.
 	 *
 	 * @param pRevision
-	 * 		The revision for which the violations are returned.
+	 * 		The requested revision.
 	 * @return
 	 * 		All violations detected in {@code pRevision}.
 	 */
@@ -123,7 +124,7 @@ public class PMDDetectionResult {
 	/**
 	 * Returns all violations triggered by {@code pRule} in {@code pRevision}.
 	 * Returns an empty list if {@code pRule} or {@code pRevision} is
-	 * {@code null} or if {@code pRevision} was not analyzed.
+	 * {@code null} or if there is not mapping for {@code pRevision}.
 	 *
 	 * @param pRevision
 	 * 		The requested revision.
@@ -147,7 +148,7 @@ public class PMDDetectionResult {
 	 * if {@code pFile} is {@code null} or was not analyzed.
 	 *
 	 * @param pFile
-	 * 		The file for which the violations are returned.
+	 * 		The requested file.
 	 * @return
 	 * 		All violations detected in {@code pFile}.
 	 */

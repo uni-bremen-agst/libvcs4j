@@ -15,7 +15,7 @@ import static java.lang.Integer.parseInt;
 /**
  * Handles the XML output of PMD and stores the result in {@link #violations}.
  */
-public class PMDSaxHandler extends DefaultHandler {
+class PMDSaxHandler extends DefaultHandler {
 
 	/**
 	 * The logger of this class.

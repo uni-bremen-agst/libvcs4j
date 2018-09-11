@@ -7,7 +7,7 @@ import org.apache.commons.lang3.Validate;
 /**
  * A readonly representation of a violation detected by PMD.
  */
-public class PMDViolation {
+public final class PMDViolation {
 
 	/**
 	 * The file containing the detected violation.
