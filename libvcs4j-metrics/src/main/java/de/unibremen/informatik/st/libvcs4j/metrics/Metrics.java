@@ -11,7 +11,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * Provides methods to calculate different metrics.
+ * Provides methods to calculate different metrics. Subclasses may override
+ * {@link #isCommentType(IToken)}, {@link #isControlType(IToken)}, and
+ * {@link #getLanguage(VCSFile)} to adapt the behavior of the computation
+ * methods to their own requirements.
  */
 public class Metrics {
 
