@@ -2,7 +2,6 @@ package de.unibremen.informatik.st.libvcs4j.pmd;
 
 import de.unibremen.informatik.st.libvcs4j.Revision;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
-import org.apache.commons.lang3.Validate;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,9 +52,10 @@ public class PMDDetectionResult {
 	 * 		If any of the given arguments is {@code null}.
 	 */
 	public void put(final String pRevision,
-			final List<PMDViolation> pViolations) throws NullPointerException {
-		Validate.notNull(pRevision);
-		Validate.notNull(pViolations);
+			final List<PMDViolation> pViolations)
+			throws NullPointerException {
+		Objects.requireNonNull(pRevision);
+		Objects.requireNonNull(pViolations);
 		final List<PMDViolation> violations = pViolations.stream()
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());

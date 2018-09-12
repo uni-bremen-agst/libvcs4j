@@ -1,14 +1,18 @@
 package de.unibremen.informatik.st.libvcs4j.pmd;
 
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
-import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import static java.lang.Integer.parseInt;
 
@@ -41,18 +45,18 @@ class PMDSaxHandler extends DefaultHandler {
 	/**
 	 * Creates a new handler that uses the given collection of files to link
 	 * violations to {@link VCSFile}s (see {@link PMDViolation#file}).
+	 * {@code null} values in {@code pFiles} are filtered.
 	 *
 	 * @param pFiles
 	 * 		The files to link violations against.
 	 * @throws NullPointerException
 	 * 		If {@code pFiles} is {@code null}.
-	 * @throws IllegalArgumentException
-	 * 		If {@code pFiles} contains null values.
 	 */
 	public PMDSaxHandler(final Collection<VCSFile> pFiles)
 			throws NullPointerException, IllegalArgumentException {
-		Validate.noNullElements(pFiles);
-		pFiles.forEach(f -> absolutePath2File.put(f.getPath(), f));
+		pFiles.stream()
+				.filter(Objects::nonNull)
+				.forEach(f -> absolutePath2File.put(f.getPath(), f));
 	}
 
 	@Override
@@ -91,10 +95,10 @@ class PMDSaxHandler extends DefaultHandler {
 	}
 
 	/**
-	 * Returns a deep copy of the detected violations.
+	 * Returns a copy of the detected violations.
 	 *
 	 * @return
-	 * 		A deep copy of the detected violations.
+	 * 		A copy of the detected violations.
 	 */
 	public List<PMDViolation> getViolations() {
 		return new ArrayList<>(violations);
