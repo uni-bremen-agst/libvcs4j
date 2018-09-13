@@ -4,12 +4,14 @@
 
 LibVCS4j is a Java programming library for repository mining with a common API for different version control systems and issue trackers. The library integrates existing software (e.g. JGit) to access repository routines, adds additional features for data analysis, and, ultimately, makes subsequent analysis tools independent from particular repository systems.
 
-|                | Package       | Javadoc       |
-| -------------- | ------------- | ------------- |
-| API            | [![Maven Central](https://img.shields.io/maven-central/v/de.uni-bremen.informatik.st/libvcs4j-api.svg)](https://maven-badges.herokuapp.com/maven-central/de.uni-bremen.informatik.st/libvcs4j-api) | [![Javadocs](https://www.javadoc.io/badge/de.uni-bremen.informatik.st/libvcs4j-api.svg)](https://www.javadoc.io/doc/de.uni-bremen.informatik.st/libvcs4j-api)
-| Implementation | [![Maven Central](https://img.shields.io/maven-central/v/de.uni-bremen.informatik.st/libvcs4j.svg)](https://maven-badges.herokuapp.com/maven-central/de.uni-bremen.informatik.st/libvcs4j) | [![Javadocs](https://www.javadoc.io/badge/de.uni-bremen.informatik.st/libvcs4j.svg)](https://www.javadoc.io/doc/de.uni-bremen.informatik.st/libvcs4j)
-| *Modules*      | <hr/>         | <hr/>         |
-| Metrics        | [![Maven Central](https://img.shields.io/maven-central/v/de.uni-bremen.informatik.st/libvcs4j-metrics.svg)](https://maven-badges.herokuapp.com/maven-central/de.uni-bremen.informatik.st/libvcs4j-metrics) | [![Javadocs](https://www.javadoc.io/badge/de.uni-bremen.informatik.st/libvcs4j-metrics.svg)](https://www.javadoc.io/doc/de.uni-bremen.informatik.st/libvcs4j-metrics) |
+|                | Package       | Javadoc       | Description |
+| -------------- | ------------- | ------------- | ----------- |
+| API            | [![Maven Central](https://img.shields.io/maven-central/v/de.uni-bremen.informatik.st/libvcs4j-api.svg)](https://maven-badges.herokuapp.com/maven-central/de.uni-bremen.informatik.st/libvcs4j-api) | [![Javadocs](https://www.javadoc.io/badge/de.uni-bremen.informatik.st/libvcs4j-api.svg)](https://www.javadoc.io/doc/de.uni-bremen.informatik.st/libvcs4j-api) | Defines the common data model. |
+| Implementation | [![Maven Central](https://img.shields.io/maven-central/v/de.uni-bremen.informatik.st/libvcs4j.svg)](https://maven-badges.herokuapp.com/maven-central/de.uni-bremen.informatik.st/libvcs4j) | [![Javadocs](https://www.javadoc.io/badge/de.uni-bremen.informatik.st/libvcs4j.svg)](https://www.javadoc.io/doc/de.uni-bremen.informatik.st/libvcs4j) | Provides the implemenation of the API. |
+| *Modules*      | <hr/>         | <hr/>         | <hr/>       |
+| D3             | [![Maven Central](https://img.shields.io/maven-central/v/de.uni-bremen.informatik.st/libvcs4j-d3.svg)](https://maven-badges.herokuapp.com/maven-central/de.uni-bremen.informatik.st/libvcs4j-d3) | [![Javadocs](https://www.javadoc.io/badge/de.uni-bremen.informatik.st/libvcs4j-d3.svg)](https://www.javadoc.io/doc/de.uni-bremen.informatik.st/libvcs4j-d3) | Visualize your results with [D3](https://d3js.org). |
+| Metrics        | [![Maven Central](https://img.shields.io/maven-central/v/de.uni-bremen.informatik.st/libvcs4j-metrics.svg)](https://maven-badges.herokuapp.com/maven-central/de.uni-bremen.informatik.st/libvcs4j-metrics) | [![Javadocs](https://www.javadoc.io/badge/de.uni-bremen.informatik.st/libvcs4j-metrics.svg)](https://www.javadoc.io/doc/de.uni-bremen.informatik.st/libvcs4j-metrics) | Allows to gather different metrics. |
+| PMD            | [![Maven Central](https://img.shields.io/maven-central/v/de.uni-bremen.informatik.st/libvcs4j-pmd.svg)](https://maven-badges.herokuapp.com/maven-central/de.uni-bremen.informatik.st/libvcs4j-pmd) | [![Javadocs](https://www.javadoc.io/badge/de.uni-bremen.informatik.st/libvcs4j-pmd.svg)](https://www.javadoc.io/doc/de.uni-bremen.informatik.st/libvcs4j-pmd) | Run [PMD](https://pmd.github.io) for every revision of a VCS. |
 
 ### Quickstart
 
@@ -121,23 +123,3 @@ Note that, due to the server limitations of some providers, extracting issues fr
 ### Installation
 
 Releases are available at [Maven Central](https://repo1.maven.org/maven2/de/uni-bremen/informatik/st/).
-
-To add the API submodule to your classpath, paste the following snippet into your pom.xml:
-
-```xml
-<dependency>
-  <groupId>de.uni-bremen.informatik.st</groupId>
-  <artifactId>libvcs4j-api</artifactId>
-  <version>1.3.2</version>
-</dependency>
-```
-
-Likewise, the implementation submodule is added as follows:
-
-```xml
-<dependency>
-  <groupId>de.uni-bremen.informatik.st</groupId>
-  <artifactId>libvcs4j</artifactId>
-  <version>1.3.2</version>
-</dependency>
-```
