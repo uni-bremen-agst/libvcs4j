@@ -1,6 +1,6 @@
 package de.unibremen.informatik.st.libvcs4j.metrics;
 
-import org.apache.commons.lang3.Validate;
+import de.unibremen.informatik.st.libvcs4j.Validate;
 
 /**
  * Stores different complexity metrics.
@@ -53,14 +53,10 @@ public class Complexity {
 		 */
 		public Halstead(final int pn1, final int pn2,
 						final int pN1, final int pN2) {
-			Validate.isTrue(pn1 >= 0, "n1 < 0");
-			Validate.isTrue(pn2 >= 0, "n2 < 0");
-			Validate.isTrue(pN1 >= 0, "N1 < 0");
-			Validate.isTrue(pN2 >= 0, "N2 < 0");
-			n1 = pn1;
-			n2 = pn2;
-			N1 = pN1;
-			N2 = pN2;
+			n1 = Validate.notNegative(pn1, "n1 < 0");
+			n2 = Validate.notNegative(pn2, "n2 < 0");
+			N1 = Validate.notNegative(pN1, "N1 < 0");
+			N2 = Validate.notNegative(pN2, "N2 < 0");
 		}
 
 		/**

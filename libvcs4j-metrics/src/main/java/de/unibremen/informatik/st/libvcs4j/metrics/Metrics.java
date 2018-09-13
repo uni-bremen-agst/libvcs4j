@@ -1,8 +1,13 @@
 package de.unibremen.informatik.st.libvcs4j.metrics;
 
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
-import org.apache.commons.lang3.Validate;
-import org.conqat.lib.scanner.*;
+import de.unibremen.informatik.st.libvcs4j.Validate;
+import org.conqat.lib.scanner.ELanguage;
+import org.conqat.lib.scanner.ETokenType;
+import org.conqat.lib.scanner.IScanner;
+import org.conqat.lib.scanner.IToken;
+import org.conqat.lib.scanner.ScannerException;
+import org.conqat.lib.scanner.ScannerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;

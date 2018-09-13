@@ -1,6 +1,6 @@
 package de.unibremen.informatik.st.libvcs4j.metrics;
 
-import org.apache.commons.lang3.Validate;
+import de.unibremen.informatik.st.libvcs4j.Validate;
 
 /**
  * Stores different size metrics.
@@ -63,18 +63,12 @@ public class Size {
 	public Size(final int pLOC, final int pSLOC, final int pCLOC,
 				final int pNOT, final int pSNOT, final int pCNOT)
 			throws IllegalArgumentException {
-		Validate.isTrue(pLOC  >= 0,  "LOC < 0");
-		Validate.isTrue(pSLOC >= 0, "SLOC < 0");
-		Validate.isTrue(pCLOC >= 0, "CLOC < 0");
-		Validate.isTrue(pNOT  >= 0,  "NOT < 0");
-		Validate.isTrue(pSNOT >= 0, "SNOT < 0");
-		Validate.isTrue(pCNOT >= 0, "CNOT < 0");
-		LOC = pLOC;
-		SLOC = pSLOC;
-		CLOC = pCLOC;
-		NOT = pNOT;
-		SNOT = pSNOT;
-		CNOT = pCNOT;
+		LOC =  Validate.notNegative(pLOC,  "LOC < 0");
+		SLOC = Validate.notNegative(pSLOC, "SLOC < 0");
+		CLOC = Validate.notNegative(pCLOC, "CLOC < 0");
+		NOT =  Validate.notNegative(pNOT,  "NOT < 0");
+		SNOT = Validate.notNegative(pSNOT, "SNOT < 0");
+		CNOT = Validate.notNegative(pCNOT, "CNOT < 0");
 	}
 
 	/**
