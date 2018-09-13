@@ -2,9 +2,16 @@ package de.unibremen.informatik.st.libvcs4j.d3;
 
 import de.unibremen.informatik.st.libvcs4j.FSTree;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
+import de.unibremen.informatik.st.libvcs4j.Validate;
 
 import java.io.BufferedInputStream;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Scanner;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -172,8 +179,8 @@ public class TreeMap {
 			final Function<VCSFile, ? extends Cell> pCellFunction,
 			final double pMinColor, final double pMaxColor)
 			throws NullPointerException, IllegalArgumentException {
-		Objects.requireNonNull(pFiles);
-		Objects.requireNonNull(pCellFunction);
+		Validate.notNull(pFiles);
+		Validate.notNull(pCellFunction);
 		if (pMinColor > pMaxColor) {
 			throw new IllegalArgumentException(String.format(
 					"Minimum color value (%f) > maximum color value (%f)",
