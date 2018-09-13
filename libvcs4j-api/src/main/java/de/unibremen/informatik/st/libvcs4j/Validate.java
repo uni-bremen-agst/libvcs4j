@@ -470,7 +470,7 @@ public class Validate {
 	}
 
 	/**
-	 * Validates that {@code i} is positive ({@code >= 0}).
+	 * Validates that {@code i} is positive ({@code > 0}).
 	 *
 	 * @param i
 	 * 		The integer to validate.
@@ -487,7 +487,7 @@ public class Validate {
 	}
 
 	/**
-	 * Validates that {@code i} is positive ({@code >= 0}).
+	 * Validates that {@code i} is positive ({@code > 0}).
 	 *
 	 * @param i
 	 * 		The integer to validate.
@@ -509,7 +509,7 @@ public class Validate {
 	}
 
 	/**
-	 * Validates that {@code d} is positive ({@code >= 0}).
+	 * Validates that {@code d} is positive ({@code > 0}).
 	 *
 	 * @param d
 	 * 		The double to validate.
@@ -526,7 +526,7 @@ public class Validate {
 		return d;
 	}
 	/**
-	 * Validates that {@code d} is positive ({@code >= 0}).
+	 * Validates that {@code d} is positive ({@code > 0}).
 	 *
 	 * @param d
 	 * 		The double to validate.
