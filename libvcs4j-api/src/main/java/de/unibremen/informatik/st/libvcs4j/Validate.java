@@ -18,7 +18,7 @@ public class Validate {
 	 * @param t
 	 * 		The value to validate.
 	 * @param <T>
-	 *     	The type of {@code t}.
+	 * 		The type of {@code t}.
 	 * @return
 	 * 		{@code t}, never {@code null}.
 	 * @throws NullPointerException
@@ -41,7 +41,7 @@ public class Validate {
 	 * @param args
 	 * 		The arguments to pass to {@link String#format(String, Object...)}.
 	 * @param <T>
-	 *     	The type of {@code t}.
+	 * 		The type of {@code t}.
 	 * @return
 	 * 		{@code t}, never {@code null}.
 	 * @throws NullPointerException
@@ -63,7 +63,7 @@ public class Validate {
 	 * @param t
 	 * 		The value to validate.
 	 * @param <T>
-	 *     	The type of {@code t}.
+	 * 		The type of {@code t}.
 	 * @return
 	 * 		{@code t}, never {@code null}.
 	 * @throws NullPointerException
@@ -92,7 +92,7 @@ public class Validate {
 	 * @param args
 	 * 		The arguments to pass to {@link String#format(String, Object...)}.
 	 * @param <T>
-	 *     	The type of {@code t}.
+	 * 		The type of {@code t}.
 	 * @return
 	 * 		{@code t}, never {@code null}.
 	 * @throws NullPointerException
@@ -119,7 +119,7 @@ public class Validate {
 	 * @param t
 	 * 		The value to validate.
 	 * @param <T>
-	 *     	The type of {@code t}.
+	 * 		The type of {@code t}.
 	 * @return
 	 * 		{@code t}, never {@code null}.
 	 * @throws NullPointerException
@@ -146,7 +146,7 @@ public class Validate {
 	 * @param args
 	 * 		The arguments to pass to {@link String#format(String, Object...)}.
 	 * @param <T>
-	 *     	The type of {@code t}.
+	 * 		The type of {@code t}.
 	 * @return
 	 * 		{@code t}, never {@code null}.
 	 * @throws NullPointerException
