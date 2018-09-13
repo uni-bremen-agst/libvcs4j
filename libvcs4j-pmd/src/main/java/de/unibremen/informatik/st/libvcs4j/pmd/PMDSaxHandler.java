@@ -1,6 +1,7 @@
 package de.unibremen.informatik.st.libvcs4j.pmd;
 
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
+import de.unibremen.informatik.st.libvcs4j.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
@@ -68,7 +69,7 @@ class PMDSaxHandler extends DefaultHandler {
 		} else if (qName.equals("violation") && path != null) {
 			try {
 				final VCSFile file = absolutePath2File.get(path);
-				Objects.requireNonNull(file);
+				Validate.validateState(file != null);
 
 				final int bl = parseInt(attributes.getValue("beginline"));
 				final int el = parseInt(attributes.getValue("endline"));
@@ -76,10 +77,10 @@ class PMDSaxHandler extends DefaultHandler {
 				final int ec = parseInt(attributes.getValue("endcolumn"));
 
 				final String rule = attributes.getValue("rule");
-				Objects.requireNonNull(rule);
+				Validate.validateState(rule != null);
 
 				final String ruleSet = attributes.getValue("ruleset");
-				Objects.requireNonNull(ruleSet);
+				Validate.validateState(ruleSet != null);
 
 				final PMDViolation v = new PMDViolation(file,
 						new VCSFile.Position(bl, bc, 4),

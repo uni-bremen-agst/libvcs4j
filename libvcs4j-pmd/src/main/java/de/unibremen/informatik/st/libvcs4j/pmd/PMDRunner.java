@@ -2,6 +2,7 @@ package de.unibremen.informatik.st.libvcs4j.pmd;
 
 import de.unibremen.informatik.st.libvcs4j.Revision;
 import de.unibremen.informatik.st.libvcs4j.VCSEngine;
+import de.unibremen.informatik.st.libvcs4j.Validate;
 import net.sourceforge.pmd.PMD;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +49,7 @@ public class PMDRunner {
 	 * 		If {@code pRules} is {@code null}.
 	 */
 	public PMDRunner(final List<String> pRules) throws NullPointerException {
-		Objects.requireNonNull(pRules);
+		Validate.notNull(pRules);
 		rules = pRules.stream()
 				.filter(Objects::nonNull)
 				.map(String::trim)
@@ -81,7 +82,7 @@ public class PMDRunner {
 	 */
 	public PMDDetectionResult run(final Revision pRevision)
 			throws NullPointerException, IOException {
-		Objects.requireNonNull(pRevision);
+		Validate.notNull(pRevision);
 		final PMDDetectionResult result = new PMDDetectionResult();
 		result.put(pRevision.getId(), detect(pRevision));
 		return result;
@@ -100,7 +101,7 @@ public class PMDRunner {
 	 */
 	public PMDDetectionResult run(final VCSEngine pEngine)
 			throws NullPointerException {
-		Objects.requireNonNull(pEngine);
+		Validate.notNull(pEngine);
 		final PMDDetectionResult result = new PMDDetectionResult();
 		pEngine.forEach(v -> {
 			final String rev = v.getRevision().getId();

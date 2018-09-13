@@ -2,8 +2,7 @@ package de.unibremen.informatik.st.libvcs4j.pmd;
 
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.VCSFile.Position;
-
-import java.util.Objects;
+import de.unibremen.informatik.st.libvcs4j.Validate;
 
 /**
  * A readonly representation of a violation detected by PMD.
@@ -57,11 +56,11 @@ public final class PMDViolation {
 	public PMDViolation(final VCSFile pFile, final Position pBegin,
 			final Position pEnd, final String pRule, final String pRuleSet)
 			throws NullPointerException, IllegalArgumentException {
-		file = Objects.requireNonNull(pFile);
-		begin = Objects.requireNonNull(pBegin);
-		end = Objects.requireNonNull(pEnd);
-		rule = Objects.requireNonNull(pRule);
-		ruleSet = Objects.requireNonNull(pRuleSet);
+		file = Validate.notNull(pFile);
+		begin = Validate.notNull(pBegin);
+		end = Validate.notNull(pEnd);
+		rule = Validate.notNull(pRule);
+		ruleSet = Validate.notNull(pRuleSet);
 		if (pBegin.getLine() > pEnd.getLine()) {
 			throw new IllegalArgumentException(String.format(
 					"Begin line (%s) > end line (%s)",
@@ -84,7 +83,7 @@ public final class PMDViolation {
 	 */
 	public PMDViolation(final PMDViolation pOther)
 			throws NullPointerException {
-		this(Objects.requireNonNull(pOther).file, pOther.begin,
+		this(Validate.notNull(pOther).file, pOther.begin,
 				pOther.end, pOther.rule, pOther.ruleSet);
 	}
 
