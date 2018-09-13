@@ -6,7 +6,7 @@ import static java.lang.String.format;
 
 /**
  * Utility class to validate input parameters and the current state. In order
- * to distinguish a {@code null} parameter and a parameter containing
+ * to distinguish {@code null} parameters and a parameters containing
  * {@code null} a {@link NullPointerException} and
  * {@link IllegalArgumentException} is thrown respectively.
  */
@@ -48,10 +48,9 @@ public class Validate {
 	 * 		If {@code t} is {@code null}.
 	 */
 	public static <T> T notNull(final T t, final String message,
-			final String... args) throws NullPointerException {
+			final Object... args) throws NullPointerException {
 		if (t == null) {
-			throw new NullPointerException(
-					format(message, (Object[]) args));
+			throw new NullPointerException(format(message, args));
 		}
 		return t;
 	}
@@ -101,12 +100,11 @@ public class Validate {
 	 * 		If {@code t} contains {@code null}.
 	 */
 	public static <T extends Collection<?>> T noNullElements(final T t,
-			final String message, final String... args)
+			final String message, final Object... args)
 			throws NullPointerException, IllegalArgumentException {
 		for (final Object o : notNull(t)) {
 			if (o == null) {
-				throw new IllegalArgumentException(
-						format(message, (Object[]) args));
+				throw new IllegalArgumentException(format(message, args));
 			}
 		}
 		return t;
@@ -155,11 +153,10 @@ public class Validate {
 	 * 		If {@code t} contains {@code null} or is empty.
 	 */
 	public static <T extends Collection<?>> T notEmpty(final T t,
-			final String message, final String... args)
+			final String message, final Object... args)
 			throws NullPointerException, IllegalArgumentException {
 		if (noNullElements(t).isEmpty()) {
-			throw new IllegalArgumentException(
-					format(message, (Object[]) args));
+			throw new IllegalArgumentException(format(message, args));
 		}
 		return t;
 	}
@@ -201,11 +198,10 @@ public class Validate {
 	 * 		If {@code s} is empty.
 	 */
 	public static String notEmpty(final String s, final String message,
-			final String... args) throws NullPointerException,
+			final Object... args) throws NullPointerException,
 			IllegalArgumentException {
 		if (notNull(s).isEmpty()) {
-			throw new IllegalArgumentException(
-					format(message, (Object[]) args));
+			throw new IllegalArgumentException(format(message, args));
 		}
 		return s;
 	}
@@ -251,11 +247,10 @@ public class Validate {
 	 * 		If {@code s} consists of spaces only.
 	 */
 	public static String notBlank(final String s, final String message,
-			final String... args) throws NullPointerException,
+			final Object... args) throws NullPointerException,
 			IllegalArgumentException {
 		if (notNull(s).trim().isEmpty()) {
-			throw new IllegalArgumentException(
-					format(message, (Object[]) args));
+			throw new IllegalArgumentException(format(message, args));
 		}
 		return s;
 	}
@@ -305,13 +300,12 @@ public class Validate {
 	 * 		If {@code s} does not match {@code pattern}.
 	 */
 	public static String hasPattern(final String s, final String pattern,
-			final String message, final String... args)
+			final String message, final Object... args)
 			throws NullPointerException, IllegalArgumentException {
 		notNull(s);
 		notNull(pattern);
 		if (!s.matches(pattern)) {
-			throw new IllegalArgumentException(
-					format(message, (Object[]) args));
+			throw new IllegalArgumentException(format(message, args));
 		}
 		return s;
 	}
@@ -349,10 +343,9 @@ public class Validate {
 	 * 		If {@code i < 0}.
 	 */
 	public static int notNegative(final int i, final String message,
-			final String... args) throws IllegalArgumentException {
+			final Object... args) throws IllegalArgumentException {
 		if (i < 0) {
-			throw new IllegalArgumentException(
-					format(message, (Object[]) args));
+			throw new IllegalArgumentException(format(message, args));
 		}
 		return i;
 	}
@@ -390,10 +383,9 @@ public class Validate {
 	 * 		If {@code d < 0}.
 	 */
 	public static double notNegative(final double d, final String message,
-			final String... args) throws IllegalArgumentException {
+			final Object... args) throws IllegalArgumentException {
 		if (d < 0) {
-			throw new IllegalArgumentException(
-					format(message, (Object[]) args));
+			throw new IllegalArgumentException(format(message, args));
 		}
 		return d;
 	}
@@ -430,10 +422,9 @@ public class Validate {
 	 * 		If {@code i >= 0}.
 	 */
 	public static int isNegative(final int i, final String message,
-			final String... args) throws IllegalArgumentException {
+			final Object... args) throws IllegalArgumentException {
 		if (i >= 0) {
-			throw new IllegalArgumentException(
-					format(message, (Object[]) args));
+			throw new IllegalArgumentException(format(message, args));
 		}
 		return i;
 	}
@@ -471,10 +462,9 @@ public class Validate {
 	 * 		If {@code d >= 0}.
 	 */
 	public static double isNegative(final double d, final String message,
-			final String... args) throws IllegalArgumentException {
+			final Object... args) throws IllegalArgumentException {
 		if (d >= 0) {
-			throw new IllegalArgumentException(
-					format(message, (Object[]) args));
+			throw new IllegalArgumentException(format(message, args));
 		}
 		return d;
 	}
@@ -511,10 +501,9 @@ public class Validate {
 	 * 		If {@code i <= 0}.
 	 */
 	public static int isPositive(final int i, final String message,
-			final String... args) throws IllegalArgumentException {
+			final Object... args) throws IllegalArgumentException {
 		if (i < 1) {
-			throw new IllegalArgumentException(
-					format(message, (Object[]) args));
+			throw new IllegalArgumentException(format(message, args));
 		}
 		return i;
 	}
@@ -551,10 +540,9 @@ public class Validate {
 	 * 		If {@code d <= 0}.
 	 */
 	public static double isPositive(final double d, final String message,
-			final String... args) throws IllegalArgumentException {
+			final Object... args) throws IllegalArgumentException {
 		if (d < 1) {
-			throw new IllegalArgumentException(
-					format(message, (Object[]) args));
+			throw new IllegalArgumentException(format(message, args));
 		}
 		return d;
 	}
@@ -562,14 +550,14 @@ public class Validate {
 	/**
 	 * Validates that {@code from <= t <= to}.
 	 *
+	 * @param t
+	 * 		The value to validate.
 	 * @param from
 	 * 		The from value.
 	 * @param to
 	 * 		The to value.
-	 * @param t
-	 * 		The value to validate.
 	 * @param <T>
-	 *     	The type of {@code from}, {@code to}, and {@code t}.
+	 *     	The type of {@code t}, {@code from}, and {@code to}.
 	 * @return
 	 * 		{@code t}, never a value {@code < from} or {@code > to}.
 	 * @throws NullPointerException
@@ -577,15 +565,15 @@ public class Validate {
 	 * @throws IllegalArgumentException
 	 * 		If {@code t < from} or {@code t > to}.
 	 */
-	public static <T extends Comparable<T>> T hasRange(final T from,
-			final T to, final T t) throws NullPointerException,
+	public static <T extends Comparable<T>> T hasRange(final T t, final T from,
+			final T to) throws NullPointerException,
 			IllegalArgumentException {
 		notNull(from);
 		notNull(to);
 		notNull(t);
-		if (from.compareTo(t) < 0) {
+		if (from.compareTo(t) > 0) {
 			throw new IllegalArgumentException();
-		} else if (to.compareTo(t) > 0) {
+		} else if (to.compareTo(t) < 0) {
 			throw new IllegalArgumentException();
 		}
 		return t;
@@ -594,18 +582,18 @@ public class Validate {
 	/**
 	 * Validates that {@code from <= t <= to}.
 	 *
+	 * @param t
+	 * 		The value to validate.
 	 * @param from
 	 * 		The from value.
 	 * @param to
 	 * 		The to value.
-	 * @param t
-	 * 		The value to validate.
 	 * @param message
 	 * 		The message of the thrown exception.
 	 * @param args
 	 * 		The arguments to pass to {@link String#format(String, Object...)}.
 	 * @param <T>
-	 *     	The type of {@code from}, {@code to}, and {@code t}.
+	 *     	The type of {@code t}, {@code from}, and {@code to}.
 	 * @return
 	 * 		{@code t}, never a value {@code < from} or {@code > to}.
 	 * @throws NullPointerException
@@ -613,18 +601,16 @@ public class Validate {
 	 * @throws IllegalArgumentException
 	 * 		If {@code t < from} or {@code t > to}.
 	 */
-	public static <T extends Comparable<T>> T hasRange(final T from,
-			final T to, final T t, final String message, final String... args)
+	public static <T extends Comparable<T>> T hasRange(final T t, final T from,
+			final T to, final String message, final Object... args)
 			throws NullPointerException, IllegalArgumentException {
 		notNull(from);
 		notNull(to);
 		notNull(t);
-		if (from.compareTo(t) < 0) {
-			throw new IllegalArgumentException(
-					format(message, (Object[]) args));
-		} else if (to.compareTo(t) > 0) {
-			throw new IllegalArgumentException(
-					format(message, (Object[]) args));
+		if (from.compareTo(t) > 0) {
+			throw new IllegalArgumentException(format(message, args));
+		} else if (to.compareTo(t) < 0) {
+			throw new IllegalArgumentException(format(message, args));
 		}
 		return t;
 	}
@@ -673,7 +659,7 @@ public class Validate {
 	 * 		If {@code t <= compare}.
 	 */
 	public static <T extends Comparable<T>> T isGreaterThan(final T t,
-			final T compare, final String message, final String... args)
+			final T compare, final String message, final Object... args)
 			throws NullPointerException, IllegalArgumentException {
 		isGreaterThanOrEquals(t, compare, message, args);
 		return notEquals(t, compare, message, args);
@@ -727,13 +713,12 @@ public class Validate {
 	 * 		If {@code t < compare}.
 	 */
 	public static <T extends Comparable<T>> T isGreaterThanOrEquals(final T t,
-			final T compare, final String message, final String... args)
+			final T compare, final String message, final Object... args)
 			throws NullPointerException, IllegalArgumentException {
 		notNull(t);
 		notNull(compare);
 		if (compare.compareTo(t) > 0) {
-			throw new IllegalArgumentException(
-					format(message, (Object[]) args));
+			throw new IllegalArgumentException(format(message, args));
 		}
 		return t;
 	}
@@ -786,13 +771,12 @@ public class Validate {
 	 * 		If {@code t.compareTo(compare) != 0}.
 	 */
 	public static <T extends Comparable<T>> T isEquals(final T t,
-			final T compare, final String message, final String... args)
+			final T compare, final String message, final Object... args)
 			throws NullPointerException, IllegalArgumentException {
 		notNull(t);
 		notNull(compare);
 		if (t.compareTo(compare) != 0) {
-			throw new IllegalArgumentException(
-					format(message, (Object[]) args));
+			throw new IllegalArgumentException(format(message, args));
 		}
 		return t;
 	}
@@ -845,13 +829,12 @@ public class Validate {
 	 * 		If {@code t.compareTo(compare) == 0}.
 	 */
 	public static <T extends Comparable<T>> T notEquals(final T t,
-			final T compare, final String message, final String... args)
+			final T compare, final String message, final Object... args)
 			throws NullPointerException, IllegalArgumentException {
 		notNull(t);
 		notNull(compare);
 		if (t.compareTo(compare) == 0) {
-			throw new IllegalArgumentException(
-					format(message, (Object[]) args));
+			throw new IllegalArgumentException(format(message, args));
 		}
 		return t;
 	}
@@ -951,7 +934,7 @@ public class Validate {
 	 * 		If {@code t.compareTo(compare) >= 0}.
 	 */
 	public static <T extends Comparable<T>> T isLessThan(final T t,
-			final T compare, final String message, final String... args)
+			final T compare, final String message, final Object... args)
 			throws NullPointerException, IllegalArgumentException {
 		notEquals(compare, t, message, args);
 		isGreaterThan(compare, t, message, args);
@@ -986,9 +969,9 @@ public class Validate {
 	 * 		If {@code b} is {@code false}.
 	 */
 	public static void isTrue(final boolean b, final String message,
-			final String... args) throws IllegalArgumentException {
+			final Object... args) throws IllegalArgumentException {
 		if (!b) {
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException(format(message, args));
 		}
 	}
 
@@ -1018,7 +1001,7 @@ public class Validate {
 	 * 		If {@code b} is {@code true}.
 	 */
 	public static void isFalse(final boolean b, final String message,
-			final String... args) throws IllegalArgumentException {
+			final Object... args) throws IllegalArgumentException {
 		isTrue(!b, message, args);
 	}
 
@@ -1050,10 +1033,34 @@ public class Validate {
 	 *		If the expression evaluates to {@code false}.
 	 */
 	public static void validateState(final boolean expression,
-			final String message, final String... args)
+			final String message, final Object... args)
 			throws IllegalStateException {
 		if (!expression) {
-			throw new IllegalStateException(format(message, (Object[]) args));
+			throw new IllegalStateException(format(message, args));
 		}
+	}
+
+	/**
+	 * Throws a {@link IllegalStateException}.
+	 *
+	 * @throws IllegalStateException
+	 * 		Thrown by this method.
+	 */
+	public static void fail() throws IllegalStateException {
+		validateState(false);
+	}
+
+	/**
+	 * Throws a {@link IllegalStateException}.
+	 *
+	 * @param message
+	 * 		The message of the thrown exception.
+	 * @param args
+	 * 		The arguments to pass to {@link String#format(String, Object...)}.
+	 * @throws IllegalStateException
+	 * 		Thrown by this method.
+	 */
+	public static void fail(final String message, final Object... args) {
+		validateState(false, message, args);
 	}
 }

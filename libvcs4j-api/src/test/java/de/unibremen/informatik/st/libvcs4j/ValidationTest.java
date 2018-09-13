@@ -243,4 +243,28 @@ public class ValidationTest {
 		assertThat(Validate.isLessThanOrEquals(7.0, 7.1, "%s", "foobar"))
 				.isEqualTo(7.0, offset(0.0001));
 	}
+
+	@Test
+	public void hasRangeWithFromViolation() {
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> Validate.hasRange(3, 4, 5));
+	}
+
+	@Test
+	public void hasRangeWithToViolation() {
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> Validate.hasRange(3, 1, 2));
+	}
+
+	@Test
+	public void hasRangeWithValidRange() {
+		assertThat(Validate.hasRange(5, 2, 7))
+				.isEqualTo(5);
+	}
+
+	@Test
+	public void hasRangeWithValidRangeInclusive() {
+		assertThat(Validate.hasRange(10, 10, 10))
+				.isEqualTo(10);
+	}
 }
