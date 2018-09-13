@@ -5,7 +5,6 @@ import de.unibremen.informatik.st.libvcs4j.filesystem.SingleEngine;
 import de.unibremen.informatik.st.libvcs4j.git.GitEngine;
 import de.unibremen.informatik.st.libvcs4j.hg.HGEngine;
 import de.unibremen.informatik.st.libvcs4j.svn.SVNEngine;
-import org.apache.commons.lang3.Validate;
 
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -20,8 +19,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 import java.util.Optional;
 import java.util.UUID;
-
-import static org.apache.commons.lang3.Validate.notNull;
 
 /**
  * A generic builder for {@link VCSEngine} instances that has been designed to
@@ -115,7 +112,7 @@ public class VCSEngineBuilder {
 	/////////////////////////////// Fluent API ////////////////////////////////
 
 	public VCSEngineBuilder withRepository(final String pRepository) {
-		repository = notNull(pRepository).trim();
+		repository = Validate.notNull(pRepository).trim();
 		return this;
 	}
 

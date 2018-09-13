@@ -10,6 +10,7 @@ import de.unibremen.informatik.st.libvcs4j.Revision;
 import de.unibremen.informatik.st.libvcs4j.RevisionRange;
 import de.unibremen.informatik.st.libvcs4j.VCSEngine;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
+import de.unibremen.informatik.st.libvcs4j.Validate;
 import de.unibremen.informatik.st.libvcs4j.data.FileChangeImpl;
 import de.unibremen.informatik.st.libvcs4j.data.VCSFileImpl;
 import de.unibremen.informatik.st.libvcs4j.data.CommitImpl;
@@ -17,7 +18,6 @@ import de.unibremen.informatik.st.libvcs4j.data.LineChangeImpl;
 import de.unibremen.informatik.st.libvcs4j.data.RevisionImpl;
 import de.unibremen.informatik.st.libvcs4j.data.RevisionRangeImpl;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalReturnException;
-import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,7 +109,7 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 		init();
 
 		revisionIdx++;
-		Validate.validState(revisionIdx >= 0, // just to be sure
+		Validate.validateState(revisionIdx >= 0, // just to be sure
 				"Attribute `revisionIdx` must not be negative");
 		// there are not more revisions available
 		if (revisionIdx >= revisions.size()) {
@@ -363,7 +363,7 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 				})
 				.forEach(fileChanges::add);
 		if (revisionIdx > 0) {
-			Validate.validState(currentRevision != null);
+			Validate.validateState(currentRevision != null);
 			pChanges.getRemoved().stream()
 					.map(Paths::get)
 					.map(r -> {
@@ -426,7 +426,7 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 	}
 
 	private String getPreviousRevision() {
-		Validate.validState(revisionIdx >= 1,
+		Validate.validateState(revisionIdx >= 1,
 				"There is no previous revision available");
 		return revisions.get(revisionIdx - 1);
 	}

@@ -1,9 +1,9 @@
 package de.unibremen.informatik.st.libvcs4j.engine;
 
 import de.unibremen.informatik.st.libvcs4j.VCSEngineBuilder;
+import de.unibremen.informatik.st.libvcs4j.Validate;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalIntervalException;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalReturnException;
-import org.apache.commons.lang3.Validate;
 
 import java.io.IOException;
 import java.nio.file.Path;

@@ -3,13 +3,13 @@ package de.unibremen.informatik.st.libvcs4j.filesystem;
 import de.unibremen.informatik.st.libvcs4j.LineInfo;
 import de.unibremen.informatik.st.libvcs4j.VCSEngineBuilder;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
+import de.unibremen.informatik.st.libvcs4j.Validate;
 import de.unibremen.informatik.st.libvcs4j.data.CommitImpl;
 import de.unibremen.informatik.st.libvcs4j.data.LineInfoImpl;
 import de.unibremen.informatik.st.libvcs4j.engine.AbstractVSCEngine;
 import de.unibremen.informatik.st.libvcs4j.engine.Changes;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalRepositoryException;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalTargetException;
-import org.apache.commons.lang3.Validate;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -74,7 +74,7 @@ public class SingleEngine extends AbstractVSCEngine {
 	@Override
 	protected List<String> validateMapRevisions(
 			final List<String> pRevisions) {
-		Validate.validState(false, "This method should not have been called");
+		Validate.fail("This method should not have been called");
 		return null; // just for the compiler
 	}
 

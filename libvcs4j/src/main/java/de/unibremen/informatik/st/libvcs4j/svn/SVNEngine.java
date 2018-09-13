@@ -4,6 +4,7 @@ import de.unibremen.informatik.st.libvcs4j.LineInfo;
 import de.unibremen.informatik.st.libvcs4j.VCSEngine;
 import de.unibremen.informatik.st.libvcs4j.VCSEngineBuilder;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
+import de.unibremen.informatik.st.libvcs4j.Validate;
 import de.unibremen.informatik.st.libvcs4j.data.CommitImpl;
 import de.unibremen.informatik.st.libvcs4j.data.LineInfoImpl;
 import de.unibremen.informatik.st.libvcs4j.engine.AbstractIntervalVCSEngine;
@@ -15,7 +16,6 @@ import de.unibremen.informatik.st.libvcs4j.exception.IllegalTargetException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
-import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tmatesoft.svn.core.SVNException;
@@ -475,7 +475,7 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 					SVNRevision.create(0), revision, handler);
 			final List<String> lines = pFile.readLinesWithEOL();
 			final List<LineInfo> lineInfoList = handler.lineInfoList;
-			Validate.validState(lines.size() == lineInfoList.size());
+			Validate.validateState(lines.size() == lineInfoList.size());
 			return lineInfoList;
 		} catch (final SVNException | UncheckedIOException e) {
 			throw new IOException(e);

@@ -3,6 +3,7 @@ package de.unibremen.informatik.st.libvcs4j.git;
 import de.unibremen.informatik.st.libvcs4j.LineInfo;
 import de.unibremen.informatik.st.libvcs4j.VCSEngineBuilder;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
+import de.unibremen.informatik.st.libvcs4j.Validate;
 import de.unibremen.informatik.st.libvcs4j.data.LineInfoImpl;
 import de.unibremen.informatik.st.libvcs4j.engine.AbstractIntervalVCSEngine;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalRevisionException;
@@ -11,7 +12,6 @@ import de.unibremen.informatik.st.libvcs4j.data.CommitImpl;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalIntervalException;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalRepositoryException;
 import de.unibremen.informatik.st.libvcs4j.engine.Changes;
-import org.apache.commons.lang3.Validate;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -52,8 +52,6 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import static org.apache.commons.lang3.Validate.validState;
 
 /**
  * @author Marcel Steinbeck
@@ -307,8 +305,7 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 										toAbsolutePath(entry.getNewPath())));
 								break;
 							default:
-								validState(false,
-										"Unexpected change type '%c'",
+								Validate.fail("Unexpected change type '%c'",
 										entry.getChangeType());
 						}
 					});
@@ -323,7 +320,7 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 						if (removed) {
 							final boolean added = changes.getAdded().remove(
 									toAbsolutePath(rename.getNewPath()));
-							Validate.validState(added,
+							Validate.validateState(added,
 									"Found rename with missing add part");
 							changes.getRelocated().add(new SimpleEntry<>(
 									toAbsolutePath(rename.getOldPath()),
@@ -511,11 +508,11 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 		} catch (final GitAPIException e) {
 			throw new IOException(e);
 		}
-		validState(commits.size() == 1, String.format(
+		Validate.validateState(commits.size() == 1, String.format(
 				"Unexpected number of commits: Expected %d, Actual %d",
 				1, commits.size()));
-		validState(commits.get(0).getName().equals(pRevision), String.format(
-				"Unexpected revision: Expected '%s', Actual '%s'",
+		Validate.validateState(commits.get(0).getName().equals(pRevision),
+				String.format("Unexpected revision: Expected '%s', Actual '%s'",
 				pRevision, commits.get(0).getName()));
 
 		final RevCommit rc = commits.get(0);

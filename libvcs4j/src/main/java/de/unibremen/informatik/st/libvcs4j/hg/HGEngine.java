@@ -16,6 +16,7 @@ import com.aragost.javahg.commands.flags.UpdateCommandFlags;
 import de.unibremen.informatik.st.libvcs4j.LineInfo;
 import de.unibremen.informatik.st.libvcs4j.VCSEngineBuilder;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
+import de.unibremen.informatik.st.libvcs4j.Validate;
 import de.unibremen.informatik.st.libvcs4j.data.LineInfoImpl;
 import de.unibremen.informatik.st.libvcs4j.engine.AbstractIntervalVCSEngine;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalIntervalException;
@@ -24,7 +25,6 @@ import de.unibremen.informatik.st.libvcs4j.exception.IllegalRevisionException;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalTargetException;
 import de.unibremen.informatik.st.libvcs4j.data.CommitImpl;
 import de.unibremen.informatik.st.libvcs4j.engine.Changes;
-import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -238,7 +238,7 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 
 	@Override
 	protected void checkoutImpl(final String pRevision) throws IOException {
-		Validate.validState(repository != null);
+		Validate.validateState(repository != null);
 		try {
 			UpdateCommandFlags.on(repository)
 					.rev(pRevision)
@@ -252,7 +252,7 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	@Override
 	protected Changes createChangesImpl(final String pFromRev,
 			final String pToRev) throws IOException {
-		Validate.validState(repository != null);
+		Validate.validateState(repository != null);
 
 		final StatusResult result;
 		try {
@@ -261,10 +261,10 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 		} catch (final RuntimeException e) {
 			throw new IOException(e);
 		}
-		Validate.validState(result.getClean().isEmpty());
-		Validate.validState(result.getIgnored().isEmpty());
-		Validate.validState(result.getMissing().isEmpty());
-		Validate.validState(result.getUnknown().isEmpty());
+		Validate.validateState(result.getClean().isEmpty());
+		Validate.validateState(result.getIgnored().isEmpty());
+		Validate.validateState(result.getMissing().isEmpty());
+		Validate.validateState(result.getUnknown().isEmpty());
 
 		final Changes changes = new Changes();
 		result.getAdded().stream()
@@ -290,7 +290,7 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	@Override
 	protected byte[] readAllBytesImpl(final String pPath,
 			final String pRevision) throws IOException {
-		Validate.validState(repository != null);
+		Validate.validateState(repository != null);
 
 		final InputStream is;
 		try {
@@ -314,7 +314,7 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	@Override
 	protected List<LineInfo> readLineInfoImpl(final VCSFile pFile)
 			throws IOException {
-		Validate.validState(repository != null);
+		Validate.validateState(repository != null);
 
 		try {
 			final Path path = Paths.get(getRoot(), pFile.getRelativePath());
@@ -358,7 +358,7 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	@Override
 	protected CommitImpl createCommitImpl(final String pRevision)
 			throws IOException {
-		Validate.validState(repository != null);
+		Validate.validateState(repository != null);
 
 		final List<Changeset> changes;
 		try {
@@ -367,7 +367,7 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 		} catch (final RuntimeException e) {
 			throw new IOException(e);
 		}
-		Validate.validState(changes.size() == 1,
+		Validate.validateState(changes.size() == 1,
 				"Unexpected number of log entries: Expected %d, Actual %d",
 				1, changes.size());
 		final Changeset changeset = changes.get(0);
@@ -412,7 +412,7 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	@Override
 	protected List<String> listRevisionsImpl(final LocalDateTime pSince,
 			final LocalDateTime pUntil) throws IOException {
-		Validate.validState(repository != null);
+		Validate.validateState(repository != null);
 
 		LocalDateTime xUntil = pUntil;
 		if (xUntil.isAfter(MAX_DATETIME)) {
@@ -452,7 +452,7 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	@Override
 	protected List<String> listRevisionsImpl(final String pFromRev,
 			final String pToRev) throws IOException {
-		Validate.validState(repository != null);
+		Validate.validateState(repository != null);
 
 		final boolean fromIsEmpty = pFromRev.isEmpty();
 		final boolean fromIsInteger = isInteger(pFromRev);
@@ -512,7 +512,7 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 
 	@Override
 	protected void initImpl() throws IOException {
-		Validate.validState(repository == null);
+		Validate.validateState(repository == null);
 		try {
 			repository = Repository.clone(
 					getTarget().toFile(), getRepository());

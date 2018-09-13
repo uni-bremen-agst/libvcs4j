@@ -2,10 +2,10 @@ package de.unibremen.informatik.st.libvcs4j.github;
 
 import de.unibremen.informatik.st.libvcs4j.Issue;
 import de.unibremen.informatik.st.libvcs4j.Issue.Comment;
+import de.unibremen.informatik.st.libvcs4j.Validate;
 import de.unibremen.informatik.st.libvcs4j.data.CommentImpl;
 import de.unibremen.informatik.st.libvcs4j.data.IssueImpl;
 import de.unibremen.informatik.st.libvcs4j.engine.AbstractITEngine;
-import org.apache.commons.lang3.Validate;
 import org.kohsuke.github.*;
 
 import java.io.IOException;

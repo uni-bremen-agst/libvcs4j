@@ -2,10 +2,10 @@ package de.unibremen.informatik.st.libvcs4j.data;
 
 import de.unibremen.informatik.st.libvcs4j.LineChange;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
+import de.unibremen.informatik.st.libvcs4j.Validate;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-import org.apache.commons.lang3.Validate;
 
 /**
  * Pojo implementation of {@link LineChange}.

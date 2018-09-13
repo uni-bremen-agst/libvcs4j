@@ -5,7 +5,6 @@ import de.unibremen.informatik.st.libvcs4j.RevisionRange;
 import de.unibremen.informatik.st.libvcs4j.VCSEngine;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.data.CommitImpl;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -207,7 +207,7 @@ public class IntegrationTest {
 			changes.getModified().add(getTarget() + "/modify/modify1.java");
             changes.getModified().add(getTarget() + "/modify/modify2.java");
             changes.getModified().add(getTarget() + "/modify/modify3.java");
-			changes.getRelocated().add(new ImmutablePair<>(
+			changes.getRelocated().add(new AbstractMap.SimpleImmutableEntry<>(
 					getTarget() + "/relocate.java",
 					getTarget() + "/relocate2.java"
 			));

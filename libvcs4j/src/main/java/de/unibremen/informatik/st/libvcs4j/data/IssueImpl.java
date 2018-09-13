@@ -1,10 +1,10 @@
 package de.unibremen.informatik.st.libvcs4j.data;
 
 import de.unibremen.informatik.st.libvcs4j.Issue;
+import de.unibremen.informatik.st.libvcs4j.Validate;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-import org.apache.commons.lang3.Validate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

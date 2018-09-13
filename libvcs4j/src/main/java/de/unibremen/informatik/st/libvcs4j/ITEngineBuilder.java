@@ -2,7 +2,6 @@ package de.unibremen.informatik.st.libvcs4j;
 
 import de.unibremen.informatik.st.libvcs4j.github.GithubEngine;
 import de.unibremen.informatik.st.libvcs4j.gitlab.GitlabEngine;
-import org.apache.commons.lang3.Validate;
 
 import java.io.IOException;
 
