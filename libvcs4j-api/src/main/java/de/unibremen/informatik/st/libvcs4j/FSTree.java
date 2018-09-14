@@ -145,9 +145,9 @@ public class FSTree<V> {
 	private FSTree(final FSTree<V> pParent, final VCSFile pFile,
 			final Function<VCSFile, V> pValueOf) {
 		parent = pParent;
-		file = Objects.requireNonNull(pFile);
+		file = Validate.notNull(pFile);
 		path = file.toRelativePath().toString();
-		value = Objects.requireNonNull(pValueOf).apply(file);
+		value = Validate.notNull(pValueOf).apply(file);
 		nodes = null;
 		aggregator = null;
 	}
@@ -170,9 +170,9 @@ public class FSTree<V> {
 	private FSTree(final FSTree<V> pParent, final String pPath,
 			final BiFunction<V, V, V> pAggregator) {
 		parent = pParent;
-		path = Objects.requireNonNull(pPath);
+		path = Validate.notNull(pPath);
 		nodes = new ArrayList<>();
-		aggregator = Objects.requireNonNull(pAggregator);
+		aggregator = Validate.notNull(pAggregator);
 		file = null;
 		value = null;
 	}
@@ -201,9 +201,9 @@ public class FSTree<V> {
 			final Function<VCSFile, V> pValueOf,
 			final BiFunction<V, V, V> pAggregator)
 			throws NullPointerException {
-		Objects.requireNonNull(pFiles);
-		Objects.requireNonNull(pValueOf);
-		Objects.requireNonNull(pAggregator);
+		Validate.notNull(pFiles);
+		Validate.notNull(pValueOf);
+		Validate.notNull(pAggregator);
 
 		final Set<FSTree<V>> treesWithoutParent = new HashSet<>();
 		final Map<String, FSTree<V>> cache = new HashMap<>();
@@ -397,7 +397,7 @@ public class FSTree<V> {
 	 * 		If {@code pPath} is {@code null}.
 	 */
 	public Optional<FSTree<V>> navigateTo(final String pPath) {
-		Objects.requireNonNull(pPath);
+		Validate.notNull(pPath);
 		if (pPath.isEmpty()) {
 			return Optional.of(this);
 		}
@@ -431,15 +431,16 @@ public class FSTree<V> {
 	}
 
 	/**
-	 * Compacts this tree such that each node is either a file, or a directory containing
-	 * only files or at least two sub directories. If {@code pTree} is a sequence of
-	 * single directories, an "empty" directory is returned. This method does not modify
-	 * {@code pTree} or any of its sub nodes, but creates a flat copy it.
+	 * Compacts this tree such that each node is either a file, or a directory
+	 * containing only files or at least two sub directories. If this tree is a
+	 * sequence of single directories, an "empty" directory is returned. This
+	 * method does not modify this tree or any of its sub nodes, but creates a
+	 * flat copy it.
 	 *
 	 * @return
-	 * 		A Tree consisting of files, and directories containing only files or at
-	 * 		least two sub directories. An "empty" directory if {@code pTree} is a
-	 * 		sequence of single directories.
+	 * 		A Tree consisting of files, and directories containing only files
+	 * 		or at least two sub directories. An "empty" directory if this tree
+	 * 		is a sequence of single directories.
 	 */
 	public FSTree<V> compact() {
 		return compact(this, null);
