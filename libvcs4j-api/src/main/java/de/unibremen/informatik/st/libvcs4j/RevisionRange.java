@@ -71,6 +71,8 @@ public interface RevisionRange extends VCSModelElement {
 	 */
 	default Commit getLatestCommit() {
 		final List<Commit> commits = getCommits();
+		Validate.validateState(!commits.isEmpty(),
+				"Unexpected empty list of commits");
 		return commits.get(commits.size() - 1);
 	}
 
@@ -105,26 +107,25 @@ public interface RevisionRange extends VCSModelElement {
 					if (type == ADD || type == REMOVE) {
 						@SuppressWarnings("ConstantConditions")
 						final Path path = type == ADD
-								? change.getNewFile().get().toPath()
-								: change.getOldFile().get().toPath();
+								? change.getNewFile().get().toRelativePath()
+								: change.getOldFile().get().toRelativePath();
 						toProcess.stream().filter(c ->
 								(type == ADD
 										? c.getOldFile()
 										: c.getNewFile())
-								.map(VCSFile::toPath)
+								.map(VCSFile::toRelativePath)
 								.map(p -> p.equals(path))
 								.orElse(false))
 						.findAny().ifPresent(match -> {
 							final FileChange.Type oType = match.getType();
-							if (type == ADD && oType == ADD) {
-								throw new IllegalStateException(String.format(
-										"'%s' has been added after being added",
-										path));
-							} else if (type == REMOVE && oType == REMOVE) {
-								throw new IllegalStateException(String.format(
-										"'%s' has been removed after being removed",
-										path));
-							}
+							Validate.validateState(
+									!(type == ADD && oType == ADD),
+									"'%s' has been added after being added",
+									path);
+							Validate.validateState(
+									!(type == REMOVE && oType == REMOVE),
+									"'%s' has been removed after being removed",
+									path);
 							toProcess.remove(match);
 							if (oType == REMOVE) {
 								iter.remove();
@@ -133,35 +134,34 @@ public interface RevisionRange extends VCSModelElement {
 							}
 						});
 					} else {
-						@SuppressWarnings("ConstantConditions")
-						final Path path = change.getNewFile().get().toPath();
+						final Path path = change.getNewFile()
+								.orElseThrow(IllegalStateException::new)
+								.toRelativePath();
 						toProcess.stream().filter(c ->
 								(c.getType() != ADD
 										? c.getOldFile()
 										: c.getNewFile()) // < indicates a bug
-								.map(VCSFile::toPath)
+								.map(VCSFile::toRelativePath)
 								.map(p -> p.equals(path))
 								.orElse(false)
 						).findAny().ifPresent(match -> {
 							final FileChange.Type oType = match.getType();
-							if (type == MODIFY && oType == ADD) {
-								throw new IllegalStateException(String.format(
-										"'%s' has been added after being modified",
-										path));
-							} else if (type == RELOCATE && oType == ADD) {
-								throw new IllegalStateException(String.format(
-										"'%s' has been added after being relocated to this path",
-										path));
-							}
+							Validate.validateState(
+									!(type == MODIFY && oType == ADD),
+									"'%s' has been added after being modified",
+									path);
+							Validate.validateState(
+									!(type == RELOCATE && oType == ADD),
+									"'%s' has been added after being relocated to this path",
+									path);
 							toProcess.remove(match);
 							matches.add(match);
 						});
 					}
-					if (matches.size() > 1) {
-						throw new IllegalStateException(String.format(
-								"Unexpected number of matches (%d)",
-								matches.size()));
-					} else if (!matches.isEmpty()) {
+					Validate.validateState(matches.size() <= 1,
+							"Unexpected number of matches (%d)",
+							matches.size());
+					if (!matches.isEmpty()) {
 						final FileChange match = matches.poll();
 						iter.set(new FileChange() {
 							@Override
