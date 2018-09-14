@@ -66,20 +66,18 @@ public interface FileChange extends VCSModelElement {
 		final Optional<VCSFile> old = getOldFile();
 		final Optional<VCSFile> nev = getNewFile();
 
-		if (!old.isPresent() && !nev.isPresent()) {
-			throw new IllegalStateException(
-					"Neither the old nor the new file is available");
-		}
+		Validate.validateState(old.isPresent() || nev.isPresent(),
+				"Neither the old nor the new file is available");
+
 		if (!old.isPresent()) {
 			return Type.ADD;
 		}
-		//noinspection OptionalIsPresent
 		if (!nev.isPresent()) {
 			return Type.REMOVE;
 		}
-
-		return old.get().getPath().equals(nev.get().getPath()) ?
-				Type.MODIFY : Type.RELOCATE;
+		return old.get().getRelativePath()
+					.equals(nev.get().getRelativePath())
+				? Type.MODIFY : Type.RELOCATE;
 	}
 
 	/**
