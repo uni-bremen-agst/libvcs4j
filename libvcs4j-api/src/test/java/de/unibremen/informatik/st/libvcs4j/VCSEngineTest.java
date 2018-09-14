@@ -17,10 +17,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-/**
- * Some tests must be adjusted if new files are added or existing files are
- * removed from "src/main/java/de/unibremen/st/libvcs4j".
- */
 public class VCSEngineTest {
 
 	@Rule
