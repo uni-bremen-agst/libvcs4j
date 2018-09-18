@@ -6,7 +6,7 @@
 import de.unibremen.informatik.st.libvcs4j.*
 
 def vcs = VCSEngineBuilder
-		.ofGit("/home/marcel/Documents/agst/teaching/swp/mems_ng")
+		.ofGit("https://github.com/amaembo/streamex.git")
 		.build()
 
 def authors = new HashSet<String>()
