@@ -182,6 +182,186 @@ public interface VCSFile extends VCSModelElement {
 	}
 
 	/**
+	 * A range within a file. Can't be empty or negative.
+	 */
+	class Range {
+
+		/**
+		 * The referenced file.
+		 */
+		private final VCSFile file;
+
+		/**
+		 * The begin position.
+		 */
+		private final Position begin;
+
+		/**
+		 * The end position.
+		 */
+		private final Position end;
+
+		/**
+		 * Creates a new range with given begin and end position.
+		 *
+		 * @param pFile
+		 * 		The file of the range to create.
+		 * @param pBegin
+		 * 		The begin position of the range to create.
+		 * @param pEnd
+		 * 		The end position of the range to create.
+		 * @throws NullPointerException
+		 * 		If any of the given arguments is {@code null}.
+		 * @throws IllegalArgumentException
+		 * 		If {@code pBegin.getTabSize() != pEnd.getTabSize()} or if
+		 * 		{@code pBegin} is after {@code pEnd}.
+		 */
+		public Range(final VCSFile pFile, final Position pBegin,
+				final Position pEnd) throws NullPointerException,
+				IllegalArgumentException {
+			file = Validate.notNull(pFile);
+			begin = Validate.notNull(pBegin);
+			end = Validate.notNull(pEnd);
+			Validate.isTrue(begin.getTabSize() == end.getTabSize());
+			Validate.isTrue(begin.getOffset() <= end.getOffset());
+			Validate.isTrue(begin.getLine() < end.getLine() ||
+					(begin.getLine() == end.getLine() &&
+							begin.getColumn() <= end.getColumn()));
+		}
+
+		/**
+		 * Creates a new range from given begin and end (exclusive) offset.
+		 *
+		 * @param pFile
+		 * 		The file of the range to create.
+		 * @param pBegin
+		 * 		The begin offset of the range to create.
+		 * @param pExclusiveEnd
+		 * 		The exclusive end offset of the range to create.
+		 * @param pTabSize
+		 * 		The tab size of the range to create.
+		 * @throws NullPointerException
+		 * 		If {@code pFile} is {@code null}.
+		 * @throws IllegalArgumentException
+		 * 		If {@code pBegin >= pExclusiveEnd} or if
+		 * 		{@link VCSFile#positionOf(int, int)} throws an
+		 * 		{@link IllegalArgumentException}.
+		 * @throws IOException
+		 * 		If an error occurred while reading the content of
+		 * 		{@code pFile}.
+		 */
+		public Range(final VCSFile pFile, final int pBegin,
+				final int pExclusiveEnd, final int pTabSize)
+				throws NullPointerException, IllegalArgumentException,
+				IOException {
+			file = Validate.notNull(pFile);
+			Validate.isTrue(pBegin < pExclusiveEnd);
+			begin = file.positionOf(pBegin, pTabSize);
+			end = file.positionOf(pExclusiveEnd -1, pTabSize);
+		}
+
+		/**
+		 * Creates a new range from given line and column range.
+		 *
+		 * @param pFile
+		 * 		The file of the range to create.
+		 * @param pBeginLine
+		 * 		The begin line of the range to create.
+		 * @param pBeginColumn
+		 * 		The begin column of the range to create.
+		 * @param pEndLine
+		 * 		The end line of the range to create.
+		 * @param pEndColumn
+		 * 		The end column of the range to create.
+		 * @param pTabSize
+		 * 		The tab size of the range to create.
+		 * @throws NullPointerException
+		 * 		If {@code pFile} is {@code null}.
+		 * @throws IllegalArgumentException
+		 * 		If begin is after end or if
+		 * 		{@link VCSFile#positionOf(int, int)} throws an
+		 * 		{@link IllegalArgumentException}.
+		 * @throws IOException
+		 * 		If an error occurred while reading the content of
+		 * 		{@code pFile}.
+		 */
+		public Range(final VCSFile pFile, final int pBeginLine,
+				final int pBeginColumn, final int pEndLine,
+				final int pEndColumn, final int pTabSize)
+				throws NullPointerException, IllegalArgumentException,
+				IOException {
+			file = Validate.notNull(pFile);
+			Validate.isTrue(pBeginLine < pEndLine ||
+					(pBeginLine == pEndLine &&
+							pBeginColumn <= pEndColumn));
+			begin = file.positionOf(pBeginLine, pBeginColumn, pTabSize);
+			end = file.positionOf(pEndLine, pEndColumn, pTabSize);
+		}
+
+		/**
+		 * Returns the length of this range.
+		 *
+		 * @return
+		 * 		The length of this range.
+		 */
+		public int length() {
+			return (end.getOffset() + 1) - begin.getOffset();
+		}
+
+		/**
+		 * Reads the content of this range.
+		 *
+		 * @return
+		 * 		The content of this range.
+		 * @throws IOException
+		 * 		If an error occurred while reading the file content.
+		 */
+		public String readContent() throws IOException {
+			return file.readeContent().substring(
+					begin.getOffset(), end.getOffset() + 1);
+		}
+
+		/**
+		 * Delegates {@code fileChange} to {@link #begin} and {@link #end}
+		 * ({@link Position#apply(FileChange)}) and computes the resulting
+		 * range. Returns an empty Optional if {@code fileChange} is of type
+		 * {@link FileChange.Type#REMOVE} or if {@link #begin} or {@link #end}
+		 * is unable to apply {@code fileChange}.
+		 *
+		 * @param fileChange
+		 * 		The file change to apply.
+		 * @return
+		 * 		The updated range.
+		 * @throws NullPointerException
+		 * 		If {@code fileChange} is {@code null}.
+		 * @throws IOException
+		 * 		If computing the line diff ({@link FileChange#computeDiff()})
+		 * 		fails.
+		 */
+		public Optional<Range> apply(final FileChange fileChange)
+				throws NullPointerException, IOException {
+			Validate.notNull(fileChange);
+
+			// Ignore removed files.
+			if (fileChange.getType() == FileChange.Type.REMOVE) {
+				return Optional.empty();
+			}
+
+			// Delegate call to positions.
+			final VCSFile newFile = fileChange.getNewFile()
+					.orElseThrow(IllegalStateException::new);
+			final Optional<Position> newBegin = begin.apply(fileChange);
+			final Optional<Position> newEnd = end.apply(fileChange);
+
+			return newBegin.isPresent() && newEnd.isPresent()
+					? Optional.of(new Range(newFile,
+							newBegin.get(),
+							newEnd.get()))
+					: Optional.empty();
+		}
+	}
+
+	/**
 	 * Returns the relative path of this file as it was like when its
 	 * corresponding revision was checked out by {@link VCSEngine#next()}.
 	 *
