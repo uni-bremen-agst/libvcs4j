@@ -12,6 +12,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 /**
  * Represents a file in a VCS at a certain point in time. For the sake of
@@ -112,6 +113,71 @@ public interface VCSFile extends VCSModelElement {
 		 */
 		public int getTabSize() {
 			return tabSize;
+		}
+
+		/**
+		 * Applies the diff of {@code fileChange}
+		 * ({@link FileChange#computeDiff()}) and computes the resulting
+		 * position. Returns an empty Optional if {@code fileChange} is of type
+		 * {@link FileChange.Type#REMOVE} or if the line of this position was
+		 * deleted without a corresponding insertion. If the line of this
+		 * position was changed, the resulting column is set to 1.
+		 *
+		 * @param fileChange
+		 * 		The file change to apply.
+		 * @return
+		 * 		The updated position.
+		 * @throws NullPointerException
+		 * 		If {@code fileChange} is {@code null}.
+		 * @throws IOException
+		 * 		If computing the line diff ({@link FileChange#computeDiff()})
+		 * 		fails.
+		 */
+		public Optional<Position> apply(final FileChange fileChange)
+				throws NullPointerException, IOException {
+			Validate.notNull(fileChange);
+
+			// Ignore removed files.
+			if (fileChange.getType() == FileChange.Type.REMOVE) {
+				return Optional.empty();
+			}
+
+			// Ignore changes applied after this position.
+			final List<LineChange> changes = fileChange
+					.computeDiff().stream()
+					.filter(lc -> lc.getLine() <= getLine())
+					.collect(Collectors.toList());
+
+			// Has this position been deleted (its corresponding line was
+			// deleted without being inserted)?
+			final boolean lineDeleted = changes.stream()
+					.anyMatch(lc -> lc.getLine() == getLine() &&
+							lc.getType() == LineChange.Type.DELETE);
+			final boolean lineInserted = changes.stream()
+					.anyMatch(lc -> lc.getLine() == getLine() &&
+							lc.getType() == LineChange.Type.INSERT);
+			if (lineDeleted && !lineInserted) {
+				// This position was deleted.
+				return Optional.empty();
+			}
+
+			final int line = getLine() -
+					// Remove deleted lines.
+					(int) changes.stream()
+						.filter(fc -> fc.getType() == LineChange.Type.DELETE)
+						.count() +
+					// Add inserted lines.
+					(int) changes.stream()
+						.filter(fc -> fc.getType() == LineChange.Type.INSERT)
+						.count();
+			final int column = lineDeleted
+					? 1 // lineDeleted? => lineInserted => line change
+					    // We can't determine the column of a changed line, use
+					    // 1 as fallback.
+					: getColumn();
+			return Optional.of(fileChange.getNewFile()
+					.orElseThrow(IllegalStateException::new)
+					.positionOf(line, column, getTabSize()));
 		}
 	}
 
