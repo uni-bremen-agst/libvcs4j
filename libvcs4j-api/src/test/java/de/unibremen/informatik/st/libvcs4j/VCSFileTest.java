@@ -112,21 +112,24 @@ public class VCSFileTest {
 		VCSFile file = mock(VCSFile.class);
 		when(file.readeContent()).thenReturn("first line\nsecond line");
 		when(file.readLinesWithEOL()).thenCallRealMethod();
-		when(file.mapOffset(4, 4)).thenCallRealMethod();
-		when(file.mapOffset(14, 4)).thenCallRealMethod();
-		when(file.mapOffset(11, 4)).thenCallRealMethod();
+		when(file.positionOf(4, 4)).thenCallRealMethod();
+		when(file.positionOf(14, 4)).thenCallRealMethod();
+		when(file.positionOf(11, 4)).thenCallRealMethod();
 
-		VCSFile.Position p1 = file.mapOffset(4, 4);
+		VCSFile.Position p1 = file.positionOf(4, 4);
+		assertThat(p1.getOffset()).isEqualTo(4);
 		assertThat(p1.getLine()).isEqualTo(1);
 		assertThat(p1.getColumn()).isEqualTo(5);
 		assertThat(p1.getTabSize()).isEqualTo(4);
 
-		VCSFile.Position p2 = file.mapOffset(14, 4);
+		VCSFile.Position p2 = file.positionOf(14, 4);
+		assertThat(p2.getOffset()).isEqualTo(14);
 		assertThat(p2.getLine()).isEqualTo(2);
 		assertThat(p2.getColumn()).isEqualTo(4);
 		assertThat(p2.getTabSize()).isEqualTo(4);
 
-		VCSFile.Position p3 = file.mapOffset(11, 4);
+		VCSFile.Position p3 = file.positionOf(11, 4);
+		assertThat(p3.getOffset()).isEqualTo(11);
 		assertThat(p3.getLine()).isEqualTo(2);
 		assertThat(p3.getColumn()).isEqualTo(1);
 		assertThat(p3.getTabSize()).isEqualTo(4);
@@ -137,59 +140,88 @@ public class VCSFileTest {
 		VCSFile file = mock(VCSFile.class);
 		when(file.readeContent()).thenReturn("");
 		when(file.readLinesWithEOL()).thenCallRealMethod();
-		when(file.mapOffset(1, 4)).thenCallRealMethod();
+		when(file.positionOf(1, 4)).thenCallRealMethod();
 
 		assertThatExceptionOfType(IndexOutOfBoundsException.class)
-				.isThrownBy(() -> file.mapOffset(1, 4));
+				.isThrownBy(() -> file.positionOf(1, 4));
 	}
 
 	@Test
-	public void mapPosition() throws IOException {
+	public void mapLineAndColumn() throws IOException {
 		VCSFile file = mock(VCSFile.class);
 		when(file.readeContent()).thenReturn("first line\nsecond line");
 		when(file.readLinesWithEOL()).thenCallRealMethod();
 
-		VCSFile.Position p1 = new VCSFile.Position(1, 6, 4);
-		VCSFile.Position p2 = new VCSFile.Position(2, 2, 4);
-		VCSFile.Position p3 = new VCSFile.Position(1, 11, 4);
-		VCSFile.Position p4 = new VCSFile.Position(2, 12, 4);
-		when(file.mapPosition(p1)).thenCallRealMethod();
-		when(file.mapPosition(p2)).thenCallRealMethod();
-		when(file.mapPosition(p3)).thenCallRealMethod();
-		when(file.mapPosition(p4)).thenCallRealMethod();
+		when(file.positionOf(1, 6, 4)).thenCallRealMethod();
+		when(file.positionOf(2, 2, 4)).thenCallRealMethod();
+		when(file.positionOf(1, 11, 4)).thenCallRealMethod();
+		when(file.positionOf(2, 12, 4)).thenCallRealMethod();
 
-		assertThat(file.mapPosition(p1)).isEqualTo(5);
-		assertThat(file.mapPosition(p2)).isEqualTo(12);
-		assertThatExceptionOfType(IllegalArgumentException.class)
-				.isThrownBy(() -> file.mapPosition(p3));
-		assertThatExceptionOfType(IllegalArgumentException.class)
-				.isThrownBy(() -> file.mapPosition(p4));
+		VCSFile.Position p1 = file.positionOf(1, 6, 4);
+		assertThat(p1.getLine()).isEqualTo(1);
+		assertThat(p1.getColumn()).isEqualTo(6);
+		assertThat(p1.getTabSize()).isEqualTo(4);
+		assertThat(p1.getOffset()).isEqualTo(5);
+
+		VCSFile.Position p2 = file.positionOf(2, 2, 4);
+		assertThat(p2.getLine()).isEqualTo(2);
+		assertThat(p2.getColumn()).isEqualTo(2);
+		assertThat(p2.getTabSize()).isEqualTo(4);
+		assertThat(p2.getOffset()).isEqualTo(12);
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class)
+				.isThrownBy(() -> file.positionOf(1, 11, 4));
+		assertThatExceptionOfType(IndexOutOfBoundsException.class)
+				.isThrownBy(() -> file.positionOf(2, 12, 4));
 	}
 
 	@Test
-	public void mapPositionWithTabs() throws IOException {
+	public void mapLineAndColumnWithDifferentTabSizes() throws IOException {
 		VCSFile file = mock(VCSFile.class);
 		when(file.readeContent()).thenReturn("foo\tbar\tfoobar");
 		when(file.readLinesWithEOL()).thenCallRealMethod();
 
-		VCSFile.Position p1 = new VCSFile.Position(1, 8, 4);
-		VCSFile.Position p2 = new VCSFile.Position(1, 12, 8);
-		VCSFile.Position p3 = new VCSFile.Position(1, 1, 1);
-		VCSFile.Position p4 = new VCSFile.Position(1, 2, 1);
-		VCSFile.Position p5 = new VCSFile.Position(1, 3, 1);
-		VCSFile.Position p6 = new VCSFile.Position(1, 12, 2);
-		when(file.mapPosition(p1)).thenCallRealMethod();
-		when(file.mapPosition(p2)).thenCallRealMethod();
-		when(file.mapPosition(p3)).thenCallRealMethod();
-		when(file.mapPosition(p4)).thenCallRealMethod();
-		when(file.mapPosition(p5)).thenCallRealMethod();
-		when(file.mapPosition(p6)).thenCallRealMethod();
+		when(file.positionOf(1, 8, 4)).thenCallRealMethod();
+		when(file.positionOf(1, 12, 8)).thenCallRealMethod();
+		when(file.positionOf(1, 1, 1)).thenCallRealMethod();
+		when(file.positionOf(1, 2, 1)).thenCallRealMethod();
+		when(file.positionOf(1, 3, 1)).thenCallRealMethod();
+		when(file.positionOf(1, 12, 2)).thenCallRealMethod();
 
-		assertThat(file.mapPosition(p1)).isEqualTo(5);
-		assertThat(file.mapPosition(p2)).isEqualTo(5);
-		assertThat(file.mapPosition(p3)).isEqualTo(0);
-		assertThat(file.mapPosition(p4)).isEqualTo(1);
-		assertThat(file.mapPosition(p5)).isEqualTo(2);
-		assertThat(file.mapPosition(p6)).isEqualTo(11);
+		VCSFile.Position p1 = file.positionOf(1, 8, 4);
+		assertThat(p1.getLine()).isEqualTo(1);
+		assertThat(p1.getColumn()).isEqualTo(8);
+		assertThat(p1.getTabSize()).isEqualTo(4);
+		assertThat(p1.getOffset()).isEqualTo(5);
+
+		VCSFile.Position p2 = file.positionOf(1, 12, 8);
+		assertThat(p2.getLine()).isEqualTo(1);
+		assertThat(p2.getColumn()).isEqualTo(12);
+		assertThat(p2.getTabSize()).isEqualTo(8);
+		assertThat(p2.getOffset()).isEqualTo(5);
+
+		VCSFile.Position p3 = file.positionOf(1, 1, 1);
+		assertThat(p3.getLine()).isEqualTo(1);
+		assertThat(p3.getColumn()).isEqualTo(1);
+		assertThat(p3.getTabSize()).isEqualTo(1);
+		assertThat(p3.getOffset()).isEqualTo(0);
+
+		VCSFile.Position p4 = file.positionOf(1, 2, 1);
+		assertThat(p4.getLine()).isEqualTo(1);
+		assertThat(p4.getColumn()).isEqualTo(2);
+		assertThat(p4.getTabSize()).isEqualTo(1);
+		assertThat(p4.getOffset()).isEqualTo(1);
+
+		VCSFile.Position p5 = file.positionOf(1, 3, 1);
+		assertThat(p5.getLine()).isEqualTo(1);
+		assertThat(p5.getColumn()).isEqualTo(3);
+		assertThat(p5.getTabSize()).isEqualTo(1);
+		assertThat(p5.getOffset()).isEqualTo(2);
+
+		VCSFile.Position p6 = file.positionOf(1, 12, 2);
+		assertThat(p6.getLine()).isEqualTo(1);
+		assertThat(p6.getColumn()).isEqualTo(12);
+		assertThat(p6.getTabSize()).isEqualTo(2);
+		assertThat(p6.getOffset()).isEqualTo(11);
 	}
 }

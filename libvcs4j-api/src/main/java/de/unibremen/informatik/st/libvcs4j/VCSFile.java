@@ -21,7 +21,7 @@ import java.util.Scanner;
 public interface VCSFile extends VCSModelElement {
 
 	/**
-	 * Represents a position within a file.
+	 * A position within a file.
 	 */
 	class Position {
 
@@ -36,6 +36,11 @@ public interface VCSFile extends VCSModelElement {
 		private final int column;
 
 		/**
+		 * The number of characters to move to reach a position {@code >= 0}.
+		 */
+		private final int offset;
+
+		/**
 		 * The number of characters acquired by a tab (\t) {@code >= 1}.
 		 */
 		private final int tabSize;
@@ -43,26 +48,24 @@ public interface VCSFile extends VCSModelElement {
 		/**
 		 * Creates a new size with given line, column, and tab size.
 		 *
-		 * @param line
+		 * @param pLine
 		 * 		The line of the position to create.
-		 * @param column
+		 * @param pColumn
 		 * 		The column of the position to create.
-		 * @param tabSize
+		 * @param pOffset
+		 * 		The offset of the position to create.
+		 * @param pTabSize
 		 * 		The tab size of the position to create.
 		 * @throws IllegalArgumentException
-		 * 		If any of the given arguments is less than 1.
+		 * 		If {@code pLine < 1}, {@code pColumn < 1}, {@code pOffset < 0},
+		 * 		or {@code pTabSize < 1}.
 		 */
-		public Position(final int line, final int column, final int tabSize) {
-			if (line < 1) {
-				throw new IllegalArgumentException("line < 1");
-			} else if (column < 1) {
-				throw new IllegalArgumentException("column < 1");
-			} else if (tabSize < 1) {
-				throw new IllegalArgumentException("tab size < 1");
-			}
-			this.line = line;
-			this.column = column;
-			this.tabSize = tabSize;
+		public Position(final int pLine, final int pColumn, final int pOffset,
+				final int pTabSize) throws IllegalArgumentException {
+			line = Validate.isPositive(pLine, "line < 1");
+			column = Validate.isPositive(pColumn, "column < 1");
+			offset = Validate.notNegative(pOffset, "offset < 0");
+			tabSize = Validate.isPositive(pTabSize, "tab size < 1");
 		}
 
 		/**
@@ -83,6 +86,16 @@ public interface VCSFile extends VCSModelElement {
 		 */
 		public int getColumn() {
 			return column;
+		}
+
+		/**
+		 * Returns the offset of this position {@code >= 0}.
+		 *
+		 * @return
+		 * 		The offset of this position {@code >= 0}.
+		 */
+		public int getOffset() {
+			return offset;
 		}
 
 		/**
@@ -359,11 +372,10 @@ public interface VCSFile extends VCSModelElement {
 	}
 
 	/**
-	 * Maps the given offset to a position using the given tab size.
+	 * Creates a position from the the given offset tab size.
 	 *
 	 * @param offset
-	 * 		The offset to map. An offset describes the number of characters to
-	 * 		move to reach a position. The origin is 0.
+	 * 		The number of characters to move to reach a position.
 	 * @param tabSize
 	 * 		The number of characters acquired by a tab (\t).
 	 * @return
@@ -375,13 +387,11 @@ public interface VCSFile extends VCSModelElement {
 	 * @throws IOException
 	 * 		If an error occurred while reading the file content.
 	 */
-	default Position mapOffset(final int offset, final int tabSize)
-			throws IOException {
-		if (offset < 0) {
-			throw new IllegalArgumentException("offset < 0");
-		} else if (tabSize < 1) {
-			throw new IllegalArgumentException("tab size < 1");
-		}
+	default Position positionOf(final int offset, final int tabSize)
+			throws IllegalArgumentException, IndexOutOfBoundsException,
+			IOException {
+		Validate.notNegative(offset);
+		Validate.isPositive(tabSize);
 
 		final List<String> lines = readLinesWithEOL();
 
@@ -412,58 +422,65 @@ public interface VCSFile extends VCSModelElement {
 				}
 				// Calculate column based on the number of tabs found.
 				final int column = offsStr.length() + (tabs * (tabSize - 1));
-				return new Position(line, column, tabSize);
+				return new Position(line, column, offset, tabSize);
 			}
 		}
 		throw new IndexOutOfBoundsException("offset: " + offset);
 	}
 
 	/**
-	 * Maps the given position to an offset.
+	 * Creates a position from the given line, column, and tab size.
 	 *
-	 * @param position
-	 * 		The position to map.
+	 * @param line
+	 * 		The line of the position to create.
+	 * @param column
+	 * 		The column of the position to create.
+	 * @param tabSize
+	 * 		The number of characters acquired by a tab (\t).
 	 * @return
-	 * 		The corresponding offset. An offset describes the number of
-	 * 		characters to move to reach a position. The origin is 0.
-	 * @throws NullPointerException
-	 * 		If {@code position} is {@code null}.
+	 * 		The corresponding position.
 	 * @throws IllegalArgumentException
-	 * 		If the line or column of {@code position} does not exist.
+	 * 		If {@code line < 1}, {@code column < 1}, or {@code tabSize < 1}.
+	 * @throws IndexOutOfBoundsException
+	 * 		If there is no position for {@code line} and {@code column} with
+	 * 		respect to {@code tabSize}.
 	 * @throws IOException
 	 * 		If an error occurred while reading the file content.
 	 */
-	default int mapPosition(final Position position) throws IOException {
-		Objects.requireNonNull(position);
+	default Position positionOf(final int line, final int column,
+			final int tabSize) throws IllegalArgumentException,
+			IndexOutOfBoundsException, IOException {
+		////// Error handling tab size.
+		Validate.isPositive(tabSize);
 
 		////// Error handling line.
+		Validate.isPositive(line);
 		final List<String> lines = readLinesWithEOL();
-		if (position.getLine() > lines.size()) {
-			throw new IllegalArgumentException(
-					String.format("line: %d, lines: %d",
-							position.getLine(), lines.size()));
+		if (line > lines.size()) {
+			throw new IndexOutOfBoundsException(String.format(
+					"line: %d, lines: %d", line, lines.size()));
 		}
 
-		final int lineIdx = position.getLine() - 1;
+		final int lineIdx = line - 1;
 		final String lineStr = lines.get(lineIdx);
 
 		////// Error handling column.
 		// Find number of tabs in line.
-		int tabs = 0;
+		Validate.isPositive(column);
+		int numTabs = 0;
 		for (int i = 0; i < lineStr.length(); i++) {
 			if (lineStr.charAt(i) == '\t') {
-				tabs++;
+				numTabs++;
 			}
 		}
 		// Calculate line length based on the number of tabs found.
 		final int lineLen =
 				// Use scanner to remove EOL
 				new Scanner(lineStr).nextLine().length() +
-				(tabs * (position.getTabSize() - 1));
-		if (position.getColumn() > lineLen) {
-			throw new IllegalArgumentException(
-					String.format("column: %d, columns: %d",
-							position.getColumn(), lineStr.length()));
+						(numTabs * (tabSize - 1));
+		if (column > lineLen) {
+			throw new IndexOutOfBoundsException(String.format(
+					"column: %d, columns: %d", column, lineLen));
 		}
 
 		////// Offset calculation
@@ -471,14 +488,14 @@ public interface VCSFile extends VCSModelElement {
 				.map(String::length)
 				.mapToInt(Integer::intValue)
 				.sum();
-		for (int i = 0, column = 1;
-			 column < position.getColumn();
-			 i++, column++) {
+		for (int i = 0, c = 1; c < column; i++, c++) {
 			if (lineStr.charAt(i) == '\t') {
-				column += position.getTabSize() - 2;
+				c += tabSize - 2;
 			}
 			offset++;
 		}
-		return offset;
+
+		////// Result
+		return new Position(line, column, offset, tabSize);
 	}
 }
