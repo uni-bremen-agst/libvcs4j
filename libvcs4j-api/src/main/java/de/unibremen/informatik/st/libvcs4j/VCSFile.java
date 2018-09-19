@@ -8,8 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Scanner;
 
@@ -24,6 +24,12 @@ public interface VCSFile extends VCSModelElement {
 	 * A position within a file.
 	 */
 	class Position {
+
+		/**
+		 * Compares two positions using their offsets.
+		 */
+		public static Comparator<Position> OFFSET_COMPARATOR =
+				Comparator.comparingInt(Position::getOffset);
 
 		/**
 		 * The line of a position {@code >= 1}.
