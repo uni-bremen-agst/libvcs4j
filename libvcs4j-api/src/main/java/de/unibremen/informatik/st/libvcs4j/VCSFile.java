@@ -166,13 +166,7 @@ public interface VCSFile extends VCSModelElement {
 			Validate.isTrue(fileChange.getOldFile().isPresent(),
 					"The given file change must not be an addition.");
 			final VCSFile oldFile = fileChange.getOldFile().get();
-			Validate.isTrue(
-					// Same file...
-					file.getRelativePath().equals(
-							oldFile.getRelativePath()) &&
-					// ... in same revision.
-					file.getRevision().getId().equals(
-							oldFile.getRevision().getId()),
+			Validate.isEquals(oldFile, file,
 					"The given file change references an invalid file.");
 
 			// Ignore removed files.
@@ -251,13 +245,7 @@ public interface VCSFile extends VCSModelElement {
 				throws NullPointerException, IllegalArgumentException {
 			begin = Validate.notNull(pBegin);
 			end = Validate.notNull(pEnd);
-			Validate.isTrue(
-					// Same file...
-					begin.getFile().getRelativePath().equals(
-							end.getFile().getRelativePath()) &&
-					// ... in same revision.
-					begin.getFile().getRevision().getId().equals(
-							end.getFile().getRevision().getId()),
+			Validate.isEquals(begin.getFile(), end.getFile(),
 					"Begin and end position reference different files.");
 			Validate.isTrue(begin.getOffset() <= end.getOffset(),
 					"Begin must not be after end");

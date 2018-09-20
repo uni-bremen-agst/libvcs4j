@@ -1006,6 +1006,73 @@ public class Validate {
 	}
 
 	/**
+	 * Validates that {@code file} and {@code compare} are equals. Two files
+	 * are equals if the ids of their revisions ({@link Revision#getId()}) and
+	 * their relative paths ({@link VCSFile#getRelativePath()}) are equals.
+	 *
+	 * @param file
+	 * 		The file to validate.
+	 * @param compare
+	 * 		The file to compare to {@code file}.
+	 * @return
+	 * 		{@code file}, never a value {@code != compare}.
+	 * @throws NullPointerException
+	 * 		If any of the given arguments is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If {@code file} and {@code compare} are not equals.
+	 */
+	public static VCSFile isEquals(final VCSFile file, final VCSFile compare)
+			throws NullPointerException, IllegalArgumentException {
+		Validate.notNull(file);
+		Validate.notNull(compare);
+		if (!file.getRevision().getId().equals(
+				compare.getRevision().getId())) {
+			throw new IllegalArgumentException();
+		}
+		if (!file.getRelativePath().equals(
+				compare.getRelativePath())) {
+			throw new IllegalArgumentException();
+		}
+		return file;
+	}
+
+	/**
+	 * Validates that {@code file} and {@code compare} are equals. Two files
+	 * are equals if the ids of their revisions ({@link Revision#getId()}) and
+	 * their relative paths ({@link VCSFile#getRelativePath()}) are equals.
+	 *
+	 * @param file
+	 * 		The file to validate.
+	 * @param compare
+	 * 		The file to compare to {@code file}.
+	 * @param message
+	 * 		The message of the thrown exception.
+	 * @param args
+	 * 		The arguments to pass to {@link String#format(String, Object...)}.
+	 * @return
+	 * 		{@code file}, never a value {@code != compare}.
+	 * @throws NullPointerException
+	 * 		If any of the given arguments is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If {@code file} and {@code compare} are not equals.
+	 */
+	public static VCSFile isEquals(final VCSFile file, final VCSFile compare,
+			final String message, final Object... args)
+			throws NullPointerException, IllegalArgumentException {
+		Validate.notNull(file);
+		Validate.notNull(compare);
+		if (!file.getRevision().getId().equals(
+				compare.getRevision().getId())) {
+			throw new IllegalArgumentException(format(message, args));
+		}
+		if (!file.getRelativePath().equals(
+				compare.getRelativePath())) {
+			throw new IllegalArgumentException(format(message, args));
+		}
+		return file;
+	}
+
+	/**
 	 * Validates that {@code expression} is {@code true}.
 	 *
 	 * @param expression
