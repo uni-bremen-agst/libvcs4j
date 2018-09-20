@@ -225,25 +225,18 @@ public interface VCSFile extends VCSModelElement {
 	class Range {
 
 		/**
-		 * The referenced file.
-		 */
-		private final VCSFile file;
-
-		/**
 		 * The begin position.
 		 */
 		private final Position begin;
 
 		/**
-		 * The end position.
+		 * The end position (inclusive).
 		 */
 		private final Position end;
 
 		/**
 		 * Creates a new range with given begin and end position.
 		 *
-		 * @param pFile
-		 * 		The file of the range to create.
 		 * @param pBegin
 		 * 		The begin position of the range to create.
 		 * @param pEnd
@@ -251,27 +244,30 @@ public interface VCSFile extends VCSModelElement {
 		 * @throws NullPointerException
 		 * 		If any of the given arguments is {@code null}.
 		 * @throws IllegalArgumentException
-		 * 		If {@code pBegin.getTabSize() != pEnd.getTabSize()} or if
-		 * 		{@code pBegin} is after {@code pEnd}.
+		 * 		If {@code pBegin} and {@code pEnd} reference different files,
+		 * 		or if {@code pBegin} is after {@code pEnd}.
 		 */
-		public Range(final VCSFile pFile, final Position pBegin,
-				final Position pEnd) throws NullPointerException,
-				IllegalArgumentException {
-			file = Validate.notNull(pFile);
+		public Range(final Position pBegin, final Position pEnd)
+				throws NullPointerException, IllegalArgumentException {
 			begin = Validate.notNull(pBegin);
 			end = Validate.notNull(pEnd);
-			Validate.isTrue(begin.getTabSize() == end.getTabSize());
-			Validate.isTrue(begin.getOffset() <= end.getOffset());
-			Validate.isTrue(begin.getLine() < end.getLine() ||
-					(begin.getLine() == end.getLine() &&
-							begin.getColumn() <= end.getColumn()));
+			Validate.isTrue(
+					// Same file...
+					begin.getFile().getRelativePath().equals(
+							end.getFile().getRelativePath()) &&
+					// ... in same revision.
+					begin.getFile().getRevision().getId().equals(
+							end.getFile().getRevision().getId()),
+					"Begin and end position reference different files.");
+			Validate.isTrue(begin.getOffset() <= end.getOffset(),
+					"Begin must not be after end");
 		}
 
 		/**
 		 * Creates a new range from given begin and end (exclusive) offset.
 		 *
 		 * @param pFile
-		 * 		The file of the range to create.
+		 * 		The referenced file.
 		 * @param pBegin
 		 * 		The begin offset of the range to create.
 		 * @param pExclusiveEnd
@@ -281,7 +277,7 @@ public interface VCSFile extends VCSModelElement {
 		 * @throws NullPointerException
 		 * 		If {@code pFile} is {@code null}.
 		 * @throws IllegalArgumentException
-		 * 		If {@code pBegin >= pExclusiveEnd} or if
+		 * 		If {@code pBegin >= pExclusiveEnd}, or if
 		 * 		{@link VCSFile#positionOf(int, int)} throws an
 		 * 		{@link IllegalArgumentException}.
 		 * @throws IOException
@@ -292,17 +288,17 @@ public interface VCSFile extends VCSModelElement {
 				final int pExclusiveEnd, final int pTabSize)
 				throws NullPointerException, IllegalArgumentException,
 				IOException {
-			file = Validate.notNull(pFile);
+			Validate.notNull(pFile);
 			Validate.isTrue(pBegin < pExclusiveEnd);
-			begin = file.positionOf(pBegin, pTabSize);
-			end = file.positionOf(pExclusiveEnd -1, pTabSize);
+			begin = pFile.positionOf(pBegin, pTabSize);
+			end = pFile.positionOf(pExclusiveEnd -1, pTabSize);
 		}
 
 		/**
 		 * Creates a new range from given line and column range.
 		 *
 		 * @param pFile
-		 * 		The file of the range to create.
+		 * 		The referenced file.
 		 * @param pBeginLine
 		 * 		The begin line of the range to create.
 		 * @param pBeginColumn
@@ -316,7 +312,7 @@ public interface VCSFile extends VCSModelElement {
 		 * @throws NullPointerException
 		 * 		If {@code pFile} is {@code null}.
 		 * @throws IllegalArgumentException
-		 * 		If begin is after end or if
+		 * 		If begin is after end, or if
 		 * 		{@link VCSFile#positionOf(int, int)} throws an
 		 * 		{@link IllegalArgumentException}.
 		 * @throws IOException
@@ -328,12 +324,42 @@ public interface VCSFile extends VCSModelElement {
 				final int pEndColumn, final int pTabSize)
 				throws NullPointerException, IllegalArgumentException,
 				IOException {
-			file = Validate.notNull(pFile);
+			Validate.notNull(pFile);
 			Validate.isTrue(pBeginLine < pEndLine ||
 					(pBeginLine == pEndLine &&
 							pBeginColumn <= pEndColumn));
-			begin = file.positionOf(pBeginLine, pBeginColumn, pTabSize);
-			end = file.positionOf(pEndLine, pEndColumn, pTabSize);
+			begin = pFile.positionOf(pBeginLine, pBeginColumn, pTabSize);
+			end = pFile.positionOf(pEndLine, pEndColumn, pTabSize);
+		}
+
+		/**
+		 * Returns the begin position of this range.
+		 *
+		 * @return
+		 * 		The begin position of this range.
+		 */
+		public Position getBegin() {
+			return begin;
+		}
+
+		/**
+		 * Returns the end position of this range.
+		 *
+		 * @return
+		 * 		The end position of this range.
+		 */
+		public Position getEnd() {
+			return end;
+		}
+
+		/**
+		 * Returns the referenced file.
+		 *
+		 * @return
+		 * 		The referenced. file.
+		 */
+		public VCSFile getFile() {
+			return begin.getFile();
 		}
 
 		/**
@@ -355,7 +381,7 @@ public interface VCSFile extends VCSModelElement {
 		 * 		If an error occurred while reading the file content.
 		 */
 		public String readContent() throws IOException {
-			return file.readeContent().substring(
+			return getFile().readeContent().substring(
 					begin.getOffset(), end.getOffset() + 1);
 		}
 
@@ -392,9 +418,7 @@ public interface VCSFile extends VCSModelElement {
 			final Optional<Position> newEnd = end.apply(fileChange);
 
 			return newBegin.isPresent() && newEnd.isPresent()
-					? Optional.of(new Range(newFile,
-							newBegin.get(),
-							newEnd.get()))
+					? Optional.of(new Range(newBegin.get(), newEnd.get()))
 					: Optional.empty();
 		}
 	}
