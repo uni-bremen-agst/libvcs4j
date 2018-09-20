@@ -33,6 +33,11 @@ public interface VCSFile extends VCSModelElement {
 				Comparator.comparingInt(Position::getOffset);
 
 		/**
+		 * The referenced file.
+		 */
+		private final VCSFile file;
+
+		/**
 		 * The line of a position {@code >= 1}.
 		 */
 		private final int line;
@@ -53,8 +58,12 @@ public interface VCSFile extends VCSModelElement {
 		private final int tabSize;
 
 		/**
-		 * Creates a new size with given line, column, and tab size.
+		 * Creates a new size with given file, line, column, and tab size. To
+		 * create new instances, call {@link VCSFile#positionOf(int, int)} or
+		 * {@link VCSFile#positionOf(int, int, int)}.
 		 *
+		 * @param pFile
+		 * 		The referenced file of the position to create.
 		 * @param pLine
 		 * 		The line of the position to create.
 		 * @param pColumn
@@ -63,16 +72,30 @@ public interface VCSFile extends VCSModelElement {
 		 * 		The offset of the position to create.
 		 * @param pTabSize
 		 * 		The tab size of the position to create.
+		 * @throws NullPointerException
+		 * 		If {@code pFile} is {@code null}.
 		 * @throws IllegalArgumentException
 		 * 		If {@code pLine < 1}, {@code pColumn < 1}, {@code pOffset < 0},
 		 * 		or {@code pTabSize < 1}.
 		 */
-		public Position(final int pLine, final int pColumn, final int pOffset,
-				final int pTabSize) throws IllegalArgumentException {
+		private Position(final VCSFile pFile, final int pLine,
+				final int pColumn, final int pOffset, final int pTabSize)
+				throws NullPointerException, IllegalArgumentException {
+			file = Validate.notNull(pFile);
 			line = Validate.isPositive(pLine, "line < 1");
 			column = Validate.isPositive(pColumn, "column < 1");
 			offset = Validate.notNegative(pOffset, "offset < 0");
 			tabSize = Validate.isPositive(pTabSize, "tab size < 1");
+		}
+
+		/**
+		 * Returns the referenced file.
+		 *
+		 * @return
+		 * 		The referenced file.
+		 */
+		public VCSFile getFile() {
+			return file;
 		}
 
 		/**
@@ -129,13 +152,28 @@ public interface VCSFile extends VCSModelElement {
 		 * 		The updated position.
 		 * @throws NullPointerException
 		 * 		If {@code fileChange} is {@code null}.
+		 * @throws IllegalArgumentException
+		 * 		If the file referenced by {@code fileChange} differs from the
+		 * 		file referenced by this position.
 		 * @throws IOException
 		 * 		If computing the line diff ({@link FileChange#computeDiff()})
 		 * 		fails.
 		 */
 		public Optional<Position> apply(final FileChange fileChange)
-				throws NullPointerException, IOException {
+				throws NullPointerException, IllegalArgumentException,
+				IOException {
 			Validate.notNull(fileChange);
+			Validate.isTrue(fileChange.getOldFile().isPresent(),
+					"The given file change must not be an addition.");
+			final VCSFile oldFile = fileChange.getOldFile().get();
+			Validate.isTrue(
+					// Same file...
+					file.getRelativePath().equals(
+							oldFile.getRelativePath()) &&
+					// ... in same revision.
+					file.getRevision().getId().equals(
+							oldFile.getRevision().getId()),
+					"The given file change references an invalid file.");
 
 			// Ignore removed files.
 			if (fileChange.getType() == FileChange.Type.REMOVE) {
@@ -674,7 +712,7 @@ public interface VCSFile extends VCSModelElement {
 				}
 				// Calculate column based on the number of tabs found.
 				final int column = offsStr.length() + (tabs * (tabSize - 1));
-				return new Position(line, column, offset, tabSize);
+				return new Position(this, line, column, offset, tabSize);
 			}
 		}
 		throw new IndexOutOfBoundsException("offset: " + offset);
@@ -748,6 +786,6 @@ public interface VCSFile extends VCSModelElement {
 		}
 
 		////// Result
-		return new Position(line, column, offset, tabSize);
+		return new Position(this, line, column, offset, tabSize);
 	}
 }
