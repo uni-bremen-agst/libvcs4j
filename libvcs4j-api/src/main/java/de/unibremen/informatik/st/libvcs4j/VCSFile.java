@@ -252,34 +252,33 @@ public interface VCSFile extends VCSModelElement {
 		}
 
 		/**
-		 * Creates a new range from given begin and end (exclusive) offset.
+		 * Creates a new range from given begin and end (inclusive) offset.
 		 *
 		 * @param pFile
 		 * 		The referenced file.
 		 * @param pBegin
 		 * 		The begin offset of the range to create.
-		 * @param pExclusiveEnd
-		 * 		The exclusive end offset of the range to create.
+		 * @param pEnd
+		 * 		The inclusive end offset of the range to create.
 		 * @param pTabSize
 		 * 		The tab size of the range to create.
 		 * @throws NullPointerException
 		 * 		If {@code pFile} is {@code null}.
 		 * @throws IllegalArgumentException
-		 * 		If {@code pBegin >= pExclusiveEnd}, or if
+		 * 		If {@code pBegin > pEnd}, or if
 		 * 		{@link VCSFile#positionOf(int, int)} throws an
 		 * 		{@link IllegalArgumentException}.
 		 * @throws IOException
 		 * 		If an error occurred while reading the content of
 		 * 		{@code pFile}.
 		 */
-		public Range(final VCSFile pFile, final int pBegin,
-				final int pExclusiveEnd, final int pTabSize)
-				throws NullPointerException, IllegalArgumentException,
-				IOException {
+		public Range(final VCSFile pFile, final int pBegin, final int pEnd,
+				final int pTabSize) throws NullPointerException,
+				IllegalArgumentException, IOException {
 			Validate.notNull(pFile);
-			Validate.isTrue(pBegin < pExclusiveEnd);
+			Validate.isTrue(pBegin <= pEnd);
 			begin = pFile.positionOf(pBegin, pTabSize);
-			end = pFile.positionOf(pExclusiveEnd -1, pTabSize);
+			end = pFile.positionOf(pEnd, pTabSize);
 		}
 
 		/**
