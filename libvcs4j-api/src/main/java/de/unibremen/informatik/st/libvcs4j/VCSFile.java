@@ -7,9 +7,13 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.stream.Collectors;
@@ -29,7 +33,7 @@ public interface VCSFile extends VCSModelElement {
 		/**
 		 * Compares two positions using their offsets.
 		 */
-		public static Comparator<Position> OFFSET_COMPARATOR =
+		public static final Comparator<Position> OFFSET_COMPARATOR =
 				Comparator.comparingInt(Position::getOffset);
 
 		/**
@@ -219,6 +223,14 @@ public interface VCSFile extends VCSModelElement {
 	class Range {
 
 		/**
+		 * Compares two ranges using their begin positions and
+		 * {@link Position#OFFSET_COMPARATOR}.
+		 */
+		public static final Comparator<Range> BEGIN_COMPARATOR =
+				(r1, r2) -> Position.OFFSET_COMPARATOR.compare(
+						r1.getBegin(), r2.getBegin());
+
+		/**
 		 * The begin position.
 		 */
 		private final Position begin;
@@ -320,6 +332,52 @@ public interface VCSFile extends VCSModelElement {
 		}
 
 		/**
+		 * Calculates the sum of the lengths of the given ranges. Overlapping
+		 * parts are handled accordingly.
+		 *
+		 * @param ranges
+		 * 		The collection of ranges to calculate the sum of the lengths
+		 * 		from. If {@code null}, {@code 0} is returned. The collection
+		 * 		may contain {@code null} values.
+		 * @return
+		 * 		The sum of the lengths of the given ranges.
+		 * @throws IllegalArgumentException
+		 * 		If the ranges reference different files.
+		 */
+		public static int lengthOf(final Collection<Range> ranges) {
+			if (ranges == null) {
+				return 0;
+			} else if (ranges.isEmpty()) {
+				return 0;
+			}
+			final Deque<Range> queue = new ArrayDeque<>(ranges.stream()
+					.filter(Objects::nonNull)
+					.sorted((r1, r2) -> Position.OFFSET_COMPARATOR
+							.compare(r1.getBegin(), r2.getBegin()))
+					.collect(Collectors.toList()));
+			final List<Range> parts = new ArrayList<>();
+			while (queue.size() >= 2) {
+				final Range head = queue.poll();
+				final Range next = queue.poll();
+				// Throws IllegalArgumentException if necessary.
+				final Optional<Range> merge = head.merge(next);
+				if (merge.isPresent()) {
+					queue.addFirst(merge.get());
+				} else {
+					parts.add(head);
+					queue.addFirst(next);
+				}
+			}
+			if (!queue.isEmpty()) {
+				parts.add(queue.poll());
+			}
+			return parts.stream()
+					.map(Range::length)
+					.mapToInt(Integer::intValue)
+					.sum();
+		}
+
+		/**
 		 * Returns the begin position of this range.
 		 *
 		 * @return
@@ -370,6 +428,50 @@ public interface VCSFile extends VCSModelElement {
 		public String readContent() throws IOException {
 			return getFile().readeContent().substring(
 					begin.getOffset(), end.getOffset() + 1);
+		}
+
+		/**
+		 * Creates a new range that merges the positions of this and the given
+		 * range. Returns an empty {@link Optional} if their positions do not
+		 * overlap.
+		 *
+		 * @param range
+		 * 		The range to merge.
+		 * @return
+		 * 		A range that merges the overlapping positions of this and the
+		 * 		given range. An empty {@link Optional} if their positions do
+		 * 		not overlap.
+		 * @throws NullPointerException
+		 * 		If {@code range} is {@code null}.
+		 * @throws IllegalArgumentException
+		 * 		If {@code range} references a different file.
+		 */
+		public Optional<Range> merge(final Range range)
+				throws NullPointerException, IllegalArgumentException {
+			Validate.notNull(range);
+			Validate.isEquals(getFile(), range.getFile());
+
+			final Range upper = BEGIN_COMPARATOR.compare(this, range) < 0
+					? this : range;
+			final Range lower = this == upper ? range : this;
+
+			// Unable to merge ranges with a gap.
+			if (upper.getEnd().getOffset() + 1 < // make end offset exclusive
+					lower.getBegin().getOffset()) {
+				return Optional.empty();
+			}
+			// Upper subsumes lower.
+			if (upper.getEnd().getOffset() >= lower.getEnd().getOffset()) {
+				return Optional.of(new Range(upper.getBegin(), upper.end));
+			}
+			// Merge upper and lower
+			Validate.validateState( // just to be sure
+					upper.getEnd().getOffset() + 1 // make end offset exclusive
+							>= lower.getBegin().getOffset());
+			Validate.validateState( // just to be sure
+					upper.getBegin().getOffset()
+							<= lower.getBegin().getOffset());
+			return Optional.of(new Range(upper.getBegin(), lower.getEnd()));
 		}
 
 		/**
