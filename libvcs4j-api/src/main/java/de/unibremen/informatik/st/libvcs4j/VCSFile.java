@@ -462,7 +462,8 @@ public interface VCSFile extends VCSModelElement {
 			}
 			// Upper subsumes lower.
 			if (upper.getEnd().getOffset() >= lower.getEnd().getOffset()) {
-				return Optional.of(new Range(upper.getBegin(), upper.end));
+				return Optional.of(new Range(
+						upper.getBegin(), upper.getEnd()));
 			}
 			// Merge upper and lower
 			Validate.validateState( // just to be sure
