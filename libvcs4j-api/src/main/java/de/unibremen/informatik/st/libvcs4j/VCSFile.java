@@ -479,8 +479,8 @@ public interface VCSFile extends VCSModelElement {
 		 * Delegates {@code fileChange} to {@link #begin} and {@link #end}
 		 * ({@link Position#apply(FileChange)}) and computes the resulting
 		 * range. Returns an empty Optional if {@code fileChange} is of type
-		 * {@link FileChange.Type#REMOVE} or if {@link #begin} or {@link #end}
-		 * is unable to apply {@code fileChange}.
+		 * {@link FileChange.Type#REMOVE}, or if {@link #begin} or {@link #end}
+		 * returns an empty {@link Optional}.
 		 *
 		 * @param fileChange
 		 * 		The file change to apply.
@@ -488,6 +488,9 @@ public interface VCSFile extends VCSModelElement {
 		 * 		The updated range.
 		 * @throws NullPointerException
 		 * 		If {@code fileChange} is {@code null}.
+		 * @throws IllegalArgumentException
+		 * 		If the file referenced by {@code fileChange} differs from the
+		 * 		file referenced by this range.
 		 * @throws IOException
 		 * 		If computing the line diff ({@link FileChange#computeDiff()})
 		 * 		fails.
