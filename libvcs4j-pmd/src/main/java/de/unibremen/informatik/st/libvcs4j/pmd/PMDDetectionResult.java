@@ -160,7 +160,7 @@ public class PMDDetectionResult {
 			final String rev = pFile.getRevision().getId();
 			return revision2Violation
 					.getOrDefault(rev, new ArrayList<>()).stream()
-					.filter(v -> v.getFile().getRelativePath()
+					.filter(v -> v.getRange().getFile().getRelativePath()
 							.equals(pFile.getRelativePath()))
 					.collect(Collectors.toList());
 		}

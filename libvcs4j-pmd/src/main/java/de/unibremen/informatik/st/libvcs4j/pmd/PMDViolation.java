@@ -1,7 +1,6 @@
 package de.unibremen.informatik.st.libvcs4j.pmd;
 
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
-import de.unibremen.informatik.st.libvcs4j.VCSFile.Position;
 import de.unibremen.informatik.st.libvcs4j.Validate;
 
 /**
@@ -10,67 +9,38 @@ import de.unibremen.informatik.st.libvcs4j.Validate;
 public final class PMDViolation {
 
 	/**
-	 * The file containing the detected violation.
+	 * The range of this violation.
 	 */
-	private VCSFile file;
+	private final VCSFile.Range range;
 
 	/**
-	 * The begin position.
+	 * The PMD rule that triggered the detected violation.
 	 */
-	private Position begin;
+	private final String rule;
 
 	/**
-	 * The end position.
+	 * The PMD rule set containing {@link #rule}.
 	 */
-	private Position end;
-
-	/**
-	 * The rule that triggered the detected violation.
-	 */
-	private String rule;
-
-	/**
-	 * The rule set containing {@link #rule}.
-	 */
-	private String ruleSet;
+	private final String ruleSet;
 
 	/**
 	 * Creates a new violation with given values.
 	 *
-	 * @param pFile
-	 * 		The file containing the violation.
-	 * @param pBegin
-	 * 		The begin position.
-	 * @param pEnd
-	 * 		The end position.
+	 * @param pRange
+	 * 		The range of the violation to create.
 	 * @param pRule
 	 * 		The rule that triggered the detected violation.
 	 * @param pRuleSet
 	 * 		The rule set containing {@code pRule}.
 	 * @throws NullPointerException
 	 * 		If any of the given arguments is {@code null}.
-	 * @throws IllegalArgumentException
-	 * 		If begin line is greater than end line or if begin line is equal to
-	 * 		end line and begin column is greater than end column.
 	 */
-	public PMDViolation(final VCSFile pFile, final Position pBegin,
-			final Position pEnd, final String pRule, final String pRuleSet)
-			throws NullPointerException, IllegalArgumentException {
-		file = Validate.notNull(pFile);
-		begin = Validate.notNull(pBegin);
-		end = Validate.notNull(pEnd);
+	public PMDViolation(final VCSFile.Range pRange, final String pRule,
+			final String pRuleSet) throws NullPointerException,
+			IllegalArgumentException {
+		range = Validate.notNull(pRange);
 		rule = Validate.notNull(pRule);
 		ruleSet = Validate.notNull(pRuleSet);
-		if (pBegin.getLine() > pEnd.getLine()) {
-			throw new IllegalArgumentException(String.format(
-					"Begin line (%s) > end line (%s)",
-					pBegin.getLine(), pEnd.getLine()));
-		} else if (pBegin.getLine() == pEnd.getLine() &&
-				pBegin.getColumn() > pEnd.getColumn()) {
-			throw new IllegalArgumentException(String.format(
-					"Begin column (%s) > end column (%s)",
-					pBegin.getColumn(), pEnd.getColumn()));
-		}
 	}
 
 	/**
@@ -83,38 +53,18 @@ public final class PMDViolation {
 	 */
 	public PMDViolation(final PMDViolation pOther)
 			throws NullPointerException {
-		this(Validate.notNull(pOther).file, pOther.begin,
-				pOther.end, pOther.rule, pOther.ruleSet);
+		this(Validate.notNull(pOther).getRange(),
+				pOther.getRule(), pOther.getRuleSet());
 	}
 
 	/**
-	 * Returns the file containing this violation.
+	 * Returns the range of this violation.
 	 *
 	 * @return
-	 * 		The file containing this violation.
+	 * 		The range of this violation.
 	 */
-	public VCSFile getFile() {
-		return file;
-	}
-
-	/**
-	 * Returns a deep copy of the begin position of this violation.
-	 *
-	 * @return
-	 * 		A deep copy of the begin position of this violation.
-	 */
-	public Position getBegin() {
-		return begin;
-	}
-
-	/**
-	 * Returns a deep copy of the end position of this violation.
-	 *
-	 * @return
-	 * 		A deep copy of the end position of this violation.
-	 */
-	public Position getEnd() {
-		return end;
+	public VCSFile.Range getRange() {
+		return range;
 	}
 
 	/**
