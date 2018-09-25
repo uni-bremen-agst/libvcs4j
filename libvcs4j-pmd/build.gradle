@@ -13,6 +13,7 @@ repositories {
 dependencies {
     compile 'de.uni-bremen.informatik.st:libvcs4j-api:1.4.0'
 
+    compile 'net.sourceforge.pmd:pmd:5.0.0'
     compile 'org.slf4j:slf4j-api:1.7.22'
     testCompile 'junit:junit:4.12'
     testCompile 'org.assertj:assertj-core:3.8.0'
@@ -39,8 +40,8 @@ build {
     doLast {
         pom {
             project {
-                name 'libvcs4j-mapping'
-                description 'The Mapping Module of LibVCS4j'
+                name 'libvcs4j-pmd'
+                description 'The PMD Module of LibVCS4j'
                 url 'https://github.com/uni-bremen-agst/libvcs4j'
                 licenses {
                     license {
