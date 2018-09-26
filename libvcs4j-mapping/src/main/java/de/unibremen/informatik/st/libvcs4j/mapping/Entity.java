@@ -13,11 +13,13 @@ import java.util.stream.Collectors;
 
 /**
  * This class is an alternative representation of a {@link Mappable} which is
- * used to decouple mapping related data from VCS specific data to avoid
- * excessively memory usage, which may occur by holding references to outdated
- * revisions ({@link Revision}) and files ({@link VCSFile}). Note that this
- * assumption depends on the metadata of the wrapped mappable though. It is
- * primarily used in conjunction with {@link Lifespan}.
+ * used to decouple mapping related data from VCS specific data in order to
+ * avoid excessively memory usage, which may occur by holding references to
+ * outdated revisions ({@link Revision}) and files ({@link VCSFile}). Note that
+ * this assumption depends on the actual metadata of the wrapped mappable
+ * though. It is primarily used in conjunction with {@link Lifespan} and, thus,
+ * provides the attribute {@link #numChanges}, which stores the number of
+ * changes of an entity since its first occurrence in a {@link Lifespan}.
  *
  * @param <T>
  *     The type of the metadata of the wrapped {@link Mappable}.
@@ -25,32 +27,52 @@ import java.util.stream.Collectors;
 public class Entity<T> {
 
 	/**
-	 * The id of the revision of this entity.
+	 * The id of the revision of an entity.
 	 */
 	private final String revisionId;
 
 	/**
-	 * The locations of this entity {@code >= 1}.
+	 * The locations of an entity {@code >= 1}.
 	 */
 	private final List<Location> locations;
 
 	/**
-	 * The metadata of this entity.
+	 * The number of changes of an entity since its first occurrence in a
+	 * {@link Lifespan} {@code >= 0}.
+	 */
+	private final int numChanges;
+
+	/**
+	 * The metadata of an entity.
 	 */
 	private final T metadata;
 
 	/**
-	 * Creates a new entity from the given mappable. Does not hold any
+	 * Creates a new entity from the given mappable and sets its number of
+	 * changes ({@link #numChanges}) to {@code numChanges}. Does not hold any
 	 * references to {@code mappable} or any of its data, hence allowing
 	 * {@code mappable} to be garbage collected.
 	 *
 	 * @param mappable
 	 * 		The mappable to wrap.
+	 * @param numChanges
+	 * 		The number of changes of the entity to create since its first
+	 * 		occurrence in a {@link Lifespan}. Must not be negative. If the
+	 * 		entity is not managed by a {@link Lifespan}, pass {@code 0} or use
+	 * 		{@link #Entity(Mappable)}.
+	 * @throws NullPointerException
+	 * 		If {@code mappable} is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If {@code mappable} has no ranges, or if {@code numChanges} is
+	 * 		negative.
 	 */
-	public Entity(final Mappable<T> mappable) {
+	public Entity(final Mappable<T> mappable, final int numChanges)
+			throws NullPointerException, IllegalArgumentException {
 		Validate.notNull(mappable);
 		Validate.isFalse(mappable.getRanges().isEmpty(),
 				"The given mappable has no ranges.");
+		Validate.notNegative(numChanges,
+				"The number of changes must must not be negative");
 		revisionId = mappable.getRanges().get(0)
 				.getBegin()
 				.getFile()
@@ -61,6 +83,25 @@ public class Entity<T> {
 				.map(Location::new)
 				.collect(Collectors.toList());
 		metadata = mappable.getMetadata().orElseGet(null);
+		this.numChanges = numChanges;
+	}
+
+	/**
+	 * Creates a new entity from the given mappable and sets the number of
+	 * changes ({@link #numChanges}) to {@code 0}. Does not hold any references
+	 * to {@code mappable} or any of its data, hence allowing {@code mappable}
+	 * to be garbage collected. Usually, this constructor is used to create an
+	 * entity which is not managed by a {@link Lifespan}.
+	 *
+	 * @param mappable
+	 * 		The mappable to wrap.
+	 * @throws NullPointerException
+	 * 		If {@code mappable} is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If {@code mappable} has no ranges.
+	 */
+	public Entity(final Mappable<T> mappable) {
+		this(mappable, 0);
 	}
 
 	/**
@@ -82,6 +123,18 @@ public class Entity<T> {
 	 */
 	public List<Location> getLocations() {
 		return new ArrayList<>(locations);
+	}
+
+	/**
+	 * Returns the number of changes of this entity since its first occurrence
+	 * in a {@link Lifespan} ({@code >= 0}).
+	 *
+	 * @return
+	 * 		The number of changes of this entity since its first occurrence in
+	 * 		a {@link Lifespan} ({@code >= 0}).
+	 */
+	public int getNumChanges() {
+		return numChanges;
 	}
 
 	/**
