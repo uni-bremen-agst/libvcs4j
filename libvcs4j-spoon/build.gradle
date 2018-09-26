@@ -1,0 +1,68 @@
+plugins {
+    id 'java'
+    id 'maven'
+}
+
+group = 'de.uni-bremen.informatik.st'
+version = '1.4.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'de.uni-bremen.informatik.st:libvcs4j-api:1.4.0'
+    compile 'net.sourceforge.pmd:pmd:5.0.0'
+    compile 'org.slf4j:slf4j-api:1.7.22'
+    compile 'fr.inria.gforge.spoon:spoon-core:7.0.0'
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.assertj:assertj-core:3.8.0'
+    testCompile 'org.mockito:mockito-core:2.18.3'
+    testCompile 'org.slf4j:slf4j-simple:1.7.25'
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+build {
+    doLast {
+        pom {
+            project {
+                name 'libvcs4j-spoon'
+                description 'The Spoon Module of LibVCS4j'
+                url 'https://github.com/uni-bremen-agst/libvcs4j'
+                licenses {
+                    license {
+                        name 'MIT License'
+                        url 'http://www.opensource.org/licenses/mit-license.php'
+                    }
+                }
+                developers {
+                    developer {
+                        name 'Marcel Steinbeck'
+                        email 'marcel@informatik.uni-bremen.de'
+                        organization 'AG Softwaretechnik (University of Bremen)'
+                        organizationUrl 'https://www.informatik.uni-bremen.de/st'
+                    }
+                }
+                scm {
+                    connection 'scm:git:git://github.com/uni-bremen-agst/libvcs4j.git'
+                    developerConnection 'scm:git:ssh://github.com:uni-bremen-agst/libvcs4j.git'
+                    url 'https://github.com/uni-bremen-agst/libvcs4j'
+                }
+            }
+        }.writeTo("${buildDir}/libs/pom.xml")
+    }
+}

@@ -4,4 +4,5 @@ include 'conqat',
         'libvcs4j-mapping',
         'libvcs4j-metrics',
         'libvcs4j-pmd',
+        'libvcs4j-spoon',
         'libvcs4j'
