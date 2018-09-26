@@ -1,7 +1,6 @@
 package de.unibremen.informatik.st.libvcs4j.mapping;
 
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
-import de.unibremen.informatik.st.libvcs4j.Validate;
 
 import java.util.List;
 import java.util.Optional;
@@ -50,7 +49,7 @@ public interface Mappable<T> {
 	 * @return
 	 * 		The metadata of this mappable.
 	 */
-	default Optional<T> getMetaData() {
+	default Optional<T> getMetadata() {
 		return Optional.empty();
 	}
 
@@ -58,10 +57,10 @@ public interface Mappable<T> {
 	 * Returns whether this mappable is compatible with {@code mappable}. This
 	 * method is used by {@link Mapping} to determine whether a mapping between
 	 * two mappables is applicable at all. The default implementation checks
-	 * whether the metadata (see {@link #getMetaData()}) of this and the given
+	 * whether the metadata (see {@link #getMetadata()}) of this and the given
 	 * mappable are equals according to {@link Object#equals(Object)}. If this
 	 * and the given mappable have no metadata, that is, an empty
-	 * {@link Optional} is returned by {@link #getMetaData()}, the default
+	 * {@link Optional} is returned by {@link #getMetadata()}, the default
 	 * implementation considers them as compatible. Subclasses may override
 	 * this behaviour though. {@code null} arguments are supported but can
 	 * never compatible with an actual mappable.
@@ -77,8 +76,8 @@ public interface Mappable<T> {
 		if (mappable == null) {
 			return false;
 		}
-		final Optional<T> tm = getMetaData();
-		final Optional<T> om = mappable.getMetaData();
+		final Optional<T> tm = getMetadata();
+		final Optional<T> om = mappable.getMetadata();
 		if (!tm.isPresent() && !om.isPresent()) {
 			return true;
 		} else if (!tm.isPresent() || !om.isPresent()) {
