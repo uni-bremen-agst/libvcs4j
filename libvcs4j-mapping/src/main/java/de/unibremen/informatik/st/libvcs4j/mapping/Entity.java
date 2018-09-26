@@ -16,7 +16,8 @@ import java.util.stream.Collectors;
  * used to decouple mapping related data from VCS specific data to avoid
  * excessively memory usage, which may occur by holding references to outdated
  * revisions ({@link Revision}) and files ({@link VCSFile}). Note that this
- * assumption depends on the metadata of the wrapped mappable though.
+ * assumption depends on the metadata of the wrapped mappable though. It is
+ * primarily used in conjunction with {@link Lifespan}.
  *
  * @param <T>
  *     The type of the metadata of the wrapped {@link Mappable}.
