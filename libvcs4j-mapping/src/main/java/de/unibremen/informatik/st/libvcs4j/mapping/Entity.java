@@ -1,6 +1,7 @@
 package de.unibremen.informatik.st.libvcs4j.mapping;
 
 import de.unibremen.informatik.st.libvcs4j.Revision;
+import de.unibremen.informatik.st.libvcs4j.RevisionRange;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.Validate;
 
@@ -18,13 +19,21 @@ import java.util.stream.Collectors;
  * outdated revisions ({@link Revision}) and files ({@link VCSFile}). Note that
  * this assumption depends on the actual metadata of the wrapped mappable
  * though. It is primarily used in conjunction with {@link Lifespan} and, thus,
- * provides the attribute {@link #numChanges}, which stores the number of
- * changes of an entity since its first occurrence in a {@link Lifespan}.
+ * provides the attributes {@link #ordinal}, which corresponds to the value of
+ * {@link RevisionRange#getOrdinal()} and is used as a serial number, and
+ * {@link #numChanges}, which stores the number of changes of an entity since
+ * its first occurrence in a {@link Lifespan}.
  *
  * @param <T>
  *     The type of the metadata of the wrapped {@link Mappable}.
  */
 public class Entity<T> {
+
+	/**
+	 * The ordinal of an entity. Corresponds to the value of
+	 * {@link RevisionRange#getOrdinal()}.
+	 */
+	private final int ordinal;
 
 	/**
 	 * The id of the revision of an entity.
@@ -48,13 +57,18 @@ public class Entity<T> {
 	private final T metadata;
 
 	/**
-	 * Creates a new entity from the given mappable and sets its number of
-	 * changes ({@link #numChanges}) to {@code numChanges}. Does not hold any
-	 * references to {@code mappable} or any of its data, hence allowing
-	 * {@code mappable} to be garbage collected.
+	 * Creates a new entity from the given mappable with given ordinal and
+	 * number of changes. Does not hold any references to {@code mappable}
+	 * except of its metadata, hence allowing {@code mappable} to be garbage
+	 * collected.
 	 *
 	 * @param mappable
 	 * 		The mappable to wrap.
+	 * @param ordinal
+	 * 		The ordinal of the entity to create. Corresponds to the value of
+	 * 		{@link RevisionRange#getOrdinal()}. Must be positive. If the entity
+	 * 		is not managed by a {@link Lifespan}, pass {@code 1} or use
+	 * 		{@link #Entity(Mappable)}.
 	 * @param numChanges
 	 * 		The number of changes of the entity to create since its first
 	 * 		occurrence in a {@link Lifespan}. Must not be negative. If the
@@ -63,16 +77,20 @@ public class Entity<T> {
 	 * @throws NullPointerException
 	 * 		If {@code mappable} is {@code null}.
 	 * @throws IllegalArgumentException
-	 * 		If {@code mappable} has no ranges, or if {@code numChanges} is
-	 * 		negative.
+	 * 		If {@code mappable} has no ranges, if {@code ordinal <= 0}, or if
+	 * 		{@code numChanges < 0}.
 	 */
-	public Entity(final Mappable<T> mappable, final int numChanges)
-			throws NullPointerException, IllegalArgumentException {
+	public Entity(final Mappable<T> mappable, final int ordinal,
+			final int numChanges) throws NullPointerException,
+			IllegalArgumentException {
 		Validate.notNull(mappable);
 		Validate.isFalse(mappable.getRanges().isEmpty(),
 				"The given mappable has no ranges.");
+		Validate.isPositive(ordinal,
+				"The ordinal must be positive");
 		Validate.notNegative(numChanges,
-				"The number of changes must must not be negative");
+				"The number of changes must not be negative");
+		this.ordinal = ordinal;
 		revisionId = mappable.getRanges().get(0)
 				.getBegin()
 				.getFile()
@@ -82,16 +100,16 @@ public class Entity<T> {
 				.filter(Objects::nonNull)
 				.map(Location::new)
 				.collect(Collectors.toList());
-		metadata = mappable.getMetadata().orElseGet(null);
 		this.numChanges = numChanges;
+		metadata = mappable.getMetadata().orElseGet(null);
 	}
 
 	/**
-	 * Creates a new entity from the given mappable and sets the number of
-	 * changes ({@link #numChanges}) to {@code 0}. Does not hold any references
-	 * to {@code mappable} or any of its data, hence allowing {@code mappable}
-	 * to be garbage collected. Usually, this constructor is used to create an
-	 * entity which is not managed by a {@link Lifespan}.
+	 * Creates a new entity from the given mappable and sets its ordinal to
+	 * {@code 1} and its number of changes to {@code 0}. Does not hold any
+	 * references to {@code mappable} except of its metadata, hence allowing
+	 * {@code mappable} to be garbage collected. Usually, this constructor is
+	 * used to create an entity which is not managed by a {@link Lifespan}.
 	 *
 	 * @param mappable
 	 * 		The mappable to wrap.
@@ -101,7 +119,18 @@ public class Entity<T> {
 	 * 		If {@code mappable} has no ranges.
 	 */
 	public Entity(final Mappable<T> mappable) {
-		this(mappable, 0);
+		this(mappable, 1, 0);
+	}
+
+	/**
+	 * Returns the ordinal of this entity. Corresponds to the value of
+	 * {@link RevisionRange#getOrdinal()}.
+	 *
+	 * @return
+	 * 		The ordinal of this entity.
+	 */
+	public int getOrdinal() {
+		return ordinal;
 	}
 
 	/**
