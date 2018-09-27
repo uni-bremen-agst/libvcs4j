@@ -158,7 +158,8 @@ public class Mapping<T> {
 	}
 
 	/**
-	 * Computes the mapping between {@code from} and {@code to}.
+	 * Computes the mapping between {@code from} and {@code to}. {@code null}
+	 * values in {@code from} and {@code to} are filtered.
 	 *
 	 * @param from
 	 * 		The collection of (potential) predecessor mappables.
