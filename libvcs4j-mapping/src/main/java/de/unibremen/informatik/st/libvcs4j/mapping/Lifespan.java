@@ -3,7 +3,6 @@ package de.unibremen.informatik.st.libvcs4j.mapping;
 import de.unibremen.informatik.st.libvcs4j.Validate;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -12,7 +11,7 @@ import java.util.List;
  * @param <T>
  *     The type of the metadata of an {@link Entity}.
  */
-public class Lifespan<T> implements Iterable<Entity<T>> {
+public class Lifespan<T> {
 
 	/**
 	 * Stores the entities of a lifespan.
@@ -71,10 +70,5 @@ public class Lifespan<T> implements Iterable<Entity<T>> {
 	 */
 	public Entity<T> getLast() {
 		return entities.get(entities.size() - 1);
-	}
-
-	@Override
-	public Iterator<Entity<T>> iterator() {
-		return getEntities().iterator();
 	}
 }
