@@ -54,16 +54,18 @@ public interface Mappable<T> {
 	}
 
 	/**
-	 * Returns whether this mappable is compatible with {@code mappable}. This
-	 * method is used by {@link Mapping} to determine whether a mapping between
-	 * two mappables is applicable at all. The default implementation checks
-	 * whether the metadata (see {@link #getMetadata()}) of this and the given
-	 * mappable are equals according to {@link Object#equals(Object)}. If this
-	 * and the given mappable have no metadata, that is, an empty
+	 * Returns whether this mappable is compatible with {@code mappable}.
+	 *
+	 * This method is used by {@link Mapping} to determine whether a mapping
+	 * between two mappables is applicable at all. The default implementation
+	 * checks whether the metadata (see {@link #getMetadata()}) of this and the
+	 * given mappable are equals according to {@link Object#equals(Object)}. If
+	 * this or the given mappable has no metadata, that is, an empty
 	 * {@link Optional} is returned by {@link #getMetadata()}, the default
-	 * implementation considers them as compatible. Subclasses may override
-	 * this behaviour though. {@code null} arguments are supported but can
-	 * never compatible with an actual mappable.
+	 * implementation considers them as compatible. Subclasses may provide an
+	 * entirely different behaviour though. However, {@code null} arguments are
+	 * supported but can never be compatible with an actual mappable. This
+	 * property, for the sake of fail-safeness, should not be violated.
 	 *
 	 * @param mappable
 	 * 		The mappable to check.
@@ -78,12 +80,7 @@ public interface Mappable<T> {
 		}
 		final Optional<T> tm = getMetadata();
 		final Optional<T> om = mappable.getMetadata();
-		if (!tm.isPresent() && !om.isPresent()) {
-			return true;
-		} else if (!tm.isPresent() || !om.isPresent()) {
-			return false;
-		} else {
-			return tm.get().equals(om.get());
-		}
+		return !tm.isPresent() || !om.isPresent()
+				|| tm.get().equals(om.get());
 	}
 }
