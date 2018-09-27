@@ -23,8 +23,17 @@ public class Lifespan<T> {
 	 *
 	 * @param first
 	 * 		The first entity of the lifespan to create.
+	 * @throws NullPointerException
+	 * 		If {@code first} is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If the ordinal of {@code entity} is less than {@code 1}, or if the
+	 * 		number of changes of {@code entity} is negative.
 	 */
-	public Lifespan(final Entity<T> first) {
+	public Lifespan(final Entity<T> first) throws NullPointerException,
+			IllegalArgumentException {
+		Validate.notNull(first);
+		Validate.isPositive(first.getOrdinal());
+		Validate.notNegative(first.getNumChanges());
 		add(first);
 	}
 
@@ -35,9 +44,26 @@ public class Lifespan<T> {
 	 * 		The entity to add.
 	 * @return
 	 * 		This lifespan.
+	 * @throws NullPointerException
+	 * 		If {@code entity} is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If the ordinal of {@code entity} is not equals to the ordinal of
+	 * 		the last entity (see {@link #getLast()}) plus one, or if the number
+	 * 		of changes of {@code entity} is less than the number of changes of
+	 * 		the last entity.
 	 */
-	public Lifespan<T> add(final Entity<T> entity) {
+	public Lifespan<T> add(final Entity<T> entity) throws NullPointerException,
+			IllegalArgumentException {
 		Validate.notNull(entity);
+		final Entity<T> last = getLast();
+		Validate.isEquals(
+				entity.getOrdinal(), last.getOrdinal() + 1,
+				"Unexpected ordinal. Expected: %d, Actual: %d",
+				last.getOrdinal() + 1, entity.getOrdinal());
+		Validate.isGreaterThanOrEquals(
+				entity.getNumChanges(), getLast().getNumChanges(),
+				"Unexpected number of changes. Expected: >= %d, Actual: %d",
+				getLast().getNumChanges(), entity.getNumChanges());
 		entities.add(entity);
 		return this;
 	}
