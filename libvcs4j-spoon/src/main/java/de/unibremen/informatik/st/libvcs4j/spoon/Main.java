@@ -1,9 +1,6 @@
 package de.unibremen.informatik.st.libvcs4j.spoon;
 
-import de.unibremen.informatik.st.libvcs4j.FileChange;
-import de.unibremen.informatik.st.libvcs4j.RevisionRange;
-import de.unibremen.informatik.st.libvcs4j.VCSFile;
-import de.unibremen.informatik.st.libvcs4j.Validate;
+import de.unibremen.informatik.st.libvcs4j.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.Launcher;
@@ -35,9 +32,6 @@ public class Main {
 
     private boolean noClasspath = true;
 
-    //Alle Datei, welche entfernt, relocated oder modifiziert wurden??
-    private List<String> filters = new ArrayList<>();
-
     public Main() {
         try {
             temporaryDirectory = Files.createTempDirectory("tempClassDirectory").toFile();
@@ -49,37 +43,39 @@ public class Main {
     }
 
     public static void main(String[] args) {
-
-    }
-
-    public List<String> getFilters() {
-        return new ArrayList<>(filters);
-    }
-
-    public void setFilters(final List<String> filters) {
-        this.filters = filters == null ? new ArrayList<>() : new ArrayList<>(filters);
+        Main main = new Main();
+        VCSEngine single = VCSEngineBuilder
+                .ofSingle("/home/dominique/git/pi2-t02g04/uebung04")
+                .build();
+        RevisionRange range = null;
+        try {
+            range = single.next().get();
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage());
+        }
+        main.update(range);
+        if (true) {
+            LOGGER.info("BLA");
+        }
     }
 
     public List<String> getInput() {
-        return model.getRootPackage()
+        return new ArrayList<>(model.getRootPackage()
                 .getFactory()
                 .CompilationUnit()
                 .getMap()
-                .keySet()
-                .stream()
-                .collect(Collectors.toList());
+                .keySet());
     }
 
-    public CtModel build(final RevisionRange revisionRange) {
+    public CtModel update(final RevisionRange revisionRange) {
         Validate.notNull(revisionRange);
         if (model == null) {
 
             final Launcher launcher = new Launcher();
             launcher.setBinaryOutputDirectory(temporaryDirectory);
             launcher.getEnvironment().setNoClasspath(noClasspath);
-            revisionRange.getAddedFiles().forEach(fileChange ->
-                    launcher.addInputResource(fileChange.getNewFile().orElseThrow(IllegalArgumentException::new).getPath())
-            );
+            //Add the checked out directory here, so we do not have to add each single file
+            launcher.addInputResource(revisionRange.getRevision().getOutput().toString());
             model = launcher.buildModel();
 
         } else {
@@ -87,7 +83,9 @@ public class Main {
             final Factory factory = model.getRootPackage().getFactory();
             final Launcher launcher = new Launcher(factory);
             launcher.getEnvironment().setNoClasspath(noClasspath);
+            launcher.getModelBuilder().setSourceClasspath(temporaryDirectory.getPath());
             launcher.setBinaryOutputDirectory(temporaryDirectory);
+
 
             final List<String> filesToBuild = revisionRange.getFileChanges()
                     .stream()
@@ -99,17 +97,20 @@ public class Main {
 
             try {
                 removeChangedTypes(model, revisionRange.getFileChanges());
-            } catch (IOException e) {
+            } catch (IllegalArgumentException e) {
                 throw new IllegalStateException("Error while updating model. Model is inconsistent now.", e);
             }
 
-            revisionRange.getAddedFiles().forEach(fileChange ->
-                    launcher.addInputResource(fileChange.getNewFile().orElseThrow(IllegalArgumentException::new).getPath())
-            );
-
             final List<String> input = getInput();
+
+            if (!revisionRange.getAddedFiles().isEmpty()) {
+                revisionRange.getAddedFiles().forEach(fileChange ->
+                        input.add(fileChange.getNewFile().orElseThrow(IllegalArgumentException::new).getPath())
+                );
+            }
+
             input.addAll(filesToBuild);
-            launcher.addInputResource(createInputSource(input, filters));
+            launcher.addInputResource(createInputSource(input));
             launcher.getModelBuilder().addCompilationUnitFilter(path -> !filesToBuild.contains(path));
             model = launcher.buildModel();
 
@@ -117,7 +118,7 @@ public class Main {
         return model;
     }
 
-    private static FilteringFolder createInputSource(final List<String> input, final List<String> filters) {
+    private FilteringFolder createInputSource(final List<String> input) {
         FilteringFolder folder = new FilteringFolder();
         input.forEach(path -> {
             final Path p = Paths.get(path);
@@ -129,11 +130,10 @@ public class Main {
                 folder.addFolder(new FileSystemFolder(path));
             }
         });
-        filters.forEach(folder::removeAllThatMatch);
         return folder;
     }
 
-    private static void removeChangedTypes(final CtModel pModel, final List<FileChange> pFileChanges) throws IOException {
+    private void removeChangedTypes(final CtModel pModel, final List<FileChange> pFileChanges) throws IllegalArgumentException {
         final CtPackage rootPackage = pModel.getRootPackage();
         final CompilationUnitFactory cuFactory = rootPackage.getFactory().CompilationUnit();
 
@@ -162,8 +162,16 @@ public class Main {
                             final CtPackage parent = (CtPackage) pkg.getParent();
                             parent.removePackage(pkg);
                         }
+                        deleteFile(path);
                     });
                 });
+    }
+
+    private void deleteFile(final String fileName) {
+        File fileToDelete = new File(fileName);
+        Validate.isTrue(Files.exists(fileToDelete.toPath()), "'%s' does not exist", fileToDelete.toPath());
+        Validate.isTrue(Files.isReadable(fileToDelete.toPath()), "'%s' is not readable", fileToDelete.toPath());
+        fileToDelete.delete();
     }
 }
 
