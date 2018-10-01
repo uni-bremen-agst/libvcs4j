@@ -4,6 +4,7 @@ import de.unibremen.informatik.st.libvcs4j.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.Launcher;
+import spoon.SpoonModelBuilder;
 import spoon.reflect.CtModel;
 import spoon.reflect.cu.CompilationUnit;
 import spoon.reflect.declaration.CtPackage;
@@ -18,7 +19,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,47 +28,38 @@ public class Main {
 
     private CtModel model = null;
 
-    private File temporaryDirectory;
+    private File temporaryDirectory = null;
 
     private boolean noClasspath = true;
 
-    public Main() {
-        try {
-            temporaryDirectory = Files.createTempDirectory("tempClassDirectory").toFile();
-            temporaryDirectory.deleteOnExit();
-        } catch (IOException e) {
-            LOGGER.error("Failed creating temporary directory");
-            e.printStackTrace();
-        }
-    }
-
     public static void main(String[] args) {
         Main main = new Main();
-        VCSEngine single = VCSEngineBuilder
-                .ofSingle("/home/dominique/git/pi2-t02g04/uebung04")
-                .build();
-        RevisionRange range = null;
-        try {
-            range = single.next().get();
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage());
+//        VCSEngine single = VCSEngineBuilder
+//                .ofSingle("/home/dominique/git/pi2-t02g04/uebung04")
+//                .build();
+//        RevisionRange range = null;
+//        try {
+//            range = single.next().get();
+//        } catch (IOException e) {
+//            LOGGER.error(e.getMessage());
+//        }
+        VCSEngine engine = VCSEngineBuilder.ofGit("/home/dominique/git/td-v0kabellerner").build();
+        for (RevisionRange range : engine) {
+            main.update(range);
         }
-        main.update(range);
         if (true) {
             LOGGER.info("BLA");
         }
     }
 
-    public List<String> getInput() {
-        return new ArrayList<>(model.getRootPackage()
-                .getFactory()
-                .CompilationUnit()
-                .getMap()
-                .keySet());
-    }
 
     public CtModel update(final RevisionRange revisionRange) {
         Validate.notNull(revisionRange);
+
+        if (temporaryDirectory == null) {
+            createTmpDir();
+        }
+
         if (model == null) {
 
             final Launcher launcher = new Launcher();
@@ -76,6 +67,7 @@ public class Main {
             launcher.getEnvironment().setNoClasspath(noClasspath);
             //Add the checked out directory here, so we do not have to add each single file
             launcher.addInputResource(revisionRange.getRevision().getOutput().toString());
+            launcher.getModelBuilder().compile(SpoonModelBuilder.InputType.FILES);
             model = launcher.buildModel();
 
         } else {
@@ -85,7 +77,6 @@ public class Main {
             launcher.getEnvironment().setNoClasspath(noClasspath);
             launcher.getModelBuilder().setSourceClasspath(temporaryDirectory.getPath());
             launcher.setBinaryOutputDirectory(temporaryDirectory);
-
 
             final List<String> filesToBuild = revisionRange.getFileChanges()
                     .stream()
@@ -101,17 +92,9 @@ public class Main {
                 throw new IllegalStateException("Error while updating model. Model is inconsistent now.", e);
             }
 
-            final List<String> input = getInput();
-
-            if (!revisionRange.getAddedFiles().isEmpty()) {
-                revisionRange.getAddedFiles().forEach(fileChange ->
-                        input.add(fileChange.getNewFile().orElseThrow(IllegalArgumentException::new).getPath())
-                );
-            }
-
-            input.addAll(filesToBuild);
-            launcher.addInputResource(createInputSource(input));
+            launcher.addInputResource(createInputSource(filesToBuild));
             launcher.getModelBuilder().addCompilationUnitFilter(path -> !filesToBuild.contains(path));
+            launcher.getModelBuilder().compile(SpoonModelBuilder.InputType.FILES);
             model = launcher.buildModel();
 
         }
@@ -162,16 +145,25 @@ public class Main {
                             final CtPackage parent = (CtPackage) pkg.getParent();
                             parent.removePackage(pkg);
                         }
-                        deleteFile(path);
+
                     });
+                    cu.getBinaryFiles().forEach(this::deleteFile);
                 });
     }
 
-    private void deleteFile(final String fileName) {
-        File fileToDelete = new File(fileName);
+    private void deleteFile(final File fileToDelete) {
         Validate.isTrue(Files.exists(fileToDelete.toPath()), "'%s' does not exist", fileToDelete.toPath());
         Validate.isTrue(Files.isReadable(fileToDelete.toPath()), "'%s' is not readable", fileToDelete.toPath());
         fileToDelete.delete();
     }
-}
 
+    private void createTmpDir() {
+        try {
+            temporaryDirectory = Files.createTempDirectory("tmpClassDirectory").toFile();
+            temporaryDirectory.deleteOnExit();
+        } catch (IOException e) {
+            LOGGER.error("Failed creating temporary directory");
+            e.printStackTrace();
+        }
+    }
+}
