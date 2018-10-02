@@ -22,9 +22,12 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static java.lang.String.format;
+import static java.lang.System.currentTimeMillis;
 
-public class Main {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
+
+public class SpoonModel {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpoonModel.class);
 
     private CtModel model = null;
 
@@ -33,28 +36,16 @@ public class Main {
     private boolean noClasspath = true;
 
     public static void main(String[] args) {
-        Main main = new Main();
-//        VCSEngine single = VCSEngineBuilder
-//                .ofSingle("/home/dominique/git/pi2-t02g04/uebung04")
-//                .build();
-//        RevisionRange range = null;
-//        try {
-//            range = single.next().get();
-//        } catch (IOException e) {
-//            LOGGER.error(e.getMessage());
-//        }
-        VCSEngine engine = VCSEngineBuilder.ofGit("/home/dominique/git/td-v0kabellerner").build();
+        SpoonModel spoonModel = new SpoonModel();
+        VCSEngine engine = VCSEngineBuilder.ofGit("/home/dominique/git/java").build();
         for (RevisionRange range : engine) {
-            main.update(range);
-        }
-        if (true) {
-            LOGGER.info("BLA");
+            spoonModel.update(range);
         }
     }
 
-
     public CtModel update(final RevisionRange revisionRange) {
         Validate.notNull(revisionRange);
+        final long current = currentTimeMillis();
 
         if (temporaryDirectory == null) {
             createTmpDir();
@@ -83,6 +74,7 @@ public class Main {
                     .filter(fileChange -> fileChange.getType() != FileChange.Type.REMOVE)
                     .map(FileChange::getNewFile)
                     .map(vcsFile -> vcsFile.orElseThrow(IllegalArgumentException::new))
+                    .filter(sourceFile -> sourceFile.getPath().endsWith(".java"))
                     .map(VCSFile::getPath)
                     .collect(Collectors.toList());
 
@@ -95,9 +87,11 @@ public class Main {
             launcher.addInputResource(createInputSource(filesToBuild));
             launcher.getModelBuilder().addCompilationUnitFilter(path -> !filesToBuild.contains(path));
             launcher.getModelBuilder().compile(SpoonModelBuilder.InputType.FILES);
+            model.setBuildModelIsFinished(false);
             model = launcher.buildModel();
 
         }
+        LOGGER.info(format("Model built in %d milliseconds", currentTimeMillis() - current));
         return model;
     }
 
@@ -141,6 +135,7 @@ public class Main {
                         if (pkg.getTypes().isEmpty()
                                 && pkg.getPackages().isEmpty()
                                 && pkg.getParent() != rootPackage) {
+                                //&& !"unnamed module".equals(pkg.getParent().toString())) {
                             // remove empty packages
                             final CtPackage parent = (CtPackage) pkg.getParent();
                             parent.removePackage(pkg);
