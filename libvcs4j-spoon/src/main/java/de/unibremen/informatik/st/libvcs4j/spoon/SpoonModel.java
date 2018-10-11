@@ -1,6 +1,11 @@
 package de.unibremen.informatik.st.libvcs4j.spoon;
 
-import de.unibremen.informatik.st.libvcs4j.*;
+import de.unibremen.informatik.st.libvcs4j.RevisionRange;
+import de.unibremen.informatik.st.libvcs4j.Validate;
+import de.unibremen.informatik.st.libvcs4j.VCSEngineBuilder;
+import de.unibremen.informatik.st.libvcs4j.VCSEngine;
+import de.unibremen.informatik.st.libvcs4j.FileChange;
+import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.Launcher;
@@ -8,10 +13,12 @@ import spoon.SpoonModelBuilder;
 import spoon.reflect.CtModel;
 import spoon.reflect.cu.CompilationUnit;
 import spoon.reflect.declaration.CtPackage;
+import spoon.reflect.declaration.CtType;
+import spoon.reflect.declaration.CtTypeParameter;
 import spoon.reflect.factory.CompilationUnitFactory;
 import spoon.reflect.factory.Factory;
+import spoon.reflect.visitor.filter.TypeFilter;
 import spoon.support.compiler.FileSystemFile;
-import spoon.support.compiler.FileSystemFolder;
 import spoon.support.compiler.FilteringFolder;
 
 import java.io.File;
@@ -19,7 +26,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -35,13 +46,11 @@ public class SpoonModel {
 
     private boolean noClasspath = true;
 
-    public static void main(String[] args) {
-        SpoonModel spoonModel = new SpoonModel();
-        VCSEngine engine = VCSEngineBuilder.ofGit("/home/dominique/git/java").build();
-        for (RevisionRange range : engine) {
-            spoonModel.update(range);
-        }
-    }
+    private Set<String> filesNotCompiledSinceLastUpdate = new HashSet<>();
+
+    private int numberFilesWithoutClassFiles = 0;
+
+    private int numberOfAllSourceFiles = 0;
 
     public CtModel update(final RevisionRange revisionRange) {
         Validate.notNull(revisionRange);
@@ -68,23 +77,36 @@ public class SpoonModel {
             launcher.getEnvironment().setNoClasspath(noClasspath);
             launcher.getModelBuilder().setSourceClasspath(temporaryDirectory.getPath());
             launcher.setBinaryOutputDirectory(temporaryDirectory);
+            filesNotCompiledSinceLastUpdate.addAll(findUncompiledSources(factory));
+            numberFilesWithoutClassFiles = filesNotCompiledSinceLastUpdate.size();
+            numberOfAllSourceFiles = factory.CompilationUnit().getMap().values().size();
+            LOGGER.info("" + numberFilesWithoutClassFiles + " of " + numberOfAllSourceFiles + " were not compiled");
 
             final List<String> filesToBuild = revisionRange.getFileChanges()
                     .stream()
-                    .filter(fileChange -> fileChange.getType() != FileChange.Type.REMOVE)
+                    .filter(fileChange -> fileChange.getType() != FileChange.Type.REMOVE
+                            && fileChange.getType() != FileChange.Type.ADD)
                     .map(FileChange::getNewFile)
                     .map(vcsFile -> vcsFile.orElseThrow(IllegalArgumentException::new))
                     .filter(sourceFile -> sourceFile.getPath().endsWith(".java"))
                     .map(VCSFile::getPath)
                     .collect(Collectors.toList());
 
-            try {
-                removeChangedTypes(model, revisionRange.getFileChanges());
-            } catch (IllegalArgumentException e) {
-                throw new IllegalStateException("Error while updating model. Model is inconsistent now.", e);
-            }
+            filesNotCompiledSinceLastUpdate.addAll(filesToBuild);
+            print(filesNotCompiledSinceLastUpdate);
 
-            launcher.addInputResource(createInputSource(filesToBuild));
+            removeChangedTypes(getAllOldFilesFromFileChanges(revisionRange.getRemovedFiles()));
+
+            getAllOldFilesFromFileChanges(revisionRange.getRemovedFiles())
+                    .forEach(path -> filesNotCompiledSinceLastUpdate.remove(path));
+
+            removeChangedTypes(filesNotCompiledSinceLastUpdate);
+
+            filesNotCompiledSinceLastUpdate.addAll(getAllNewFilesFromFileChanges(revisionRange.getAddedFiles()));
+
+            filesToBuild.addAll(getAllNewFilesFromFileChanges(revisionRange.getAddedFiles()));
+
+            launcher.addInputResource(createInputSource(filesNotCompiledSinceLastUpdate));
             launcher.getModelBuilder().addCompilationUnitFilter(path -> !filesToBuild.contains(path));
             launcher.getModelBuilder().compile(SpoonModelBuilder.InputType.FILES);
             model.setBuildModelIsFinished(false);
@@ -92,64 +114,81 @@ public class SpoonModel {
 
         }
         LOGGER.info(format("Model built in %d milliseconds", currentTimeMillis() - current));
+
         return model;
     }
 
-    private FilteringFolder createInputSource(final List<String> input) {
+    private FilteringFolder createInputSource(final Collection<String> input) {
         FilteringFolder folder = new FilteringFolder();
         input.forEach(path -> {
             final Path p = Paths.get(path);
-            Validate.isTrue(Files.exists(p), "'%s' does not exist", path);
-            Validate.isTrue(Files.isReadable(p), "'%s' is not readable", path);
-            if (Files.isRegularFile(p)) {
+            if (Files.exists(p) && Files.isReadable(p) && Files.isRegularFile(p)) {
                 folder.addFile(new FileSystemFile(p.toFile()));
-            } else if (Files.isDirectory(p)) {
-                folder.addFolder(new FileSystemFolder(path));
             }
         });
         return folder;
     }
 
-    private void removeChangedTypes(final CtModel pModel, final List<FileChange> pFileChanges) throws IllegalArgumentException {
-        final CtPackage rootPackage = pModel.getRootPackage();
+    private void removeChangedTypes(final Collection<String> pFileChanges) {
+        final CtPackage rootPackage = model.getRootPackage();
         final CompilationUnitFactory cuFactory = rootPackage.getFactory().CompilationUnit();
 
         pFileChanges.stream()
-                .filter(fileChange -> fileChange.getType() != FileChange.Type.ADD)
-                .map(FileChange::getOldFile)
-                .map(optional -> optional.orElseThrow(IllegalArgumentException::new))
-                .filter(sourceFile -> sourceFile.getPath().endsWith(".java"))
-                // avoid mismatches due to paths like 'path/to/../file/file.java'
-                .map(sourceFile -> {
-                    try {
-                        return new File(sourceFile.getPath()).getCanonicalPath();
-                    } catch (IOException e) {
-                        throw new IllegalArgumentException(e);
-                    }
-                })
+                .filter(sourceFile -> sourceFile.endsWith(".java"))
                 .forEach(path -> {
-                    final CompilationUnit cu = cuFactory.removeFromCache(path);
-                    cu.getDeclaredTypes().forEach(type -> {
-                        final CtPackage pkg = type.getPackage();
-                        pkg.removeType(type);
-                        if (pkg.getTypes().isEmpty()
-                                && pkg.getPackages().isEmpty()
-                                && pkg.getParent() != rootPackage) {
-                                //&& !"unnamed module".equals(pkg.getParent().toString())) {
-                            // remove empty packages
-                            final CtPackage parent = (CtPackage) pkg.getParent();
-                            parent.removePackage(pkg);
-                        }
-
-                    });
-                    cu.getBinaryFiles().forEach(this::deleteFile);
+                    if (cuFactory.getMap().containsKey(path)) {
+                        final CompilationUnit cu = cuFactory.removeFromCache(path);
+                        cu.getDeclaredTypes().forEach(type -> {
+                            final CtPackage pkg = type.getPackage();
+                            pkg.removeType(type);
+//                            if (pkg.getTypes().isEmpty()
+//                                    && pkg.getPackages().isEmpty()
+//                                    && pkg.getParent() != rootPackage) {
+//                                // remove empty packages
+//                                final CtPackage parent = (CtPackage) pkg.getParent();
+//                                parent.removePackage(pkg);
+//                            }
+//
+                        });
+                        cu.getBinaryFiles().forEach(this::deleteFile);
+                    }
                 });
     }
 
+    private List<String> findUncompiledSources(final Factory factory) {
+        final List<String> rebuildedFiles = new ArrayList<>();
+        List<File> expected;
+        final String output = factory
+                .getEnvironment()
+                .getBinaryOutputDirectory();
+            for (final CtType type : model.getAllTypes()) {
+                final File base = Paths.get(output, type.getPackage().getQualifiedName().replace(".", File.separator)).toFile();
+                expected = getExpectedBinaryFiles(base, null, type);
+
+                if (expected.stream().anyMatch(file -> !file.isFile())) {
+                    rebuildedFiles.add(type.getPosition().getFile().getAbsolutePath());
+
+                    //if a class gets modified, rebuild all classes, that refer to this class
+                    for (final CtType oldType : model.getAllTypes()) {
+                        if (oldType.getReferencedTypes().contains(type.getReference())) {
+                            rebuildedFiles.add(oldType.getPosition().getFile().getAbsolutePath());
+                        }
+                    }
+                } else {
+                    filesNotCompiledSinceLastUpdate.remove(type.getPosition().getFile().getAbsolutePath());
+                }
+
+            }
+
+
+        print(rebuildedFiles);
+        return rebuildedFiles;
+    }
+
     private void deleteFile(final File fileToDelete) {
-        Validate.isTrue(Files.exists(fileToDelete.toPath()), "'%s' does not exist", fileToDelete.toPath());
-        Validate.isTrue(Files.isReadable(fileToDelete.toPath()), "'%s' is not readable", fileToDelete.toPath());
-        fileToDelete.delete();
+        if (Files.exists(fileToDelete.toPath()) && Files.isReadable(fileToDelete.toPath())) {
+            fileToDelete.delete();
+        }
     }
 
     private void createTmpDir() {
@@ -160,5 +199,56 @@ public class SpoonModel {
             LOGGER.error("Failed creating temporary directory");
             e.printStackTrace();
         }
+    }
+
+    private List<String> getAllNewFilesFromFileChanges(final List<FileChange> fileChanges) {
+        return fileChanges.stream()
+                .map(FileChange::getNewFile)
+                .map(vcsFile -> vcsFile.orElseThrow(IllegalArgumentException::new))
+                .filter(sourceFile -> sourceFile.getPath().endsWith(".java"))
+                .map(VCSFile::getPath)
+                .collect(Collectors.toList());
+    }
+
+    private List<String> getAllOldFilesFromFileChanges(final List<FileChange> fileChanges) {
+        return fileChanges
+                .stream()
+                .map(FileChange::getOldFile)
+                .map(vcsFile -> vcsFile.orElseThrow(IllegalArgumentException::new))
+                .filter(sourceFile -> sourceFile.getPath().endsWith(".java"))
+                .map(VCSFile::getPath)
+                .collect(Collectors.toList());
+    }
+
+    private List<File> getExpectedBinaryFiles(final File baseDir, final String nameOfParent, final CtType<?> type) {
+        final List<File> binaries = new ArrayList<>();
+        final String name = nameOfParent == null || nameOfParent.isEmpty()
+                ? type.getSimpleName()
+                : nameOfParent + "$" + type.getSimpleName();
+        binaries.add(new File(baseDir, name + ".class"));
+        // Use 'getElements()' rather than 'getNestedTypes()' to also fetch
+        // anonymous types.
+        type.getElements(new TypeFilter<>(CtType.class)).stream()
+                // Exclude 'type' itself.
+                .filter(inner -> !inner.equals(type))
+                // Exclude types that do not generate a binary file.
+                .filter(inner -> !(inner instanceof CtPackage)
+                        && !(inner instanceof CtTypeParameter))
+                // Include only direct inner types.
+                .filter(inner -> inner.getParent(CtType.class).equals(type))
+                .forEach(inner -> {
+                    binaries.addAll(getExpectedBinaryFiles(
+                            baseDir, name, inner));
+                });
+        return binaries;
+    }
+
+    private void print(final Collection<String> list) {
+        String result = "{ ";
+        for (final String type : list) {
+            result += type.substring(type.lastIndexOf(File.separator)+1) + ", ";
+        }
+        result += "}";
+        LOGGER.info("Files need to rebuild: " + result);
     }
 }
