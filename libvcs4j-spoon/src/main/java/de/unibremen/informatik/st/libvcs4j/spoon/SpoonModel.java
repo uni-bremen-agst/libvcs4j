@@ -23,9 +23,8 @@ import spoon.support.compiler.FilteringFolder;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collection;
 import java.util.Set;
 import java.util.HashSet;
@@ -194,11 +193,39 @@ public class SpoonModel {
     private void createTmpDir() {
         try {
             temporaryDirectory = Files.createTempDirectory("tmpClassDirectory").toFile();
-            temporaryDirectory.deleteOnExit();
+            recursiveDeleteOnShutdownHook(temporaryDirectory.toPath());
         } catch (IOException e) {
             LOGGER.error("Failed creating temporary directory");
             e.printStackTrace();
         }
+    }
+
+    private void recursiveDeleteOnShutdownHook(final Path path) {
+        Runtime.getRuntime().addShutdownHook(new Thread(
+                () -> {
+                    try {
+                        Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+                            @Override
+                            public FileVisitResult visitFile(final Path file, @SuppressWarnings("unused") BasicFileAttributes attrs)
+                                    throws IOException {
+                                Files.delete(file);
+                                return FileVisitResult.CONTINUE;
+                            }
+                            @Override
+                            public FileVisitResult postVisitDirectory(final Path dir, final IOException e)
+                                    throws IOException {
+                                if (e == null) {
+                                    Files.delete(dir);
+                                    return FileVisitResult.CONTINUE;
+                                }
+                                // directory iteration failed
+                                throw e;
+                            }
+                        });
+                    } catch (IOException e) {
+                        throw new RuntimeException("Failed to delete "+ path, e);
+                    }
+                }));
     }
 
     private List<String> getAllNewFilesFromFileChanges(final List<FileChange> fileChanges) {
