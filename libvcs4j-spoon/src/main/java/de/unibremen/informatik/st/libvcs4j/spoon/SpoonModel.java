@@ -2,8 +2,6 @@ package de.unibremen.informatik.st.libvcs4j.spoon;
 
 import de.unibremen.informatik.st.libvcs4j.RevisionRange;
 import de.unibremen.informatik.st.libvcs4j.Validate;
-import de.unibremen.informatik.st.libvcs4j.VCSEngineBuilder;
-import de.unibremen.informatik.st.libvcs4j.VCSEngine;
 import de.unibremen.informatik.st.libvcs4j.FileChange;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import org.slf4j.Logger;
@@ -12,6 +10,7 @@ import spoon.Launcher;
 import spoon.SpoonModelBuilder;
 import spoon.reflect.CtModel;
 import spoon.reflect.cu.CompilationUnit;
+import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtPackage;
 import spoon.reflect.declaration.CtType;
 import spoon.reflect.declaration.CtTypeParameter;
@@ -23,12 +22,17 @@ import spoon.support.compiler.FilteringFolder;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Paths;
+import java.nio.file.Path;
+import java.nio.file.Files;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.FileVisitResult;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.List;
 import java.util.Collection;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Optional;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
@@ -39,7 +43,7 @@ import static java.lang.System.currentTimeMillis;
 public class SpoonModel {
     private static final Logger LOGGER = LoggerFactory.getLogger(SpoonModel.class);
 
-    private CtModel model = null;
+    private Optional<CtModel> model = Optional.empty();
 
     private File temporaryDirectory = null;
 
@@ -51,7 +55,11 @@ public class SpoonModel {
 
     private int numberOfAllSourceFiles = 0;
 
-    public CtModel update(final RevisionRange revisionRange) {
+    public Optional<CtModel> getModel() {
+        return model;
+    }
+
+    public void update(final RevisionRange revisionRange) {
         Validate.notNull(revisionRange);
         final long current = currentTimeMillis();
 
@@ -59,24 +67,15 @@ public class SpoonModel {
             createTmpDir();
         }
 
-        if (model == null) {
+        if (model.isPresent()) {
 
-            final Launcher launcher = new Launcher();
-            launcher.setBinaryOutputDirectory(temporaryDirectory);
-            launcher.getEnvironment().setNoClasspath(noClasspath);
-            //Add the checked out directory here, so we do not have to add each single file
-            launcher.addInputResource(revisionRange.getRevision().getOutput().toString());
-            launcher.getModelBuilder().compile(SpoonModelBuilder.InputType.FILES);
-            model = launcher.buildModel();
-
-        } else {
-
-            final Factory factory = model.getRootPackage().getFactory();
+            final Factory factory = model.get().getRootPackage().getFactory();
             final Launcher launcher = new Launcher(factory);
             launcher.getEnvironment().setNoClasspath(noClasspath);
             launcher.getModelBuilder().setSourceClasspath(temporaryDirectory.getPath());
             launcher.setBinaryOutputDirectory(temporaryDirectory);
             filesNotCompiledSinceLastUpdate.addAll(findUncompiledSources(factory));
+            print(filesNotCompiledSinceLastUpdate);
             numberFilesWithoutClassFiles = filesNotCompiledSinceLastUpdate.size();
             numberOfAllSourceFiles = factory.CompilationUnit().getMap().values().size();
             LOGGER.info("" + numberFilesWithoutClassFiles + " of " + numberOfAllSourceFiles + " were not compiled");
@@ -92,31 +91,53 @@ public class SpoonModel {
                     .collect(Collectors.toList());
 
             filesNotCompiledSinceLastUpdate.addAll(filesToBuild);
-            print(filesNotCompiledSinceLastUpdate);
 
-            removeChangedTypes(getAllOldFilesFromFileChanges(revisionRange.getRemovedFiles()));
+            removeChangedTypes(getAllFilesFromFileChanges(revisionRange.getRemovedFiles(), true));
 
-            getAllOldFilesFromFileChanges(revisionRange.getRemovedFiles())
+            getAllFilesFromFileChanges(revisionRange.getRemovedFiles(), true)
+                    .forEach(path -> filesNotCompiledSinceLastUpdate.remove(path));
+
+            getAllFilesFromFileChanges(revisionRange.getRelocatedFiles(), true)
                     .forEach(path -> filesNotCompiledSinceLastUpdate.remove(path));
 
             removeChangedTypes(filesNotCompiledSinceLastUpdate);
 
-            filesNotCompiledSinceLastUpdate.addAll(getAllNewFilesFromFileChanges(revisionRange.getAddedFiles()));
+            filesNotCompiledSinceLastUpdate.addAll(getAllFilesFromFileChanges(revisionRange.getAddedFiles(), false));
 
-            filesToBuild.addAll(getAllNewFilesFromFileChanges(revisionRange.getAddedFiles()));
+            filesToBuild.addAll(getAllFilesFromFileChanges(revisionRange.getAddedFiles(), false));
 
             launcher.addInputResource(createInputSource(filesNotCompiledSinceLastUpdate));
             launcher.getModelBuilder().addCompilationUnitFilter(path -> !filesToBuild.contains(path));
             launcher.getModelBuilder().compile(SpoonModelBuilder.InputType.FILES);
-            model.setBuildModelIsFinished(false);
-            model = launcher.buildModel();
+            model.get().setBuildModelIsFinished(false);
+            try {
+                model = Optional.of(launcher.buildModel());
+            } catch (Exception e) {
+                model = Optional.empty();
+                filesNotCompiledSinceLastUpdate.clear();
+                numberOfAllSourceFiles = 0;
+                numberFilesWithoutClassFiles = 0;
+            }
+
+        } else {
+
+            final Launcher launcher = new Launcher();
+            launcher.setBinaryOutputDirectory(temporaryDirectory);
+            launcher.getEnvironment().setNoClasspath(noClasspath);
+            //Add the checked out directory here, so we do not have to add each single file
+            launcher.addInputResource(revisionRange.getRevision().getOutput().toString());
+            launcher.getModelBuilder().compile(SpoonModelBuilder.InputType.FILES);
+            model = Optional.of(launcher.buildModel());
 
         }
         LOGGER.info(format("Model built in %d milliseconds", currentTimeMillis() - current));
-
-        return model;
     }
 
+    /**
+     *
+     * @param input
+     * @return
+     */
     private FilteringFolder createInputSource(final Collection<String> input) {
         FilteringFolder folder = new FilteringFolder();
         input.forEach(path -> {
@@ -128,8 +149,12 @@ public class SpoonModel {
         return folder;
     }
 
+    /**
+     *
+     * @param pFileChanges
+     */
     private void removeChangedTypes(final Collection<String> pFileChanges) {
-        final CtPackage rootPackage = model.getRootPackage();
+        final CtPackage rootPackage = model.get().getRootPackage();
         final CompilationUnitFactory cuFactory = rootPackage.getFactory().CompilationUnit();
 
         pFileChanges.stream()
@@ -137,40 +162,35 @@ public class SpoonModel {
                 .forEach(path -> {
                     if (cuFactory.getMap().containsKey(path)) {
                         final CompilationUnit cu = cuFactory.removeFromCache(path);
-                        cu.getDeclaredTypes().forEach(type -> {
-                            final CtPackage pkg = type.getPackage();
-                            pkg.removeType(type);
-//                            if (pkg.getTypes().isEmpty()
-//                                    && pkg.getPackages().isEmpty()
-//                                    && pkg.getParent() != rootPackage) {
-//                                // remove empty packages
-//                                final CtPackage parent = (CtPackage) pkg.getParent();
-//                                parent.removePackage(pkg);
-//                            }
-//
-                        });
+                        cu.getDeclaredTypes().forEach(CtElement::delete);
                         cu.getBinaryFiles().forEach(this::deleteFile);
                     }
                 });
     }
 
+    /**
+     *
+     * @param factory
+     * @return
+     */
     private List<String> findUncompiledSources(final Factory factory) {
-        final List<String> rebuildedFiles = new ArrayList<>();
+        final List<String> filesNeedToBeRebuild = new ArrayList<>();
+        final CtModel currentModel = model.get();
         List<File> expected;
         final String output = factory
                 .getEnvironment()
                 .getBinaryOutputDirectory();
-            for (final CtType type : model.getAllTypes()) {
+            for (final CtType type : currentModel.getAllTypes()) {
                 final File base = Paths.get(output, type.getPackage().getQualifiedName().replace(".", File.separator)).toFile();
                 expected = getExpectedBinaryFiles(base, null, type);
 
                 if (expected.stream().anyMatch(file -> !file.isFile())) {
-                    rebuildedFiles.add(type.getPosition().getFile().getAbsolutePath());
+                    filesNeedToBeRebuild.add(type.getPosition().getFile().getAbsolutePath());
 
-                    //if a class gets modified, rebuild all classes, that refer to this class
-                    for (final CtType oldType : model.getAllTypes()) {
+                    //if a class needs to be recompiled, rebuild all classes, that refer to this class
+                    for (final CtType oldType : currentModel.getAllTypes()) {
                         if (oldType.getReferencedTypes().contains(type.getReference())) {
-                            rebuildedFiles.add(oldType.getPosition().getFile().getAbsolutePath());
+                            filesNeedToBeRebuild.add(oldType.getPosition().getFile().getAbsolutePath());
                         }
                     }
                 } else {
@@ -179,17 +199,22 @@ public class SpoonModel {
 
             }
 
-
-        print(rebuildedFiles);
-        return rebuildedFiles;
+        return filesNeedToBeRebuild;
     }
 
+    /**
+     *
+     * @param fileToDelete
+     */
     private void deleteFile(final File fileToDelete) {
         if (Files.exists(fileToDelete.toPath()) && Files.isReadable(fileToDelete.toPath())) {
             fileToDelete.delete();
         }
     }
 
+    /**
+     *
+     */
     private void createTmpDir() {
         try {
             temporaryDirectory = Files.createTempDirectory("tmpClassDirectory").toFile();
@@ -200,6 +225,10 @@ public class SpoonModel {
         }
     }
 
+    /**
+     *
+     * @param path
+     */
     private void recursiveDeleteOnShutdownHook(final Path path) {
         Runtime.getRuntime().addShutdownHook(new Thread(
                 () -> {
@@ -228,25 +257,28 @@ public class SpoonModel {
                 }));
     }
 
-    private List<String> getAllNewFilesFromFileChanges(final List<FileChange> fileChanges) {
+    /**
+     *
+     * @param fileChanges
+     * @param oldFile
+     * @return
+     */
+    private List<String> getAllFilesFromFileChanges(final List<FileChange> fileChanges, final boolean oldFile) {
         return fileChanges.stream()
-                .map(FileChange::getNewFile)
+                .map(oldFile ? FileChange::getOldFile : FileChange::getNewFile)
                 .map(vcsFile -> vcsFile.orElseThrow(IllegalArgumentException::new))
                 .filter(sourceFile -> sourceFile.getPath().endsWith(".java"))
                 .map(VCSFile::getPath)
                 .collect(Collectors.toList());
     }
 
-    private List<String> getAllOldFilesFromFileChanges(final List<FileChange> fileChanges) {
-        return fileChanges
-                .stream()
-                .map(FileChange::getOldFile)
-                .map(vcsFile -> vcsFile.orElseThrow(IllegalArgumentException::new))
-                .filter(sourceFile -> sourceFile.getPath().endsWith(".java"))
-                .map(VCSFile::getPath)
-                .collect(Collectors.toList());
-    }
-
+    /**
+     *
+     * @param baseDir
+     * @param nameOfParent
+     * @param type
+     * @return
+     */
     private List<File> getExpectedBinaryFiles(final File baseDir, final String nameOfParent, final CtType<?> type) {
         final List<File> binaries = new ArrayList<>();
         final String name = nameOfParent == null || nameOfParent.isEmpty()

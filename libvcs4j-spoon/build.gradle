@@ -12,9 +12,7 @@ repositories {
 
 dependencies {
     compile 'de.uni-bremen.informatik.st:libvcs4j:1.4.0'
-    compile 'net.sourceforge.pmd:pmd:5.0.0'
     compile 'org.slf4j:slf4j-api:1.7.22'
-    compile 'org.slf4j:slf4j-jdk14:1.7.22'
     compile 'fr.inria.gforge.spoon:spoon-core:7.0.0'
     testCompile 'junit:junit:4.12'
     testCompile 'org.assertj:assertj-core:3.8.0'
