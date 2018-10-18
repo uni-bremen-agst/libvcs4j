@@ -1,8 +1,7 @@
 install:
     - ps: choco install -y -r hg
-    - ps: choco install -y -r gradle
 # See https://github.com/appveyor/ci/issues/1745
     - ps: Set-Content -Path "gradle.properties" -Value "org.gradle.daemon=false"
 
 build_script:
-    - gradle build
+    - gradlew.bat build
