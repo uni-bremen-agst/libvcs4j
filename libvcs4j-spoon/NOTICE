@@ -1,24 +1,10 @@
 
---------------------------------------------------------------------------------
-
-LibVCS4j-PMD uses LibVCS4j-API
- (https://github.com/uni-bremen-agst/libvcs4j),
-licensed under MIT Licence
- (https://opensource.org/licenses/MIT).
 
 --------------------------------------------------------------------------------
 
-LibVCS4j-PMD uses PMD
- (https://pmd.github.io/),
-licensed under BSD-style license
- (https://pmd.sourceforge.io/license.html).
+LibVCS4j-SPOON uses SPOON
+ (https://github.com/INRIA/spoon),
+licensed under CeCILL-C FREE SOFTWARE LICENSE
+ (https://github.com/INRIA/spoon/blob/master/LICENSE.txt).
 
 --------------------------------------------------------------------------------
-
-LibVCS4j-PMD uses SLF4J
- (https://www.slf4j.org),
-licensed under MIT Licence
- (https://opensource.org/licenses/MIT).
-
---------------------------------------------------------------------------------
-
