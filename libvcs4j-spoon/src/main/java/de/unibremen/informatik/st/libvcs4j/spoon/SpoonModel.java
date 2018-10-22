@@ -39,7 +39,6 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 import static java.lang.System.currentTimeMillis;
 
-
 public class SpoonModel {
     private static final Logger LOGGER = LoggerFactory.getLogger(SpoonModel.class);
 
@@ -51,14 +50,19 @@ public class SpoonModel {
 
     private Set<String> filesNotCompiledSinceLastUpdate = new HashSet<>();
 
-    private int numberFilesWithoutClassFiles = 0;
-
-    private int numberOfAllSourceFiles = 0;
-
     public Optional<CtModel> getModel() {
         return model;
     }
 
+    /**
+     * Builds the underlying spoon model with the given revision incrementally.
+     * In addition, each increment identifies files that could not be compiled in the previous step. This method also
+     * tries to recompile them in the next increment.
+     *
+     * @param revisionRange
+     *      The current checked out revision. Contains a list of {@link FileChange} objects, from which the spoon model
+     *      will be build.
+     */
     public void update(final RevisionRange revisionRange) {
         Validate.notNull(revisionRange);
         final long current = currentTimeMillis();
@@ -74,11 +78,7 @@ public class SpoonModel {
             launcher.getEnvironment().setNoClasspath(noClasspath);
             launcher.getModelBuilder().setSourceClasspath(temporaryDirectory.getPath());
             launcher.setBinaryOutputDirectory(temporaryDirectory);
-            filesNotCompiledSinceLastUpdate.addAll(findUncompiledSources(factory));
-            print(filesNotCompiledSinceLastUpdate);
-            numberFilesWithoutClassFiles = filesNotCompiledSinceLastUpdate.size();
-            numberOfAllSourceFiles = factory.CompilationUnit().getMap().values().size();
-            LOGGER.info("" + numberFilesWithoutClassFiles + " of " + numberOfAllSourceFiles + " were not compiled");
+            filesNotCompiledSinceLastUpdate.addAll(findPreviouslyNotCompiledSources());
 
             final List<String> filesToBuild = revisionRange.getFileChanges()
                     .stream()
@@ -92,19 +92,21 @@ public class SpoonModel {
 
             filesNotCompiledSinceLastUpdate.addAll(filesToBuild);
 
+            //delete the removed files from the spoon model
             removeChangedTypes(getAllFilesFromFileChanges(revisionRange.getRemovedFiles(), true));
 
+            //delete removed files from the set, because they do not exist anymore
             getAllFilesFromFileChanges(revisionRange.getRemovedFiles(), true)
                     .forEach(path -> filesNotCompiledSinceLastUpdate.remove(path));
 
+            //delete relocated files from the set, because their path is outdated
             getAllFilesFromFileChanges(revisionRange.getRelocatedFiles(), true)
                     .forEach(path -> filesNotCompiledSinceLastUpdate.remove(path));
 
+            //remove the changed classes from spoon model
             removeChangedTypes(filesNotCompiledSinceLastUpdate);
 
             filesNotCompiledSinceLastUpdate.addAll(getAllFilesFromFileChanges(revisionRange.getAddedFiles(), false));
-
-            filesToBuild.addAll(getAllFilesFromFileChanges(revisionRange.getAddedFiles(), false));
 
             launcher.addInputResource(createInputSource(filesNotCompiledSinceLastUpdate));
             launcher.getModelBuilder().addCompilationUnitFilter(path -> !filesToBuild.contains(path));
@@ -115,8 +117,6 @@ public class SpoonModel {
             } catch (Exception e) {
                 model = Optional.empty();
                 filesNotCompiledSinceLastUpdate.clear();
-                numberOfAllSourceFiles = 0;
-                numberFilesWithoutClassFiles = 0;
             }
 
         } else {
@@ -134,9 +134,11 @@ public class SpoonModel {
     }
 
     /**
+     * Transforms the given Input into a {@link FilteringFolder}. Each ath in the given collection has to exist,
+     * be readable and be a regular Java source file, otherwise it will not be added to the {@link FilteringFolder}.
      *
-     * @param input
-     * @return
+     * @param input The given collection with absolute paths to source files.
+     * @return A {@link FilteringFolder} containing all files from the given input.
      */
     private FilteringFolder createInputSource(final Collection<String> input) {
         FilteringFolder folder = new FilteringFolder();
@@ -150,8 +152,10 @@ public class SpoonModel {
     }
 
     /**
+     * Removes all source files from {@link CtModel} that are given as input. These files have changed, so they need to be
+     * removed from the {@link CtModel}. The corresponding binary files are getting deleted as well.
      *
-     * @param pFileChanges
+     * @param pFileChanges The given collection with absolute paths to source files.
      */
     private void removeChangedTypes(final Collection<String> pFileChanges) {
         final CtPackage rootPackage = model.get().getRootPackage();
@@ -169,42 +173,45 @@ public class SpoonModel {
     }
 
     /**
+     * Computes all previously not compiled classes. In Detail this means, that all source files get collected, which
+     * do not have one (or more) corresponding class files on the hard drive.
      *
-     * @param factory
      * @return
+     *      A list from all the sources files, which did not get compiled correctly in the previous iteration.
      */
-    private List<String> findUncompiledSources(final Factory factory) {
+    private List<String> findPreviouslyNotCompiledSources() {
         final List<String> filesNeedToBeRebuild = new ArrayList<>();
         final CtModel currentModel = model.get();
         List<File> expected;
-        final String output = factory
-                .getEnvironment()
-                .getBinaryOutputDirectory();
-            for (final CtType type : currentModel.getAllTypes()) {
-                final File base = Paths.get(output, type.getPackage().getQualifiedName().replace(".", File.separator)).toFile();
-                expected = getExpectedBinaryFiles(base, null, type);
+        Validate.notNull(temporaryDirectory);
+        final String output = temporaryDirectory.getAbsolutePath();
+        for (final CtType type : currentModel.getAllTypes()) {
+            final File base = Paths.get(output, type.getPackage().getQualifiedName().replace(".", File.separator)).toFile();
+            expected = getExpectedBinaryFiles(base, null, type);
 
-                if (expected.stream().anyMatch(file -> !file.isFile())) {
-                    filesNeedToBeRebuild.add(type.getPosition().getFile().getAbsolutePath());
+            if (expected.stream().anyMatch(file -> !file.isFile())) {
+                filesNeedToBeRebuild.add(type.getPosition().getFile().getAbsolutePath());
 
-                    //if a class needs to be recompiled, rebuild all classes, that refer to this class
-                    for (final CtType oldType : currentModel.getAllTypes()) {
-                        if (oldType.getReferencedTypes().contains(type.getReference())) {
-                            filesNeedToBeRebuild.add(oldType.getPosition().getFile().getAbsolutePath());
-                        }
+                //if a class needs to be recompiled, rebuild all classes, that refer to this class
+                for (final CtType oldType : currentModel.getAllTypes()) {
+                    if (oldType.getReferencedTypes().contains(type.getReference())) {
+                        filesNeedToBeRebuild.add(oldType.getPosition().getFile().getAbsolutePath());
                     }
-                } else {
-                    filesNotCompiledSinceLastUpdate.remove(type.getPosition().getFile().getAbsolutePath());
                 }
-
+            } else {
+                filesNotCompiledSinceLastUpdate.remove(type.getPosition().getFile().getAbsolutePath());
             }
+
+        }
 
         return filesNeedToBeRebuild;
     }
 
     /**
+     * Deletes the given file. It only gets deleted, if it exists and is readable.
      *
      * @param fileToDelete
+     *      The file that needs to be deleted.
      */
     private void deleteFile(final File fileToDelete) {
         if (Files.exists(fileToDelete.toPath()) && Files.isReadable(fileToDelete.toPath())) {
@@ -213,7 +220,8 @@ public class SpoonModel {
     }
 
     /**
-     *
+     * Creates a temporary directory in which the class files get stored. This temporary directory
+     * will be deleted on shutdown (see {@link #recursiveDeleteOnShutdownHook(Path)}).
      */
     private void createTmpDir() {
         try {
@@ -226,12 +234,16 @@ public class SpoonModel {
     }
 
     /**
+     * This method adds a shutdown hook to the VM. This hook deletes the given directory and
+     * all its subdirectories/files.
      *
      * @param path
+     *      The absolute path to the directory that should be deleted on shutdown.
      */
     private void recursiveDeleteOnShutdownHook(final Path path) {
         Runtime.getRuntime().addShutdownHook(new Thread(
                 () -> {
+                    LOGGER.info("About to delete " + path.toString());
                     try {
                         Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
                             @Override
@@ -240,6 +252,7 @@ public class SpoonModel {
                                 Files.delete(file);
                                 return FileVisitResult.CONTINUE;
                             }
+
                             @Override
                             public FileVisitResult postVisitDirectory(final Path dir, final IOException e)
                                     throws IOException {
@@ -252,19 +265,26 @@ public class SpoonModel {
                             }
                         });
                     } catch (IOException e) {
-                        throw new RuntimeException("Failed to delete "+ path, e);
+                        throw new RuntimeException("Failed to delete " + path, e);
                     }
                 }));
     }
 
     /**
+     * Returns all old or new files from the given list of {@link FileChange} objects. Only java source
+     * files will be contained in the output. The parameter {@code oldFile} indicates if the old or new files
+     * should be extracted.
      *
      * @param fileChanges
+     *      The list of {@link FileChange} objects.
      * @param oldFile
+     *      If true, the old files get extracted, otherwise the new files.
      * @return
+     *      List of strings containing all paths to the old or new files
      */
     private List<String> getAllFilesFromFileChanges(final List<FileChange> fileChanges, final boolean oldFile) {
-        return fileChanges.stream()
+        return fileChanges
+                .stream()
                 .map(oldFile ? FileChange::getOldFile : FileChange::getNewFile)
                 .map(vcsFile -> vcsFile.orElseThrow(IllegalArgumentException::new))
                 .filter(sourceFile -> sourceFile.getPath().endsWith(".java"))
@@ -273,11 +293,23 @@ public class SpoonModel {
     }
 
     /**
+     * See https://github.com/INRIA/spoon/pull/2622 for more information.
+     * Recursively computes all expected binary (.class) files for {@code type}
+     * and all its inner/anonymous types. This method is used as a utility
+     * method by {@link #findPreviouslyNotCompiledSources()}.
      *
      * @param baseDir
+     * 		The base directory of {@code type}. That is, the directory where
+     * 		the binary files of {@code type} are stored.
      * @param nameOfParent
+     * 		The name of the binary file of the parent of {@code type} without
+     * 		its extension (.class). For instance, Foo$Bar. Pass {@code null} or
+     * 		an empty string if {@code type} has no parent.
      * @param type
+     * 		The root type to start the computation from.
      * @return
+     * 		All binary (.class) files that should be available for {@code type}
+     * 		and	all its inner/anonymous types.
      */
     private List<File> getExpectedBinaryFiles(final File baseDir, final String nameOfParent, final CtType<?> type) {
         final List<File> binaries = new ArrayList<>();
@@ -300,14 +332,5 @@ public class SpoonModel {
                             baseDir, name, inner));
                 });
         return binaries;
-    }
-
-    private void print(final Collection<String> list) {
-        String result = "{ ";
-        for (final String type : list) {
-            result += type.substring(type.lastIndexOf(File.separator)+1) + ", ";
-        }
-        result += "}";
-        LOGGER.info("Files need to rebuild: " + result);
     }
 }
