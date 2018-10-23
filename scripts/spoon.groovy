@@ -7,8 +7,8 @@ import de.unibremen.informatik.st.libvcs4j.*
 import de.unibremen.informatik.st.libvcs4j.spoon.*
 
 def vcs = VCSEngineBuilder
-        .ofGit("/home/dominique/git/jython")
-        .withRoot("src/org")
+        .ofGit("https://github.com/kubernetes-client/java.git")
+        .withRoot("kubernetes/src")
         .build()
 
 SpoonModel model = new SpoonModel()
