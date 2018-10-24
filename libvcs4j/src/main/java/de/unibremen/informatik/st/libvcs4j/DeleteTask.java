@@ -13,10 +13,9 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Objects;
 
 /**
- * A simple task to delete a file or directory (recursively). Usually, this
- * class is used in shutdown hooks to delete temporarily created directories.
+ * Recursively deletes a directory or file. This class is intended to be used
+ * in shutdown hooks to delete temporarily created directories.
  */
-@SuppressWarnings({"WeakerAccess", "unused"})
 public class DeleteTask extends Thread {
 
 	/**
