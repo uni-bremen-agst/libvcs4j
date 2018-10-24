@@ -2,6 +2,7 @@ package de.unibremen.informatik.st.libvcs4j;
 
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalIntervalException;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalTargetException;
+import de.unibremen.informatik.st.libvcs4j.testutils.ResourceExtractor;
 import junit.framework.AssertionFailedError;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;

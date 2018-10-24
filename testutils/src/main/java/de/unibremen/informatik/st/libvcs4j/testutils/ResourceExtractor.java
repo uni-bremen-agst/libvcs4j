@@ -1,4 +1,4 @@
-package de.unibremen.informatik.st.libvcs4j;
+package de.unibremen.informatik.st.libvcs4j.testutils;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
