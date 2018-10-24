@@ -12,8 +12,9 @@ repositories {
 
 dependencies {
     compile 'de.uni-bremen.informatik.st:libvcs4j-api:1.4.0'
-    compile 'org.slf4j:slf4j-api:1.7.22'
+
     compile 'fr.inria.gforge.spoon:spoon-core:7.0.0'
+    compile 'org.slf4j:slf4j-api:1.7.22'
     testCompile 'junit:junit:4.12'
     testCompile 'org.assertj:assertj-core:3.8.0'
     testCompile 'org.mockito:mockito-core:2.18.3'
