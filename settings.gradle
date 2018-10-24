@@ -5,4 +5,5 @@ include 'conqat',
         'libvcs4j-metrics',
         'libvcs4j-pmd',
         'libvcs4j-spoon',
-        'libvcs4j'
+        'libvcs4j',
+        'testutils'

@@ -1,2 +1,3 @@
-include ':conqat'
+include ':conqat', 'testutils'
 project(':conqat').projectDir = new File(settingsDir, '../conqat')
+project(':testutils').projectDir = new File(settingsDir, '../testutils')

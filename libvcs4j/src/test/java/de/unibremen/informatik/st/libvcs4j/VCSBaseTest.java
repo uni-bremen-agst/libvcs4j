@@ -40,8 +40,8 @@ public abstract class VCSBaseTest {
 
 	@Before
 	public void setUp() throws Exception {
-		final Extractor extractor = new Extractor();
-		input = extractor.extractTarGZResource(getTarGZFile());
+		final ResourceExtractor extractor = new ResourceExtractor();
+		input = extractor.extractTarGZ(getTarGZFile());
 		input = input.resolve(getFolderInTarGZ());
 		// create a random path that does not exist
 		target = Files.createTempDirectory(null);
