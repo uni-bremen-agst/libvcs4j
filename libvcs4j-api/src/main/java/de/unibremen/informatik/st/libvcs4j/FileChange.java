@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Represents a change of a single file.
+ * Represents a change of a file.
  */
 public interface FileChange extends VCSModelElement {
 
@@ -102,7 +102,8 @@ public interface FileChange extends VCSModelElement {
 	 * @return
 	 * 		The delta of the changed lines.
 	 * @throws IOException
-	 * 		If an occurred while computing the diff.
+	 * 		If an error occurred while computing the diff (see
+	 * 		{@link #computeDiff()}).
 	 */
 	default int computeLineDelta() throws IOException {
 		final List<LineChange> changes = computeDiff();

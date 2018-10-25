@@ -143,8 +143,8 @@ public interface VCSFile extends VCSModelElement {
 		}
 
 		/**
-		 * Applies the diff of {@code fileChange}
-		 * ({@link FileChange#computeDiff()}) and computes the resulting
+		 * Applies the diff of {@code fileChange} (see
+		 * {@link FileChange#computeDiff()}) and computes the resulting
 		 * position. Returns an empty Optional if {@code fileChange} is of type
 		 * {@link FileChange.Type#REMOVE} or if the line of this position was
 		 * deleted without a corresponding insertion. If the line of this
@@ -160,8 +160,8 @@ public interface VCSFile extends VCSModelElement {
 		 * 		If the file referenced by {@code fileChange} differs from the
 		 * 		file referenced by this position.
 		 * @throws IOException
-		 * 		If computing the line diff ({@link FileChange#computeDiff()})
-		 * 		fails.
+		 * 		If computing the line diff (see
+		 * 		{@link FileChange#computeDiff()}) fails.
 		 */
 		public Optional<Position> apply(final FileChange fileChange)
 				throws NullPointerException, IllegalArgumentException,
@@ -476,8 +476,8 @@ public interface VCSFile extends VCSModelElement {
 		}
 
 		/**
-		 * Delegates {@code fileChange} to {@link #begin} and {@link #end}
-		 * ({@link Position#apply(FileChange)}) and computes the resulting
+		 * Delegates {@code fileChange} to {@link #begin} and {@link #end} (see
+		 * {@link Position#apply(FileChange)}) and computes the resulting
 		 * range. Returns an empty Optional if {@code fileChange} is of type
 		 * {@link FileChange.Type#REMOVE}, or if {@link #begin} or {@link #end}
 		 * returns an empty {@link Optional}.
@@ -492,8 +492,8 @@ public interface VCSFile extends VCSModelElement {
 		 * 		If the file referenced by {@code fileChange} differs from the
 		 * 		file referenced by this range.
 		 * @throws IOException
-		 * 		If computing the line diff ({@link FileChange#computeDiff()})
-		 * 		fails.
+		 * 		If computing the line diff (see
+		 * 		{@link FileChange#computeDiff()}) fails.
 		 */
 		public Optional<Range> apply(final FileChange fileChange)
 				throws NullPointerException, IOException {

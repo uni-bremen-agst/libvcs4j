@@ -237,7 +237,7 @@ public interface RevisionRange extends VCSModelElement {
 
 	/**
 	 * Filters the list of file changes returned by {@link #getFileChanges()}
-	 * and returns only those whose old or the new relative file path ends with
+	 * and returns only those whose old or the new relative path end with
 	 * {@code suffix}.
 	 *
 	 * You may use this method to analyze file changes affecting a certain file
@@ -247,7 +247,7 @@ public interface RevisionRange extends VCSModelElement {
 	 * @param suffix
 	 * 		The suffix used to filter the file changes.
 	 * @return
-	 * 		All file changes whose old or the new relative file path ends with
+	 * 		All file changes whose old or the new relative path end with
 	 * 		{@code suffix}.
 	 */
 	default List<FileChange> getFileChangesBySuffix(final String suffix) {
@@ -268,7 +268,7 @@ public interface RevisionRange extends VCSModelElement {
 
 	/**
 	 * Filters the list of file changes returned by {@link #getFileChanges()}
-	 * and returns only those whose old or new relative path starts with
+	 * and returns only those whose old or new relative path start with
 	 * {@code prefix}.
 	 *
 	 * You may use this method to analyze file changes affecting a certain
@@ -279,7 +279,7 @@ public interface RevisionRange extends VCSModelElement {
 	 * @param prefix
 	 * 		The prefix used to filter the file changes.
 	 * @return
-	 * 		All file changes whose old or new relative file path ends with
+	 * 		All file changes whose old or new relative file path start with
 	 * 		{@code prefix}.
 	 */
 	default List<FileChange> getFileChangesByPrefix(final String prefix) {
@@ -299,8 +299,35 @@ public interface RevisionRange extends VCSModelElement {
 	}
 
 	/**
+	 * Filters the list of file changes returned by {@link #getFileChanges()}
+	 * and returns only those whose old or new relative path match
+	 * {@code regex}. Paths are matched using {@link String#matches(String)}.
+	 *
+	 * @param regex
+	 * 		The regular expression used to filter the file changes.
+	 * @return
+	 * 		All file changes whose old or new relative path match
+	 * 		{@code regex}.
+	 */
+	default List<FileChange> getFileChangesByRegex(final String regex) {
+		return getFileChanges().stream()
+				.filter(fc -> {
+					final boolean old = fc.getOldFile()
+							.map(VCSFile::getRelativePath)
+							.map(p -> p.matches(regex))
+							.orElse(false);
+					final boolean nev = fc.getNewFile()
+							.map(VCSFile::getRelativePath)
+							.map(p -> p.matches(regex))
+							.orElse(false);
+					return old || nev;
+				})
+				.collect(Collectors.toList());
+	}
+
+	/**
 	 * Returns the issues referenced by the commits of this range. To enable
-	 * this feature when processing a repository, set the appropriate
+	 * this feature when processing a repository, set an appropriate
 	 * {@link ITEngine} with {@link VCSEngine#setITEngine(ITEngine)}. The
 	 * returned list does not contain the same issue (according to
 	 * {@link Issue#getId()}) twice.

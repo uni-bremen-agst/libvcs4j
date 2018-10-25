@@ -102,8 +102,8 @@ public class FSTree<V> {
 	 * The relative path of the referenced file (if {@link #file} is present)
 	 * or directory (if {@link #nodes} is present). The path is relative to
 	 * {@link VCSEngine#getRoot()}, except for the root node which may use
-	 * {@link #ROOT_DIRECTORY} in case of a tree with multiple (actual) root
-	 * nodes or {@link #EMPTY_DIRECTORY} in case of an "empty" tree.
+	 * {@link #ROOT_DIRECTORY} in case of a tree with multiple root nodes or
+	 * {@link #EMPTY_DIRECTORY} in case of an "empty" tree.
 	 */
 	private final String path;
 
@@ -261,8 +261,9 @@ public class FSTree<V> {
 
 	/**
 	 * Creates a tree from the given list of {@link VCSFile} instances. The
-	 * created tree has no value ({@link #getValue()}). {@code null} values and
-	 * duplicates (according to {@link Object#equals(Object)}) are filtered.
+	 * created tree has no value (see {@link #getValue()}). {@code null} values
+	 * and duplicates (according to {@link Object#equals(Object)}) are
+	 * filtered.
 	 *
 	 * @param pFiles
 	 * 		The files to create the tree from.
@@ -491,16 +492,16 @@ public class FSTree<V> {
 	}
 
 	/**
-	 * Returns whether the file name of this tree matches the given file name.
+	 * Returns whether the filename of this tree matches the given filename.
 	 *
-	 * @param pFileName
-	 * 		The file name to match with the file name of this tree.
+	 * @param pFilename
+	 * 		The filename to match with the filename of this tree.
 	 * @return
-	 * 		{@code true} if the file of this tree matches {@code pFileName},
-	 * 		{@code false} otherwise.
+	 * 		{@code true} if the filename of this tree matches
+	 * 		{@code pFilename}, {@code false} otherwise.
 	 */
-	private boolean hasFileName(final String pFileName) {
-		return getName().equals(pFileName);
+	private boolean hasFileName(final String pFilename) {
+		return getName().equals(pFilename);
 	}
 
 	/**
@@ -535,7 +536,7 @@ public class FSTree<V> {
 
 	/**
 	 * Returns whether this tree is a virtual root directory that has been
-	 * created to cover multiple actual roots.
+	 * created to cover multiple root nodes.
 	 *
 	 * @return
 	 * 		{@code true} if this tree is a virtual root directory,

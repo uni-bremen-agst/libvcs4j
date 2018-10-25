@@ -103,7 +103,7 @@ public interface ITEngine {
 	 * same issue (according to {@link Issue#getId()}) twice.
 	 *
 	 * The default implementations delegates the referenced commits
-	 * ({@link RevisionRange#getCommits()}) to {@link #getIssuesFor(List)}.
+	 * (see {@link RevisionRange#getCommits()}) to {@link #getIssuesFor(List)}.
 	 *
 	 * @param range
 	 *      The revision range to parse.

@@ -58,7 +58,7 @@ public interface Commit extends VCSModelElement {
 
 	/**
 	 * Returns the issues referenced by this commit. To enable this feature
-	 * when processing a repository, set the appropriate {@link ITEngine} with
+	 * when processing a repository, set an appropriate {@link ITEngine} with
 	 * {@link VCSEngine#setITEngine(ITEngine)}. The returned list does not
 	 * contain the same issue (according to {@link Issue#getId()}) twice.
 	 *
@@ -69,7 +69,7 @@ public interface Commit extends VCSModelElement {
 
 	/**
 	 * Returns whether this commit is a merge commit. That is, it has more than
-	 * one parent.
+	 * one parent (see {@link #getParentIds()}).
 	 *
 	 * @return
 	 *      {@code true} if this commit is a merge commit, {@code false}

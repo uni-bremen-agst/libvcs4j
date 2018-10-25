@@ -39,7 +39,7 @@ public interface Revision extends VCSModelElement {
 
 	/**
 	 * Filters the list of files returned by {@link #getFiles()} and returns
-	 * only those whose relative file path ends with {@code suffix}.
+	 * only those whose relative path end with {@code suffix}.
 	 *
 	 * You may use this method to analyze a certain file type only. For
 	 * instance, call {@code getFilesBySuffix(".java")} to get only Java files.
@@ -47,17 +47,17 @@ public interface Revision extends VCSModelElement {
 	 * @param suffix
 	 * 		The suffix used to filter the files.
 	 * @return
-	 * 		All file whose relative path ends with {@code suffix}.
+	 * 		All files whose relative path end with {@code suffix}.
 	 */
 	default List<VCSFile> getFilesBySuffix(final String suffix) {
 		return getFiles().stream()
-				.filter(f -> f.getPath().endsWith(suffix))
+				.filter(f -> f.getRelativePath().endsWith(suffix))
 				.collect(Collectors.toList());
 	}
 
 	/**
 	 * Filters the list of files returned by {@link #getFiles()} and returns
-	 * only those whose relative path starts with {@code prefix}.
+	 * only those whose relative path start with {@code prefix}.
 	 *
 	 * You may use this method to analyze files located in a certain directory
 	 * only. For instance, call {@code getFilesByPrefix("src/main/java")} to
@@ -66,11 +66,27 @@ public interface Revision extends VCSModelElement {
 	 * @param prefix
 	 * 		The prefix used to filter the files.
 	 * @return
-	 * 		All files whose relative path starts with {@code prefix}.
+	 * 		All files whose relative path start with {@code prefix}.
 	 */
 	default List<VCSFile> getFilesByPrefix(final String prefix) {
 		return getFiles().stream()
 				.filter(f -> f.getRelativePath().startsWith(prefix))
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Filters the list of files returned by {@link #getFiles()} and returns
+	 * only those whose relative path match {@code regex}. Paths are matched
+	 * using {@link String#matches(String)}.
+	 *
+	 * @param regex
+	 * 		The regular expression used to filter the files.
+	 * @return
+	 * 		All files whose relative path match match {@code regex}.
+	 */
+	default List<VCSFile> getFilesByRegex(final String regex) {
+		return getFiles().stream()
+				.filter(f -> f.getRelativePath().matches(regex))
 				.collect(Collectors.toList());
 	}
 }

@@ -45,8 +45,9 @@ import java.util.Optional;
  * is an important property because it allows users of this API to maintain
  * incrementally updated models reflecting the current state of a VCS.
  *
- * Note 2: {@link #readAllBytes(VCSFile)} must be a stateless operation. That
- * is, one may read any file in any state.
+ * Note 2: {@link #readAllBytes(VCSFile)}, {@link #readLineInfo(VCSFile)}, and
+ * {@link #computeDiff(FileChange)} are stateless operations. That is, one may
+ * read any file in any state.
  */
 public interface VCSEngine extends Iterable<RevisionRange> {
 
@@ -101,7 +102,7 @@ public interface VCSEngine extends Iterable<RevisionRange> {
 	 * Returns the currently checked out revision.
 	 *
 	 * @return
-	 * 		The currently checked out revision or an empty {@link Optional} If
+	 * 		The currently checked out revision or an empty {@link Optional} if
 	 * 		{@link #next()} has not been called yet.
 	 */
 	Optional<Revision> getRevision();
@@ -147,7 +148,7 @@ public interface VCSEngine extends Iterable<RevisionRange> {
 	Path getTarget();
 
 	/**
-	 * This method is somewhat similar to {@link #getTarget()} but may return
+	 * This method is somewhat similar to {@link #getTarget()}, but may return
 	 * the composite of {@link #getTarget()} and {@link #getRoot()}  if the
 	 * underlying VCS does not support partial checkouts (just like Git, for
 	 * instance). If the VCS supports partial checkouts, {@link #getTarget()}
@@ -214,8 +215,8 @@ public interface VCSEngine extends Iterable<RevisionRange> {
 
 	/**
 	 * Returns all non-VCS-specific files located in {@link #getOutput()}. All
-	 * paths of the list are absolute and the list does not contain any
-	 * directory path. The default implementation uses the
+	 * paths of the returned list are absolute and the list does not contain
+	 * any directory path. The default implementation uses the
 	 * {@link FilenameFilter} returned by {@link #createVCSFileFilter()} to
 	 * exclude particular files from {@link #getOutput()}. {@link #getOutput()}
 	 * itself can not be excluded.
