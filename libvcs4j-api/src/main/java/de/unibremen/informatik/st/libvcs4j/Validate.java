@@ -739,7 +739,7 @@ public class Validate {
 	 * @throws IllegalArgumentException
 	 * 		If {@code t.compareTo(compare) != 0}.
 	 */
-	public static <T extends Comparable<T>> T isEquals(final T t,
+	public static <T extends Comparable<T>> T isEqualTo(final T t,
 			final T compare) throws NullPointerException,
 			IllegalArgumentException {
 		notNull(t);
@@ -770,7 +770,7 @@ public class Validate {
 	 * @throws IllegalArgumentException
 	 * 		If {@code t.compareTo(compare) != 0}.
 	 */
-	public static <T extends Comparable<T>> T isEquals(final T t,
+	public static <T extends Comparable<T>> T isEqualTo(final T t,
 			final T compare, final String message, final Object... args)
 			throws NullPointerException, IllegalArgumentException {
 		notNull(t);
@@ -1006,9 +1006,9 @@ public class Validate {
 	}
 
 	/**
-	 * Validates that {@code file} and {@code compare} are equals. Two files
-	 * are equals if the ids of their revisions ({@link Revision#getId()}) and
-	 * their relative paths ({@link VCSFile#getRelativePath()}) are equals.
+	 * Validates that {@code file} is equal to {@code compare}. Two files are
+	 * equal if the ids of their revisions (see {@link Revision#getId()}) and
+	 * their relative paths (see {@link VCSFile#getRelativePath()}) are equal.
 	 *
 	 * @param file
 	 * 		The file to validate.
@@ -1021,7 +1021,7 @@ public class Validate {
 	 * @throws IllegalArgumentException
 	 * 		If {@code file} and {@code compare} are not equals.
 	 */
-	public static VCSFile isEquals(final VCSFile file, final VCSFile compare)
+	public static VCSFile isEqualTo(final VCSFile file, final VCSFile compare)
 			throws NullPointerException, IllegalArgumentException {
 		Validate.notNull(file);
 		Validate.notNull(compare);
@@ -1037,9 +1037,9 @@ public class Validate {
 	}
 
 	/**
-	 * Validates that {@code file} and {@code compare} are equals. Two files
-	 * are equals if the ids of their revisions ({@link Revision#getId()}) and
-	 * their relative paths ({@link VCSFile#getRelativePath()}) are equals.
+	 * Validates that {@code file} is equal to {@code compare}. Two files are
+	 * equal if the ids of their revisions (see {@link Revision#getId()}) and
+	 * their relative paths (see {@link VCSFile#getRelativePath()}) are equal.
 	 *
 	 * @param file
 	 * 		The file to validate.
@@ -1056,7 +1056,7 @@ public class Validate {
 	 * @throws IllegalArgumentException
 	 * 		If {@code file} and {@code compare} are not equals.
 	 */
-	public static VCSFile isEquals(final VCSFile file, final VCSFile compare,
+	public static VCSFile isEqualTo(final VCSFile file, final VCSFile compare,
 			final String message, final Object... args)
 			throws NullPointerException, IllegalArgumentException {
 		Validate.notNull(file);

@@ -170,7 +170,7 @@ public interface VCSFile extends VCSModelElement {
 			Validate.isTrue(fileChange.getOldFile().isPresent(),
 					"The given file change must not be an addition.");
 			final VCSFile oldFile = fileChange.getOldFile().get();
-			Validate.isEquals(oldFile, file,
+			Validate.isEqualTo(oldFile, file,
 					"The given file change references an invalid file.");
 
 			// Ignore removed files.
@@ -257,7 +257,7 @@ public interface VCSFile extends VCSModelElement {
 				throws NullPointerException, IllegalArgumentException {
 			begin = Validate.notNull(pBegin);
 			end = Validate.notNull(pEnd);
-			Validate.isEquals(begin.getFile(), end.getFile(),
+			Validate.isEqualTo(begin.getFile(), end.getFile(),
 					"Begin and end position reference different files.");
 			Validate.isTrue(begin.getOffset() <= end.getOffset(),
 					"Begin must not be after end");
@@ -449,7 +449,7 @@ public interface VCSFile extends VCSModelElement {
 		public Optional<Range> merge(final Range range)
 				throws NullPointerException, IllegalArgumentException {
 			Validate.notNull(range);
-			Validate.isEquals(getFile(), range.getFile());
+			Validate.isEqualTo(getFile(), range.getFile());
 
 			final Range upper = BEGIN_COMPARATOR.compare(this, range) < 0
 					? this : range;
