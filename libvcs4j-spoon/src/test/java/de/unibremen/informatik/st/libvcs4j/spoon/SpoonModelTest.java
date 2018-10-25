@@ -206,6 +206,49 @@ public class SpoonModelTest {
 
 	@Test
 	@Ignore
+	public void relocateCToD() throws IOException {
+		deleteFile("D.java");
+		byte[] original = save(spoonModel.update(firstRange)
+				.orElseThrow(IllegalStateException::new));
+
+		deleteFile("C.java");
+		addFile("D.java");
+		updateFile("D.java");
+		VCSFile cFile = new VCSFileMock("C.java");
+		VCSFile dFile = new VCSFileMock("D.java");
+		FileChange change = new FileChangeMock(cFile, dFile);
+		RevisionRange second = new RevisionRangeMock(Arrays.asList(change));
+		byte[] update = save(spoonModel.update(second)
+				.orElseThrow(IllegalStateException::new));
+
+		CtModel originalModel = load(original);
+		CtModel updatedModel = load(update);
+		assertThat(originalModel).isNotEqualTo(updatedModel);
+
+		Collection<CtType<?>> originalTypes = originalModel.getAllTypes();
+		Collection<CtType<?>> updatedTypes = updatedModel.getAllTypes();
+		assertThat(originalTypes).hasSize(3);
+		assertThat(updatedTypes).hasSize(3);
+		assertThat(originalTypes).isNotEqualTo(updatedTypes);
+
+		CtType<?> a1 = getTypeByName(originalTypes, "A");
+		CtType<?> b1 = getTypeByName(originalTypes, "B");
+		CtType<?> c1 = getTypeByName(originalTypes, "C");
+		CtType<?> a2 = getTypeByName(updatedTypes, "A");
+		CtType<?> b2 = getTypeByName(updatedTypes, "B");
+		CtType<?> d2 = getTypeByName(updatedTypes, "D");
+		assertThat(a1).isEqualTo(a2);
+		assertThat(b1).isEqualTo(b2);
+		assertThat(c1).isEqualTo(d2);
+		assertThat(d2.getDeclaredFields()).hasSize(2);
+		assertThat(d2.getMethods()).hasSize(1);
+
+		assertThat(b1.getMethods().iterator().next().getParameters()
+				.get(0).getType().getDeclaration()).isNull();
+	}
+
+	@Test
+	@Ignore
 	public void canonicalPathD() throws IOException {
 		deleteFile("D.java");
 		byte[] original = save(spoonModel.update(firstRange)
