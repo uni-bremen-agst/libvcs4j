@@ -9,6 +9,7 @@ import lombok.NonNull;
 import lombok.Setter;
 
 import java.io.IOException;
+import java.lang.ref.SoftReference;
 import java.nio.charset.Charset;
 import java.util.Optional;
 
@@ -34,9 +35,9 @@ public class VCSFileImpl extends VCSModelElementImpl implements VCSFile {
 	private Revision revision;
 
 	/**
-	 * Caches the contents of {@link #readAllBytes()}.
+	 * Caches the contents of this file (see {@link #readAllBytes()}).
 	 */
-	private byte[] cache;
+	private SoftReference<byte[]> cache = new SoftReference<>(null);
 
 	@Override
 	public Optional<Charset> guessCharset() throws IOException {
@@ -53,9 +54,11 @@ public class VCSFileImpl extends VCSModelElementImpl implements VCSFile {
 
 	@Override
 	public byte[] readAllBytes() throws IOException {
-		if (cache == null) {
-			cache = getVCSEngine().readAllBytes(this);
+		byte[] bytes = cache.get();
+		if (bytes == null) {
+			bytes = getVCSEngine().readAllBytes(this);
+			cache = new SoftReference<>(bytes);
 		}
-		return cache;
+		return bytes;
 	}
 }
