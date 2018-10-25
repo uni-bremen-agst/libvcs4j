@@ -13,8 +13,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Objects;
 
 /**
- * Recursively deletes a directory or file. This class is intended to be used
- * in shutdown hooks to delete temporarily created directories.
+ * Recursively deletes a directory or file. This class is primarily intended to
+ * be used in shutdown hooks to delete temporarily created directories.
  */
 public class DeleteTask extends Thread {
 
@@ -55,7 +55,7 @@ public class DeleteTask extends Thread {
 
 	@Override
 	public void run() {
-		LOGGER.info("Deleting directory '{}'", path);
+		LOGGER.info("Deleting '{}'", path);
 		try {
 			if (Files.exists(path)) {
 				Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
@@ -77,7 +77,7 @@ public class DeleteTask extends Thread {
 				});
 			}
 		} catch (final IOException e) {
-			LOGGER.warn("Error while deleting directory '{}'", path, e);
+			LOGGER.warn("Error while deleting '{}'", path, e);
 		}
 	}
 }
