@@ -15,21 +15,28 @@ import java.util.Optional;
 /**
  * Pojo implementation of {@link VCSFile}.
  */
-@Getter
-@Setter
 public class VCSFileImpl extends VCSModelElementImpl implements VCSFile {
 
 	/**
 	 * The relative path of a file.
 	 */
 	@NonNull
+	@Getter
+	@Setter
 	private String relativePath;
 
 	/**
 	 * The revision of a file.
 	 */
 	@NonNull
+	@Getter
+	@Setter
 	private Revision revision;
+
+	/**
+	 * Caches the contents of {@link #readAllBytes()}.
+	 */
+	private byte[] cache;
 
 	@Override
 	public Optional<Charset> guessCharset() throws IOException {
@@ -46,6 +53,9 @@ public class VCSFileImpl extends VCSModelElementImpl implements VCSFile {
 
 	@Override
 	public byte[] readAllBytes() throws IOException {
-		return getVCSEngine().readAllBytes(this);
+		if (cache == null) {
+			cache = getVCSEngine().readAllBytes(this);
+		}
+		return cache;
 	}
 }
