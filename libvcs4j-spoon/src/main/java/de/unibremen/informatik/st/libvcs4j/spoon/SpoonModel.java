@@ -18,6 +18,7 @@ import spoon.reflect.factory.Factory;
 import spoon.reflect.visitor.filter.TypeFilter;
 import spoon.support.compiler.FileSystemFile;
 import spoon.support.compiler.FilteringFolder;
+import spoon.support.reflect.declaration.CtModuleImpl;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,12 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.FileVisitResult;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.List;
-import java.util.Collection;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -87,7 +83,7 @@ public class SpoonModel {
 			filesNotCompiledSinceLastUpdate
 					.addAll(findPreviouslyNotCompiledSources());
 
-			final List<String> filesToBuild = revisionRange.getFileChanges()
+			final List<String> input = revisionRange.getFileChanges()
 					.stream()
 					.filter(fileChange -> fileChange.getType() != FileChange.Type.REMOVE)
 					.map(FileChange::getNewFile)
@@ -95,12 +91,18 @@ public class SpoonModel {
 					.filter(sourceFile -> sourceFile.getPath().endsWith(".java"))
 					.map(VCSFile::getPath)
 					.collect(Collectors.toList());
+			final List<String> filesToBuild = makeStringPathsCanonical(input);
 
+			filesToBuild.addAll(getReferencedTypes(filesToBuild));
 			filesNotCompiledSinceLastUpdate.addAll(filesToBuild);
 
 			//delete the removed files from the spoon model
 			removeChangedTypes(getAllFilesFromFileChanges(
 					revisionRange.getRemovedFiles(), OLD_FILE));
+
+			//delete the relocated files from the spoon model
+			removeChangedTypes(getAllFilesFromFileChanges(
+					revisionRange.getRelocatedFiles(), OLD_FILE));
 
 			//delete removed files from the set, because they do not exist anymore
 			getAllFilesFromFileChanges(revisionRange.getRemovedFiles(), OLD_FILE)
@@ -126,6 +128,7 @@ public class SpoonModel {
 				model = Optional.empty();
 				filesNotCompiledSinceLastUpdate.clear();
 			}
+			//((CtModuleImpl) launcher.getModel().getUnnamedModule()).setRootPackage(launcher.getModel().getRootPackage());
 
 		} else {
 
@@ -328,6 +331,51 @@ public class SpoonModel {
 				.filter(sourceFile -> sourceFile.getPath().endsWith(".java"))
 				.map(VCSFile::getPath)
 				.collect(Collectors.toList());
+	}
+
+	/**
+	 *
+	 * @param pFileChanges
+	 * @return
+	 */
+	private List<String> getReferencedTypes(final Collection<String> pFileChanges) {
+		final CtModel currentModel = model.get();
+		final List<String> referencedTypes = new ArrayList<>();
+		final Map<String, CompilationUnit> compilationUnitMap =
+				currentModel.getRootPackage().getFactory().CompilationUnit().getMap();
+		for (final String path : pFileChanges) {
+			final CompilationUnit cu;
+			if (compilationUnitMap.containsKey(path)) {
+				cu = compilationUnitMap.get(path);
+			} else {
+				continue;
+			}
+			for (final CtType type : currentModel.getAllTypes()) {
+				if (type.getReferencedTypes().contains(cu.getMainType().getReference())) {
+					referencedTypes.add(type.getPosition().getFile().getAbsolutePath());
+				}
+			}
+		}
+		return referencedTypes;
+	}
+
+	/**
+	 * Converts the given list of strings (these are actually paths to files)
+	 * to canonical paths.
+	 *
+	 * @param paths The given paths (as a list of strings).
+	 * @return The canonical paths.
+	 */
+	private List<String> makeStringPathsCanonical(final List<String> paths) {
+		final List<String> canonicalStringPaths = new ArrayList<>(paths.size());
+		for (final String path : paths) {
+			try {
+				canonicalStringPaths.add(new File(path).getCanonicalPath());
+			} catch (IOException e) {
+				LOGGER.error("Error making path " + path + " canonical");
+			}
+		}
+		return canonicalStringPaths;
 	}
 
 	/**
