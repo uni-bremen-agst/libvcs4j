@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -201,6 +202,38 @@ public class SpoonModelTest {
 		CtExpression<?> lhs2 = assignment2.getAssigned();
 		assertThat(assignment2.getType().getSimpleName()).isEqualTo("float");
 		assertThat(lhs2.getType().getSimpleName()).isEqualTo("float");
+	}
+
+	@Test
+	@Ignore
+	public void canonicalPathD() throws IOException {
+		deleteFile("D.java");
+		byte[] original = save(spoonModel.update(firstRange)
+				.orElseThrow(IllegalStateException::new));
+
+		addFile("D.java");
+		String folderName = folder.getRoot().toPath().getName(
+				folder.getRoot().toPath().getNameCount() - 1).toString();
+		String dPath = Paths.get("..", folderName, "D.java").toString();
+		VCSFile dFile = new VCSFileMock(dPath);
+		FileChange dChange = new FileChangeMock(null, dFile);
+		RevisionRange second = new RevisionRangeMock(Arrays.asList(dChange));
+		byte[] update = save(spoonModel.update(second)
+				.orElseThrow(IllegalStateException::new));
+
+		CtModel originalModel = load(original);
+		CtModel updatedModel = load(update);
+		assertThat(originalModel).isNotEqualTo(updatedModel);
+
+		Collection<CtType<?>> originalTypes = originalModel.getAllTypes();
+		Collection<CtType<?>> updatedTypes = updatedModel.getAllTypes();
+		assertThat(originalTypes).hasSize(3);
+		assertThat(updatedTypes).hasSize(4);
+		assertThat(originalTypes).isNotEqualTo(updatedTypes);
+
+		CtType<?> d2 = getTypeByName(updatedTypes, "D");
+		assertThat(d2.getDeclaredFields()).isEmpty();
+		assertThat(d2.getMethods()).isEmpty();
 	}
 
 
