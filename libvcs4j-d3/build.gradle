@@ -11,7 +11,7 @@ repositories {
 }
 
 dependencies {
-    compile 'de.uni-bremen.informatik.st:libvcs4j-api:1.4.0'
+    compile 'de.uni-bremen.informatik.st:libvcs4j-api:1.5.0'
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.assertj:assertj-core:3.8.0'

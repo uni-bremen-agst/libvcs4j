@@ -56,7 +56,7 @@ public class Lifespan<T> {
 			IllegalArgumentException {
 		Validate.notNull(entity);
 		final Entity<T> last = getLast();
-		Validate.isEquals(
+		Validate.isEqualTo(
 				entity.getOrdinal(), last.getOrdinal() + 1,
 				"Unexpected ordinal. Expected: %d, Actual: %d",
 				last.getOrdinal() + 1, entity.getOrdinal());
