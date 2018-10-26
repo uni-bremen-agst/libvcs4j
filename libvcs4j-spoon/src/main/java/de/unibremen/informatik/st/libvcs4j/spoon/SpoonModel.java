@@ -4,6 +4,7 @@ import de.unibremen.informatik.st.libvcs4j.RevisionRange;
 import de.unibremen.informatik.st.libvcs4j.Validate;
 import de.unibremen.informatik.st.libvcs4j.FileChange;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.Launcher;
@@ -18,17 +19,19 @@ import spoon.reflect.factory.Factory;
 import spoon.reflect.visitor.filter.TypeFilter;
 import spoon.support.compiler.FileSystemFile;
 import spoon.support.compiler.FilteringFolder;
-import spoon.support.reflect.declaration.CtModuleImpl;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.nio.file.Path;
 import java.nio.file.Files;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.FileVisitResult;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.*;
+import java.util.List;
+import java.util.Collection;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -91,6 +94,7 @@ public class SpoonModel {
 					.filter(sourceFile -> sourceFile.getPath().endsWith(".java"))
 					.map(VCSFile::getPath)
 					.collect(Collectors.toList());
+
 			final List<String> filesToBuild = makeStringPathsCanonical(input);
 
 			filesToBuild.addAll(getReferencedTypes(filesToBuild));
@@ -128,7 +132,6 @@ public class SpoonModel {
 				model = Optional.empty();
 				filesNotCompiledSinceLastUpdate.clear();
 			}
-			//((CtModuleImpl) launcher.getModel().getUnnamedModule()).setRootPackage(launcher.getModel().getRootPackage());
 
 		} else {
 
@@ -214,16 +217,17 @@ public class SpoonModel {
 		final String output = temporaryDirectory.getAbsolutePath();
 		for (final CtType type : currentModel.getAllTypes()) {
 			final File base = Paths.get(
-			        output,
-                    type.getPackage().getQualifiedName().replace(".", File.separator))
-                    .toFile();
+					output,
+					type.getPackage().getQualifiedName().replace(".", File.separator))
+					.toFile();
 			expected = getExpectedBinaryFiles(base, null, type);
 
 			if (expected.stream().anyMatch(file -> !file.isFile())) {
 				filesNeedToBeRebuild.add(
 						type.getPosition().getFile().getAbsolutePath());
 
-				//if a class needs to be recompiled, rebuild all classes, that refer to this class
+				//if a class needs to be recompiled,
+				//rebuild all classes, that refer to this class
 				for (final CtType oldType : currentModel.getAllTypes()) {
 					if (oldType.getReferencedTypes().contains(type.getReference())) {
 						filesNeedToBeRebuild.add(
@@ -244,14 +248,14 @@ public class SpoonModel {
 
 	/**
 	 * Deletes the given file. It only gets deleted, if it exists, is readable
-     * and is writable.
+	 * and is writable.
 	 *
 	 * @param fileToDelete The file that needs to be deleted.
 	 */
 	private void deleteFile(final File fileToDelete) {
 		if (Files.exists(fileToDelete.toPath())
-                && Files.isReadable(fileToDelete.toPath())
-                && Files.isWritable(fileToDelete.toPath())) {
+				&& Files.isReadable(fileToDelete.toPath())
+				&& Files.isWritable(fileToDelete.toPath())) {
 			fileToDelete.delete();
 		}
 	}
@@ -259,13 +263,13 @@ public class SpoonModel {
 	/**
 	 * Creates a temporary directory in which the class files get stored.
 	 * This temporary directory will be deleted on shutdown
-	 * (see {@link #recursiveDeleteOnShutdownHook(Path)}).
+	 * (see {@link #recursiveDeleteOnShutdownHook(File)}).
 	 */
 	private void createTmpDir() {
 		try {
 			temporaryDirectory =
 					Files.createTempDirectory("tmpClassDirectory").toFile();
-			recursiveDeleteOnShutdownHook(temporaryDirectory.toPath());
+			recursiveDeleteOnShutdownHook(temporaryDirectory);
 		} catch (IOException e) {
 			LOGGER.error("Failed creating temporary directory");
 			e.printStackTrace();
@@ -276,36 +280,18 @@ public class SpoonModel {
 	 * This method adds a shutdown hook to the VM. This hook deletes the given directory and
 	 * all its subdirectories/files.
 	 *
-	 * @param path The absolute path to the directory that should be deleted on shutdown.
+	 * @param file The {@link File} object representing the directory
+	 *             that should be deleted on shutdown.
 	 */
-	private void recursiveDeleteOnShutdownHook(final Path path) {
+	private void recursiveDeleteOnShutdownHook(final File file) {
 		Runtime.getRuntime().addShutdownHook(new Thread(
 				() -> {
-					LOGGER.info("About to delete " + path.toString());
+					LOGGER.info("About to delete " + file.getAbsolutePath());
 					try {
-						Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-							@Override
-							public FileVisitResult visitFile(final Path file,
-															 @SuppressWarnings("unused") BasicFileAttributes attrs)
-									throws IOException {
-								Files.delete(file);
-								return FileVisitResult.CONTINUE;
-							}
-
-							@Override
-							public FileVisitResult postVisitDirectory(final Path dir,
-																	  final IOException e)
-									throws IOException {
-								if (e == null) {
-									Files.delete(dir);
-									return FileVisitResult.CONTINUE;
-								}
-								// directory iteration failed
-								throw e;
-							}
-						});
+						FileUtils.deleteDirectory(file);
 					} catch (IOException e) {
-						throw new RuntimeException("Failed to delete " + path, e);
+						LOGGER.error("Failed to delete directory "
+								+ file.getAbsolutePath());
 					}
 				}));
 	}
@@ -321,12 +307,12 @@ public class SpoonModel {
 	 * @return List of strings containing all paths to the old or new files
 	 */
 	private List<String> getAllFilesFromFileChanges(final List<FileChange> fileChanges,
-                                                    final FileType fileType) {
+													final FileType fileType) {
 		return fileChanges
 				.stream()
 				.map(fileType == FileType.OLD_FILES
-                        ? FileChange::getOldFile
-                        : FileChange::getNewFile)
+						? FileChange::getOldFile
+						: FileChange::getNewFile)
 				.map(vcsFile -> vcsFile.orElseThrow(IllegalArgumentException::new))
 				.filter(sourceFile -> sourceFile.getPath().endsWith(".java"))
 				.map(VCSFile::getPath)
@@ -334,15 +320,19 @@ public class SpoonModel {
 	}
 
 	/**
+	 * Returns all the source files that have a reference to a file in
+	 * {@code pFileChanges}.
 	 *
-	 * @param pFileChanges
-	 * @return
+	 * @param pFileChanges The list with paths to source files.
+	 * @return A list with all source files, that have a reference to a class in
+	 * 		   {@code pFileChanges}
 	 */
 	private List<String> getReferencedTypes(final Collection<String> pFileChanges) {
 		final CtModel currentModel = model.get();
 		final List<String> referencedTypes = new ArrayList<>();
 		final Map<String, CompilationUnit> compilationUnitMap =
 				currentModel.getRootPackage().getFactory().CompilationUnit().getMap();
+
 		for (final String path : pFileChanges) {
 			final CompilationUnit cu;
 			if (compilationUnitMap.containsKey(path)) {
@@ -350,7 +340,14 @@ public class SpoonModel {
 			} else {
 				continue;
 			}
+
+			//search for types, that have a reference to the current type
 			for (final CtType type : currentModel.getAllTypes()) {
+				//exclude the type representing the class we need to build anyway
+				if (type.getReference().equals(cu.getMainType().getReference())) {
+					continue;
+				}
+
 				if (type.getReferencedTypes().contains(cu.getMainType().getReference())) {
 					referencedTypes.add(type.getPosition().getFile().getAbsolutePath());
 				}
@@ -396,8 +393,8 @@ public class SpoonModel {
 	 * and all its inner/anonymous types.
 	 */
 	private List<File> getExpectedBinaryFiles(final File baseDir,
-                                              final String nameOfParent,
-                                              final CtType<?> type) {
+											  final String nameOfParent,
+											  final CtType<?> type) {
 		final List<File> binaries = new ArrayList<>();
 		final String name = nameOfParent == null || nameOfParent.isEmpty()
 				? type.getSimpleName()
