@@ -155,6 +155,9 @@ public class SpoonModelTest {
 		assertThat(c1).isNotEqualTo(d2);
 		assertThat(d2.getDeclaredFields()).isEmpty();
 		assertThat(d2.getMethods()).isEmpty();
+
+		assertThat(b2.getMethods().iterator().next().getParameters()
+				.get(0).getType().getDeclaration()).isNull();
 	}
 
 	@Test
@@ -242,7 +245,7 @@ public class SpoonModelTest {
 		assertThat(d2.getDeclaredFields()).hasSize(2);
 		assertThat(d2.getMethods()).hasSize(1);
 
-		assertThat(b1.getMethods().iterator().next().getParameters()
+		assertThat(b2.getMethods().iterator().next().getParameters()
 				.get(0).getType().getDeclaration()).isNull();
 	}
 
