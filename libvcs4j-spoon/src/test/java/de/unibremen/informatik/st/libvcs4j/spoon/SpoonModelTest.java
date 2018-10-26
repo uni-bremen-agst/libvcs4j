@@ -207,7 +207,6 @@ public class SpoonModelTest {
 	}
 
 	@Test
-	@Ignore
 	public void relocateCToD() throws IOException {
 		deleteFile("D.java");
 		byte[] original = save(spoonModel.update(firstRange)
