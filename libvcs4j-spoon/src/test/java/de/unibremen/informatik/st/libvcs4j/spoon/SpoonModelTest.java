@@ -161,7 +161,6 @@ public class SpoonModelTest {
 	}
 
 	@Test
-	@Ignore
 	public void updateTypeOfC() throws IOException {
 		deleteFile("D.java");
 		byte[] original = save(spoonModel.update(firstRange)
@@ -242,7 +241,7 @@ public class SpoonModelTest {
 		CtType<?> d2 = getTypeByName(updatedTypes, "D");
 		assertThat(a1).isEqualTo(a2);
 		assertThat(b1).isEqualTo(b2);
-		assertThat(c1).isEqualTo(d2);
+		assertThat(c1).isNotEqualTo(d2);
 		assertThat(d2.getDeclaredFields()).hasSize(2);
 		assertThat(d2.getMethods()).hasSize(1);
 
@@ -251,7 +250,6 @@ public class SpoonModelTest {
 	}
 
 	@Test
-	@Ignore
 	public void canonicalPathD() throws IOException {
 		deleteFile("D.java");
 		byte[] original = save(spoonModel.update(firstRange)
