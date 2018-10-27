@@ -348,8 +348,13 @@ public class SpoonModel {
 					continue;
 				}
 
-				if (type.getReferencedTypes().contains(cu.getMainType().getReference())) {
-					referencedTypes.add(type.getPosition().getFile().getAbsolutePath());
+				for (final CtType declaredType : cu.getDeclaredTypes()) {
+					if (type.getReferencedTypes()
+							.contains(declaredType.getReference())) {
+						referencedTypes.add(
+								type.getPosition().getFile().getAbsolutePath());
+						break;
+					}
 				}
 			}
 		}
