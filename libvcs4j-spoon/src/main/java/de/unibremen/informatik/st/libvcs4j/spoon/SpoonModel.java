@@ -64,7 +64,7 @@ public class SpoonModel {
 	 *                      Contains a list of {@link FileChange} objects,
 	 *                      from which the spoon model will be build.
 	 * @return The updated underlying {@link CtModel}. May be an empty
-	 * 			{@link Optional}, if spoon fails to build the model.
+	 * {@link Optional}, if spoon fails to build the model.
 	 */
 	public Optional<CtModel> update(final RevisionRange revisionRange) {
 		Validate.notNull(revisionRange);
@@ -207,7 +207,7 @@ public class SpoonModel {
 	 * corresponding class files on the hard drive.
 	 *
 	 * @return A list from all the sources files, which did not get compiled
-	 * 			correctly in the previous iteration.
+	 * correctly in the previous iteration.
 	 */
 	private List<String> findPreviouslyNotCompiledSources() {
 		final List<String> filesNeedToBeRebuild = new ArrayList<>();
@@ -224,20 +224,20 @@ public class SpoonModel {
 
 			if (expected.stream().anyMatch(file -> !file.isFile())) {
 				filesNeedToBeRebuild.add(
-						type.getPosition().getFile().getAbsolutePath());
+				        getCanonicalPath(type.getPosition().getFile()));
 
 				//if a class needs to be recompiled,
 				//rebuild all classes, that refer to this class
 				for (final CtType oldType : currentModel.getAllTypes()) {
 					if (oldType.getReferencedTypes().contains(type.getReference())) {
 						filesNeedToBeRebuild.add(
-								oldType.getPosition().getFile().getAbsolutePath()
+								getCanonicalPath(oldType.getPosition().getFile())
 						);
 					}
 				}
 			} else {
 				filesNotCompiledSinceLastUpdate.remove(
-						type.getPosition().getFile().getAbsolutePath()
+						getCanonicalPath(type.getPosition().getFile())
 				);
 			}
 
@@ -325,7 +325,7 @@ public class SpoonModel {
 	 *
 	 * @param pFileChanges The list with paths to source files.
 	 * @return A list with all source files, that have a reference to a class in
-	 * 		   {@code pFileChanges}
+	 * {@code pFileChanges}
 	 */
 	private List<String> getReferencedTypes(final Collection<String> pFileChanges) {
 		final CtModel currentModel = model.get();
@@ -352,13 +352,28 @@ public class SpoonModel {
 					if (type.getReferencedTypes()
 							.contains(declaredType.getReference())) {
 						referencedTypes.add(
-								type.getPosition().getFile().getAbsolutePath());
+								getCanonicalPath(type.getPosition().getFile()));
 						break;
 					}
 				}
 			}
 		}
 		return referencedTypes;
+	}
+
+    /**
+     * Returns the canonical path to the given file as a string.
+     *
+     * @param file The file from which the canonical path should be returned.
+     * @return The canonical path.
+     */
+	private String getCanonicalPath(final File file) {
+		try {
+			return file.getCanonicalPath();
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to get canonical pathname of file"
+					+ file.getAbsolutePath());
+		}
 	}
 
 	/**
@@ -371,11 +386,7 @@ public class SpoonModel {
 	private List<String> makeStringPathsCanonical(final List<String> paths) {
 		final List<String> canonicalStringPaths = new ArrayList<>(paths.size());
 		for (final String path : paths) {
-			try {
-				canonicalStringPaths.add(new File(path).getCanonicalPath());
-			} catch (IOException e) {
-				LOGGER.error("Error making path " + path + " canonical");
-			}
+		    canonicalStringPaths.add(getCanonicalPath(new File(path)));
 		}
 		return canonicalStringPaths;
 	}
@@ -390,8 +401,8 @@ public class SpoonModel {
 	 *                     the directory where the binary files of {@code type}
 	 *                     are stored.
 	 * @param nameOfParent The name of the binary file of the parent of
-	 * 					   {@code type} without its extension (.class).
-	 * 					   For instance, Foo$Bar. Pass {@code null} or
+	 *                     {@code type} without its extension (.class).
+	 *                     For instance, Foo$Bar. Pass {@code null} or
 	 *                     an empty string if {@code type} has no parent.
 	 * @param type         The root type to start the computation from.
 	 * @return All binary (.class) files that should be available for {@code type}
