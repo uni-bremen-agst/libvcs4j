@@ -42,49 +42,71 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 import static java.lang.System.currentTimeMillis;
 
+/**
+ * Allows to incrementally build a {@link CtModel}. This class is somewhat
+ * similar to {@link spoon.IncrementalLauncher}, except that is utilizes
+ * LibVCS4j's {@link RevisionRange} API to update a model.
+ */
 public class SpoonModel {
-	private static final Logger LOGGER = LoggerFactory.getLogger(SpoonModel.class);
 
-	private static final boolean NO_CLASSPATH = true;
+	/**
+	 * The logger of this class.
+	 */
+	private static final Logger LOGGER =
+			LoggerFactory.getLogger(SpoonModel.class);
 
+	/**
+	 * The internal {@link CtModel}. Is updated by
+	 * {@link #update(RevisionRange)}.
+	 */
 	private CtModel model = null;
 
-	private File temporaryDirectory = null;
+	/**
+	 * Path to the directory which stores the compiled .class files of the last
+	 * call of {@link #update(RevisionRange)}.
+	 */
+	private Path tmpDir = null;
 
+	/**
+	 * Stores all files (as canonical paths) that weren't compiled by the last
+	 * call of {@link #update(RevisionRange)}.
+	 */
 	private Set<Path> filesNotCompiledSinceLastUpdate = new HashSet<>();
 
+	/**
+	 * Returns the internal {@link CtModel} of this model.
+	 *
+	 * @return
+	 * 		The internal {@link CtModel} of this model.
+	 */
 	public Optional<CtModel> getModel() {
 		return Optional.ofNullable(model);
 	}
 
 	/**
-	 * Builds the underlying spoon model with the given revision incrementally.
-	 * In addition, each increment identifies files that could not be compiled
-	 * in the previous step. This method also tries to recompile them in the
-	 * next increment.
+	 * Incrementally builds the underlying spoon model.
 	 *
-	 * @param revisionRange The current checked out revision.
-	 *                      Contains a list of {@link FileChange} objects,
-	 *                      from which the spoon model will be build.
-	 * @return The updated underlying {@link CtModel}. May be an empty
-	 * 			{@link Optional}, if spoon fails to build the model.
+	 * @param revisionRange
+	 * 		The currently checked out range.
+	 * @return
+	 * 		The updated spoon model. May be an empty {@link Optional}, if spoon
+	 * 		fails to build the model.
 	 */
 	public Optional<CtModel> update(final RevisionRange revisionRange) {
 		Validate.notNull(revisionRange);
 		final long current = currentTimeMillis();
 
-		if (temporaryDirectory == null) {
-			createTmpDir();
+		if (tmpDir == null) {
+			tmpDir = createTmpDir();
 		}
 
 		if (model != null) {
 
 			final Factory factory = model.getRootPackage().getFactory();
 			final Launcher launcher = new Launcher(factory);
-			launcher.getEnvironment().setNoClasspath(NO_CLASSPATH);
-			launcher.getModelBuilder()
-					.setSourceClasspath(temporaryDirectory.getPath());
-			launcher.setBinaryOutputDirectory(temporaryDirectory);
+			launcher.getEnvironment().setNoClasspath(true);
+			launcher.getModelBuilder().setSourceClasspath(tmpDir.toString());
+			launcher.setBinaryOutputDirectory(tmpDir.toString());
 			filesNotCompiledSinceLastUpdate
 					.addAll(findPreviouslyNotCompiledSources());
 
@@ -141,10 +163,10 @@ public class SpoonModel {
 		} else {
 
 			final Launcher launcher = new Launcher();
-			launcher.setBinaryOutputDirectory(temporaryDirectory);
-			launcher.getEnvironment().setNoClasspath(NO_CLASSPATH);
-			//Add the checked out directory here,
-			//so we do not have to add each single file
+			launcher.setBinaryOutputDirectory(tmpDir.toString());
+			launcher.getEnvironment().setNoClasspath(true);
+			// Add the checked out directory here, so we do not have to add
+			// each single file.
 			launcher.addInputResource(
 					revisionRange.getRevision().getOutput().toString());
 			launcher.getModelBuilder().compile(SpoonModelBuilder.InputType.FILES);
@@ -156,14 +178,18 @@ public class SpoonModel {
 		return Optional.ofNullable(model);
 	}
 
+	////////////////////////////// Util Methods ///////////////////////////////
+
 	/**
-	 * Transforms the given Input into a {@link FilteringFolder}.
-	 * Each path in the given collection has to exist, be readable and be a
-	 * regular Java source file, otherwise it will not be added to the
-	 * {@link FilteringFolder}.
+	 * Transforms the given input into a {@link FilteringFolder}. Each path in
+	 * {@code input} has to exist, be readable, and be a regular Java source
+	 * file, otherwise it will not be added to the {@link FilteringFolder}.
 	 *
-	 * @param input The given collection with absolute paths to source files.
-	 * @return A {@link FilteringFolder} containing all files from the given input.
+	 * @param input
+	 * 		The input source files.
+	 * @return
+	 * 		A {@link FilteringFolder} containing all files from the given
+	 * 		input.
 	 */
 	private FilteringFolder createInputSource(final Collection<Path> input) {
 		FilteringFolder folder = new FilteringFolder();
@@ -176,39 +202,19 @@ public class SpoonModel {
 	}
 
 	/**
-	 * Creates a temporary directory in which the class files get stored.
-	 * This temporary directory will be deleted on shutdown
-	 * (see {@link #recursiveDeleteOnShutdownHook(File)}).
-	 */
-	private void createTmpDir() {
-		try {
-			temporaryDirectory =
-					Files.createTempDirectory("tmpClassDirectory").toFile();
-			recursiveDeleteOnShutdownHook(temporaryDirectory);
-		} catch (IOException e) {
-			LOGGER.error("Failed creating temporary directory");
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * This method adds a shutdown hook to the VM. This hook deletes the given directory and
-	 * all its subdirectories/files.
+	 * Creates a temporary directory that will be deleted on shutdown.
 	 *
-	 * @param file The {@link File} object representing the directory
-	 *             that should be deleted on shutdown.
+	 * @return
+	 * 		The path to the temporary directory.
 	 */
-	private void recursiveDeleteOnShutdownHook(final File file) {
-		Runtime.getRuntime().addShutdownHook(new Thread(
-				() -> {
-					LOGGER.info("About to delete " + file.getAbsolutePath());
-					try {
-						FileUtils.deleteDirectory(file);
-					} catch (IOException e) {
-						LOGGER.error("Failed to delete directory "
-								+ file.getAbsolutePath());
-					}
-				}));
+	private Path createTmpDir() throws UncheckedIOException {
+		try {
+			final Path tmp = Files.createTempDirectory("spoon_model");
+			FileUtils.forceDeleteOnExit(tmp.toFile());
+			return tmp;
+		} catch (final IOException e) {
+			throw new UncheckedIOException(e);
+		}
 	}
 
 	/**
@@ -253,16 +259,17 @@ public class SpoonModel {
 	}
 
 	/**
-	 * Removes all source files from {@link CtModel} that are given as input.
-	 * These files have changed, so they need to be removed from the
-	 * {@link CtModel}. The corresponding binary files are deleted as well.
+	 * Removes all {@link CtType} objects from {@link #model} that belong to
+	 * one of the files of {@code paths}. These files have changed, so they
+	 * need to be removed. The corresponding binary files are deleted as well.
 	 *
-	 * @param pPaths The given collection with absolute paths to source files.
+	 * @param paths
+	 * 		The changed source files.
 	 */
-	private void removeChangedTypes(final Collection<Path> pPaths) {
+	private void removeChangedTypes(final Collection<Path> paths) {
 		Validate.validateState(model != null);
 
-		final List<Path> paths = pPaths.stream()
+		final List<Path> files = paths.stream()
 				.map(this::toCanonicalPath)
 				.collect(Collectors.toList());
 		final CompilationUnitFactory factory = model
@@ -271,7 +278,7 @@ public class SpoonModel {
 				.CompilationUnit();
 		final Set<String> unitsToRemove = new HashSet<>();
 		factory.getMap().forEach((p, __) -> {
-			if (paths.contains(toCanonicalPath(p)))	{
+			if (files.contains(toCanonicalPath(p)))	{
 				unitsToRemove.add(p);
 			}
 		});
@@ -292,20 +299,20 @@ public class SpoonModel {
 	}
 
 	/**
-	 * Computes all previously not compiled classes. In Detail this means,
-	 * that all source files get collected, which do not have one (or more)
-	 * corresponding class file on the hard drive. All paths of the returned
+	 * Computes all previously not compiled classes. In Detail this means, that
+	 * all source files are collected, which do not have one (or more)
+	 * corresponding .class file at {@link #tmpDir}. All paths of the returned
 	 * set of paths are canonicalized.
 	 *
-	 * @return All sources files which did not get compiled correctly in the
-	 * previous iteration.
+	 * @return
+	 * 		All sources files which were not compiled by the last call of
+	 * 		{@link #update(RevisionRange)}.
 	 */
 	private Set<Path> findPreviouslyNotCompiledSources() {
 		Validate.validateState(model != null);
-		Validate.validateState(temporaryDirectory != null);
+		Validate.validateState(tmpDir != null);
 
-		final String output = temporaryDirectory.getAbsolutePath();
-
+		final String output = tmpDir.toString();
 		final Set<Path> result = new HashSet<>();
 		for (final CtType type : model.getAllTypes()) {
 			final Path canonicalPath = toCanonicalPath(
@@ -352,9 +359,11 @@ public class SpoonModel {
 	 * returned set of paths does not contain any file of {@code pFiles}
 	 * itself.
 	 *
-	 * @param pFiles The list with paths to source pFiles.
-	 * @return All source files that have a reference to a class in
-	 * {@code pFiles}.
+	 * @param
+	 * 		pFiles The list of files (denoted as paths) to process.
+	 * @return
+	 * 		All source files that have a reference to a class in
+	 * 		{@code pFiles}.
 	 */
 	private Set<Path> findReferencingFiles(final List<Path> pFiles) {
 		Validate.validateState(model != null);
