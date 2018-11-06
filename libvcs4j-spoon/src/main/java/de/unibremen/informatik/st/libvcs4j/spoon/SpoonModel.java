@@ -8,7 +8,6 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.Launcher;
-import spoon.SpoonModelBuilder;
 import spoon.reflect.CtModel;
 import spoon.reflect.cu.CompilationUnit;
 import spoon.reflect.cu.SourcePosition;
@@ -41,6 +40,7 @@ import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.lang.System.currentTimeMillis;
+import static spoon.SpoonModelBuilder.InputType;
 
 /**
  * Allows to incrementally build a {@link CtModel}. This class is somewhat
@@ -71,7 +71,7 @@ public class SpoonModel {
 	 * Stores all files (as canonical paths) that weren't compiled by the last
 	 * call of {@link #update(RevisionRange)}.
 	 */
-	private Set<Path> filesNotCompiledSinceLastUpdate = new HashSet<>();
+	private Set<Path> notCompiled = new HashSet<>();
 
 	/**
 	 * Returns the internal {@link CtModel} of this model.
@@ -107,8 +107,7 @@ public class SpoonModel {
 			launcher.getEnvironment().setNoClasspath(true);
 			launcher.getModelBuilder().setSourceClasspath(tmpDir.toString());
 			launcher.setBinaryOutputDirectory(tmpDir.toString());
-			filesNotCompiledSinceLastUpdate
-					.addAll(findPreviouslyNotCompiledSources());
+			notCompiled.addAll(findPreviouslyNotCompiledSources());
 
 			final List<String> input = revisionRange.getFileChanges()
 					.stream()
@@ -124,40 +123,41 @@ public class SpoonModel {
 					.collect(Collectors.toList());
 
 			filesToBuild.addAll(findReferencingFiles(filesToBuild));
-			filesNotCompiledSinceLastUpdate.addAll(filesToBuild);
+			notCompiled.addAll(filesToBuild);
 
-			//delete the removed files from the spoon model
+			// delete the removed files from the spoon model
 			removeChangedTypes(extractOldFiles(
 					revisionRange.getRemovedFiles()));
 
-			//delete the relocated files from the spoon model
+			// delete the relocated files from the spoon model
 			removeChangedTypes(extractOldFiles(
 					revisionRange.getRelocatedFiles()));
 
-			//delete removed files from the set, because they do not exist anymore
-			extractOldFiles(revisionRange.getRemovedFiles())
-					.forEach(path -> filesNotCompiledSinceLastUpdate.remove(path));
+			// delete removed files from the set, because they do not exist
+			// anymore
+			extractOldFiles(revisionRange.getRemovedFiles()).stream()
+					.map(this::toCanonicalPath)
+					.forEach(notCompiled::remove);
 
-			//delete relocated files from the set, because their path is outdated
-			extractOldFiles(revisionRange.getRelocatedFiles())
-					.forEach(path -> filesNotCompiledSinceLastUpdate.remove(path));
+			// delete relocated files from the set, because their path is
+			// outdated
+			extractOldFiles(revisionRange.getRelocatedFiles()).stream()
+					.map(this::toCanonicalPath)
+					.forEach(notCompiled::remove);
 
-			//remove the changed classes from spoon model
-			removeChangedTypes(filesNotCompiledSinceLastUpdate);
+			// remove the changed classes from spoon model
+			removeChangedTypes(notCompiled);
 
-			launcher.addInputResource(
-					createInputSource(filesNotCompiledSinceLastUpdate));
-			launcher.getModelBuilder()
-					.addCompilationUnitFilter(path ->
-							!filesToBuild.contains(toCanonicalPath(path)));
-			launcher.getModelBuilder()
-					.compile(SpoonModelBuilder.InputType.FILES);
+			launcher.addInputResource(createInputSource(notCompiled));
+			launcher.getModelBuilder().addCompilationUnitFilter(path ->
+					!filesToBuild.contains(toCanonicalPath(path)));
+			launcher.getModelBuilder().compile(InputType.FILES);
 			model.setBuildModelIsFinished(false);
 			try {
 				model = launcher.buildModel();
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				model = null;
-				filesNotCompiledSinceLastUpdate.clear();
+				notCompiled.clear();
 			}
 
 		} else {
@@ -169,7 +169,7 @@ public class SpoonModel {
 			// each single file.
 			launcher.addInputResource(
 					revisionRange.getRevision().getOutput().toString());
-			launcher.getModelBuilder().compile(SpoonModelBuilder.InputType.FILES);
+			launcher.getModelBuilder().compile(InputType.FILES);
 			model = launcher.buildModel();
 
 		}
@@ -302,7 +302,7 @@ public class SpoonModel {
 	 * Computes all previously not compiled classes. In Detail this means, that
 	 * all source files are collected, which do not have one (or more)
 	 * corresponding .class file at {@link #tmpDir}. All paths of the returned
-	 * set of paths are canonicalized.
+	 * set are canonicalized.
 	 *
 	 * @return
 	 * 		All sources files which were not compiled by the last call of
@@ -327,7 +327,7 @@ public class SpoonModel {
 				result.addAll(findReferencingFiles(
 						Collections.singletonList(canonicalPath)));
 			} else {
-				filesNotCompiledSinceLastUpdate.remove(canonicalPath);
+				notCompiled.remove(canonicalPath);
 			}
 		}
 		return result;
