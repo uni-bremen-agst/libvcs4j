@@ -1,90 +1,113 @@
 package de.unibremen.informatik.st.libvcs4j.spoon;
 
-import de.unibremen.informatik.st.libvcs4j.RevisionRange;
-import de.unibremen.informatik.st.libvcs4j.Validate;
 import de.unibremen.informatik.st.libvcs4j.FileChange;
+import de.unibremen.informatik.st.libvcs4j.RevisionRange;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
+import de.unibremen.informatik.st.libvcs4j.Validate;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.Launcher;
-import spoon.SpoonModelBuilder;
 import spoon.reflect.CtModel;
 import spoon.reflect.cu.CompilationUnit;
+import spoon.reflect.cu.SourcePosition;
+import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtPackage;
 import spoon.reflect.declaration.CtType;
 import spoon.reflect.declaration.CtTypeParameter;
 import spoon.reflect.factory.CompilationUnitFactory;
 import spoon.reflect.factory.Factory;
+import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.TypeFilter;
 import spoon.support.compiler.FileSystemFile;
 import spoon.support.compiler.FilteringFolder;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
-import java.nio.file.Path;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
-import java.util.List;
-import java.util.Collection;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Optional;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.lang.System.currentTimeMillis;
+import static spoon.SpoonModelBuilder.InputType;
 
+/**
+ * Allows to incrementally build a {@link CtModel}. This class is somewhat
+ * similar to {@link spoon.IncrementalLauncher}, except that is utilizes
+ * LibVCS4j's {@link RevisionRange} API to update a model.
+ */
 public class SpoonModel {
-	private static final Logger LOGGER = LoggerFactory.getLogger(SpoonModel.class);
 
-	private static final boolean NO_CLASSPATH = true;
+	/**
+	 * The logger of this class.
+	 */
+	private static final Logger LOGGER =
+			LoggerFactory.getLogger(SpoonModel.class);
 
-	private Optional<CtModel> model = Optional.empty();
+	/**
+	 * The internal {@link CtModel}. Is updated by
+	 * {@link #update(RevisionRange)}.
+	 */
+	private CtModel model = null;
 
-	private File temporaryDirectory = null;
+	/**
+	 * Path to the directory which stores the compiled .class files of the last
+	 * call of {@link #update(RevisionRange)}.
+	 */
+	private Path tmpDir = null;
 
-	private Set<String> filesNotCompiledSinceLastUpdate = new HashSet<>();
+	/**
+	 * Stores all files (as canonical paths) that weren't compiled by the last
+	 * call of {@link #update(RevisionRange)}.
+	 */
+	private Set<Path> notCompiled = new HashSet<>();
 
-	private enum FileType {OLD_FILES, NEW_FILES}
-
+	/**
+	 * Returns the internal {@link CtModel} of this model.
+	 *
+	 * @return
+	 * 		The internal {@link CtModel} of this model.
+	 */
 	public Optional<CtModel> getModel() {
-		return model;
+		return Optional.ofNullable(model);
 	}
 
 	/**
-	 * Builds the underlying spoon model with the given revision incrementally.
-	 * In addition, each increment identifies files that could not be compiled
-	 * in the previous step. This method also tries to recompile them in the
-	 * next increment.
+	 * Incrementally builds the underlying spoon model.
 	 *
-	 * @param revisionRange The current checked out revision.
-	 *                      Contains a list of {@link FileChange} objects,
-	 *                      from which the spoon model will be build.
-	 * @return The updated underlying {@link CtModel}. May be an empty
-	 * {@link Optional}, if spoon fails to build the model.
+	 * @param revisionRange
+	 * 		The currently checked out range.
+	 * @return
+	 * 		The updated spoon model. May be an empty {@link Optional}, if spoon
+	 * 		fails to build the model.
 	 */
 	public Optional<CtModel> update(final RevisionRange revisionRange) {
 		Validate.notNull(revisionRange);
 		final long current = currentTimeMillis();
-		final FileType OLD_FILE = FileType.OLD_FILES;
 
-		if (temporaryDirectory == null) {
-			createTmpDir();
+		if (tmpDir == null) {
+			tmpDir = createTmpDir();
 		}
 
-		if (model.isPresent()) {
+		if (model != null) {
 
-			final Factory factory = model.get().getRootPackage().getFactory();
+			final Factory factory = model.getRootPackage().getFactory();
 			final Launcher launcher = new Launcher(factory);
-			launcher.getEnvironment().setNoClasspath(NO_CLASSPATH);
-			launcher.getModelBuilder()
-					.setSourceClasspath(temporaryDirectory.getPath());
-			launcher.setBinaryOutputDirectory(temporaryDirectory);
-			filesNotCompiledSinceLastUpdate
-					.addAll(findPreviouslyNotCompiledSources());
+			launcher.getEnvironment().setNoClasspath(true);
+			launcher.getModelBuilder().setSourceClasspath(tmpDir.toString());
+			launcher.setBinaryOutputDirectory(tmpDir.toString());
+			notCompiled.addAll(findPreviouslyNotCompiledSources());
 
 			final List<String> input = revisionRange.getFileChanges()
 					.stream()
@@ -95,300 +118,282 @@ public class SpoonModel {
 					.map(VCSFile::getPath)
 					.collect(Collectors.toList());
 
-			final List<String> filesToBuild = makeStringPathsCanonical(input);
+			final List<Path> filesToBuild = input.stream()
+					.map(this::toCanonicalPath)
+					.collect(Collectors.toList());
 
-			filesToBuild.addAll(getReferencedTypes(filesToBuild));
-			filesNotCompiledSinceLastUpdate.addAll(filesToBuild);
+			filesToBuild.addAll(findReferencingFiles(filesToBuild));
+			notCompiled.addAll(filesToBuild);
 
-			//delete the removed files from the spoon model
-			removeChangedTypes(getAllFilesFromFileChanges(
-					revisionRange.getRemovedFiles(), OLD_FILE));
+			// delete the removed files from the spoon model
+			removeChangedTypes(extractOldFiles(
+					revisionRange.getRemovedFiles()));
 
-			//delete the relocated files from the spoon model
-			removeChangedTypes(getAllFilesFromFileChanges(
-					revisionRange.getRelocatedFiles(), OLD_FILE));
+			// delete the relocated files from the spoon model
+			removeChangedTypes(extractOldFiles(
+					revisionRange.getRelocatedFiles()));
 
-			//delete removed files from the set, because they do not exist anymore
-			getAllFilesFromFileChanges(revisionRange.getRemovedFiles(), OLD_FILE)
-					.forEach(path -> filesNotCompiledSinceLastUpdate.remove(path));
+			// delete removed files from the set, because they do not exist
+			// anymore
+			extractOldFiles(revisionRange.getRemovedFiles()).stream()
+					.map(this::toCanonicalPath)
+					.forEach(notCompiled::remove);
 
-			//delete relocated files from the set, because their path is outdated
-			getAllFilesFromFileChanges(revisionRange.getRelocatedFiles(), OLD_FILE)
-					.forEach(path -> filesNotCompiledSinceLastUpdate.remove(path));
+			// delete relocated files from the set, because their path is
+			// outdated
+			extractOldFiles(revisionRange.getRelocatedFiles()).stream()
+					.map(this::toCanonicalPath)
+					.forEach(notCompiled::remove);
 
-			//remove the changed classes from spoon model
-			removeChangedTypes(filesNotCompiledSinceLastUpdate);
+			// remove the changed classes from spoon model
+			removeChangedTypes(notCompiled);
 
-			launcher.addInputResource(
-					createInputSource(filesNotCompiledSinceLastUpdate));
-			launcher.getModelBuilder()
-					.addCompilationUnitFilter(path -> !filesToBuild.contains(path));
-			launcher.getModelBuilder()
-					.compile(SpoonModelBuilder.InputType.FILES);
-			model.get().setBuildModelIsFinished(false);
+			launcher.addInputResource(createInputSource(notCompiled));
+			launcher.getModelBuilder().addCompilationUnitFilter(path ->
+					!filesToBuild.contains(toCanonicalPath(path)));
+			launcher.getModelBuilder().compile(InputType.FILES);
+			model.setBuildModelIsFinished(false);
 			try {
-				model = Optional.of(launcher.buildModel());
-			} catch (Exception e) {
-				model = Optional.empty();
-				filesNotCompiledSinceLastUpdate.clear();
+				model = launcher.buildModel();
+			} catch (final Exception e) {
+				model = null;
+				notCompiled.clear();
 			}
 
 		} else {
 
 			final Launcher launcher = new Launcher();
-			launcher.setBinaryOutputDirectory(temporaryDirectory);
-			launcher.getEnvironment().setNoClasspath(NO_CLASSPATH);
-			//Add the checked out directory here,
-			//so we do not have to add each single file
+			launcher.setBinaryOutputDirectory(tmpDir.toString());
+			launcher.getEnvironment().setNoClasspath(true);
+			// Add the checked out directory here, so we do not have to add
+			// each single file.
 			launcher.addInputResource(
 					revisionRange.getRevision().getOutput().toString());
-			launcher.getModelBuilder().compile(SpoonModelBuilder.InputType.FILES);
-			model = Optional.of(launcher.buildModel());
+			launcher.getModelBuilder().compile(InputType.FILES);
+			model = launcher.buildModel();
 
 		}
 		LOGGER.info(format("Model built in %d milliseconds",
 				currentTimeMillis() - current));
-		return model;
+		return Optional.ofNullable(model);
 	}
 
+	////////////////////////////// Util Methods ///////////////////////////////
+
 	/**
-	 * Transforms the given Input into a {@link FilteringFolder}.
-	 * Each path in the given collection has to exist, be readable and be a
-	 * regular Java source file, otherwise it will not be added to the
-	 * {@link FilteringFolder}.
+	 * Transforms the given input into a {@link FilteringFolder}. Each path in
+	 * {@code input} has to exist, be readable, and be a regular Java source
+	 * file, otherwise it will not be added to the {@link FilteringFolder}.
 	 *
-	 * @param input The given collection with absolute paths to source files.
-	 * @return A {@link FilteringFolder} containing all files from the given input.
+	 * @param input
+	 * 		The input source files.
+	 * @return
+	 * 		A {@link FilteringFolder} containing all files from the given
+	 * 		input.
 	 */
-	private FilteringFolder createInputSource(final Collection<String> input) {
+	private FilteringFolder createInputSource(final Collection<Path> input) {
 		FilteringFolder folder = new FilteringFolder();
-		input.forEach(path -> {
-			final Path p = Paths.get(path);
-			if (Files.exists(p) && Files.isReadable(p) && Files.isRegularFile(p)) {
-				folder.addFile(new FileSystemFile(p.toFile()));
-			}
-		});
+		input.stream()
+				.filter(Files::isRegularFile)
+				.filter(Files::isReadable)
+				.map(Path::toFile)
+				.forEach(file -> folder.addFile(new FileSystemFile(file)));
 		return folder;
 	}
 
 	/**
-	 * Removes all source files from {@link CtModel} that are given as input.
-	 * These files have changed, so they need to be removed from the
-	 * {@link CtModel}. The corresponding binary files are getting deleted as well.
+	 * Creates a temporary directory that will be deleted on shutdown.
 	 *
-	 * @param pFileChanges The given collection with absolute paths to source files.
+	 * @return
+	 * 		The path to the temporary directory.
 	 */
-	private void removeChangedTypes(final Collection<String> pFileChanges) {
-		final CtPackage rootPackage = model.get().getRootPackage();
-		final CompilationUnitFactory cuFactory = rootPackage.getFactory().CompilationUnit();
+	private Path createTmpDir() throws UncheckedIOException {
+		try {
+			final Path tmp = Files.createTempDirectory("spoon_model");
+			FileUtils.forceDeleteOnExit(tmp.toFile());
+			return tmp;
+		} catch (final IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
 
-		pFileChanges.stream()
-				.filter(sourceFile -> sourceFile.endsWith(".java"))
-				.forEach(path -> {
-					if (cuFactory.getMap().containsKey(path)) {
-						final CompilationUnit cu = cuFactory.removeFromCache(path);
-						cu.getDeclaredTypes().forEach(type -> {
-							final CtPackage pkg = type.getPackage();
-							type.delete();
-							if (pkg.getTypes().isEmpty()
-									&& pkg.getPackages().isEmpty()
-									&& !pkg.isUnnamedPackage()) {
-								pkg.delete();
-							}
-						});
-						cu.getBinaryFiles().forEach(this::deleteFile);
-					}
+	/**
+	 * Canonicalizes {@code path} using {@link File#getCanonicalFile()}. Wraps
+	 * potential {@link IOException}s with an {@link UncheckedIOException}.
+	 *
+	 * @param path
+	 * 		The path to canonicalize.
+	 * @return
+	 * 		The canonicalized version of {@code path}.
+	 */
+	private Path toCanonicalPath(final Path path) {
+		try {
+			return path.toFile().getCanonicalFile().toPath();
+		} catch (final IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
+
+	/**
+	 * Canonicalizes {@code path} using {@link #toCanonicalPath(Path)}.
+	 *
+	 * @param path
+	 * 		The string path to canonicalize.
+	 * @return
+	 * 		The canonicalized version of {@code path} as {@link Path}.
+	 */
+	private Path toCanonicalPath(final String path) {
+		return toCanonicalPath(Paths.get(path));
+	}
+
+	/**
+	 * Canonicalizes {@code file} using {@link #toCanonicalPath(Path)}.
+	 *
+	 * @param file
+	 * 		The file to canonicalize.
+	 * @return
+	 * 		The canonicalized version of {@code file} as {@link Path}.
+	 */
+	private Path toCanonicalPath(final File file) {
+		return toCanonicalPath(file.toPath());
+	}
+
+	/**
+	 * Removes all {@link CtType} objects from {@link #model} that belong to
+	 * one of the files of {@code paths}. These files have changed, so they
+	 * need to be removed. The corresponding binary files are deleted as well.
+	 *
+	 * @param paths
+	 * 		The changed source files.
+	 */
+	private void removeChangedTypes(final Collection<Path> paths) {
+		Validate.validateState(model != null);
+
+		final List<Path> files = paths.stream()
+				.map(this::toCanonicalPath)
+				.collect(Collectors.toList());
+		final CompilationUnitFactory factory = model
+				.getRootPackage()
+				.getFactory()
+				.CompilationUnit();
+		final Set<String> unitsToRemove = new HashSet<>();
+		factory.getMap().forEach((p, __) -> {
+			if (files.contains(toCanonicalPath(p)))	{
+				unitsToRemove.add(p);
+			}
+		});
+		unitsToRemove.stream()
+				.map(factory::removeFromCache)
+				.forEach(cu -> {
+					cu.getDeclaredTypes().forEach(type -> {
+						final CtPackage pkg = type.getPackage();
+						type.delete();
+						if (pkg.getTypes().isEmpty()
+								&& pkg.getPackages().isEmpty()
+								&& !pkg.isUnnamedPackage()) {
+							pkg.delete();
+						}
+					});
+					cu.getBinaryFiles().forEach(File::delete);
 				});
 	}
 
 	/**
-	 * Computes all previously not compiled classes. In Detail this means,
-	 * that all source files get collected, which do not have one (or more)
-	 * corresponding class files on the hard drive.
+	 * Computes all previously not compiled classes. In Detail this means, that
+	 * all source files are collected, which do not have one (or more)
+	 * corresponding .class file at {@link #tmpDir}. All paths of the returned
+	 * set are canonicalized.
 	 *
-	 * @return A list from all the sources files, which did not get compiled
-	 * correctly in the previous iteration.
+	 * @return
+	 * 		All sources files which were not compiled by the last call of
+	 * 		{@link #update(RevisionRange)}.
 	 */
-	private List<String> findPreviouslyNotCompiledSources() {
-		final List<String> filesNeedToBeRebuild = new ArrayList<>();
-		final CtModel currentModel = model.get();
-		List<File> expected;
-		Validate.notNull(temporaryDirectory);
-		final String output = temporaryDirectory.getAbsolutePath();
-		for (final CtType type : currentModel.getAllTypes()) {
-			final File base = Paths.get(
-					output,
-					type.getPackage().getQualifiedName().replace(".", File.separator))
-					.toFile();
-			expected = getExpectedBinaryFiles(base, null, type);
+	private Set<Path> findPreviouslyNotCompiledSources() {
+		Validate.validateState(model != null);
+		Validate.validateState(tmpDir != null);
 
-			if (expected.stream().anyMatch(file -> !file.isFile())) {
-				filesNeedToBeRebuild.add(
-				        getCanonicalPath(type.getPosition().getFile()));
+		final String output = tmpDir.toString();
+		final Set<Path> result = new HashSet<>();
+		for (final CtType type : model.getAllTypes()) {
+			final Path canonicalPath = toCanonicalPath(
+					type.getPosition().getFile());
 
-				//if a class needs to be recompiled,
-				//rebuild all classes, that refer to this class
-				for (final CtType oldType : currentModel.getAllTypes()) {
-					if (oldType.getReferencedTypes().contains(type.getReference())) {
-						filesNeedToBeRebuild.add(
-								getCanonicalPath(oldType.getPosition().getFile())
-						);
-					}
-				}
+			final String pkg = type.getPackage().getQualifiedName();
+			final File base = Paths.get(output, pkg.split(".")).toFile();
+
+			if (getExpectedBinaryFiles(base, null, type)
+					.stream().anyMatch(f -> !f.isFile())) {
+				result.add(canonicalPath);
+				result.addAll(findReferencingFiles(
+						Collections.singletonList(canonicalPath)));
 			} else {
-				filesNotCompiledSinceLastUpdate.remove(
-						getCanonicalPath(type.getPosition().getFile())
-				);
+				notCompiled.remove(canonicalPath);
 			}
-
 		}
-
-		return filesNeedToBeRebuild;
+		return result;
 	}
 
 	/**
-	 * Deletes the given file. It only gets deleted, if it exists, is readable
-	 * and is writable.
+	 * Extracts and returns all old files (see {@link FileChange#getOldFile()})
+	 * from the given list of {@link FileChange} objects. The returned list of
+	 * paths contains only canonicalized paths to java files.
 	 *
-	 * @param fileToDelete The file that needs to be deleted.
+	 * @param changes
+	 * 		The list of {@link FileChange} objects to process.
+	 * @return
+	 * 		The List of old file paths.
 	 */
-	private void deleteFile(final File fileToDelete) {
-		if (Files.exists(fileToDelete.toPath())
-				&& Files.isReadable(fileToDelete.toPath())
-				&& Files.isWritable(fileToDelete.toPath())) {
-			fileToDelete.delete();
-		}
-	}
-
-	/**
-	 * Creates a temporary directory in which the class files get stored.
-	 * This temporary directory will be deleted on shutdown
-	 * (see {@link #recursiveDeleteOnShutdownHook(File)}).
-	 */
-	private void createTmpDir() {
-		try {
-			temporaryDirectory =
-					Files.createTempDirectory("tmpClassDirectory").toFile();
-			recursiveDeleteOnShutdownHook(temporaryDirectory);
-		} catch (IOException e) {
-			LOGGER.error("Failed creating temporary directory");
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * This method adds a shutdown hook to the VM. This hook deletes the given directory and
-	 * all its subdirectories/files.
-	 *
-	 * @param file The {@link File} object representing the directory
-	 *             that should be deleted on shutdown.
-	 */
-	private void recursiveDeleteOnShutdownHook(final File file) {
-		Runtime.getRuntime().addShutdownHook(new Thread(
-				() -> {
-					LOGGER.info("About to delete " + file.getAbsolutePath());
-					try {
-						FileUtils.deleteDirectory(file);
-					} catch (IOException e) {
-						LOGGER.error("Failed to delete directory "
-								+ file.getAbsolutePath());
-					}
-				}));
-	}
-
-	/**
-	 * Returns all old or new files from the given list of {@link FileChange}
-	 * objects. Only java source files will be contained in the output.
-	 * The parameter {@code fileType} indicates if the old or new files
-	 * should be extracted.
-	 *
-	 * @param fileChanges The list of {@link FileChange} objects.
-	 * @param fileType    Indicates which file will be extracted {@link FileType}.
-	 * @return List of strings containing all paths to the old or new files
-	 */
-	private List<String> getAllFilesFromFileChanges(final List<FileChange> fileChanges,
-													final FileType fileType) {
-		return fileChanges
-				.stream()
-				.map(fileType == FileType.OLD_FILES
-						? FileChange::getOldFile
-						: FileChange::getNewFile)
-				.map(vcsFile -> vcsFile.orElseThrow(IllegalArgumentException::new))
-				.filter(sourceFile -> sourceFile.getPath().endsWith(".java"))
-				.map(VCSFile::getPath)
+	private List<Path> extractOldFiles(final List<FileChange> changes) {
+		return changes.stream()
+				.map(FileChange::getOldFile)
+				.map(file -> file.orElseThrow(IllegalArgumentException::new))
+				.filter(file -> file.getPath().endsWith(".java"))
+				.map(VCSFile::toPath)
+				.map(this::toCanonicalPath)
 				.collect(Collectors.toList());
 	}
 
 	/**
-	 * Returns all the source files that have a reference to a file in
-	 * {@code pFileChanges}.
+	 * Returns all source files (as canonical paths) that have a reference to a
+	 * file in {@code pFiles}. Ignores recursive references. That is, the
+	 * returned set of paths does not contain any file of {@code pFiles}
+	 * itself.
 	 *
-	 * @param pFileChanges The list with paths to source files.
-	 * @return A list with all source files, that have a reference to a class in
-	 * {@code pFileChanges}
+	 * @param
+	 * 		pFiles The list of files (denoted as paths) to process.
+	 * @return
+	 * 		All source files that have a reference to a class in
+	 * 		{@code pFiles}.
 	 */
-	private List<String> getReferencedTypes(final Collection<String> pFileChanges) {
-		final CtModel currentModel = model.get();
-		final List<String> referencedTypes = new ArrayList<>();
-		final Map<String, CompilationUnit> compilationUnitMap =
-				currentModel.getRootPackage().getFactory().CompilationUnit().getMap();
+	private Set<Path> findReferencingFiles(final List<Path> pFiles) {
+		Validate.validateState(model != null);
 
-		for (final String path : pFileChanges) {
-			final CompilationUnit cu;
-			if (compilationUnitMap.containsKey(path)) {
-				cu = compilationUnitMap.get(path);
-			} else {
-				continue;
-			}
+		final Map<String, CompilationUnit> unitMap = model
+				.getRootPackage()
+				.getFactory()
+				.CompilationUnit()
+				.getMap();
+		final List<Path> files = pFiles.stream()
+				.map(this::toCanonicalPath)
+				.collect(Collectors.toList());
+		final List<CtTypeReference> typeReferencesOfFiles =
+				unitMap.keySet().stream()
+						.filter(path -> files.contains(toCanonicalPath(path)))
+						.map(unitMap::get)
+						.map(CompilationUnit::getDeclaredTypes)
+						.flatMap(Collection::stream)
+						.map(CtType::getReference)
+						.collect(Collectors.toList());
 
-			//search for types, that have a reference to the current type
-			for (final CtType type : currentModel.getAllTypes()) {
-				//exclude the type representing the class we need to build anyway
-				if (type.getReference().equals(cu.getMainType().getReference())) {
-					continue;
-				}
-
-				for (final CtType declaredType : cu.getDeclaredTypes()) {
-					if (type.getReferencedTypes()
-							.contains(declaredType.getReference())) {
-						referencedTypes.add(
-								getCanonicalPath(type.getPosition().getFile()));
-						break;
-					}
-				}
-			}
-		}
-		return referencedTypes;
-	}
-
-    /**
-     * Returns the canonical path to the given file as a string.
-     *
-     * @param file The file from which the canonical path should be returned.
-     * @return The canonical path.
-     */
-	private String getCanonicalPath(final File file) {
-		try {
-			return file.getCanonicalPath();
-		} catch (IOException e) {
-			throw new RuntimeException("Failed to get canonical pathname of file"
-					+ file.getAbsolutePath());
-		}
-	}
-
-	/**
-	 * Converts the given list of strings (these are actually paths to files)
-	 * to canonical paths.
-	 *
-	 * @param paths The given paths (as a list of strings).
-	 * @return The canonical paths.
-	 */
-	private List<String> makeStringPathsCanonical(final List<String> paths) {
-		final List<String> canonicalStringPaths = new ArrayList<>(paths.size());
-		for (final String path : paths) {
-		    canonicalStringPaths.add(getCanonicalPath(new File(path)));
-		}
-		return canonicalStringPaths;
+		final Set<Path> referencingFiles = new HashSet<>();
+		model.getAllTypes().forEach(type -> type.getReferencedTypes().stream()
+				.filter(typeReferencesOfFiles::contains)
+				.findAny()
+				.map(CtElement::getPosition)
+				.map(SourcePosition::getFile)
+				.map(this::toCanonicalPath)
+				.ifPresent(referencingFiles::add));
+		return referencingFiles;
 	}
 
 	/**
@@ -401,16 +406,15 @@ public class SpoonModel {
 	 *                     the directory where the binary files of {@code type}
 	 *                     are stored.
 	 * @param nameOfParent The name of the binary file of the parent of
-	 *                     {@code type} without its extension (.class).
-	 *                     For instance, Foo$Bar. Pass {@code null} or
+	 * 					   {@code type} without its extension (.class).
+	 * 					   For instance, Foo$Bar. Pass {@code null} or
 	 *                     an empty string if {@code type} has no parent.
 	 * @param type         The root type to start the computation from.
 	 * @return All binary (.class) files that should be available for {@code type}
 	 * and all its inner/anonymous types.
 	 */
 	private List<File> getExpectedBinaryFiles(final File baseDir,
-											  final String nameOfParent,
-											  final CtType<?> type) {
+			final String nameOfParent, final CtType<?> type) {
 		final List<File> binaries = new ArrayList<>();
 		final String name = nameOfParent == null || nameOfParent.isEmpty()
 				? type.getSimpleName()
