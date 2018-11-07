@@ -3,11 +3,15 @@ package de.unibremen.informatik.st.libvcs4j.mapping;
 import de.unibremen.informatik.st.libvcs4j.FileChange;
 import de.unibremen.informatik.st.libvcs4j.RevisionRange;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
-import de.unibremen.informatik.st.libvcs4j.VCSFile.Range;
 import de.unibremen.informatik.st.libvcs4j.Validate;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 /**
@@ -106,11 +110,11 @@ public class Mapping<T> {
 		public Optional<Mappable<T>> getPredecessor(
 				final Mappable<T> mappable) {
 			return mapping
-                    .entrySet()
-                    .stream()
-                    .filter(entry -> getSuccessor(entry.getKey()).get() == mappable)
-                    .map(Map.Entry::getKey)
-                    .findFirst();
+					.entrySet()
+					.stream()
+					.filter(entry -> getSuccessor(entry.getKey()).get() == mappable)
+					.map(Map.Entry::getKey)
+					.findFirst();
 		}
 
 		/**
@@ -201,23 +205,23 @@ public class Mapping<T> {
 		Validate.notNull(range);
 
 
-        //find corresponding file change object
+		//find corresponding file change object
 		final Map<Mappable<T>, Map<FileChange, VCSFile.Range>> hMap = new HashMap<>();
 		for (final Mappable<T> fromMappable : from) {
-            final Map<FileChange, VCSFile.Range> map = new HashMap<>();
+			final Map<FileChange, VCSFile.Range> map = new HashMap<>();
 			for (final VCSFile.Range fileRange : fromMappable.getRanges()) {
 				range.getFileChanges()
 						.stream()
 						.filter(fileChange -> fileChange.getType()
 								!= FileChange.Type.ADD)
-			            .forEach(fc -> {
-				            final VCSFile vcsFile =
+						.forEach(fc -> {
+							final VCSFile vcsFile =
 									fc.getOldFile().orElseThrow(IllegalArgumentException::new);
-					        if (fileRange.getFile().getPath()
+							if (fileRange.getFile().getPath()
 									.equals(vcsFile.getPath())) {
-						        map.put(fc, fileRange);
-					        }
-				        });
+								map.put(fc, fileRange);
+							}
+						});
 			}
 			hMap.put(fromMappable, map);
 		}
@@ -266,7 +270,7 @@ public class Mapping<T> {
 				}
 			}
 		}
-		
+
 		final Result<T> result = new Result<>();
 		result.ordinal = range.getOrdinal();
 		result.mapping = mappings;
