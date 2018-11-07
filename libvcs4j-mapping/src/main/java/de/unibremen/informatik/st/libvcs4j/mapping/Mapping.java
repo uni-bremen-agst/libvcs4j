@@ -3,11 +3,11 @@ package de.unibremen.informatik.st.libvcs4j.mapping;
 import de.unibremen.informatik.st.libvcs4j.FileChange;
 import de.unibremen.informatik.st.libvcs4j.RevisionRange;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
+import de.unibremen.informatik.st.libvcs4j.VCSFile.Range;
+import de.unibremen.informatik.st.libvcs4j.Validate;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -31,6 +31,10 @@ public class Mapping<T> {
 	 */
 	public static class Result<T> {
 
+		private int ordinal;
+
+		private Map<Mappable<T>, Mappable<T>> mapping = new HashMap<>();
+
 		/**
 		 * Returns the ordinal of the range
 		 * ({@link RevisionRange#getOrdinal()}) that was passed to
@@ -41,7 +45,7 @@ public class Mapping<T> {
 		 * 		{@link Mapping#map(Collection, Collection, RevisionRange)}.
 		 */
 		public int getOrdinal() {
-			throw new UnsupportedOperationException("Not yet implemented");
+			return ordinal;
 		}
 
 		/**
@@ -53,7 +57,7 @@ public class Mapping<T> {
 		 * 		All {@code from} mappables.
 		 */
 		public List<Mappable<T>> getFrom() {
-			throw new UnsupportedOperationException("Not yet implemented");
+			return new ArrayList<>(mapping.keySet());
 		}
 
 		/**
@@ -65,7 +69,7 @@ public class Mapping<T> {
 		 * 		All {@code to} mappables.
 		 */
 		public List<Mappable<T>> getTo() {
-			throw new UnsupportedOperationException("Not yet implemented");
+			return new ArrayList<>(mapping.values());
 		}
 
 		/**
@@ -82,7 +86,7 @@ public class Mapping<T> {
 		 */
 		public Optional<Mappable<T>> getSuccessor(
 				final Mappable<T> mappable) {
-			throw new UnsupportedOperationException("Not yet implemented");
+			return Optional.ofNullable(mapping.get(mappable));
 		}
 
 		/**
@@ -101,7 +105,12 @@ public class Mapping<T> {
 		 */
 		public Optional<Mappable<T>> getPredecessor(
 				final Mappable<T> mappable) {
-			throw new UnsupportedOperationException("Not yet implemented");
+			return mapping
+                    .entrySet()
+                    .stream()
+                    .filter(entry -> getSuccessor(entry.getKey()).get() == mappable)
+                    .map(Map.Entry::getKey)
+                    .findFirst();
 		}
 
 		/**
@@ -187,6 +196,81 @@ public class Mapping<T> {
 	public Result<T> map(final Collection<Mappable<T>> from,
 			final Collection<Mappable<T>> to, final RevisionRange range)
 			throws NullPointerException, IOException {
-		throw new UnsupportedOperationException("Not yet implemented");
+		Validate.notNull(from);
+		Validate.notNull(to);
+		Validate.notNull(range);
+
+
+        //find corresponding file change object
+		final Map<Mappable<T>, Map<FileChange, VCSFile.Range>> hMap = new HashMap<>();
+		for (final Mappable<T> fromMappable : from) {
+            final Map<FileChange, VCSFile.Range> map = new HashMap<>();
+			for (final VCSFile.Range fileRange : fromMappable.getRanges()) {
+				range.getFileChanges()
+						.stream()
+						.filter(fileChange -> fileChange.getType()
+								!= FileChange.Type.ADD)
+			            .forEach(fc -> {
+				            final VCSFile vcsFile =
+									fc.getOldFile().orElseThrow(IllegalArgumentException::new);
+					        if (fileRange.getFile().getPath()
+									.equals(vcsFile.getPath())) {
+						        map.put(fc, fileRange);
+					        }
+				        });
+			}
+			hMap.put(fromMappable, map);
+		}
+
+		//apply filechanges to range
+		final Map<Mappable<T>, List<VCSFile.Range>> newRanges = new HashMap<>();
+		for (final Map.Entry<Mappable<T>, Map<FileChange, VCSFile.Range>> entry : hMap.entrySet()) {
+			final Mappable<T> mappable = entry.getKey();
+			final Map<FileChange, VCSFile.Range> map = entry.getValue();
+			final List<VCSFile.Range> ranges = new ArrayList<>();
+			for (final Map.Entry<FileChange, VCSFile.Range> changes : map.entrySet()) {
+				final FileChange fc = changes.getKey();
+				final VCSFile.Range r = changes.getValue();
+				final VCSFile.Range newRange = r.apply(fc).orElseThrow(IOException::new);
+				ranges.add(newRange);
+			}
+			newRanges.put(mappable, ranges);
+		}
+
+		//search for compatible mappables
+		final Map<Mappable<T>, Mappable<T>> mappings = new HashMap<>();
+		for (final Map.Entry<Mappable<T>, List<VCSFile.Range>> entry : newRanges.entrySet()) {
+			final Mappable<T> fromMappable = entry.getKey();
+			final List<VCSFile.Range> ranges = entry.getValue();
+			for (final Mappable<T> toMappable : to) {
+				if (fromMappable.isCompatible(toMappable)
+						&& ranges.size() == toMappable.getRanges().size()) {
+					boolean compatible = false;
+					for (final VCSFile.Range fromRanges : ranges) {
+						compatible = false;
+						for (final VCSFile.Range toRanges : toMappable.getRanges()) {
+							if (fromRanges.getBegin().getOffset()
+									== toRanges.getBegin().getOffset()
+									&& fromRanges.getEnd().getOffset()
+									== toRanges.getEnd().getOffset()) {
+								compatible = true;
+							}
+						}
+						if (!compatible) {
+							break;
+						}
+					}
+					if (compatible) {
+						mappings.put(fromMappable, toMappable);
+					}
+				}
+			}
+		}
+		
+		final Result<T> result = new Result<>();
+		result.ordinal = range.getOrdinal();
+		result.mapping = mappings;
+
+		return result;
 	}
 }
