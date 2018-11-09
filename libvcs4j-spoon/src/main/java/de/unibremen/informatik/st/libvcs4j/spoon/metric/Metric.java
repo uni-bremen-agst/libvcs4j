@@ -9,7 +9,6 @@ import java.util.Deque;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 /**
  * This is the base class of all metrics. By using a stack, metrics may be
@@ -125,7 +124,7 @@ public abstract class Metric<T> extends Scanner {
 	 * @return
 	 * 		The metric of {@code element}.
 	 */
-	public Optional<T> metricOf(final CtElement element) {
+	Optional<T> metricOf(final CtElement element) {
 		return Optional.ofNullable(element).map(metrics::get);
 	}
 }
