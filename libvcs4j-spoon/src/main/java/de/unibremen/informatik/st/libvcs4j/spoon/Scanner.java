@@ -92,7 +92,7 @@ public class Scanner extends CtScanner {
 	 * 			The {@link CtFieldAccess} of {@code method} if {@code method}
 	 * 			is a getter or setter function.
 	 */
-	public static Optional<CtFieldAccess> resolveToFieldAccess(
+	public Optional<CtFieldAccess> resolveToFieldAccess(
 			final CtMethod method) {
 		return Optional.ofNullable(method)
 				.map(CtMethod::getBody)
@@ -125,7 +125,7 @@ public class Scanner extends CtScanner {
 	 * 			{@code true} if {@code method} is a getter or setter function,
 	 * 			{@code false} otherwise.
 	 */
-	public static boolean isFieldAccess(final CtMethod method)
+	public boolean isFieldAccess(final CtMethod method)
 			throws NullPointerException {
 		final String name = Optional.ofNullable(method)
 				.map(CtNamedElement::getSimpleName).orElse(null);
