@@ -6,16 +6,16 @@ import java.lang.annotation.Annotation;
 import java.util.Optional;
 
 /**
- * This visitor gathers the 'number of attributes' metric for {@link CtClass},
+ * This scanner gathers the 'number of attributes' metric for {@link CtClass},
  * {@link CtInterface}, {@link CtEnum}, and {@link CtAnnotation} (usually named
- * values) elements. Use {@link #NOAOf(CtType)} or {@link #NOAOf(CtAnnotation)}
- * to get the metric for a given {@link CtType} or {@link CtAnnotation}.
+ * values) elements.
  */
 public class NOA extends IntMetric {
 
 	/**
 	 * Returns the 'number of attributes' metric of {@code type}. Returns an
-	 * empty {@link Optional} if {@code type} is {@code null}.
+	 * empty {@link Optional} if {@code type} is {@code null}, or if
+	 * {@code type} was not scanned.
 	 *
 	 * @param type
 	 * 		The type whose 'number of attributes' metric is requested.
@@ -27,9 +27,10 @@ public class NOA extends IntMetric {
 	}
 
 	/**
-	 * Returns the 'number of attributes' (named values) metric of
+	 * Returns the 'number of attributes' (usually named values) metric of
 	 * {@code annotation}. Returns an empty {@link Optional} if
-	 * {@code annotation} is {@code null}.
+	 * {@code annotation} is {@code null}, or if {@code annotation} was not
+	 * scanned.
 	 *
 	 * @param annotation
 	 * 		The annotation whose 'number of attributes' metric is requested.

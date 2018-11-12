@@ -13,7 +13,6 @@ import java.util.Optional;
 /**
  * This is the base class of all metrics. By using a stack, metrics may be
  * gathered for nested AST nodes ({@link spoon.reflect.declaration.CtElement}).
- *
  */
 public abstract class Metric<T> extends Scanner {
 

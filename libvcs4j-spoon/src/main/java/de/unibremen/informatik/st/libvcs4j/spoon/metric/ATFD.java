@@ -13,9 +13,8 @@ import spoon.reflect.reference.CtFieldReference;
 import java.util.Optional;
 
 /**
- * This visitor gathers the 'access to foreign data' metric for {@link CtEnum},
- * {@link CtClass}, and {@link CtInterface} elements. Use
- * {@link #ATFDOf(CtType)} to get the metric for a given {@link CtType}.
+ * This scanner gathers the 'access to foreign data' metric for {@link CtEnum},
+ * {@link CtClass}, and {@link CtInterface} elements.
  */
 public class ATFD extends IntMetric {
 
@@ -26,7 +25,8 @@ public class ATFD extends IntMetric {
 
 	/**
 	 * Returns the 'access to foreign data' metric of {@code type}. Returns an
-	 * empty {@link Optional} if {@code type} is {@code null}.
+	 * empty {@link Optional} if {@code type} is {@code null}, or if
+	 * {@code type} was not scanned.
 	 *
 	 * @param type
 	 * 		The type whose 'access to foreign data' metric is requested.

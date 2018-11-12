@@ -7,12 +7,10 @@ import java.lang.annotation.Annotation;
 import java.util.Optional;
 
 /**
- * This visitor gathers the 'McCabe complexity' metric for {@link CtClass},
+ * This scanner gathers the 'McCabe complexity' metric for {@link CtClass},
  * {@link CtInterface} (since Java 8 interfaces may have default
  * implementations), {@link CtEnum}, {@link CtAnnotation}, {@link CtMethod},
- * and {@link CtConstructor} elements. Use {@link #MCCOf(CtType)}},
- * {@link #MCCOf(CtAnnotation)}, or {@link #MCCOf(CtExecutable)} to get the
- * metric for a given element.
+ * and {@link CtConstructor} elements.
  */
 public class MCC extends IntMetric {
 
@@ -23,7 +21,8 @@ public class MCC extends IntMetric {
 
 	/**
 	 * Returns the 'McCabe complexity' metric of {@code type}. Returns an empty
-	 * {@link Optional} if {@code type} is {@code null}.
+	 * {@link Optional} if {@code type} is {@code null}, or if {@code type} was
+	 * not scanned.
 	 *
 	 * @param type
 	 * 		The type whose 'McCabe complexity' metric is requested.
@@ -36,7 +35,8 @@ public class MCC extends IntMetric {
 
 	/**
 	 * Returns the 'McCabe complexity' metric of {@code annotation}. Returns an
-	 * empty {@link Optional} if {@code annotation} is {@code null}.
+	 * empty {@link Optional} if {@code annotation} is {@code null}, or if
+	 * {@code annotation} was not scanned.
 	 *
 	 * @param annotation
 	 * 		The annotation whose 'McCabe complexity' metric is requested.
@@ -49,7 +49,8 @@ public class MCC extends IntMetric {
 
 	/**
 	 * Returns the 'McCabe complexity' metric of {@code executable}. Returns an
-	 * empty {@link Optional} if {@code executable} is {@code null}.
+	 * empty {@link Optional} if {@code executable} is {@code null}, or if
+	 * {@code executable} was not scanned.
 	 *
 	 * @param executable
 	 * 		The expression whose 'McCabe complexity' metric is requested.
