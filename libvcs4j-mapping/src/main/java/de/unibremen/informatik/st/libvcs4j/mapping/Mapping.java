@@ -248,97 +248,33 @@ public class Mapping<T> {
 		Validate.notNull(to);
 		Validate.notNull(range);
 
-		to.forEach(tMappable -> {
-			tMappable.getRanges().forEach(fileRange -> {
-				if (!fileRange.getFile().getRevision().getId()
-						.equals(range.getRevision().getId())) {
-					throw new IllegalArgumentException();
-				}
-			});
-		});
+		to.forEach(successor -> successor.getRanges().forEach(fileRange -> {
+			if (!fileRange.getFile().getRevision().getId()
+					.equals(range.getRevision().getId())) {
+				throw new IllegalArgumentException();
+			}
+		}));
 
-		from.forEach(fMappable -> {
-			fMappable.getRanges().forEach(fileRange -> {
-				if (!fileRange.getFile().getRevision().getId().equals(
-						range.getPredecessorRevision()
-								.orElseThrow(IllegalArgumentException::new).getId())) {
-					throw new IllegalArgumentException();
-				}
-			});
-		});
+		from.forEach(predecessor -> predecessor.getRanges().forEach(fileRange -> {
+			if (!fileRange.getFile().getRevision().getId().equals(
+					range.getPredecessorRevision()
+							.orElseThrow(IllegalArgumentException::new).getId())) {
+				throw new IllegalArgumentException();
+			}
+		}));
 
 
 		//find corresponding file change objects
-		final Map<Mappable<T>, Map<FileChange, VCSFile.Range>> hMap = new IdentityHashMap<>();
-		for (final Mappable<T> fromMappable : from) {
-			final Map<FileChange, VCSFile.Range> map = new IdentityHashMap<>();
-			for (final VCSFile.Range fileRange : fromMappable.getRanges()) {
-				if (!fileRange.getFile().getRevision().getId()
-						.equals(range.getPredecessorRevision()
-								.orElseThrow(IllegalArgumentException::new).getId())) {
-					throw new IllegalArgumentException();
-				}
-				range.getFileChanges()
-						.stream()
-						.filter(fileChange -> fileChange.getType()
-								!= FileChange.Type.ADD)
-						.forEach(fc -> {
-							final VCSFile vcsFile =
-									fc.getOldFile().orElseThrow(IllegalArgumentException::new);
-							if (fileRange.getFile().getPath()
-									.equals(vcsFile.getPath())) {
-								map.put(fc, fileRange);
-							}
-						});
-			}
-			hMap.put(fromMappable, map);
-		}
+		final Map<Mappable<T>, Map<FileChange, VCSFile.Range>> hMap =
+				findFileChanges(from, range);
 
-		//apply filechanges to range
-		final Map<Mappable<T>, List<VCSFile.Range>> updatedRanges = new IdentityHashMap<>();
-		for (final Map.Entry<Mappable<T>, Map<FileChange, VCSFile.Range>> entry : hMap.entrySet()) {
-			final Mappable<T> mappable = entry.getKey();
-			final Map<FileChange, VCSFile.Range> map = entry.getValue();
-			final List<VCSFile.Range> ranges = new ArrayList<>();
-			for (final Map.Entry<FileChange, VCSFile.Range> changes : map.entrySet()) {
-				final FileChange fileChange = changes.getKey();
-				final VCSFile.Range oldRange = changes.getValue();
-				final VCSFile.Range updatedRange =
-						oldRange.apply(fileChange).orElseThrow(IOException::new);
-				ranges.add(updatedRange);
-			}
-			updatedRanges.put(mappable, ranges);
-		}
+		//apply file change objects to corresponding ranges
+		final Map<Mappable<T>, List<VCSFile.Range>> updatedRanges =
+				applyFileChanges(hMap);
 
 		//search for compatible mappables
-		final Map<Mappable<T>, Mappable<T>> mappings = new IdentityHashMap<>();
-		for (final Map.Entry<Mappable<T>, List<VCSFile.Range>> entry : updatedRanges.entrySet()) {
-			final Mappable<T> fromMappable = entry.getKey();
-			final List<VCSFile.Range> ranges = entry.getValue();
-			for (final Mappable<T> toMappable : to) {
-				if (fromMappable.isCompatible(toMappable)
-						&& ranges.size() == toMappable.getRanges().size()) {
-					boolean compatible = false;
-					for (final VCSFile.Range fromRanges : ranges) {
-						compatible = false;
-						for (final VCSFile.Range toRanges : toMappable.getRanges()) {
-							if (fromRanges.getBegin().getOffset()
-									== toRanges.getBegin().getOffset()
-									&& fromRanges.getEnd().getOffset()
-									== toRanges.getEnd().getOffset()) {
-								compatible = true;
-							}
-						}
-						if (!compatible) {
-							break;
-						}
-					}
-					if (compatible) {
-						mappings.put(fromMappable, toMappable);
-					}
-				}
-			}
-		}
+		final Map<Mappable<T>, Mappable<T>> mappings =
+				computeMapping(updatedRanges, to);
 
 		final Result<T> result = new Result<>();
 		result.startingLifespans = to.stream()
@@ -351,5 +287,125 @@ public class Mapping<T> {
 		result.mapping = mappings;
 
 		return result;
+	}
+
+	/**
+	 * Finds the corresponding {@link FileChange} objects from the given
+	 * {@link RevisionRange}. This method is used as a utility
+	 * method by {@link #map(Collection, Collection, RevisionRange)}.
+	 *
+	 * @param from
+	 * 		The collection of mappables, of which the {@link FileChange} objects
+	 * 		need to be found.
+	 * @param range
+	 * 		The range, which contains the {@link FileChange} objects.
+	 * @return
+	 * 		Mapping from a {@link Mappable} to a map, which contains the
+	 * 		{@link VCSFile.Range} objects as values and the corresponding
+	 * 		{@link FileChange} objects as keys.
+	 */
+	private Map<Mappable<T>, Map<FileChange, VCSFile.Range>> findFileChanges(
+			final Collection<Mappable<T>> from, final RevisionRange range) {
+		final Map<Mappable<T>, Map<FileChange, VCSFile.Range>> result = new IdentityHashMap<>();
+		for (final Mappable<T> predecessor : from) {
+			final Map<FileChange, VCSFile.Range> coincidences = new IdentityHashMap<>();
+			for (final VCSFile.Range fileRange : predecessor.getRanges()) {
+				range.getFileChanges()
+						.stream()
+						.filter(fileChange -> fileChange.getType()
+								!= FileChange.Type.ADD)
+						.forEach(fc -> {
+							final VCSFile vcsFile =
+									fc.getOldFile().orElseThrow(IllegalArgumentException::new);
+							if (fileRange.getFile().getPath()
+									.equals(vcsFile.getPath())) {
+								coincidences.put(fc, fileRange);
+							}
+						});
+			}
+			result.put(predecessor, coincidences);
+		}
+		return result;
+	}
+
+	/**
+	 * Applies the given {@link FileChange} object to their corresponding
+	 * {@link VCSFile.Range}. This method is used as a utility
+	 * method by {@link #map(Collection, Collection, RevisionRange)}.
+	 *
+	 * @param changesToApply
+	 * 		The collection of mappables, of which the
+	 * 		{@link FileChange} objects need to be found.
+	 * @throws IOException
+	 * 		If updating a range ({@link VCSFile.Range#apply(FileChange)}) fails.
+	 * @return
+	 * 		Mapping from a {@link Mappable} to a list, which contains the
+	 *		updated {@link VCSFile.Range} objects.
+	 */
+	private Map<Mappable<T>, List<VCSFile.Range>> applyFileChanges(
+			final Map<Mappable<T>, Map<FileChange, VCSFile.Range>> changesToApply)
+			throws IOException {
+		final Map<Mappable<T>, List<VCSFile.Range>> updatedRanges = new IdentityHashMap<>();
+		for (final Map.Entry<Mappable<T>, Map<FileChange, VCSFile.Range>> entry : changesToApply.entrySet()) {
+			final Mappable<T> mappable = entry.getKey();
+			final Map<FileChange, VCSFile.Range> map = entry.getValue();
+			final List<VCSFile.Range> ranges = new ArrayList<>();
+			for (final Map.Entry<FileChange, VCSFile.Range> changes : map.entrySet()) {
+				final FileChange fileChange = changes.getKey();
+				final VCSFile.Range oldRange = changes.getValue();
+				final VCSFile.Range updatedRange =
+						oldRange.apply(fileChange).orElseThrow(IOException::new);
+				ranges.add(updatedRange);
+			}
+			updatedRanges.put(mappable, ranges);
+		}
+		return updatedRanges;
+	}
+
+	/**
+	 * Computes the mapping from {@link Mappable} objects. But only if they are
+	 * compatible. This method is used as a utility method by
+	 * {@link #map(Collection, Collection, RevisionRange)}.
+	 *
+	 * @param updatedRanges
+	 * 		Map from {@link Mappable} objects to its updated list of
+	 * 		{@link VCSFile.Range} objects.
+	 * @param to
+	 * 		The collection of (potential) successor mappables.
+	 * @return
+	 * 		Mapping from a compatible {@link Mappable} to a its successor.
+	 */
+	private Map<Mappable<T>, Mappable<T>> computeMapping(
+			final Map<Mappable<T>, List<VCSFile.Range>> updatedRanges,
+			final Collection<Mappable<T>> to) {
+		final Map<Mappable<T>, Mappable<T>> mappings = new IdentityHashMap<>();
+		for (final Map.Entry<Mappable<T>, List<VCSFile.Range>> entry : updatedRanges.entrySet()) {
+			final Mappable<T> predecessor = entry.getKey();
+			final List<VCSFile.Range> ranges = entry.getValue();
+			for (final Mappable<T> successor : to) {
+				if (predecessor.isCompatible(successor)
+						&& ranges.size() == successor.getRanges().size()) {
+					boolean compatible = false;
+					for (final VCSFile.Range fromRanges : ranges) {
+						compatible = false;
+						for (final VCSFile.Range toRanges : successor.getRanges()) {
+							if (fromRanges.getBegin().getOffset()
+									== toRanges.getBegin().getOffset()
+									&& fromRanges.getEnd().getOffset()
+									== toRanges.getEnd().getOffset()) {
+								compatible = true;
+							}
+						}
+						if (!compatible) {
+							break;
+						}
+					}
+					if (compatible) {
+						mappings.put(predecessor, successor);
+					}
+				}
+			}
+		}
+		return mappings;
 	}
 }
