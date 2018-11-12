@@ -1,7 +1,21 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.metric;
 
-import spoon.reflect.code.*;
-import spoon.reflect.declaration.*;
+import spoon.reflect.code.CtAssert;
+import spoon.reflect.code.CtConditional;
+import spoon.reflect.code.CtDo;
+import spoon.reflect.code.CtFor;
+import spoon.reflect.code.CtForEach;
+import spoon.reflect.code.CtIf;
+import spoon.reflect.code.CtSwitch;
+import spoon.reflect.code.CtWhile;
+import spoon.reflect.declaration.CtAnnotation;
+import spoon.reflect.declaration.CtClass;
+import spoon.reflect.declaration.CtConstructor;
+import spoon.reflect.declaration.CtEnum;
+import spoon.reflect.declaration.CtExecutable;
+import spoon.reflect.declaration.CtInterface;
+import spoon.reflect.declaration.CtMethod;
+import spoon.reflect.declaration.CtType;
 
 import java.lang.annotation.Annotation;
 import java.util.Optional;

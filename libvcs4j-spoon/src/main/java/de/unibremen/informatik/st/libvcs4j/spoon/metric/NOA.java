@@ -1,6 +1,10 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.metric;
 
-import spoon.reflect.declaration.*;
+import spoon.reflect.declaration.CtAnnotation;
+import spoon.reflect.declaration.CtClass;
+import spoon.reflect.declaration.CtEnum;
+import spoon.reflect.declaration.CtInterface;
+import spoon.reflect.declaration.CtType;
 
 import java.lang.annotation.Annotation;
 import java.util.Optional;
