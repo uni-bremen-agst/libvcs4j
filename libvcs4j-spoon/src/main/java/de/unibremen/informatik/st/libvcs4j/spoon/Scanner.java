@@ -149,8 +149,8 @@ public class Scanner extends CtScanner {
 	 * @throws NullPointerException
 	 * 			If any of the given arguments is {@code null}.
 	 */
-	public boolean isInScopeOf(final CtElement element,
-			final CtElement scope) throws NullPointerException {
+	public boolean isInScopeOf(final CtElement element, final CtElement scope)
+			throws NullPointerException {
 		Validate.notNull(element);
 		Validate.notNull(scope);
 		CtElement current = element;

@@ -65,11 +65,11 @@ public class ATFD extends IntMetric {
 	}
 
 	private void visitCtFieldAccess(final CtFieldAccess fieldAccess) {
-		final CtType parent = fieldAccess.getParent(CtType.class);
-		Optional.ofNullable(parent)
+		final CtType type = fieldAccess.getParent(CtType.class);
+		Optional.ofNullable(type)
 				.map(__ -> fieldAccess.getVariable())
 				.map(CtFieldReference::getDeclaration)
-				.filter(field -> !isInScopeOf(field, parent))
+				.filter(field -> !isInScopeOf(field, type))
 				.ifPresent(__ -> inc());
 	}
 
