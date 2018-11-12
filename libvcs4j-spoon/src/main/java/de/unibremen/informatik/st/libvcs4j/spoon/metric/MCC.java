@@ -34,7 +34,7 @@ public class MCC extends IntMetric {
 	private static final int INITIAL_VALUE = 1;
 
 	/**
-	 * Returns the 'McCabe complexity' metric of {@code type}. Returns an empty
+	 * Returns the 'McCabe Complexity' metric of {@code type}. Returns an empty
 	 * {@link Optional} if {@code type} is {@code null}, or if {@code type} was
 	 * not scanned.
 	 *
@@ -48,14 +48,14 @@ public class MCC extends IntMetric {
 	}
 
 	/**
-	 * Returns the 'McCabe complexity' metric of {@code annotation}. Returns an
+	 * Returns the 'McCabe Complexity' metric of {@code annotation}. Returns an
 	 * empty {@link Optional} if {@code annotation} is {@code null}, or if
 	 * {@code annotation} was not scanned.
 	 *
 	 * @param annotation
-	 * 		The annotation whose 'McCabe complexity' metric is requested.
+	 * 		The annotation whose 'McCabe Complexity' metric is requested.
 	 * @return
-	 * 		The 'McCabe complexity' metric of {@code annotation}.
+	 * 		The 'McCabe Complexity' metric of {@code annotation}.
 	 */
 	public Optional<Integer> MCCOf(final CtAnnotation annotation) {
 		return metricOf(annotation);

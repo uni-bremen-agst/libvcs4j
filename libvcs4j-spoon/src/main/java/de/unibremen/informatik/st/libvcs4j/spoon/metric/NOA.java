@@ -10,21 +10,21 @@ import java.lang.annotation.Annotation;
 import java.util.Optional;
 
 /**
- * This scanner gathers the 'number of attributes' metric for {@link CtClass},
+ * This scanner gathers the 'Number of Attributes' metric for {@link CtClass},
  * {@link CtInterface}, {@link CtEnum}, and {@link CtAnnotation} (usually named
  * values) elements.
  */
 public class NOA extends IntMetric {
 
 	/**
-	 * Returns the 'number of attributes' metric of {@code type}. Returns an
+	 * Returns the 'Number of Attributes' metric of {@code type}. Returns an
 	 * empty {@link Optional} if {@code type} is {@code null}, or if
 	 * {@code type} was not scanned.
 	 *
 	 * @param type
-	 * 		The type whose 'number of attributes' metric is requested.
+	 * 		The type whose 'Number of Attributes' metric is requested.
 	 * @return
-	 * 		The 'number of attributes' metric of {@code type}.
+	 * 		The 'Number of Attributes' metric of {@code type}.
 	 */
 	public Optional<Integer> NOAOf(final CtType type) {
 		return metricOf(type);

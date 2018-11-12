@@ -8,20 +8,20 @@ import spoon.reflect.declaration.CtType;
 import java.util.Optional;
 
 /**
- * This scanner gathers the 'number of methods' metric for {@link CtInterface},
+ * This scanner gathers the 'Number of Methods' metric for {@link CtInterface},
  * {@link CtClass}, and {@link CtEnum} elements.
  */
 public class NOM extends IntMetric {
 
 	/**
-	 * Returns the 'number of methods' metric of {@code type}. Returns an empty
+	 * Returns the 'Number of Methods' metric of {@code type}. Returns an empty
 	 * {@link Optional} if {@code type} is {@code null}, or if {@code type} was
 	 * not scanned.
 	 *
 	 * @param type
-	 * 		The type whose 'number of methods' metric is requested.
+	 * 		The type whose 'Number of Methods' metric is requested.
 	 * @return
-	 * 		The 'number of methods' metric of {@code type}.
+	 * 		The 'Number of Methods' metric of {@code type}.
 	 */
 	public Optional<Integer> NOMOf(final CtType type) {
 		return metricOf(type);

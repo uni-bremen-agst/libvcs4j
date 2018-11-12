@@ -13,7 +13,7 @@ import spoon.reflect.reference.CtFieldReference;
 import java.util.Optional;
 
 /**
- * This scanner gathers the 'access to foreign data' metric for {@link CtEnum},
+ * This scanner gathers the 'Access to Foreign Data' metric for {@link CtEnum},
  * {@link CtClass}, and {@link CtInterface} elements.
  */
 public class ATFD extends IntMetric {
@@ -24,14 +24,14 @@ public class ATFD extends IntMetric {
 	public static final int INITIAL_VALUE = 0;
 
 	/**
-	 * Returns the 'access to foreign data' metric of {@code type}. Returns an
+	 * Returns the 'Access to Foreign Data' metric of {@code type}. Returns an
 	 * empty {@link Optional} if {@code type} is {@code null}, or if
 	 * {@code type} was not scanned.
 	 *
 	 * @param type
-	 * 		The type whose 'access to foreign data' metric is requested.
+	 * 		The type whose 'Access to Foreign Data' metric is requested.
 	 * @return
-	 * 		The 'access to foreign data' metric of {@code type}.
+	 * 		The 'Access to Foreign Data' metric of {@code type}.
 	 */
 	public Optional<Integer> ATFDOf(final CtType type) {
 		return metricOf(type);

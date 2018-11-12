@@ -11,7 +11,7 @@ import spoon.reflect.declaration.CtType;
 import java.util.Optional;
 
 /**
- * This scanner gathers the 'weighted methods per class' metric for
+ * This scanner gathers the 'Weighted Methods per Class' metric for
  * {@link CtClass}, {@link CtInterface}, and {@link CtEnum} elements.
  */
 public class WMC extends IntMetric {
@@ -22,14 +22,14 @@ public class WMC extends IntMetric {
 	private final MCC mcc = new MCC();
 
 	/**
-	 * Returns the 'weighted methods per class' metric of {@code type}. Returns
+	 * Returns the 'Weighted Methods per Class' metric of {@code type}. Returns
 	 * an empty {@link Optional} if {@code type} is {@code null}, or if
 	 * {@code type} was not scanned.
 	 *
 	 * @param type
-	 * 		The type whose 'weighted methods per class' metric is requested.
+	 * 		The type whose 'Weighted Methods per Class' metric is requested.
 	 * @return
-	 * 		The 'weighted methods per class' metric of {@code type}.
+	 * 		The 'Weighted Methods per Class' metric of {@code type}.
 	 */
 	public Optional<Integer> WMCOf(final CtType type) {
 		return metricOf(type);

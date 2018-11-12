@@ -7,20 +7,20 @@ import spoon.reflect.declaration.CtMethod;
 import java.util.Optional;
 
 /**
- * This scanner gathers the 'number of parameters' metric for {@link CtMethod}
+ * This scanner gathers the 'Number of Parameters' metric for {@link CtMethod}
  * and {@link CtConstructor} elements.
  */
 public class NOP extends IntMetric {
 
 	/**
-	 * Returns the 'number of parameters' metric of {@code executable}. Returns
+	 * Returns the 'Number of Parameters' metric of {@code executable}. Returns
 	 * an empty {@link Optional} if {@code executable} is {@code null}, or if
 	 * {@code executable} was not scanned.
 	 *
 	 * @param executable
-	 * 		The executable whose 'number of parameters' metric is requested.
+	 * 		The executable whose 'Number of Parameters' metric is requested.
 	 * @return
-	 * 		The 'number of parameters' metric of {@code executable}.
+	 * 		The 'Number of Parameters' metric of {@code executable}.
 	 */
 	public Optional<Integer> NOPOf(final CtExecutable executable) {
 		return metricOf(executable);
