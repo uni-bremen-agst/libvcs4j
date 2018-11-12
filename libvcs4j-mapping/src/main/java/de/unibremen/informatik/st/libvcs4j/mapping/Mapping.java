@@ -7,7 +7,7 @@ import de.unibremen.informatik.st.libvcs4j.Validate;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.List;
@@ -35,9 +35,54 @@ public class Mapping<T> {
 	 */
 	public static class Result<T> {
 
+		/**
+		 * Stores the ordinal of the range ({@link RevisionRange#getOrdinal()})
+		 * that was passed to
+		 * {@link Mapping#map(Collection, Collection, RevisionRange)}.
+		 */
 		private int ordinal;
 
-		private Map<Mappable<T>, Mappable<T>> mapping = new HashMap<>();
+		/**
+		 * Stores the computed mapping result from
+		 * {@link Mapping#map(Collection, Collection, RevisionRange)}.
+		 */
+		private Map<Mappable<T>, Mappable<T>> mapping = new IdentityHashMap<>();
+
+		/**
+		 * Stores all mappables, whose lifespans are ending. These are all the
+		 * mappables from the first argument of
+		 * {@link Mapping#map(Collection, Collection, RevisionRange)} that
+		 * did not have a successor mappable.
+		 */
+		private List<Mappable<T>> endingLifespans;
+
+		/**
+		 * Stores all mappables, whose lifespans are ending. These are all the
+		 * mappables from the second argument of
+		 * {@link Mapping#map(Collection, Collection, RevisionRange)} that
+		 * did not have a predecessor mappable.
+		 */
+		private List<Mappable<T>> startingLifespans;
+
+		/**
+		 * Returns the list of all mappables, whose lifespans are ending.
+		 *
+		 * @return
+		 * 		The list of mappables, whose lifespans are ending.
+		 */
+		public List<Mappable<T>> getEndingLifespans() {
+			return new ArrayList<>(endingLifespans);
+		}
+
+		/**
+		 * Returns the list of all mappables, whose lifespans are starting.
+		 *
+		 * @return
+		 * 		The list of mappables, whose lifespans are starting.
+		 */
+		public  List<Mappable<T>> getStartingLifespans() {
+			return new ArrayList<>(startingLifespans);
+		}
 
 		/**
 		 * Returns the ordinal of the range
@@ -109,8 +154,7 @@ public class Mapping<T> {
 		 */
 		public Optional<Mappable<T>> getPredecessor(
 				final Mappable<T> mappable) {
-			return mapping
-					.entrySet()
+			return mapping.entrySet()
 					.stream()
 					.filter(entry -> getSuccessor(entry.getKey()).get() == mappable)
 					.map(Map.Entry::getKey)
@@ -204,12 +248,36 @@ public class Mapping<T> {
 		Validate.notNull(to);
 		Validate.notNull(range);
 
+		to.forEach(tMappable -> {
+			tMappable.getRanges().forEach(fileRange -> {
+				if (!fileRange.getFile().getRevision().getId()
+						.equals(range.getRevision().getId())) {
+					throw new IllegalArgumentException();
+				}
+			});
+		});
 
-		//find corresponding file change object
-		final Map<Mappable<T>, Map<FileChange, VCSFile.Range>> hMap = new HashMap<>();
+		from.forEach(fMappable -> {
+			fMappable.getRanges().forEach(fileRange -> {
+				if (!fileRange.getFile().getRevision().getId().equals(
+						range.getPredecessorRevision()
+								.orElseThrow(IllegalArgumentException::new).getId())) {
+					throw new IllegalArgumentException();
+				}
+			});
+		});
+
+
+		//find corresponding file change objects
+		final Map<Mappable<T>, Map<FileChange, VCSFile.Range>> hMap = new IdentityHashMap<>();
 		for (final Mappable<T> fromMappable : from) {
-			final Map<FileChange, VCSFile.Range> map = new HashMap<>();
+			final Map<FileChange, VCSFile.Range> map = new IdentityHashMap<>();
 			for (final VCSFile.Range fileRange : fromMappable.getRanges()) {
+				if (!fileRange.getFile().getRevision().getId()
+						.equals(range.getPredecessorRevision()
+								.orElseThrow(IllegalArgumentException::new).getId())) {
+					throw new IllegalArgumentException();
+				}
 				range.getFileChanges()
 						.stream()
 						.filter(fileChange -> fileChange.getType()
@@ -227,23 +295,24 @@ public class Mapping<T> {
 		}
 
 		//apply filechanges to range
-		final Map<Mappable<T>, List<VCSFile.Range>> newRanges = new HashMap<>();
+		final Map<Mappable<T>, List<VCSFile.Range>> updatedRanges = new IdentityHashMap<>();
 		for (final Map.Entry<Mappable<T>, Map<FileChange, VCSFile.Range>> entry : hMap.entrySet()) {
 			final Mappable<T> mappable = entry.getKey();
 			final Map<FileChange, VCSFile.Range> map = entry.getValue();
 			final List<VCSFile.Range> ranges = new ArrayList<>();
 			for (final Map.Entry<FileChange, VCSFile.Range> changes : map.entrySet()) {
-				final FileChange fc = changes.getKey();
-				final VCSFile.Range r = changes.getValue();
-				final VCSFile.Range newRange = r.apply(fc).orElseThrow(IOException::new);
-				ranges.add(newRange);
+				final FileChange fileChange = changes.getKey();
+				final VCSFile.Range oldRange = changes.getValue();
+				final VCSFile.Range updatedRange =
+						oldRange.apply(fileChange).orElseThrow(IOException::new);
+				ranges.add(updatedRange);
 			}
-			newRanges.put(mappable, ranges);
+			updatedRanges.put(mappable, ranges);
 		}
 
 		//search for compatible mappables
-		final Map<Mappable<T>, Mappable<T>> mappings = new HashMap<>();
-		for (final Map.Entry<Mappable<T>, List<VCSFile.Range>> entry : newRanges.entrySet()) {
+		final Map<Mappable<T>, Mappable<T>> mappings = new IdentityHashMap<>();
+		for (final Map.Entry<Mappable<T>, List<VCSFile.Range>> entry : updatedRanges.entrySet()) {
 			final Mappable<T> fromMappable = entry.getKey();
 			final List<VCSFile.Range> ranges = entry.getValue();
 			for (final Mappable<T> toMappable : to) {
@@ -272,6 +341,12 @@ public class Mapping<T> {
 		}
 
 		final Result<T> result = new Result<>();
+		result.startingLifespans = to.stream()
+				.filter(tMappable -> !mappings.containsValue(tMappable))
+				.collect(Collectors.toList());
+		result.endingLifespans = from.stream()
+				.filter(fMappable -> !mappings.containsKey(fMappable))
+				.collect(Collectors.toList());
 		result.ordinal = range.getOrdinal();
 		result.mapping = mappings;
 
