@@ -9,6 +9,7 @@ import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtReturn;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
+import spoon.reflect.declaration.CtNamedElement;
 import spoon.reflect.reference.CtReference;
 import spoon.reflect.visitor.CtScanner;
 
@@ -91,7 +92,7 @@ public class Scanner extends CtScanner {
 	 * 			The {@link CtFieldAccess} of {@code method} if {@code method}
 	 * 			is a getter or setter function.
 	 */
-	public static Optional<CtFieldAccess> resolveToFieldAccess(
+	public Optional<CtFieldAccess> resolveToFieldAccess(
 			final CtMethod method) {
 		return Optional.ofNullable(method)
 				.map(CtMethod::getBody)
@@ -123,16 +124,14 @@ public class Scanner extends CtScanner {
 	 * @return
 	 * 			{@code true} if {@code method} is a getter or setter function,
 	 * 			{@code false} otherwise.
-	 * @throws NullPointerException
-	 * 			If {@code method == null}.
 	 */
-	public static boolean isFieldAccess(final CtMethod method)
+	public boolean isFieldAccess(final CtMethod method)
 			throws NullPointerException {
-		final String name = Validate.notNull(method).getSimpleName();
+		final String name = Optional.ofNullable(method)
+				.map(CtNamedElement::getSimpleName).orElse(null);
 		return resolveToFieldAccess(method).isPresent() ||
 				// Abstract method or interface.
 				name != null && name.matches(GETTER_SETTER_REGEX);
-
 	}
 
 	/**
