@@ -2,6 +2,9 @@ package de.unibremen.informatik.st.libvcs4j.spoon.metric;
 
 import de.unibremen.informatik.st.libvcs4j.Validate;
 
+/**
+ * A metric of type {@link Integer}.
+ */
 public class IntMetric extends Metric<Integer> {
 
 	@Override
