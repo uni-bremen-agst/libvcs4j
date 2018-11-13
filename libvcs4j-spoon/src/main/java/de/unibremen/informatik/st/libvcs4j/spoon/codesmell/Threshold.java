@@ -11,6 +11,9 @@ import java.util.function.Predicate;
 
 import static de.unibremen.informatik.st.libvcs4j.spoon.codesmell.Threshold.Relation.relatesTo;
 
+/**
+ * An immutable class to represent a {@link Metric} related threshold.
+ */
 @ToString
 @EqualsAndHashCode
 @AllArgsConstructor
@@ -128,7 +131,7 @@ public class Threshold implements Predicate<Metric> {
 		 * @param metric
 		 *      The metric to check.
 		 * @param threshold
-		 *      The threshold to check.
+		 *      The threshold to check against.
 		 * @return
 		 *      {@code true} if and only if {@code metric} relates to
 		 *      {@code threshold}, {@code false} otherwise.
