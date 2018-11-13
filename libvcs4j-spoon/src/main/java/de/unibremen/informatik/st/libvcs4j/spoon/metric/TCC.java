@@ -110,8 +110,9 @@ public class TCC extends DecimalMetric {
 					final CtMethod method = field.getParent(CtMethod.class);
 					if (!method.isPrivate()) {
 						typeInfo.computeIfAbsent(type,
-									__ -> new IdentityHashMap<>())
-								.getOrDefault(method, new HashSet<>())
+										__ -> new IdentityHashMap<>())
+								.computeIfAbsent(method,
+										__ -> new HashSet<>())
 								.add(field);
 					}
 				});
