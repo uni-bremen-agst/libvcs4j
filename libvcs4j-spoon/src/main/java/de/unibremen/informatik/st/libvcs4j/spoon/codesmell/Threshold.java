@@ -1,39 +1,34 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.codesmell;
 
-import de.unibremen.informatik.st.libvcs4j.Validate;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
 
 import java.util.Optional;
 import java.util.function.Predicate;
 
 import static de.unibremen.informatik.st.libvcs4j.spoon.codesmell.Threshold.Relation.relatesTo;
 
+@ToString
+@EqualsAndHashCode
+@AllArgsConstructor
 public class Threshold implements Predicate<Metric> {
 
 	/**
 	 * The threshold value.
 	 */
+	@Getter
+	@NonNull
 	private final Metric metric;
 
 	/**
 	 * The relation that is used to compare {@link #metric} with other metrics.
 	 */
+	@Getter
+	@NonNull
 	private final Relation relation;
-
-	/**
-	 * Creates a threshold with given metric and relation.
-	 *
-	 * @param metric
-	 * 		The threshold value.
-	 * @param relation
-	 * 		Describes, when a metric fulfills this threshold.
-	 * @throws NullPointerException
-	 * 		If any of the given arguments is {@code null}.
-	 */
-	public Threshold(final Metric metric, final Relation relation)
-			throws NullPointerException {
-		this.metric = Validate.notNull(metric);
-		this.relation = Validate.notNull(relation);
-	}
 
 	/**
 	 * Defines, when a metric fulfills a threshold.
@@ -50,10 +45,8 @@ public class Threshold implements Predicate<Metric> {
 			}
 
 			@Override
-			public boolean relatesTo(final Metric metric,
-					final Metric threshold) {
-				Validate.notNull(metric);
-				Validate.notNull(threshold);
+			public boolean relatesTo(@NonNull final Metric metric,
+					@NonNull final Metric threshold) {
 				return metric.getValue().compareTo(threshold.getValue()) < 0;
 			}
 		},
@@ -68,10 +61,8 @@ public class Threshold implements Predicate<Metric> {
 			}
 
 			@Override
-			public boolean relatesTo(final Metric metric,
-					final Metric threshold) {
-				Validate.notNull(metric);
-				Validate.notNull(threshold);
+			public boolean relatesTo(@NonNull final Metric metric,
+					@NonNull final Metric threshold) {
 				return metric.getValue().compareTo(threshold.getValue()) <= 0;
 			}
 		},
@@ -86,10 +77,8 @@ public class Threshold implements Predicate<Metric> {
 			}
 
 			@Override
-			public boolean relatesTo(final Metric metric,
-					final Metric threshold) {
-				Validate.notNull(metric);
-				Validate.notNull(threshold);
+			public boolean relatesTo(@NonNull final Metric metric,
+					@NonNull final Metric threshold) {
 				return metric.getValue().compareTo(threshold.getValue()) == 0;
 			}
 		},
@@ -104,10 +93,8 @@ public class Threshold implements Predicate<Metric> {
 			}
 
 			@Override
-			public boolean relatesTo(final Metric metric,
-					final Metric threshold) {
-				Validate.notNull(metric);
-				Validate.notNull(threshold);
+			public boolean relatesTo(@NonNull final Metric metric,
+					@NonNull final Metric threshold) {
 				return metric.getValue().compareTo(threshold.getValue()) >= 0;
 			}
 		},
@@ -122,10 +109,8 @@ public class Threshold implements Predicate<Metric> {
 			}
 
 			@Override
-			public boolean relatesTo(final Metric metric,
-					final Metric threshold) {
-				Validate.notNull(metric);
-				Validate.notNull(threshold);
+			public boolean relatesTo(@NonNull final Metric metric,
+					@NonNull final Metric threshold) {
 				return metric.getValue().compareTo(threshold.getValue()) > 0;
 			}
 		};
@@ -151,8 +136,7 @@ public class Threshold implements Predicate<Metric> {
 		 *      If any of the given arguments is {@code null}.
 		 */
 		public abstract boolean relatesTo(final Metric metric,
-				final Metric threshold) throws NullPointerException,
-				IllegalArgumentException;
+				final Metric threshold) throws NullPointerException;
 
 		/**
 		 * Convenience method for {@code relation.relatesTo(m, t);}, allowing
@@ -173,10 +157,10 @@ public class Threshold implements Predicate<Metric> {
 		 * @throws NullPointerException
 		 *      If any of the given arguments is {@code null}.
 		 */
-		public static boolean relatesTo(final Metric metric,
-				final Relation relation, final Metric threshold)
-				throws NullPointerException, IllegalArgumentException {
-			return Validate.notNull(relation).relatesTo(metric, threshold);
+		public static boolean relatesTo(@NonNull final Metric metric,
+				@NonNull final Relation relation,
+				@NonNull final Metric threshold) throws NullPointerException {
+			return relation.relatesTo(metric, threshold);
 		}
 	}
 
@@ -186,25 +170,5 @@ public class Threshold implements Predicate<Metric> {
 				.filter(m -> m.getName().equals(this.metric.getName()))
 				.filter(m -> relatesTo(metric, relation, this.metric))
 				.isPresent();
-	}
-
-	/**
-	 * Returns the metric of this threshold.
-	 *
-	 * @return
-	 * 		The metric of this threshold.
-	 */
-	public Metric getMetric() {
-		return metric;
-	}
-
-	/**
-	 * Returns the relation of this threshold.
-	 *
-	 * @return
-	 * 		The relation of this threshold.
-	 */
-	public Relation getRelation() {
-		return relation;
 	}
 }
