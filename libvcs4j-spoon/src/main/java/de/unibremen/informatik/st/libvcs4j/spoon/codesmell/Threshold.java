@@ -39,7 +39,7 @@ public class Threshold implements Predicate<Metric> {
 	public enum Relation {
 
 		/**
-		 * <
+		 * {@code <}
 		 */
 		LESS {
 			@Override
@@ -55,7 +55,7 @@ public class Threshold implements Predicate<Metric> {
 		},
 
 		/**
-		 * <=
+		 * {@code <=}
 		 */
 		LESS_EQUALS {
 			@Override
@@ -71,7 +71,7 @@ public class Threshold implements Predicate<Metric> {
 		},
 
 		/**
-		 * =
+		 * {@code =}
 		 */
 		EQUALS {
 			@Override
@@ -87,7 +87,7 @@ public class Threshold implements Predicate<Metric> {
 		},
 
 		/**
-		 * >=
+		 * {@code >=}
 		 */
 		GREATER_EQUALS {
 			@Override
@@ -103,7 +103,7 @@ public class Threshold implements Predicate<Metric> {
 		},
 
 		/**
-		 * >
+		 * {@code >}
 		 */
 		GREATER {
 			@Override
