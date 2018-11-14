@@ -10,7 +10,7 @@ import java.util.Optional;
  * This scanner gathers the 'Number of Parameters' metric for {@link CtMethod}
  * and {@link CtConstructor} elements.
  */
-public class NOP extends IntMetric {
+public class NOP extends IntGatherer {
 
 	/**
 	 * Returns the 'Number of Parameters' metric of {@code executable}. Returns

@@ -25,7 +25,7 @@ import java.util.Set;
  * This scanner gathers the 'Tight Class Cohesion' metric for {@link CtClass},
  * {@link CtInterface}, and {@link CtEnum} elements.
  */
-public class TCC extends DecimalMetric {
+public class TCC extends DecimalGatherer {
 
 	/**
 	 * Maps a type `t` to its methods, which in turn are mapped to their field

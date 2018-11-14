@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 /**
  * A metric of type {@link BigDecimal}
  */
-public class DecimalMetric extends Metric<BigDecimal> {
+public class DecimalGatherer extends Gatherer<BigDecimal> {
 
 	@Override
 	protected BigDecimal sum(final BigDecimal a, final BigDecimal b)

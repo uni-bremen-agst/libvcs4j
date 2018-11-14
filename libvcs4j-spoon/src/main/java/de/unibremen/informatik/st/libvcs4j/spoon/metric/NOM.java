@@ -11,7 +11,7 @@ import java.util.Optional;
  * This scanner gathers the 'Number of Methods' metric for {@link CtInterface},
  * {@link CtClass}, and {@link CtEnum} elements.
  */
-public class NOM extends IntMetric {
+public class NOM extends IntGatherer {
 
 	/**
 	 * Returns the 'Number of Methods' metric of {@code type}. Returns an empty

@@ -16,7 +16,7 @@ import java.util.Optional;
  * This scanner gathers the 'Access to Foreign Data' metric for {@link CtEnum},
  * {@link CtClass}, and {@link CtInterface} elements.
  */
-public class ATFD extends IntMetric {
+public class ATFD extends IntGatherer {
 
 	/**
 	 * The initial metric value.

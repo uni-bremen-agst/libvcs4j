@@ -2,6 +2,7 @@ package de.unibremen.informatik.st.libvcs4j.spoon.metric;
 
 import de.unibremen.informatik.st.libvcs4j.Validate;
 import de.unibremen.informatik.st.libvcs4j.spoon.Scanner;
+import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.Metric;
 import spoon.reflect.declaration.CtElement;
 
 import java.util.ArrayDeque;
@@ -13,18 +14,9 @@ import java.util.Optional;
 /**
  * This is the base class of all metrics. By using a stack, metrics may be
  * gathered for nested AST nodes ({@link spoon.reflect.declaration.CtElement}).
+ * This class is named "Gatherer" to avoid name collisions with {@link Metric}.
  */
-public abstract class Metric<T> extends Scanner {
-
-	/**
-	 * Stacks the metric of nested elements.
-	 */
-	private final Deque<T> stack = new ArrayDeque<>();
-
-	/**
-	 * Maps an element to its metric.
-	 */
-	private final Map<CtElement, T> metrics = new IdentityHashMap<>();
+public abstract class Gatherer<T> extends Scanner {
 
 	/**
 	 * Specifies how propagate the metric of an element to its parent.
@@ -44,6 +36,16 @@ public abstract class Metric<T> extends Scanner {
 
 		/* Further strategies may be: SUBTRACT, MAX, MIN, ... */
 	}
+
+	/**
+	 * Stacks the metric of nested elements.
+	 */
+	private final Deque<T> stack = new ArrayDeque<>();
+
+	/**
+	 * Maps an element to its metric.
+	 */
+	private final Map<CtElement, T> metrics = new IdentityHashMap<>();
 
 	/**
 	 * Returns the sum of {@code a} and {@code b}.
@@ -115,8 +117,8 @@ public abstract class Metric<T> extends Scanner {
 
 	/**
 	 * Returns the metric of {@code element}. Returns an empty {@link Optional}
-	 * if {@code metric} is {@code null}, or if {@code metric} has no
-	 * associated {@code metric}.
+	 * if {@code element} is {@code null}, or if {@code element} has no
+	 * associated metric.
 	 *
 	 * @param element
 	 * 		The element whose metric is requested.

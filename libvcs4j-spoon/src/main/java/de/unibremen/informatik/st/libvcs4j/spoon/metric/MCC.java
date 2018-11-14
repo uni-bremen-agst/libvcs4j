@@ -26,7 +26,7 @@ import java.util.Optional;
  * implementations), {@link CtEnum}, {@link CtAnnotation}, {@link CtMethod},
  * and {@link CtConstructor} elements.
  */
-public class MCC extends IntMetric {
+public class MCC extends IntGatherer {
 
 	/**
 	 * The initial metric value.

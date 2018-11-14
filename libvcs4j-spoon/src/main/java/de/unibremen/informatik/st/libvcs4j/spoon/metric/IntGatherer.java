@@ -5,7 +5,7 @@ import de.unibremen.informatik.st.libvcs4j.Validate;
 /**
  * A metric of type {@link Integer}.
  */
-public class IntMetric extends Metric<Integer> {
+public class IntGatherer extends Gatherer<Integer> {
 
 	@Override
 	protected Integer sum(final Integer a, final Integer b)

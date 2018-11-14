@@ -14,7 +14,7 @@ import java.util.Optional;
  * {@link CtInterface}, {@link CtEnum}, and {@link CtAnnotation} (usually named
  * values) elements.
  */
-public class NOA extends IntMetric {
+public class NOA extends IntGatherer {
 
 	/**
 	 * Returns the 'Number of Attributes' metric of {@code type}. Returns an

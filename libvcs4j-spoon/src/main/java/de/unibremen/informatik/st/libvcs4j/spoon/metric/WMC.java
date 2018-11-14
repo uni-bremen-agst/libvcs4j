@@ -14,7 +14,7 @@ import java.util.Optional;
  * This scanner gathers the 'Weighted Methods per Class' metric for
  * {@link CtClass}, {@link CtInterface}, and {@link CtEnum} elements.
  */
-public class WMC extends IntMetric {
+public class WMC extends IntGatherer {
 
 	/**
 	 * Weight methods and constructors with their MCC metric.
