@@ -15,8 +15,11 @@ import java.util.Optional;
  * This is the base class of all metric gatherers. By using a stack, metrics
  * may be gathered for nested AST nodes ({@link CtElement}). This class is
  * named "Gatherer" to avoid name collisions with {@link Metric}.
+ *
+ * @param <T>
+ *     The type of the gathered metric value, e. g. {@link Integer}.
  */
-public abstract class Gatherer<T> extends Scanner {
+public abstract class Gatherer<T extends Number> extends Scanner {
 
 	/**
 	 * Specifies how propagate the metric of an element to its parent.
@@ -30,7 +33,7 @@ public abstract class Gatherer<T> extends Scanner {
 		/**
 		 * Add the metric of an element to the metric of its parent.
 		 *
-		 * @see #sum(Object, Object)
+		 * @see #sum(Number, Number)
 		 */
 		SUM
 

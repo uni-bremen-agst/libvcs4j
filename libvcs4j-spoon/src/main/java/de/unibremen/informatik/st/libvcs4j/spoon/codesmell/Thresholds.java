@@ -1,6 +1,7 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.codesmell;
 
 import de.unibremen.informatik.st.libvcs4j.Validate;
+import lombok.Getter;
 import lombok.NonNull;
 
 import java.util.*;
@@ -21,7 +22,15 @@ import static de.unibremen.informatik.st.libvcs4j.spoon.codesmell.Thresholds.Con
  *      E   F: OR
  *
  * is a statement expressing that A, B, C, and D must be fulfilled with B being
- * a sub-statement, expressing that either E or F must be fulfilled.
+ * a sub-statement, expressing that either E or F must be fulfilled. This class
+ * implements the {@link Predicate} interface and, accordingly, provides the
+ * method {@link #test(Collection)}, which allows to check whether a collection
+ * of metrics fulfills a statement. Note that {@link #test(Collection)} always
+ * returns {@code true} if {@link #connective} is {@link Connective#VERUM},
+ * even its parameter is {@code null} or contains {@code null} values. If
+ * {@link #connective} is something else, {@link #test(Collection)} always
+ * returns {@code false} for {@code null} and collections containing
+ * {@code null}.
  */
 public class Thresholds implements Predicate<Collection<Metric>> {
 
@@ -157,6 +166,7 @@ public class Thresholds implements Predicate<Collection<Metric>> {
 	 * The connective of {@link #thresholds} and {@link #subStatements}. The
 	 * default value is {@link Connective#VERUM}.
 	 */
+	@Getter
 	@NonNull
 	private final Connective connective;
 
@@ -239,15 +249,5 @@ public class Thresholds implements Predicate<Collection<Metric>> {
 	 */
 	public List<Thresholds> getSubStatements() {
 		return new ArrayList<>(subStatements);
-	}
-
-	/**
-	 * Returns the connective of this statement.
-	 *
-	 * @return
-	 * 		The connective of this statement.
-	 */
-	public Connective getConnective() {
-		return connective;
 	}
 }

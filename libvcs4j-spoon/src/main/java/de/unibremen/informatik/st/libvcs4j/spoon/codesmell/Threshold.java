@@ -13,25 +13,15 @@ import static de.unibremen.informatik.st.libvcs4j.spoon.codesmell.Threshold.Rela
 
 /**
  * An immutable class to represent a {@link Metric} related threshold.
+ * Implements the {@link Predicate} interface and provides the method
+ * {@link #test(Metric)}, which allows to check whether a metric fulfills a
+ * threshold. Note that {@link #test(Metric)} always returns {@code false} for
+ * {@code null} as {@code null} never fulfills a threshold.
  */
 @ToString
 @EqualsAndHashCode
 @AllArgsConstructor
 public class Threshold implements Predicate<Metric> {
-
-	/**
-	 * The threshold value.
-	 */
-	@Getter
-	@NonNull
-	private final Metric metric;
-
-	/**
-	 * The relation that is used to compare {@link #metric} with other metrics.
-	 */
-	@Getter
-	@NonNull
-	private final Relation relation;
 
 	/**
 	 * Defines, when a metric fulfills a threshold.
@@ -166,6 +156,20 @@ public class Threshold implements Predicate<Metric> {
 			return relation.relatesTo(metric, threshold);
 		}
 	}
+
+	/**
+	 * The threshold value.
+	 */
+	@Getter
+	@NonNull
+	private final Metric metric;
+
+	/**
+	 * The relation that is used to compare {@link #metric} with other metrics.
+	 */
+	@Getter
+	@NonNull
+	private final Relation relation;
 
 	@Override
 	public boolean test(final Metric metric) {
