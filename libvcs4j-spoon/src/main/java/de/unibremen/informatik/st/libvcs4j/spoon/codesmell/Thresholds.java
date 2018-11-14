@@ -4,9 +4,15 @@ import de.unibremen.informatik.st.libvcs4j.Validate;
 import lombok.Getter;
 import lombok.NonNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 
+import static de.unibremen.informatik.st.libvcs4j.spoon.codesmell.Thresholds.Connective.AND;
 import static de.unibremen.informatik.st.libvcs4j.spoon.codesmell.Thresholds.Connective.VERUM;
 
 /**
@@ -187,9 +193,12 @@ public class Thresholds implements Predicate<Collection<Metric>> {
 	 */
 	public Thresholds(@NonNull List<Threshold> thresholds,
 			@NonNull List<Thresholds> subStatements,
-			@NonNull Connective connective) {
-		this.thresholds = Validate.noNullElements(thresholds);
-		this.subStatements = Validate.noNullElements(subStatements);
+			@NonNull Connective connective) throws NullPointerException,
+			IllegalArgumentException {
+		Validate.noNullElements(thresholds);
+		Validate.noNullElements(subStatements);
+		this.thresholds = new ArrayList<>(thresholds);
+		this.subStatements = new ArrayList<>(subStatements);
 		this.connective = connective;
 	}
 
@@ -207,14 +216,29 @@ public class Thresholds implements Predicate<Collection<Metric>> {
 	 * 		If any of the given arguments contains {@code null}.
 	 */
 	public Thresholds(@NonNull List<Threshold> thresholds,
-			@NonNull Connective connective) {
-		this.thresholds = Validate.noNullElements(thresholds);
-		this.subStatements = Collections.emptyList();
-		this.connective = connective;
+			@NonNull Connective connective) throws NullPointerException,
+			IllegalArgumentException {
+		this(thresholds, Collections.emptyList(), connective);
 	}
 
 	/**
-	 * Creates a new statement that is always fulfilled.
+	 * Creates a new statement with a single threshold. {@link #connective} is
+	 * set to {@link Connective#AND}, albeit this doesn't affect
+	 * {@link #test(Collection)}.
+	 *
+	 * @param threshold
+	 * 		The threshold of the statement to create.
+	 * @throws NullPointerException
+	 * 		If {@code threshold} is {@code null}.
+	 */
+	public Thresholds(@NonNull Threshold threshold)
+			throws NullPointerException {
+		this(Collections.singletonList(Validate.notNull(threshold)),
+				Collections.emptyList(), AND);
+	}
+
+	/**
+	 * Creates a new statement which is always fulfilled.
 	 */
 	public Thresholds() {
 		this(Collections.emptyList(), Collections.emptyList(), VERUM);
