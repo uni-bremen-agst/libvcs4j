@@ -5,9 +5,9 @@ import de.unibremen.informatik.st.libvcs4j.Validate;
 import java.math.BigDecimal;
 
 /**
- * A metric of type {@link BigDecimal}
+ * A metric gatherer of type {@link BigDecimal}.
  */
-public class DecimalGatherer extends Gatherer<BigDecimal> {
+public abstract class DecimalGatherer extends Gatherer<BigDecimal> {
 
 	@Override
 	protected BigDecimal sum(final BigDecimal a, final BigDecimal b)

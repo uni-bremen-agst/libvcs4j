@@ -21,7 +21,7 @@ import java.lang.annotation.Annotation;
 import java.util.Optional;
 
 /**
- * This scanner gathers the 'McCabe complexity' metric for {@link CtClass},
+ * This scanner gathers the 'McCabe Complexity' metric for {@link CtClass},
  * {@link CtInterface} (since Java 8 interfaces may have default
  * implementations), {@link CtEnum}, {@link CtAnnotation}, {@link CtMethod},
  * and {@link CtConstructor} elements.
@@ -33,15 +33,25 @@ public class MCC extends IntGatherer {
 	 */
 	private static final int INITIAL_VALUE = 1;
 
+	@Override
+	protected String name() {
+		return "MCC";
+	}
+
+	@Override
+	protected String abbreviation() {
+		return "McCabe Complexity";
+	}
+
 	/**
 	 * Returns the 'McCabe Complexity' metric of {@code type}. Returns an empty
 	 * {@link Optional} if {@code type} is {@code null}, or if {@code type} was
 	 * not scanned.
 	 *
 	 * @param type
-	 * 		The type whose 'McCabe complexity' metric is requested.
+	 * 		The type whose 'McCabe Complexity' metric is requested.
 	 * @return
-	 * 		The 'McCabe complexity' metric of {@code type}.
+	 * 		The 'McCabe Complexity' metric of {@code type}.
 	 */
 	public Optional<Integer> MCCOf(final CtType type) {
 		return metricOf(type);
@@ -62,14 +72,14 @@ public class MCC extends IntGatherer {
 	}
 
 	/**
-	 * Returns the 'McCabe complexity' metric of {@code executable}. Returns an
+	 * Returns the 'McCabe Complexity' metric of {@code executable}. Returns an
 	 * empty {@link Optional} if {@code executable} is {@code null}, or if
 	 * {@code executable} was not scanned.
 	 *
 	 * @param executable
-	 * 		The expression whose 'McCabe complexity' metric is requested.
+	 * 		The expression whose 'McCabe Complexity' metric is requested.
 	 * @return
-	 * 		The 'McCabe complexity' metric of {@code executable}.
+	 * 		The 'McCabe Complexity' metric of {@code executable}.
 	 */
 	public Optional<Integer> MCCOf(final CtExecutable executable) {
 		return metricOf(executable);

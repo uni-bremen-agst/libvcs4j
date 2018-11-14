@@ -21,6 +21,16 @@ public class WMC extends IntGatherer {
 	 */
 	private final MCC mcc = new MCC();
 
+	@Override
+	protected String name() {
+		return "WMC";
+	}
+
+	@Override
+	protected String abbreviation() {
+		return "Weighted Methods per Class";
+	}
+
 	/**
 	 * Returns the 'Weighted Methods per Class' metric of {@code type}. Returns
 	 * an empty {@link Optional} if {@code type} is {@code null}, or if

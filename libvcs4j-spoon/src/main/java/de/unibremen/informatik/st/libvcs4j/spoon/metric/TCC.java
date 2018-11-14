@@ -34,6 +34,16 @@ public class TCC extends DecimalGatherer {
 	private Map<CtType, Map<CtMethod, Set<CtField>>>
 			typeInfo = new IdentityHashMap<>();
 
+	@Override
+	protected String name() {
+		return "TCC";
+	}
+
+	@Override
+	protected String abbreviation() {
+		return "Tight Class Cohesion";
+	}
+
 	/**
 	 * Returns the 'Tight Class Cohesion' metric of {@code type}. Returns an
 	 * empty {@link Optional} if {@code type} is {@code null}, or if

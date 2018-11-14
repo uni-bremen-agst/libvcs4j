@@ -13,6 +13,16 @@ import java.util.Optional;
  */
 public class NOM extends IntGatherer {
 
+	@Override
+	protected String name() {
+		return "NOM";
+	}
+
+	@Override
+	protected String abbreviation() {
+		return "Number of Methods";
+	}
+
 	/**
 	 * Returns the 'Number of Methods' metric of {@code type}. Returns an empty
 	 * {@link Optional} if {@code type} is {@code null}, or if {@code type} was

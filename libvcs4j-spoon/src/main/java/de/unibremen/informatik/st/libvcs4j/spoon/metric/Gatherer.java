@@ -12,9 +12,9 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * This is the base class of all metrics. By using a stack, metrics may be
- * gathered for nested AST nodes ({@link spoon.reflect.declaration.CtElement}).
- * This class is named "Gatherer" to avoid name collisions with {@link Metric}.
+ * This is the base class of all metric gatherers. By using a stack, metrics
+ * may be gathered for nested AST nodes ({@link CtElement}). This class is
+ * named "Gatherer" to avoid name collisions with {@link Metric}.
  */
 public abstract class Gatherer<T> extends Scanner {
 
@@ -60,6 +60,22 @@ public abstract class Gatherer<T> extends Scanner {
 	 * 		If any of the given arguments is {@code null}.
 	 */
 	protected abstract T sum(final T a, final T b) throws NullPointerException;
+
+	/**
+	 * Returns the full name of this gatherer.
+	 *
+	 * @return
+	 * 		The full name of this gatherer.
+	 */
+	protected abstract String name();
+
+	/**
+	 * Returns the abbreviated name of this gatherer.
+	 *
+	 * @return
+	 * 		The abbreviated name of this gatherer.
+	 */
+	protected abstract String abbreviation();
 
 	/**
 	 * Increments the metric of the top element of {@link #stack} by

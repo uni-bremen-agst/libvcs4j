@@ -16,6 +16,16 @@ import java.util.Optional;
  */
 public class NOA extends IntGatherer {
 
+	@Override
+	protected String name() {
+		return "NOA";
+	}
+
+	@Override
+	protected String abbreviation() {
+		return "Number of Attributes";
+	}
+
 	/**
 	 * Returns the 'Number of Attributes' metric of {@code type}. Returns an
 	 * empty {@link Optional} if {@code type} is {@code null}, or if

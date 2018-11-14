@@ -12,6 +12,16 @@ import java.util.Optional;
  */
 public class NOP extends IntGatherer {
 
+	@Override
+	protected String name() {
+		return "NOP";
+	}
+
+	@Override
+	protected String abbreviation() {
+		return "Number of Parameters";
+	}
+
 	/**
 	 * Returns the 'Number of Parameters' metric of {@code executable}. Returns
 	 * an empty {@link Optional} if {@code executable} is {@code null}, or if

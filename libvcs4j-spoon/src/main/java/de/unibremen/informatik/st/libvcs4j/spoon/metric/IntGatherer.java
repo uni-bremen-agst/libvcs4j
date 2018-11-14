@@ -3,9 +3,9 @@ package de.unibremen.informatik.st.libvcs4j.spoon.metric;
 import de.unibremen.informatik.st.libvcs4j.Validate;
 
 /**
- * A metric of type {@link Integer}.
+ * A metric gatherer of type {@link Integer}.
  */
-public class IntGatherer extends Gatherer<Integer> {
+public abstract class IntGatherer extends Gatherer<Integer> {
 
 	@Override
 	protected Integer sum(final Integer a, final Integer b)

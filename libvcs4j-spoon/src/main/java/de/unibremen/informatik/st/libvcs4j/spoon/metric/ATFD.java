@@ -23,6 +23,16 @@ public class ATFD extends IntGatherer {
 	 */
 	public static final int INITIAL_VALUE = 0;
 
+	@Override
+	protected String name() {
+		return "ATFD";
+	}
+
+	@Override
+	protected String abbreviation() {
+		return "Access to Foreign Data";
+	}
+
 	/**
 	 * Returns the 'Access to Foreign Data' metric of {@code type}. Returns an
 	 * empty {@link Optional} if {@code type} is {@code null}, or if
