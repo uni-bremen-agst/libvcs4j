@@ -146,7 +146,7 @@ public interface VCSFile extends VCSModelElement {
 		 * Applies the diff of {@code fileChange} (see
 		 * {@link FileChange#computeDiff()}) and computes the resulting
 		 * position. Returns an empty Optional if {@code fileChange} is of type
-		 * {@link FileChange.Type#REMOVE} or if the line of this position was
+		 * {@link FileChange.Type#REMOVE}, or if the line of this position was
 		 * deleted without a corresponding insertion. If the line of this
 		 * position was changed, the resulting column is set to 1.
 		 *
@@ -214,6 +214,46 @@ public interface VCSFile extends VCSModelElement {
 			return Optional.of(fileChange.getNewFile()
 					.orElseThrow(IllegalStateException::new)
 					.positionOf(line, column, getTabSize()));
+		}
+
+		/**
+		 * Returns the position located at the first column of the next line.
+		 * If this position is located at the last line, an empty
+		 * {@link Optional} is returned.
+		 *
+		 * @return
+		 * 		The position located at the first column of the next line.
+		 * @throws IOException
+		 * 		If an error occurred while reading the file content.
+		 */
+		public Optional<Position> nextLine() throws IOException {
+			final List<String> lines = file.readLines();
+			Validate.validateState(lines.size() >= line);
+			if (lines.size() == line) {
+				return Optional.empty();
+			}
+			return Optional.of(file.positionOf(line + 1, 1, tabSize));
+		}
+
+		/**
+		 * Returns the position located at the last column of the previous
+		 * line. If this position is located at the first line, an empty
+		 * {@link Optional} is returned.
+		 *
+		 * @return
+		 * 		The position located at the last column of the previous line.
+		 * @throws IOException
+		 * 		If an error occurred while reading the file content.
+		 */
+		public Optional<Position> previousLine() throws IOException {
+			final List<String> lines = file.readLines();
+			Validate.validateState(lines.size() >= line);
+			if (line == 1) {
+				return Optional.empty();
+			}
+			return Optional.of(file.positionOf(
+					file.positionOf(line, 1, tabSize).offset - 1,
+					tabSize));
 		}
 	}
 
