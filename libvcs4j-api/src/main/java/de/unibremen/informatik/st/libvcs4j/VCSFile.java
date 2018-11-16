@@ -498,18 +498,8 @@ public interface VCSFile extends VCSModelElement {
 		public Optional<Range> apply(final FileChange fileChange)
 				throws NullPointerException, IOException {
 			Validate.notNull(fileChange);
-
-			// Ignore removed files.
-			if (fileChange.getType() == FileChange.Type.REMOVE) {
-				return Optional.empty();
-			}
-
-			// Delegate call to positions.
-			final VCSFile newFile = fileChange.getNewFile()
-					.orElseThrow(IllegalStateException::new);
 			final Optional<Position> newBegin = begin.apply(fileChange);
 			final Optional<Position> newEnd = end.apply(fileChange);
-
 			return newBegin.isPresent() && newEnd.isPresent()
 					? Optional.of(new Range(newBegin.get(), newEnd.get()))
 					: Optional.empty();
