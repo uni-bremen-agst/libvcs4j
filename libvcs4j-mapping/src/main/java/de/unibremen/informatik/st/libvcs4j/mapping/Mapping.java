@@ -7,6 +7,7 @@ import de.unibremen.informatik.st.libvcs4j.Validate;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Collection;
 import java.util.Optional;
@@ -48,13 +49,6 @@ public class Mapping<T> {
 		 */
 		private Map<Mappable<T>, Mappable<T>> mapping = new IdentityHashMap<>();
 
-		/**
-		 * Stores all mappables, whose lifespans are ending. These are all the
-		 * mappables from the first argument of
-		 * {@link Mapping#map(Collection, Collection, RevisionRange)} that
-		 * did not have a successor mappable.
-		 */
-		private List<Mappable<T>> endingLifespans;
 
 		/**
 		 * Stores all mappables, whose lifespans are ending. These are all the
@@ -64,15 +58,6 @@ public class Mapping<T> {
 		 */
 		private List<Mappable<T>> startingLifespans;
 
-		/**
-		 * Returns the list of all mappables, whose lifespans are ending.
-		 *
-		 * @return
-		 * 		The list of mappables, whose lifespans are ending.
-		 */
-		public List<Mappable<T>> getEndingLifespans() {
-			return new ArrayList<>(endingLifespans);
-		}
 
 		/**
 		 * Returns the list of all mappables, whose lifespans are starting.
@@ -263,10 +248,16 @@ public class Mapping<T> {
 			}
 		}));
 
+		final Result<T> result = new Result<>();
+		//first check for equal signatures
+		result.mapping.putAll(checkSignatures(from, to));
+
 
 		//find corresponding file change objects
-		final Map<Mappable<T>, Map<FileChange, VCSFile.Range>> hMap =
-				findFileChanges(from, range);
+		final List<CorrespondingFileChanges> hMap =
+				findFileChanges(from.stream()
+						.filter(predecessor -> !result.mapping.containsKey(predecessor))
+						.collect(Collectors.toList()), range);
 
 		//apply file change objects to corresponding ranges
 		final Map<Mappable<T>, List<VCSFile.Range>> updatedRanges =
@@ -274,14 +265,12 @@ public class Mapping<T> {
 
 		//search for compatible mappables
 		final Map<Mappable<T>, Mappable<T>> mappings =
-				computeMapping(updatedRanges, to);
+				computeMapping(updatedRanges, to.stream()
+						.filter(successor -> !result.mapping.containsValue(successor))
+						.collect(Collectors.toList()));
 
-		final Result<T> result = new Result<>();
 		result.startingLifespans = to.stream()
 				.filter(tMappable -> !mappings.containsValue(tMappable))
-				.collect(Collectors.toList());
-		result.endingLifespans = from.stream()
-				.filter(fMappable -> !mappings.containsKey(fMappable))
 				.collect(Collectors.toList());
 		result.ordinal = range.getOrdinal();
 		result.mapping = mappings;
@@ -304,11 +293,12 @@ public class Mapping<T> {
 	 * 		{@link VCSFile.Range} objects as values and the corresponding
 	 * 		{@link FileChange} objects as keys.
 	 */
-	private Map<Mappable<T>, Map<FileChange, VCSFile.Range>> findFileChanges(
+	private List<CorrespondingFileChanges> findFileChanges(
 			final Collection<Mappable<T>> from, final RevisionRange range) {
-		final Map<Mappable<T>, Map<FileChange, VCSFile.Range>> result = new IdentityHashMap<>();
+		final List<CorrespondingFileChanges> result = new ArrayList<>();
 		for (final Mappable<T> predecessor : from) {
-			final Map<FileChange, VCSFile.Range> coincidences = new IdentityHashMap<>();
+			final CorrespondingFileChanges correspondingFileChanges =
+					new CorrespondingFileChanges();
 			for (final VCSFile.Range fileRange : predecessor.getRanges()) {
 				range.getFileChanges()
 						.stream()
@@ -319,12 +309,14 @@ public class Mapping<T> {
 									fc.getOldFile().orElseThrow(IllegalArgumentException::new);
 							if (fileRange.getFile().getPath()
 									.equals(vcsFile.getPath())) {
-								coincidences.put(fc, fileRange);
+								correspondingFileChanges.put(fc, fileRange);
 							}
 						});
 			}
-			result.put(predecessor, coincidences);
+			correspondingFileChanges.mappable = predecessor;
+			result.add(correspondingFileChanges);
 		}
+
 		return result;
 	}
 
@@ -334,8 +326,9 @@ public class Mapping<T> {
 	 * method by {@link #map(Collection, Collection, RevisionRange)}.
 	 *
 	 * @param changesToApply
-	 * 		The collection of mappables, of which the
-	 * 		{@link FileChange} objects need to be found.
+	 * 		The collection of {@link CorrespondingFileChanges}. Each object
+	 * 		holds a {@link Mappable} and a map of its corresponding
+	 * 		{@link FileChange} objects.
 	 * @throws IOException
 	 * 		If updating a range ({@link VCSFile.Range#apply(FileChange)}) fails.
 	 * @return
@@ -343,12 +336,13 @@ public class Mapping<T> {
 	 *		updated {@link VCSFile.Range} objects.
 	 */
 	private Map<Mappable<T>, List<VCSFile.Range>> applyFileChanges(
-			final Map<Mappable<T>, Map<FileChange, VCSFile.Range>> changesToApply)
+			final List<CorrespondingFileChanges> changesToApply)
 			throws IOException {
 		final Map<Mappable<T>, List<VCSFile.Range>> updatedRanges = new IdentityHashMap<>();
-		for (final Map.Entry<Mappable<T>, Map<FileChange, VCSFile.Range>> entry : changesToApply.entrySet()) {
-			final Mappable<T> mappable = entry.getKey();
-			final Map<FileChange, VCSFile.Range> map = entry.getValue();
+
+		for (final CorrespondingFileChanges correspondingFileChanges : changesToApply) {
+			final Mappable<T> mappable = correspondingFileChanges.mappable;
+			final Map<FileChange, VCSFile.Range> map = correspondingFileChanges.map;
 			final List<VCSFile.Range> ranges = new ArrayList<>();
 			for (final Map.Entry<FileChange, VCSFile.Range> changes : map.entrySet()) {
 				final FileChange fileChange = changes.getKey();
@@ -357,7 +351,12 @@ public class Mapping<T> {
 						oldRange.apply(fileChange).orElseThrow(IOException::new);
 				ranges.add(updatedRange);
 			}
-			updatedRanges.put(mappable, ranges);
+
+			if (ranges.isEmpty()) {
+				updatedRanges.put(mappable, mappable.getRanges());
+			} else {
+				updatedRanges.put(mappable, ranges);
+			}
 		}
 		return updatedRanges;
 	}
@@ -373,7 +372,7 @@ public class Mapping<T> {
 	 * @param to
 	 * 		The collection of (potential) successor mappables.
 	 * @return
-	 * 		Mapping from a compatible {@link Mappable} to a its successor.
+	 * 		Mapping from a compatible {@link Mappable} to its successor.
 	 */
 	private Map<Mappable<T>, Mappable<T>> computeMapping(
 			final Map<Mappable<T>, List<VCSFile.Range>> updatedRanges,
@@ -383,29 +382,94 @@ public class Mapping<T> {
 			final Mappable<T> predecessor = entry.getKey();
 			final List<VCSFile.Range> ranges = entry.getValue();
 			for (final Mappable<T> successor : to) {
-				if (predecessor.isCompatible(successor)
-						&& ranges.size() == successor.getRanges().size()) {
-					boolean compatible = false;
-					for (final VCSFile.Range fromRanges : ranges) {
-						compatible = false;
-						for (final VCSFile.Range toRanges : successor.getRanges()) {
-							if (fromRanges.getBegin().getOffset()
-									== toRanges.getBegin().getOffset()
-									&& fromRanges.getEnd().getOffset()
-									== toRanges.getEnd().getOffset()) {
-								compatible = true;
-							}
-						}
-						if (!compatible) {
-							break;
-						}
-					}
-					if (compatible) {
+					if (checkForCompatibility(predecessor, successor, ranges)) {
 						mappings.put(predecessor, successor);
 					}
 				}
 			}
-		}
 		return mappings;
+	}
+
+	/**
+	 * Checks for compatible mappables by comparing their signatures. If the
+	 * signatures are equal two mappables are compatible. This method is used
+	 * as a utility method by {@link #map(Collection, Collection, RevisionRange)}.
+	 *
+	 * @param from
+	 * 		The collection of (potential) predecessor mappables.
+	 * @param to
+	 * 		The collection of (potential) successor mappables.
+	 * @return
+	 * 		Mapping from a compatible {@link Mappable} to its successor.
+	 */
+	private Map<Mappable<T>, Mappable<T>> checkSignatures(
+			final Collection<Mappable<T>> from,
+			final Collection<Mappable<T>> to) {
+		final Map<Mappable<T>, Mappable<T>> result = new IdentityHashMap<>();
+
+		from.stream()
+				.filter(predecessor -> predecessor.getSignature().isPresent())
+				.forEach(predecessor ->
+						to.forEach(successor -> {
+							if (predecessor.getSignature().get()
+									.equals(successor.getSignature())) {
+								result.put(predecessor, successor);
+							}
+						}));
+		return result;
+	}
+
+	/**
+	 * Checks two mappables for its compatibility. That is if and only if, all
+	 * ranges from the predecessor mappable are equal to the ranges from the
+	 * successor mappables. This method is used as a utility method by
+	 * {@link #computeMapping(Map, Collection)}.
+	 *
+	 * @param predecessor
+	 * 		The potential successor mappable.
+	 * @param successor
+	 * 		The potential successor mappable.
+	 * @param ranges
+	 * 		The updated list of {@link VCSFile.Range} objects
+	 * 		from {@param predecessor}.
+	 * @return
+	 * 		{@code true} if {@param predecessor} and {@param successor} are
+	 * 		compatible, otherwise {@code false}.
+	 */
+	private boolean checkForCompatibility(final Mappable<T> predecessor,
+										  final Mappable<T> successor,
+										  final List<VCSFile.Range> ranges) {
+		boolean compatible = false;
+		if (predecessor.isCompatible(successor)
+				&& ranges.size() == successor.getRanges().size()) {
+			for (final VCSFile.Range fromRanges : ranges) {
+				compatible = false;
+				for (final VCSFile.Range toRanges : successor.getRanges()) {
+					if (fromRanges.getBegin().getOffset()
+							== toRanges.getBegin().getOffset()
+							&& fromRanges.getEnd().getOffset()
+							== toRanges.getEnd().getOffset()) {
+						compatible = true;
+					}
+				}
+				if (!compatible) {
+					break;
+				}
+			}
+		}
+		return compatible;
+	}
+
+	/**
+	 * Helper class to encapsulate a relation from a mappable and its
+	 * {@link FileChange} objects. Used to make reading the code easier.
+	 */
+	private final class CorrespondingFileChanges {
+		private Mappable<T> mappable;
+		private Map<FileChange, VCSFile.Range> map = new HashMap<>();
+
+		void put(final FileChange fileChange, final VCSFile.Range range) {
+			map.put(fileChange, range);
+		}
 	}
 }

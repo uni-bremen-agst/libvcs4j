@@ -55,15 +55,17 @@ public class Lifespan<T> {
 	public Lifespan<T> add(final Entity<T> entity) throws NullPointerException,
 			IllegalArgumentException {
 		Validate.notNull(entity);
-		final Entity<T> last = getLast();
-		Validate.isEqualTo(
-				entity.getOrdinal(), last.getOrdinal() + 1,
-				"Unexpected ordinal. Expected: %d, Actual: %d",
-				last.getOrdinal() + 1, entity.getOrdinal());
-		Validate.isGreaterThanOrEquals(
-				entity.getNumChanges(), getLast().getNumChanges(),
-				"Unexpected number of changes. Expected: >= %d, Actual: %d",
-				getLast().getNumChanges(), entity.getNumChanges());
+		if (!entities.isEmpty()) {
+			final Entity<T> last = getLast();
+			Validate.isEqualTo(
+					entity.getOrdinal(), last.getOrdinal() + 1,
+					"Unexpected ordinal. Expected: %d, Actual: %d",
+					last.getOrdinal() + 1, entity.getOrdinal());
+			Validate.isGreaterThanOrEquals(
+					entity.getNumChanges(), getLast().getNumChanges(),
+					"Unexpected number of changes. Expected: >= %d, Actual: %d",
+					getLast().getNumChanges(), entity.getNumChanges());
+		}
 		entities.add(entity);
 		return this;
 	}

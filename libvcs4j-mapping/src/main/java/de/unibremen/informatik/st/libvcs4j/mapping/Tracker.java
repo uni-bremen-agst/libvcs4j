@@ -36,6 +36,47 @@ public class Tracker<T> {
 	public void add(final Mapping.Result<T> result)
 			throws NullPointerException {
 		Validate.notNull(result);
-		throw new UnsupportedOperationException("Not yet implemented");
+		final Map<Mappable<T>, Lifespan<T>> localMappables = new IdentityHashMap<>();
+		final List<Mappable<T>> mappedTo = result.getTo();
+
+		if (mappables.isEmpty()) {
+			mappedTo.forEach(to -> {
+				final Entity<T> entity = new Entity<>(to);
+				final Lifespan<T> lifespan = new Lifespan<>(entity);
+				localMappables.put(to, lifespan);
+				lifespans.add(lifespan);
+
+			});
+		} else {
+			mappedTo.stream()
+					.filter(mappable -> mappables.containsKey(
+							result.getPredecessor(mappable).get()))
+					.forEach(to -> {
+						final Mappable<T> predecessor = result.getPredecessor(to).get();
+						final Entity<T> entity = mappables.get(predecessor).getLast();
+						final Entity<T> successor =
+								new Entity<>(to,
+										result.getOrdinal(),
+										entity.getNumChanges() + 1);
+						final Lifespan<T> updated = mappables.get(predecessor).add(successor);
+						localMappables.put(to, updated);
+						if (!lifespans.contains(updated)) {
+							lifespans.add(updated);
+						}
+
+					});
+		}
+
+
+		final List<Mappable<T>> startingLifespans = result.getStartingLifespans();
+		startingLifespans.forEach(mappable -> {
+			final Entity<T> entity = new Entity<>(mappable);
+			final Lifespan<T> startingLifespan = new Lifespan<>(entity);
+			lifespans.add(startingLifespan);
+			localMappables.put(mappable, startingLifespan);
+		});
+
+		mappables = localMappables;
+
 	}
 }
