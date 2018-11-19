@@ -41,10 +41,7 @@ public class Tracker<T> {
 
 		if (mappables.isEmpty()) {
 			mappedTo.forEach(to -> {
-				final Entity<T> entity = new Entity<>(to);
-				final Lifespan<T> lifespan = new Lifespan<>(entity);
-				localMappables.put(to, lifespan);
-				lifespans.add(lifespan);
+				convertToEntityAndAddToMap(to, localMappables);
 
 			});
 		} else {
@@ -70,13 +67,28 @@ public class Tracker<T> {
 
 		final List<Mappable<T>> startingLifespans = result.getStartingLifespans();
 		startingLifespans.forEach(mappable -> {
-			final Entity<T> entity = new Entity<>(mappable);
-			final Lifespan<T> startingLifespan = new Lifespan<>(entity);
-			lifespans.add(startingLifespan);
-			localMappables.put(mappable, startingLifespan);
+			convertToEntityAndAddToMap(mappable, localMappables);
 		});
 
 		mappables = localMappables;
+	}
 
+	/**
+	 * Converts a given mappable to a {@link Entity} and adds it the given map.
+	 * A {@link Lifespan} is created aswell. This method is used as a utility
+	 * method by {@link #add(Mapping.Result)}.
+	 *
+	 * @param mappable
+	 * 		The mappable which should be converted.
+	 * @param map
+	 * 		The map on which the new lifespan an its corresponding
+	 * 		{@link Lifespan} should be put.
+	 */
+	private void convertToEntityAndAddToMap(final Mappable<T> mappable,
+											final Map<Mappable<T>, Lifespan<T>> map) {
+		final Entity<T> entity = new Entity<>(mappable);
+		final Lifespan<T> startingLifespan = new Lifespan<>(entity);
+		lifespans.add(startingLifespan);
+		map.put(mappable, startingLifespan);
 	}
 }
