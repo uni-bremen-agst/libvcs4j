@@ -168,7 +168,7 @@ public interface VCSFile extends VCSModelElement {
 				IOException {
 			Validate.notNull(fileChange);
 			Validate.isTrue(fileChange.getOldFile().isPresent(),
-					"The given file change must not be an addition.");
+					"The given file change has no old file.");
 			final VCSFile oldFile = fileChange.getOldFile().get();
 			Validate.isEqualTo(oldFile, file,
 					"The given file change references an invalid file.");
@@ -178,11 +178,25 @@ public interface VCSFile extends VCSModelElement {
 				return Optional.empty();
 			}
 
-			// Ignore changes applied after this position.
-			final List<LineChange> changes = fileChange
-					.computeDiff().stream()
-					.filter(lc -> lc.getLine() <= getLine())
-					.collect(Collectors.toList());
+			// Find all changes applied up to this position.
+			int numIns = 0;
+			final List<LineChange> changes = new ArrayList<>();
+			for (final LineChange lc : fileChange.computeDiff()) {
+				if (lc.getType() == LineChange.Type.INSERT &&
+						// The position of an inserted line is relative to the
+						// position of all previously inserted lines. Thus, we
+						// need to subtract the number of previously inserted
+						// lines before comparing a line's position.
+						lc.getLine() - numIns <= getLine()) {
+					numIns++;
+					changes.add(lc);
+				} else if (lc.getType() == LineChange.Type.DELETE &&
+						// Deleted lines are not relative to the position of
+						// previously changed lines.
+						lc.getLine() <= getLine()) {
+					changes.add(lc);
+				}
+			}
 
 			// Has this position been deleted (its corresponding line was
 			// deleted without being inserted)?
