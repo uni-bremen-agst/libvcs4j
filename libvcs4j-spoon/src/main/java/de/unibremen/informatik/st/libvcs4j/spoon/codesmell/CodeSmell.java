@@ -10,9 +10,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 /**
- * A code smell.
+ * An unmodifiable representation of a code smell.
  */
 public class CodeSmell {
 
@@ -56,7 +57,14 @@ public class CodeSmell {
 	private final List<VCSFile.Range> ranges;
 
 	/**
-	 * Creates a new code smell with given definition, metrics, and ranges.
+	 * The signature of a code smell. Allows to uniquely identify a code smell
+	 * regardless of its {@link #ranges}. May be null.
+	 */
+	private final String signature;
+
+	/**
+	 * Creates a new code smell with given definition, metrics, ranges, and
+	 * signature. Only {@code signature} may be {@code null}.
 	 *
 	 * @param definition
 	 * 		The definition of the code smell to create.
@@ -64,16 +72,21 @@ public class CodeSmell {
 	 * 		The metrics of the code smell to create.
 	 * @param ranges
 	 * 		The ranges of the code smell to create.
+	 * @param signature
+	 * 		The signature of the code smell to create. May be {@code null}.
 	 * @throws NullPointerException
-	 * 		If any of the given arguments is {@code null}.
+	 * 		If {@code definition}, {@code metrics}, or {@code ranges} is
+	 * 		{@code null}.
 	 * @throws IllegalArgumentException
 	 * 		If any of the given arguments contains {@code null}, or if
 	 * 		{@code metrics} does not fulfill the thresholds of
-	 * 		{@code definition} according to {@link Thresholds#test(Collection)}.
+	 * 		{@code definition} according to
+	 * 		{@link Thresholds#test(Collection)}.
 	 */
 	public CodeSmell(@NonNull final Definition definition,
 			@NonNull final Collection<Metric> metrics,
-			@NonNull final List<VCSFile.Range> ranges)
+			@NonNull final List<VCSFile.Range> ranges,
+			final String signature)
 			throws NullPointerException, IllegalArgumentException {
 		Validate.noNullElements(metrics);
 		Validate.noNullElements(ranges);
@@ -81,25 +94,39 @@ public class CodeSmell {
 		this.definition = definition;
 		this.metrics = new ArrayList<>(metrics);
 		this.ranges = new ArrayList<>(ranges);
+		this.signature = signature;
 	}
 
 	/**
-	 * Creates a new code smell with given definition and ranges, but without
-	 * any metric.
+	 * Creates a new code smell with given definition, ranges, and signature,
+	 * but without any metric. Only {@code signature} may be {@code null}.
 	 *
 	 * @param definition
 	 * 		The definition of the code smell to create.
 	 * @param ranges
 	 * 		The ranges of the code smell to create.
+	 * @param signature
+	 * 		The signature of the code smell to create. May be {@code null}.
 	 * @throws NullPointerException
 	 * 		If any of the given arguments is {@code null}.
 	 * @throws IllegalArgumentException
 	 * 		If any of the given arguments contains {@code null}.
 	 */
 	public CodeSmell(@NonNull final Definition definition,
-			@NonNull final List<VCSFile.Range> ranges)
+			@NonNull final List<VCSFile.Range> ranges,
+			final String signature)
 			throws NullPointerException, IllegalArgumentException {
-		this(definition, Collections.emptyList(), ranges);
+		this(definition, Collections.emptyList(), ranges, signature);
+	}
+
+	/**
+	 * Returns the signature of this code smell.
+	 *
+	 * @return
+	 * 		The signature of this code smell.
+	 */
+	public Optional<String> getSignature() {
+		return Optional.ofNullable(signature);
 	}
 
 	/**
