@@ -316,7 +316,7 @@ public interface VCSFile extends VCSModelElement {
 			Validate.isEqualTo(begin.getFile(), end.getFile(),
 					"Begin and end position reference different files.");
 			Validate.isTrue(begin.getOffset() <= end.getOffset(),
-					"Begin must not be after end");
+					"Begin must not be after end.");
 		}
 
 		/**
