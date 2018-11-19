@@ -246,8 +246,10 @@ public interface VCSFile extends VCSModelElement {
 			if (lines.size() == getLine()) {
 				return Optional.empty();
 			}
+			final int line = getLine() + 1;
+			final int column = 1;
 			return Optional.of(getFile().positionOf(
-					getLine() + 1, 1, getTabSize()));
+					line, column, getTabSize()));
 		}
 
 		/**
@@ -266,10 +268,10 @@ public interface VCSFile extends VCSModelElement {
 			if (getLine() == 1) {
 				return Optional.empty();
 			}
-			final Position begin = getFile().positionOf(
-					getLine(), 1, getTabSize());
+			final int line = getLine() - 1;
+			final int column = lines.get(getLine() - 2).length();
 			return Optional.of(getFile().positionOf(
-					begin.getOffset() - 1, getTabSize()));
+					line, column, getTabSize()));
 		}
 	}
 

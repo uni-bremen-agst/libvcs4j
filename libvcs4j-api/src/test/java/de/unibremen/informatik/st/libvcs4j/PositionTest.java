@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -19,8 +20,10 @@ public class PositionTest {
 		VCSFile oldFile = mock(VCSFile.class);
 		when(oldFile.getRevision()).thenReturn(oldRevision);
 		when(oldFile.getRelativePath()).thenReturn("A.java");
-		when(oldFile.readLinesWithEOL()).thenReturn(
-				Arrays.asList("first line\n", "second line\n", "third line"));
+		when(oldFile.readLinesWithEOL()).thenReturn(Arrays.asList(
+				"first line\n",
+				"second line\n",
+				"third line"));
 		when(oldFile.positionOf(2, 8, 4)).thenCallRealMethod();
 
 		Revision newRevision = mock(Revision.class);
@@ -29,8 +32,10 @@ public class PositionTest {
 		VCSFile newFile = mock(VCSFile.class);
 		when(newFile.getRevision()).thenReturn(newRevision);
 		when(newFile.getRelativePath()).thenReturn("A.java");
-		when(newFile.readLinesWithEOL()).thenReturn(
-				Arrays.asList("first line\n", "new line\n", "second line"));
+		when(newFile.readLinesWithEOL()).thenReturn(Arrays.asList(
+				"first line\n",
+				"new line\n",
+				"second line"));
 		when(newFile.positionOf(anyInt(), anyInt(), anyInt()))
 				.thenCallRealMethod();
 
@@ -56,5 +61,45 @@ public class PositionTest {
 		assertThat(newPosition.getColumn()).isEqualTo(8);
 		assertThat(newPosition.getOffset()).isEqualTo(27);
 		assertThat(newPosition.getTabSize()).isEqualTo(4);
+	}
+
+	@Test
+	public void nextLine() throws IOException {
+		List<String> lines = Arrays.asList("foo", "bar");
+		List<String> linesEOL = Arrays.asList("foo\n", "bar");
+
+		VCSFile file = mock(VCSFile.class);
+		when(file.readLines()).thenReturn(lines);
+		when(file.readLinesWithEOL()).thenReturn(linesEOL);
+		when(file.positionOf(1, 2, 3)).thenCallRealMethod();
+		when(file.positionOf(2, 1, 3)).thenCallRealMethod();
+
+		VCSFile.Position position = file.positionOf(1, 2, 3);
+		VCSFile.Position next = position.nextLine()
+				.orElseThrow(AssertionError::new);
+		assertThat(next.getLine()).isEqualTo(2);
+		assertThat(next.getColumn()).isEqualTo(1);
+		assertThat(next.getTabSize()).isEqualTo(3);
+		assertThat(next.getOffset()).isEqualTo(4);
+	}
+
+	@Test
+	public void previousLine() throws IOException {
+		List<String> lines = Arrays.asList("foo", "bar");
+		List<String> linesEOL = Arrays.asList("foo\n", "bar");
+
+		VCSFile file = mock(VCSFile.class);
+		when(file.readLines()).thenReturn(lines);
+		when(file.readLinesWithEOL()).thenReturn(linesEOL);
+		when(file.positionOf(2, 2, 3)).thenCallRealMethod();
+		when(file.positionOf(1, 3, 3)).thenCallRealMethod();
+
+		VCSFile.Position position = file.positionOf(2, 2, 3);
+		VCSFile.Position previous = position.previousLine()
+				.orElseThrow(AssertionError::new);
+		assertThat(previous.getLine()).isEqualTo(1);
+		assertThat(previous.getColumn()).isEqualTo(3);
+		assertThat(previous.getTabSize()).isEqualTo(3);
+		assertThat(previous.getOffset()).isEqualTo(2);
 	}
 }
