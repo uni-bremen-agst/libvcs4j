@@ -1,10 +1,16 @@
 plugins {
     id 'java'
     id 'maven'
+    id 'io.franzbecker.gradle-lombok' version '1.14'
 }
 
 group = 'de.uni-bremen.informatik.st'
 version = '1.5.0'
+
+lombok {
+    version = "1.16.20"
+    sha256 = "c5178b18caaa1a15e17b99ba5e4023d2de2ebc18b58cde0f5a04ca4b31c10e6d"
+}
 
 repositories {
     mavenCentral()
@@ -21,12 +27,32 @@ dependencies {
     testCompile 'org.slf4j:slf4j-simple:1.7.25'
 }
 
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
+import io.franzbecker.gradle.lombok.task.DelombokTask
+task delombok(type: DelombokTask) {
+    dependsOn compileJava
+    ext.outputDir = file("$buildDir/delombok")
+    outputs.dir(outputDir)
+    sourceSets.main.java.srcDirs.each {
+        inputs.dir(it)
+        args(it, "-d", outputDir)
+    }
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
+task sourcesJar(type: Jar) {
+    dependsOn classes
+    dependsOn delombok
+    classifier = 'sources'
+    from delombok.outputDir
+}
+
+javadoc {
+    dependsOn delombok
+    source = delombok.outputDir
+    exclude 'bmsi/util'
+}
+
+task javadocJar(type: Jar) {
+    dependsOn javadoc
     classifier = 'javadoc'
     from javadoc.destinationDir
 }

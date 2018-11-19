@@ -13,25 +13,35 @@ import spoon.reflect.reference.CtFieldReference;
 import java.util.Optional;
 
 /**
- * This visitor gathers the 'access to foreign data' metric for {@link CtEnum},
- * {@link CtClass}, and {@link CtInterface} elements. Use
- * {@link #ATFDOf(CtType)} to get the metric for a given {@link CtType}.
+ * This scanner gathers the 'Access to Foreign Data' metric for {@link CtEnum},
+ * {@link CtClass}, and {@link CtInterface} elements.
  */
-public class ATFD extends IntMetric {
+public class ATFD extends IntGatherer {
 
 	/**
 	 * The initial metric value.
 	 */
 	public static final int INITIAL_VALUE = 0;
 
+	@Override
+	protected String name() {
+		return "ATFD";
+	}
+
+	@Override
+	protected String abbreviation() {
+		return "Access to Foreign Data";
+	}
+
 	/**
-	 * Returns the 'access to foreign data' metric of {@code type}. Returns an
-	 * empty {@link Optional} if {@code type} is {@code null}.
+	 * Returns the 'Access to Foreign Data' metric of {@code type}. Returns an
+	 * empty {@link Optional} if {@code type} is {@code null}, or if
+	 * {@code type} was not scanned.
 	 *
 	 * @param type
-	 * 		The type whose 'access to foreign data' metric is requested.
+	 * 		The type whose 'Access to Foreign Data' metric is requested.
 	 * @return
-	 * 		The 'access to foreign data' metric of {@code type}.
+	 * 		The 'Access to Foreign Data' metric of {@code type}.
 	 */
 	public Optional<Integer> ATFDOf(final CtType type) {
 		return metricOf(type);
@@ -65,11 +75,11 @@ public class ATFD extends IntMetric {
 	}
 
 	private void visitCtFieldAccess(final CtFieldAccess fieldAccess) {
-		final CtType parent = fieldAccess.getParent(CtType.class);
-		Optional.ofNullable(parent)
+		final CtType type = fieldAccess.getParent(CtType.class);
+		Optional.ofNullable(type)
 				.map(__ -> fieldAccess.getVariable())
 				.map(CtFieldReference::getDeclaration)
-				.filter(field -> !isInScopeOf(field, parent))
+				.filter(field -> !isInScopeOf(field, type))
 				.ifPresent(__ -> inc());
 	}
 

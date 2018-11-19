@@ -146,7 +146,7 @@ public interface VCSFile extends VCSModelElement {
 		 * Applies the diff of {@code fileChange} (see
 		 * {@link FileChange#computeDiff()}) and computes the resulting
 		 * position. Returns an empty Optional if {@code fileChange} is of type
-		 * {@link FileChange.Type#REMOVE} or if the line of this position was
+		 * {@link FileChange.Type#REMOVE}, or if the line of this position was
 		 * deleted without a corresponding insertion. If the line of this
 		 * position was changed, the resulting column is set to 1.
 		 *
@@ -168,7 +168,7 @@ public interface VCSFile extends VCSModelElement {
 				IOException {
 			Validate.notNull(fileChange);
 			Validate.isTrue(fileChange.getOldFile().isPresent(),
-					"The given file change must not be an addition.");
+					"The given file change has no old file.");
 			final VCSFile oldFile = fileChange.getOldFile().get();
 			Validate.isEqualTo(oldFile, file,
 					"The given file change references an invalid file.");
@@ -178,11 +178,25 @@ public interface VCSFile extends VCSModelElement {
 				return Optional.empty();
 			}
 
-			// Ignore changes applied after this position.
-			final List<LineChange> changes = fileChange
-					.computeDiff().stream()
-					.filter(lc -> lc.getLine() <= getLine())
-					.collect(Collectors.toList());
+			// Find all changes applied up to this position.
+			int numIns = 0;
+			final List<LineChange> changes = new ArrayList<>();
+			for (final LineChange lc : fileChange.computeDiff()) {
+				if (lc.getType() == LineChange.Type.INSERT &&
+						// The position of an inserted line is relative to the
+						// position of all previously inserted lines. Thus, we
+						// need to subtract the number of previously inserted
+						// lines before comparing a line's position.
+						lc.getLine() - numIns <= getLine()) {
+					numIns++;
+					changes.add(lc);
+				} else if (lc.getType() == LineChange.Type.DELETE &&
+						// Deleted lines are not relative to the position of
+						// previously changed lines.
+						lc.getLine() <= getLine()) {
+					changes.add(lc);
+				}
+			}
 
 			// Has this position been deleted (its corresponding line was
 			// deleted without being inserted)?
@@ -214,6 +228,46 @@ public interface VCSFile extends VCSModelElement {
 			return Optional.of(fileChange.getNewFile()
 					.orElseThrow(IllegalStateException::new)
 					.positionOf(line, column, getTabSize()));
+		}
+
+		/**
+		 * Returns the position located at the first column of the next line.
+		 * If this position is located at the last line, an empty
+		 * {@link Optional} is returned.
+		 *
+		 * @return
+		 * 		The position located at the first column of the next line.
+		 * @throws IOException
+		 * 		If an error occurred while reading the file content.
+		 */
+		public Optional<Position> nextLine() throws IOException {
+			final List<String> lines = file.readLines();
+			Validate.validateState(lines.size() >= line);
+			if (lines.size() == line) {
+				return Optional.empty();
+			}
+			return Optional.of(file.positionOf(line + 1, 1, tabSize));
+		}
+
+		/**
+		 * Returns the position located at the last column of the previous
+		 * line. If this position is located at the first line, an empty
+		 * {@link Optional} is returned.
+		 *
+		 * @return
+		 * 		The position located at the last column of the previous line.
+		 * @throws IOException
+		 * 		If an error occurred while reading the file content.
+		 */
+		public Optional<Position> previousLine() throws IOException {
+			final List<String> lines = file.readLines();
+			Validate.validateState(lines.size() >= line);
+			if (line == 1) {
+				return Optional.empty();
+			}
+			return Optional.of(file.positionOf(
+					file.positionOf(line, 1, tabSize).offset - 1,
+					tabSize));
 		}
 	}
 
@@ -498,18 +552,8 @@ public interface VCSFile extends VCSModelElement {
 		public Optional<Range> apply(final FileChange fileChange)
 				throws NullPointerException, IOException {
 			Validate.notNull(fileChange);
-
-			// Ignore removed files.
-			if (fileChange.getType() == FileChange.Type.REMOVE) {
-				return Optional.empty();
-			}
-
-			// Delegate call to positions.
-			final VCSFile newFile = fileChange.getNewFile()
-					.orElseThrow(IllegalStateException::new);
 			final Optional<Position> newBegin = begin.apply(fileChange);
 			final Optional<Position> newEnd = end.apply(fileChange);
-
 			return newBegin.isPresent() && newEnd.isPresent()
 					? Optional.of(new Range(newBegin.get(), newEnd.get()))
 					: Optional.empty();

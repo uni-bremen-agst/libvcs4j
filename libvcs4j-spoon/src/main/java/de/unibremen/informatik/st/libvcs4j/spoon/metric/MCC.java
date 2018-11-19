@@ -1,60 +1,85 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.metric;
 
-import spoon.reflect.code.*;
-import spoon.reflect.declaration.*;
+import spoon.reflect.code.CtAssert;
+import spoon.reflect.code.CtConditional;
+import spoon.reflect.code.CtDo;
+import spoon.reflect.code.CtFor;
+import spoon.reflect.code.CtForEach;
+import spoon.reflect.code.CtIf;
+import spoon.reflect.code.CtSwitch;
+import spoon.reflect.code.CtWhile;
+import spoon.reflect.declaration.CtAnnotation;
+import spoon.reflect.declaration.CtClass;
+import spoon.reflect.declaration.CtConstructor;
+import spoon.reflect.declaration.CtEnum;
+import spoon.reflect.declaration.CtExecutable;
+import spoon.reflect.declaration.CtInterface;
+import spoon.reflect.declaration.CtMethod;
+import spoon.reflect.declaration.CtType;
 
 import java.lang.annotation.Annotation;
 import java.util.Optional;
 
 /**
- * This visitor gathers the 'McCabe complexity' metric for {@link CtClass},
+ * This scanner gathers the 'McCabe Complexity' metric for {@link CtClass},
  * {@link CtInterface} (since Java 8 interfaces may have default
  * implementations), {@link CtEnum}, {@link CtAnnotation}, {@link CtMethod},
- * and {@link CtConstructor} elements. Use {@link #MCCOf(CtType)}},
- * {@link #MCCOf(CtAnnotation)}, or {@link #MCCOf(CtExecutable)} to get the
- * metric for a given element.
+ * and {@link CtConstructor} elements.
  */
-public class MCC extends IntMetric {
+public class MCC extends IntGatherer {
 
 	/**
 	 * The initial metric value.
 	 */
 	private static final int INITIAL_VALUE = 1;
 
+	@Override
+	protected String name() {
+		return "MCC";
+	}
+
+	@Override
+	protected String abbreviation() {
+		return "McCabe Complexity";
+	}
+
 	/**
-	 * Returns the 'McCabe complexity' metric of {@code type}. Returns an empty
-	 * {@link Optional} if {@code type} is {@code null}.
+	 * Returns the 'McCabe Complexity' metric of {@code type}. Returns an empty
+	 * {@link Optional} if {@code type} is {@code null}, or if {@code type} was
+	 * not scanned.
 	 *
 	 * @param type
-	 * 		The type whose 'McCabe complexity' metric is requested.
+	 * 		The type whose 'McCabe Complexity' metric is requested.
 	 * @return
-	 * 		The 'McCabe complexity' metric of {@code type}.
+	 * 		The 'McCabe Complexity' metric of {@code type}.
 	 */
 	public Optional<Integer> MCCOf(final CtType type) {
 		return metricOf(type);
 	}
 
 	/**
-	 * Returns the 'McCabe complexity' metric of {@code annotation}. Returns an
-	 * empty {@link Optional} if {@code annotation} is {@code null}.
+	 * Returns the 'McCabe Complexity' metric of {@code annotation}. Returns an
+	 * empty {@link Optional} if {@code annotation} is {@code null}, or if
+	 * {@code annotation} was not scanned.
 	 *
 	 * @param annotation
-	 * 		The annotation whose 'McCabe complexity' metric is requested.
+	 * 		The annotation whose 'McCabe Complexity' metric is requested.
 	 * @return
-	 * 		The 'McCabe complexity' metric of {@code annotation}.
+	 * 		The 'McCabe Complexity' metric of {@code annotation}.
 	 */
 	public Optional<Integer> MCCOf(final CtAnnotation annotation) {
 		return metricOf(annotation);
 	}
 
 	/**
-	 * Returns the 'McCabe complexity' metric of {@code executable}. Returns an
-	 * empty {@link Optional} if {@code executable} is {@code null}.
+	 * Returns the 'McCabe Complexity' metric of {@code executable}. Returns an
+	 * empty {@link Optional} if {@code executable} is {@code null}, or if
+	 * {@code executable} was not scanned.
 	 *
 	 * @param executable
-	 * 		The expression whose 'McCabe complexity' metric is requested.
+	 * 		The expression whose 'McCabe Complexity' metric is requested.
 	 * @return
-	 * 		The 'McCabe complexity' metric of {@code executable}.
+	 * 		The 'McCabe Complexity' metric of {@code executable}.
 	 */
 	public Optional<Integer> MCCOf(final CtExecutable executable) {
 		return metricOf(executable);

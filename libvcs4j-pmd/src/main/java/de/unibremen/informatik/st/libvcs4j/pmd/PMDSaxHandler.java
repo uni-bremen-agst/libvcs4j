@@ -74,7 +74,7 @@ class PMDSaxHandler extends DefaultHandler {
 	public void startDocument() throws SAXException {
 		violations.clear();
 		absolutePath2File.clear();
-		files.stream().map(f -> absolutePath2File.put(f.getPath(), f));
+		files.forEach(f -> absolutePath2File.put(f.getPath(), f));
 		super.startDocument();
 	}
 
