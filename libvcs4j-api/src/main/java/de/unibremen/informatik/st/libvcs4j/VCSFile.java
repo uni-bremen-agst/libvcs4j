@@ -170,7 +170,7 @@ public interface VCSFile extends VCSModelElement {
 			Validate.isTrue(fileChange.getOldFile().isPresent(),
 					"The given file change has no old file.");
 			final VCSFile oldFile = fileChange.getOldFile().get();
-			Validate.isEqualTo(oldFile, file,
+			Validate.isEqualTo(oldFile, getFile(),
 					"The given file change references an invalid file.");
 
 			// Ignore removed files.
@@ -241,12 +241,13 @@ public interface VCSFile extends VCSModelElement {
 		 * 		If an error occurred while reading the file content.
 		 */
 		public Optional<Position> nextLine() throws IOException {
-			final List<String> lines = file.readLines();
-			Validate.validateState(lines.size() >= line);
-			if (lines.size() == line) {
+			final List<String> lines = getFile().readLines();
+			Validate.validateState(lines.size() >= getLine());
+			if (lines.size() == getLine()) {
 				return Optional.empty();
 			}
-			return Optional.of(file.positionOf(line + 1, 1, tabSize));
+			return Optional.of(getFile().positionOf(
+					getLine() + 1, 1, getTabSize()));
 		}
 
 		/**
@@ -260,14 +261,15 @@ public interface VCSFile extends VCSModelElement {
 		 * 		If an error occurred while reading the file content.
 		 */
 		public Optional<Position> previousLine() throws IOException {
-			final List<String> lines = file.readLines();
-			Validate.validateState(lines.size() >= line);
-			if (line == 1) {
+			final List<String> lines = getFile().readLines();
+			Validate.validateState(lines.size() >= getLine());
+			if (getLine() == 1) {
 				return Optional.empty();
 			}
-			return Optional.of(file.positionOf(
-					file.positionOf(line, 1, tabSize).offset - 1,
-					tabSize));
+			final Position begin = getFile().positionOf(
+					getLine(), 1, getTabSize());
+			return Optional.of(getFile().positionOf(
+					begin.getOffset() - 1, getTabSize()));
 		}
 	}
 
@@ -458,7 +460,7 @@ public interface VCSFile extends VCSModelElement {
 		 * 		The referenced. file.
 		 */
 		public VCSFile getFile() {
-			return begin.getFile();
+			return getBegin().getFile();
 		}
 
 		/**
@@ -468,7 +470,7 @@ public interface VCSFile extends VCSModelElement {
 		 * 		The length of this range.
 		 */
 		public int length() {
-			return (end.getOffset() + 1) - begin.getOffset();
+			return (getEnd().getOffset() + 1) - getBegin().getOffset();
 		}
 
 		/**
@@ -481,7 +483,7 @@ public interface VCSFile extends VCSModelElement {
 		 */
 		public String readContent() throws IOException {
 			return getFile().readeContent().substring(
-					begin.getOffset(), end.getOffset() + 1);
+					getBegin().getOffset(), getEnd().getOffset() + 1);
 		}
 
 		/**
@@ -530,11 +532,12 @@ public interface VCSFile extends VCSModelElement {
 		}
 
 		/**
-		 * Delegates {@code fileChange} to {@link #begin} and {@link #end} (see
-		 * {@link Position#apply(FileChange)}) and computes the resulting
-		 * range. Returns an empty Optional if {@code fileChange} is of type
-		 * {@link FileChange.Type#REMOVE}, or if {@link #begin} or {@link #end}
-		 * returns an empty {@link Optional}.
+		 * Delegates {@code fileChange} to {@link #getBegin()} and
+		 * {@link #getEnd()} (see {@link Position#apply(FileChange)}) and
+		 * computes the resulting range. Returns an empty Optional if
+		 * {@code fileChange} is of type {@link FileChange.Type#REMOVE}, or if
+		 * {@link #getBegin()} or {@link #getEnd()} returns an empty
+		 * {@link Optional}.
 		 *
 		 * @param fileChange
 		 * 		The file change to apply.
@@ -552,8 +555,8 @@ public interface VCSFile extends VCSModelElement {
 		public Optional<Range> apply(final FileChange fileChange)
 				throws NullPointerException, IOException {
 			Validate.notNull(fileChange);
-			final Optional<Position> newBegin = begin.apply(fileChange);
-			final Optional<Position> newEnd = end.apply(fileChange);
+			final Optional<Position> newBegin = getBegin().apply(fileChange);
+			final Optional<Position> newEnd = getEnd().apply(fileChange);
 			return newBegin.isPresent() && newEnd.isPresent()
 					? Optional.of(new Range(newBegin.get(), newEnd.get()))
 					: Optional.empty();
