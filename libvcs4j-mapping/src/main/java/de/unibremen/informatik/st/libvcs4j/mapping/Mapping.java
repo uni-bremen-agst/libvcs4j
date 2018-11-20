@@ -412,7 +412,7 @@ public class Mapping<T> {
 				.forEach(predecessor ->
 						to.forEach(successor -> {
 							if (predecessor.getSignature().get()
-									.equals(successor.getSignature())) {
+									.equals(successor.getSignature().get())) {
 								result.put(predecessor, successor);
 							}
 						}));
