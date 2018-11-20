@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -92,14 +93,52 @@ public class PositionTest {
 		when(file.readLines()).thenReturn(lines);
 		when(file.readLinesWithEOL()).thenReturn(linesEOL);
 		when(file.positionOf(2, 2, 3)).thenCallRealMethod();
-		when(file.positionOf(1, 3, 3)).thenCallRealMethod();
+		when(file.positionOf(1, 1, 3)).thenCallRealMethod();
 
 		VCSFile.Position position = file.positionOf(2, 2, 3);
 		VCSFile.Position previous = position.previousLine()
 				.orElseThrow(AssertionError::new);
 		assertThat(previous.getLine()).isEqualTo(1);
-		assertThat(previous.getColumn()).isEqualTo(3);
+		assertThat(previous.getColumn()).isEqualTo(1);
 		assertThat(previous.getTabSize()).isEqualTo(3);
-		assertThat(previous.getOffset()).isEqualTo(2);
+		assertThat(previous.getOffset()).isEqualTo(0);
+	}
+
+	@Test
+	public void beginOfLine() throws IOException {
+		List<String> lines = Collections.singletonList(
+				"lorem ipsum dolor sit");
+
+		VCSFile file = mock(VCSFile.class);
+		when(file.readLines()).thenReturn(lines);
+		when(file.readLinesWithEOL()).thenReturn(lines);
+		when(file.positionOf(1, 7, 8)).thenCallRealMethod();
+		when(file.positionOf(1, 1, 8)).thenCallRealMethod();
+
+		VCSFile.Position position = file.positionOf(1, 7, 8);
+		VCSFile.Position beginOfLine = position.beginOfLine();
+		assertThat(beginOfLine.getLine()).isEqualTo(1);
+		assertThat(beginOfLine.getColumn()).isEqualTo(1);
+		assertThat(beginOfLine.getTabSize()).isEqualTo(8);
+		assertThat(beginOfLine.getOffset()).isEqualTo(0);
+	}
+
+	@Test
+	public void endOfLine() throws IOException {
+		List<String> lines = Collections.singletonList(
+				"lorem ipsum dolor sit");
+
+		VCSFile file = mock(VCSFile.class);
+		when(file.readLines()).thenReturn(lines);
+		when(file.readLinesWithEOL()).thenReturn(lines);
+		when(file.positionOf(1, 9, 7)).thenCallRealMethod();
+		when(file.positionOf(1, 21, 7)).thenCallRealMethod();
+
+		VCSFile.Position position = file.positionOf(1, 9, 7);
+		VCSFile.Position endOfLine = position.endOfLine();
+		assertThat(endOfLine.getLine()).isEqualTo(1);
+		assertThat(endOfLine.getColumn()).isEqualTo(21);
+		assertThat(endOfLine.getTabSize()).isEqualTo(7);
+		assertThat(endOfLine.getOffset()).isEqualTo(20);
 	}
 }

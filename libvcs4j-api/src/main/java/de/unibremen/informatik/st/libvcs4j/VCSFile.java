@@ -246,19 +246,17 @@ public interface VCSFile extends VCSModelElement {
 			if (lines.size() == getLine()) {
 				return Optional.empty();
 			}
-			final int line = getLine() + 1;
-			final int column = 1;
 			return Optional.of(getFile().positionOf(
-					line, column, getTabSize()));
+					getLine() + 1, 1, getTabSize()));
 		}
 
 		/**
-		 * Returns the position located at the last column of the previous
+		 * Returns the position located at the first column of the previous
 		 * line. If this position is located at the first line, an empty
 		 * {@link Optional} is returned.
 		 *
 		 * @return
-		 * 		The position located at the last column of the previous line.
+		 * 		The position located at the first column of the previous line.
 		 * @throws IOException
 		 * 		If an error occurred while reading the file content.
 		 */
@@ -268,10 +266,36 @@ public interface VCSFile extends VCSModelElement {
 			if (getLine() == 1) {
 				return Optional.empty();
 			}
-			final int line = getLine() - 1;
-			final int column = lines.get(getLine() - 2).length();
 			return Optional.of(getFile().positionOf(
-					line, column, getTabSize()));
+					getLine() - 1, 1, getTabSize()));
+		}
+
+		/**
+		 * Returns the position located at the first column of the current
+		 * line.
+		 *
+		 * @return
+		 * 		The position located at the first column of the current line.
+		 * @throws IOException
+		 * 		If an error occurred while reading the file content.
+		 */
+		public Position beginOfLine() throws IOException {
+			return getFile().positionOf(getLine(), 1, getTabSize());
+		}
+
+		/**
+		 * Returns the position located at the last column of the current line.
+		 *
+		 * @return
+		 * 		The position located at the last column of the current line.
+		 * @throws IOException
+		 * 		If an error occurred while reading the file content.
+		 */
+		public Position endOfLine() throws IOException {
+			final List<String> lines = getFile().readLines();
+			Validate.validateState(lines.size() >= getLine());
+			final int column = lines.get(getLine() - 1).length();
+			return getFile().positionOf(getLine(), column, getTabSize());
 		}
 	}
 

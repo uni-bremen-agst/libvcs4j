@@ -8,7 +8,14 @@ import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.reflect.cu.SourcePosition;
+import spoon.reflect.declaration.CtConstructor;
 import spoon.reflect.declaration.CtElement;
+import spoon.reflect.declaration.CtExecutable;
+import spoon.reflect.declaration.CtField;
+import spoon.reflect.declaration.CtMethod;
+import spoon.reflect.declaration.CtPackage;
+import spoon.reflect.declaration.CtType;
+import spoon.reflect.declaration.CtTypeInformation;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -53,24 +60,27 @@ public abstract class CodeSmellDetector {
 	}
 
 	/**
-	 * Tries to add the given element and its metrics as a {@link CodeSmell}.
-	 * On success, the newly created code smell is returned. On failure, an
-	 * empty {@link Optional} is returned. Adding an element may fail, for
-	 * example, if the element is implicit ({@link CtElement#isImplicit()}) or
-	 * has no position ({@link SourcePosition#NOPOSITION}).
+	 * Tries to add the given element, its metrics, and its signature (may be
+	 * {@code null}) as a {@link CodeSmell}. On success, the newly created code
+	 * smell is returned. On failure, an empty {@link Optional} is returned.
+	 * Adding an element may fail, for example, if the element is implicit or
+	 * has no position (see {@link CtElement#isImplicit()} and
+	 * {@link SourcePosition#NOPOSITION}).
 	 *
 	 * @param element
-	 * 		The element to add as a code smell.
+	 * 		The element to add as code smell.
 	 * @param metrics
 	 * 		The metrics of {@code element}.
+	 * @param signature
+	 * 		The signature of {@code element}. May be {@code null}.
 	 * @return
 	 * 		The newly created code smell.
 	 */
 	protected Optional<CodeSmell> addCodeSmell(final CtElement element,
-			final List<Metric> metrics) {
+			final List<Metric> metrics, final String signature) {
 		if (filter(element, metrics)) {
-			log.debug("Filtering out element: '{}'",
-					element.getShortRepresentation());
+			log.debug("Filtering out element: '{}'", element == null
+					? null : element.getShortRepresentation());
 			return Optional.empty();
 		}
 
@@ -87,7 +97,7 @@ public abstract class CodeSmellDetector {
 					position.getSourceStart(), position.getSourceEnd(),
 					tabSizeOf(element));
 			final CodeSmell codeSmell = new CodeSmell(getDefinition(),
-					metrics, Collections.singletonList(range));
+					metrics, Collections.singletonList(range), signature);
 			codeSmells.add(codeSmell);
 			return Optional.of(codeSmell);
 		} catch (final IOException e) {
@@ -97,33 +107,35 @@ public abstract class CodeSmellDetector {
 	}
 
 	/**
-	 * Tries to add the given element range and its metric as a
-	 * {@link CodeSmell}. On success, the newly created code smell is returned.
-	 * On failure, an empty {@link Optional} is returned. Adding an element
-	 * range may fail, for example, if {@code from} or {@code to} are implicit
-	 * ({@link CtElement#isImplicit()}) or have no position
-	 * ({@link SourcePosition#NOPOSITION}). However, if {@code from} and
-	 * {@code to} are located in different files, an
-	 * {@link IllegalArgumentException} is thrown.
+	 * Tries to add the given element range, its metrics, and its signature
+	 * (may be {@code null}) as a {@link CodeSmell}. On success, the newly
+	 * created code smell is returned. On failure, an empty {@link Optional} is
+	 * returned. Adding an element range may fail, for example, if {@code from}
+	 * or {@code to} are implicit ({@link CtElement#isImplicit()}) or have no
+	 * position ({@link SourcePosition#NOPOSITION}).
 	 *
 	 * @param from
 	 * 		The from element.
 	 * @param to
 	 * 		The to element.
 	 * @param metrics
-	 * 		The metrics of the code smell.
+	 * 		The metrics of of the element range.
+	 * @param signature
+	 * 		The signature of the element range. May be {@code null}.
 	 * @return
 	 * 		The newly created code smell.
 	 * @throws IllegalArgumentException
 	 * 		If {@code from} and {@code to} are located in different files.
 	 */
 	protected Optional<CodeSmell> addCodeSmellRange(final CtElement from,
-			final CtElement to, final List<Metric> metrics)
+			final CtElement to, final List<Metric> metrics,
+			final String signature)
 			throws IllegalArgumentException {
 		if (filter(Arrays.asList(from, to), metrics)) {
 			log.debug("Filtering out range: '{}' to '{}'",
-					from.getShortRepresentation(),
-					to.getShortRepresentation());
+					from == null ? null : from.getShortRepresentation(),
+					to   == null ? null : to.getShortRepresentation());
+			return Optional.empty();
 		}
 
 		final SourcePosition fromPosition = from.getPosition();
@@ -142,7 +154,7 @@ public abstract class CodeSmellDetector {
 					fromPosition.getSourceStart(), toPosition.getSourceEnd(),
 					tabSizeOf(from));
 			final CodeSmell codeSmell = new CodeSmell(getDefinition(),
-					metrics, Collections.singletonList(range));
+					metrics, Collections.singletonList(range), signature);
 			codeSmells.add(codeSmell);
 			return Optional.of(codeSmell);
 		} catch (final IOException e) {
@@ -153,29 +165,32 @@ public abstract class CodeSmellDetector {
 	}
 
 	/**
-	 * Tries to add the given list of elements and their metrics as a
-	 * {@link CodeSmell} with multiple ranges ({@link CodeSmell#getRanges()}).
-	 * On success, the newly created code smell is returned. On failure, an
-	 * empty {@link Optional} is returned. Adding a list of elements may fail,
-	 * for example, if any its element is implicit
-	 * ({@link CtElement#isImplicit()}) or has not position
+	 * Tries to add the given list of elements, their metrics, and their
+	 * signature (may be {@code null}) as a {@link CodeSmell} with multiple
+	 * ranges. On success, the newly created code smell is returned. On
+	 * failure, an empty {@link Optional} is returned. Adding a list of
+	 * elements may fail, for example, if any of its element is implicit
+	 * ({@link CtElement#isImplicit()}) or has no position
 	 * ({@link SourcePosition#NOPOSITION}).
 	 *
 	 * @param elements
 	 * 		The list of elements to add as code smell.
 	 * @param metrics
 	 * 		The metrics of {@code elements}.
+	 * @param signature
+	 * 		The signature of {@code elements}. May be {@code null}.
 	 * @return
 	 * 		The newly created code smell.
 	 */
 	public Optional<CodeSmell> addCodeSmellWithMultiplePositions(
-			final List<CtElement> elements, final List<Metric> metrics) {
-		if (elements.isEmpty()) {
-			log.debug("Skipping empty element list");
-		} else if (filter(elements, metrics)) {
-			log.debug("Filtering out element list: '{}'", elements.stream()
-					.map(e -> e != null ? e.getShortRepresentation() : null)
+			final List<CtElement> elements, final List<Metric> metrics,
+			final String signature) {
+		if (filter(elements, metrics)) {
+			log.debug("Filtering out element list: '{}'", elements == null
+					? null : elements.stream()
+					.map(e -> e == null ? null : e.getShortRepresentation())
 					.collect(Collectors.toList()));
+			return Optional.empty();
 		}
 
 		List<VCSFile.Range> ranges = new ArrayList<>();
@@ -200,11 +215,56 @@ public abstract class CodeSmellDetector {
 			return Optional.empty();
 		}
 		final CodeSmell codeSmell = new CodeSmell(getDefinition(), metrics,
-				ranges);
+				ranges, signature);
 		codeSmells.add(codeSmell);
 		return Optional.of(codeSmell);
 	}
 
+	/**
+	 * Tries to create a signature for {@code element}.
+	 *
+	 * @param element
+	 * 		The element for which the signature is requested.
+	 * @return
+	 * 		The signature of {@code element}.
+	 */
+	public Optional<String> createSignature(final CtElement element) {
+		try {
+			if (element instanceof CtPackage) {
+				final CtPackage pkg = (CtPackage) element;
+				return Optional.of(pkg.getQualifiedName());
+			} else if (element instanceof CtTypeInformation) {
+				final CtTypeInformation info = (CtTypeInformation) element;
+				return Optional.of(info.getQualifiedName());
+			} else if (element instanceof CtConstructor) {
+				final CtConstructor constructor = (CtConstructor) element;
+				return Optional.of(constructor.getSignature());
+			} else if (element instanceof CtExecutable) {
+				final CtExecutable exe = (CtExecutable) element;
+				return createSignature(exe.getParent(CtType.class))
+						.map(s -> s + CtMethod.EXECUTABLE_SEPARATOR)
+						.map(s -> s + exe.getSignature());
+			} else if (element instanceof CtField) {
+				final CtField field = (CtField) element;
+				return createSignature(field.getDeclaringType())
+						.map(s -> s + CtField.FIELD_SEPARATOR)
+						.map(s -> s + field.getSimpleName());
+			}
+			return Optional.empty();
+		} catch (final NullPointerException e) {
+			return Optional.empty();
+		}
+	}
+
+	/**
+	 * Maps a Spoon position ({@link SourcePosition}) to the {@link VCSFile}
+	 * that contains this position.
+	 *
+	 * @param position
+	 * 		The spoon position to map.
+	 * @return
+	 * 		The {@link VCSFile} that contains {@code position}.
+	 */
 	private Optional<VCSFile> findFile(final SourcePosition position) {
 		return Optional.ofNullable(position)
 				// Make position canonical.
@@ -228,10 +288,29 @@ public abstract class CodeSmellDetector {
 				.map(f -> f.orElseGet(null));
 	}
 
+	/**
+	 * Returns the tab size of the file containing {@code element}.
+	 *
+	 * @param element
+	 * 		The element for which the tab size is requested.
+	 * @return
+	 * 		The tab size of the file containing {@code element}.
+	 */
 	private int tabSizeOf(@NonNull final CtElement element) {
 		return element.getFactory().getEnvironment().getTabulationSize();
 	}
 
+	/**
+	 * Returns whether the given elements and metrics should be filtered.
+	 *
+	 * @param elements
+	 * 		The elements to check.
+	 * @param metrics
+	 * 		The metrics to check
+	 * @return
+	 * 		{@code true} if the given elements and metrics should be filtered,
+	 * 		{@code false} otherwise.
+	 */
 	private boolean filter(final List<CtElement> elements,
 			final List<Metric> metrics) {
 		return elements == null || elements.isEmpty() || metrics == null
@@ -242,6 +321,17 @@ public abstract class CodeSmellDetector {
 				|| metrics.stream().anyMatch(Objects::isNull);
 	}
 
+	/**
+	 * Returns whether the given element and metrics should be filtered.
+	 *
+	 * @param element
+	 * 		The element to check.
+	 * @param metrics
+	 * 		The metrics to check.
+	 * @return
+	 * 		{@code true} if the given element and metrics should be filtered,
+	 * 		{@code false} otherwise.
+	 */
 	private boolean filter(final CtElement element,
 			final List<Metric> metrics) {
 		return filter(Collections.singletonList(element), metrics);
