@@ -1,7 +1,9 @@
 package de.unibremen.informatik.st.libvcs4j.mapping;
 
+import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.Validate;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -40,10 +42,10 @@ public class Tracker<T> {
 		final List<Mappable<T>> mappedTo = result.getTo();
 
 		if (mappables.isEmpty()) {
-			mappedTo.forEach(to -> {
-				convertToEntityAndAddToMap(to, localMappables);
-
-			});
+			mappedTo.forEach(to ->
+					convertToEntityAndAddToMap(to,
+							result.getOrdinal(),
+							localMappables));
 		} else {
 			mappedTo.stream()
 					.filter(mappable -> mappables.containsKey(
@@ -51,10 +53,11 @@ public class Tracker<T> {
 					.forEach(to -> {
 						final Mappable<T> predecessor = result.getPredecessor(to).get();
 						final Entity<T> entity = mappables.get(predecessor).getLast();
+						final int numChanges = getNumChanges(predecessor,
+								to,
+								entity.getNumChanges());
 						final Entity<T> successor =
-								new Entity<>(to,
-										result.getOrdinal(),
-										entity.getNumChanges() + 1);
+								new Entity<>(to, result.getOrdinal(), numChanges);
 						final Lifespan<T> updated = mappables.get(predecessor).add(successor);
 						localMappables.put(to, updated);
 						if (!lifespans.contains(updated)) {
@@ -66,9 +69,8 @@ public class Tracker<T> {
 
 
 		final List<Mappable<T>> startingLifespans = result.getStartingLifespans();
-		startingLifespans.forEach(mappable -> {
-			convertToEntityAndAddToMap(mappable, localMappables);
-		});
+		startingLifespans.forEach(mappable -> convertToEntityAndAddToMap(
+				mappable, result.getOrdinal(), localMappables));
 
 		mappables = localMappables;
 	}
@@ -80,15 +82,57 @@ public class Tracker<T> {
 	 *
 	 * @param mappable
 	 * 		The mappable which should be converted.
+	 * @param ordinal
+	 * 		The ordinal of the entity to create. Corresponds to the value of
+	 * 		{@link Mapping.Result#getOrdinal()}.
 	 * @param map
 	 * 		The map on which the new lifespan an its corresponding
 	 * 		{@link Lifespan} should be put.
 	 */
 	private void convertToEntityAndAddToMap(final Mappable<T> mappable,
+											final int ordinal,
 											final Map<Mappable<T>, Lifespan<T>> map) {
-		final Entity<T> entity = new Entity<>(mappable);
+		final Entity<T> entity = new Entity<>(mappable, ordinal, 1);
 		final Lifespan<T> startingLifespan = new Lifespan<>(entity);
 		lifespans.add(startingLifespan);
 		map.put(mappable, startingLifespan);
+	}
+
+	/**
+	 * Increments the given last number of changes, if there is a change present.
+	 *
+	 * @param predecessor
+	 * 		The predecessor mappable.
+	 * @param successor
+	 *		The successor mappable.
+	 * @param lastNumChanges
+	 * 		The number of changes, that will be incremented.
+	 * @return
+	 * 		The incremented number of changes.
+	 */
+	private int getNumChanges(final Mappable<T> predecessor,
+							  final Mappable<T> successor,
+							  final int lastNumChanges) {
+		for (final VCSFile.Range predRange : predecessor.getRanges()) {
+			for (final VCSFile.Range succRange : successor.getRanges()) {
+				try {
+					if (predRange.getBegin().getOffset()
+							== succRange.getBegin().getOffset()
+							&& predRange.getEnd().getOffset()
+							== succRange.getEnd().getOffset()
+							&& !predRange.readContent().equals(
+									succRange.readContent())) {
+						return lastNumChanges + 1;
+					}
+				} catch (IOException e) {
+					throw new IllegalStateException(e);
+				}
+			}
+		}
+		return lastNumChanges;
+	}
+
+	public List<Lifespan<T>> getLifespans() {
+		return lifespans;
 	}
 }
