@@ -26,7 +26,10 @@ import java.util.stream.Collectors;
 public interface VCSFile extends VCSModelElement {
 
 	/**
-	 * A position within a file.
+	 * A position within a file. Can not point to new line delimiters, such as
+	 * '\n', '\r', and '\r\n', as a line of text does not include new lines
+	 * characters. Use {@link VCSFile#positionOf(int, int, int)} or
+	 * {@link VCSFile#positionOf(int, int)} to create instances of this class.
 	 */
 	class Position {
 
@@ -852,7 +855,7 @@ public interface VCSFile extends VCSModelElement {
 	}
 
 	/**
-	 * Creates a position from the the given offset tab size.
+	 * Creates a position from the the given offset and tab size.
 	 *
 	 * @param offset
 	 * 		The number of characters to move to reach a position.
@@ -902,6 +905,10 @@ public interface VCSFile extends VCSModelElement {
 				}
 				// Calculate column based on the number of tabs found.
 				final int column = offsStr.length() + (tabs * (tabSize - 1));
+				if (offsStr.endsWith("\n") || offsStr.endsWith("\r")
+						|| offsStr.endsWith("\r\n")) {
+					throw new IndexOutOfBoundsException();
+				}
 				return new Position(this, line, column, offset, tabSize);
 			}
 		}
