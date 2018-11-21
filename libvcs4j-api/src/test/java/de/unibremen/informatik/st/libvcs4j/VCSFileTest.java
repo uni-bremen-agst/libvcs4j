@@ -17,7 +17,8 @@ public class VCSFileTest {
 	@Test
 	public void readLinesEOLUnixEOL() throws IOException {
 		VCSFile file = mock(VCSFile.class);
-		when(file.readeContent()).thenReturn("first line\nsecond line\n");
+		when(file.readeContent()).thenReturn(
+				"first line\nsecond line\n");
 		when(file.readLinesWithEOL()).thenCallRealMethod();
 
 		List<String> lines = file.readLinesWithEOL();
@@ -29,7 +30,8 @@ public class VCSFileTest {
 	@Test
 	public void readLinesEOLWindowsEOL() throws IOException {
 		VCSFile file = mock(VCSFile.class);
-		when(file.readeContent()).thenReturn("first line\r\nsecond line\r\n");
+		when(file.readeContent()).thenReturn(
+				"first line\r\nsecond line\r\n");
 		when(file.readLinesWithEOL()).thenCallRealMethod();
 
 		List<String> lines = file.readLinesWithEOL();
@@ -41,7 +43,8 @@ public class VCSFileTest {
 	@Test
 	public void readLinesEOLOldMacEOL() throws IOException {
 		VCSFile file = mock(VCSFile.class);
-		when(file.readeContent()).thenReturn("first line\rsecond line\r");
+		when(file.readeContent()).thenReturn(
+				"first line\rsecond line\r");
 		when(file.readLinesWithEOL()).thenCallRealMethod();
 
 		List<String> lines = file.readLinesWithEOL();
@@ -53,7 +56,8 @@ public class VCSFileTest {
 	@Test
 	public void readLinesEOLMixedEOL() throws IOException {
 		VCSFile file = mock(VCSFile.class);
-		when(file.readeContent()).thenReturn("first\rsecond\r\nthird\n");
+		when(file.readeContent()).thenReturn(
+				"first\rsecond\r\nthird\n");
 		when(file.readLinesWithEOL()).thenCallRealMethod();
 
 		List<String> lines = file.readLinesWithEOL();
@@ -65,7 +69,8 @@ public class VCSFileTest {
 	@Test
 	public void readLinesEOLWithoutLastEOL() throws IOException {
 		VCSFile file = mock(VCSFile.class);
-		when(file.readeContent()).thenReturn("foo\nbar");
+		when(file.readeContent()).thenReturn(
+				"foo\nbar");
 		when(file.readLinesWithEOL()).thenCallRealMethod();
 
 		List<String> lines = file.readLinesWithEOL();
@@ -87,7 +92,8 @@ public class VCSFileTest {
 	@Test
 	public void readLinesMixedEOL() throws IOException {
 		VCSFile file = mock(VCSFile.class);
-		when(file.readeContent()).thenReturn("first\rsecond\r\nthird\n");
+		when(file.readeContent()).thenReturn(
+				"first\rsecond\r\nthird\n");
 		when(file.readLines()).thenCallRealMethod();
 
 		List<String> lines = file.readLines();
@@ -108,9 +114,10 @@ public class VCSFileTest {
 	}
 
 	@Test
-	public void mapOffset() throws IOException {
+	public void positionOfOffset() throws IOException {
 		VCSFile file = mock(VCSFile.class);
-		when(file.readeContent()).thenReturn("first line\nsecond line");
+		when(file.readeContent()).thenReturn(
+				"first line\nsecond line");
 		when(file.readLinesWithEOL()).thenCallRealMethod();
 		when(file.positionOf(4, 4)).thenCallRealMethod();
 		when(file.positionOf(14, 4)).thenCallRealMethod();
@@ -136,7 +143,7 @@ public class VCSFileTest {
 	}
 
 	@Test
-	public void mapOffsetEmptyString() throws IOException {
+	public void positionOfOffsetEmptyString() throws IOException {
 		VCSFile file = mock(VCSFile.class);
 		when(file.readeContent()).thenReturn("");
 		when(file.readLinesWithEOL()).thenCallRealMethod();
@@ -147,9 +154,32 @@ public class VCSFileTest {
 	}
 
 	@Test
-	public void mapLineAndColumn() throws IOException {
+	public void positionOfOffsetInEOL() throws IOException {
 		VCSFile file = mock(VCSFile.class);
-		when(file.readeContent()).thenReturn("first line\nsecond line");
+		when(file.readeContent()).thenReturn(
+				"first\nsecond\rthird\r\nforth");
+		when(file.readLinesWithEOL()).thenCallRealMethod();
+
+		when(file.positionOf(5, 4)).thenCallRealMethod();
+		when(file.positionOf(12, 4)).thenCallRealMethod();
+		when(file.positionOf(18, 4)).thenCallRealMethod();
+		when(file.positionOf(19, 4)).thenCallRealMethod();
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class)
+				.isThrownBy(() -> file.positionOf(5, 4));
+		assertThatExceptionOfType(IndexOutOfBoundsException.class)
+				.isThrownBy(() -> file.positionOf(12, 4));
+		assertThatExceptionOfType(IndexOutOfBoundsException.class)
+				.isThrownBy(() -> file.positionOf(18, 4));
+		assertThatExceptionOfType(IndexOutOfBoundsException.class)
+				.isThrownBy(() -> file.positionOf(19, 4));
+	}
+
+	@Test
+	public void positionOfLineAndColumn() throws IOException {
+		VCSFile file = mock(VCSFile.class);
+		when(file.readeContent()).thenReturn(
+				"first line\nsecond line");
 		when(file.readLinesWithEOL()).thenCallRealMethod();
 
 		when(file.positionOf(1, 6, 4)).thenCallRealMethod();
@@ -176,9 +206,21 @@ public class VCSFileTest {
 	}
 
 	@Test
-	public void mapLineAndColumnWithDifferentTabSizes() throws IOException {
+	public void positionOfLienAndColumnEmptyString() throws IOException {
 		VCSFile file = mock(VCSFile.class);
-		when(file.readeContent()).thenReturn("foo\tbar\tfoobar");
+		when(file.readeContent()).thenReturn("");
+		when(file.readLinesWithEOL()).thenCallRealMethod();
+		when(file.positionOf(1, 1, 4)).thenCallRealMethod();
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class)
+				.isThrownBy(() -> file.positionOf(1, 1, 4));
+	}
+
+	@Test
+	public void positionOfLineAndColumnDifferentTabSizes() throws IOException {
+		VCSFile file = mock(VCSFile.class);
+		when(file.readeContent()).thenReturn(
+				"foo\tbar\tfoobar");
 		when(file.readLinesWithEOL()).thenCallRealMethod();
 
 		when(file.positionOf(1, 8, 4)).thenCallRealMethod();
@@ -223,5 +265,27 @@ public class VCSFileTest {
 		assertThat(p6.getColumn()).isEqualTo(12);
 		assertThat(p6.getTabSize()).isEqualTo(2);
 		assertThat(p6.getOffset()).isEqualTo(11);
+	}
+
+	@Test
+	public void positionOfLineAndColumnInEOL() throws IOException {
+		VCSFile file = mock(VCSFile.class);
+		when(file.readeContent()).thenReturn(
+				"first\nsecond\rthird\r\nforth");
+		when(file.readLinesWithEOL()).thenCallRealMethod();
+
+		when(file.positionOf(1, 6, 4)).thenCallRealMethod();
+		when(file.positionOf(2, 7, 4)).thenCallRealMethod();
+		when(file.positionOf(3, 6, 4)).thenCallRealMethod();
+		when(file.positionOf(3, 7, 4)).thenCallRealMethod();
+
+		assertThatExceptionOfType(IndexOutOfBoundsException.class)
+				.isThrownBy(() -> file.positionOf(1, 6, 4));
+		assertThatExceptionOfType(IndexOutOfBoundsException.class)
+				.isThrownBy(() -> file.positionOf(2, 7, 4));
+		assertThatExceptionOfType(IndexOutOfBoundsException.class)
+				.isThrownBy(() -> file.positionOf(3, 6, 4));
+		assertThatExceptionOfType(IndexOutOfBoundsException.class)
+				.isThrownBy(() -> file.positionOf(3, 7, 4));
 	}
 }
