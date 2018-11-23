@@ -197,32 +197,62 @@ public interface VCSFile extends VCSModelElement {
 				return Optional.empty();
 			}
 
+			// Find all deletions without insertions and insertions without
+			// deletions.
+			final List<LineChange> changes = fileChange.computeDiff();
+			final List<LineChange> dels = changes.stream()
+					.filter(lc -> lc.getType() == LineChange.Type.DELETE)
+					.sorted(Comparator.comparingInt(LineChange::getLine))
+					.collect(Collectors.toList());
+			final List<LineChange> ins = changes.stream()
+					.filter(lc -> lc.getType() == LineChange.Type.INSERT)
+					.sorted(Comparator.comparingInt(LineChange::getLine))
+					.collect(Collectors.toList());
+			final List<LineChange> delsWithoutIns = new ArrayList<>();
+			final List<LineChange> insWithoutDels = new ArrayList<>();
+			int delsIdx = 0; // Index of the currently processed deletion.
+			int insIdx = 0;  // Index of currently processed insertion.
+			while (delsIdx < dels.size() && insIdx < ins.size()) {
+				final LineChange del = dels.get(delsIdx);
+				final LineChange in = ins.get(insIdx);
+				final int delLine = del.getLine() + insWithoutDels.size();
+				final int inLine = in.getLine() + delsWithoutIns.size();
+				if (delLine == inLine) {
+					delsIdx++;
+					insIdx++;
+				} else if (delLine < inLine) {
+					delsWithoutIns.add(del);
+					delsIdx++;
+				} else {
+					insWithoutDels.add(in);
+					insIdx++;
+				}
+			}
+			for(; delsIdx < dels.size(); delsIdx++) {
+				delsWithoutIns.add(dels.get(delsIdx));
+			}
+			for (; insIdx < ins.size(); insIdx++) {
+				insWithoutDels.add(ins.get(insIdx));
+			}
+
 			// Find all changes applied up to this position.
-			int numIns = 0;
-			final List<LineChange> changes = new ArrayList<>();
-			for (final LineChange lc : fileChange.computeDiff()) {
-				if (lc.getType() == LineChange.Type.INSERT &&
-						// The position of an inserted line is relative to the
-						// position of all previously inserted lines. Thus, we
-						// need to subtract the number of previously inserted
-						// lines before comparing a line's position.
-						lc.getLine() - numIns <= getLine()) {
+			final List<LineChange> relevantChanges = delsWithoutIns.stream()
+					.filter(del -> del.getLine() <= getLine())
+					.collect(Collectors.toList());
+			for (int i = 0, numIns = 0; i < insWithoutDels.size(); i++) {
+				final LineChange in = insWithoutDels.get(i);
+				if (in.getLine() <= getLine() + numIns) {
 					numIns++;
-					changes.add(lc);
-				} else if (lc.getType() == LineChange.Type.DELETE &&
-						// Deleted lines are not relative to the position of
-						// previously changed lines.
-						lc.getLine() <= getLine()) {
-					changes.add(lc);
+					relevantChanges.add(in);
 				}
 			}
 
 			// Has this position been deleted (its corresponding line was
 			// deleted without being inserted)?
-			final boolean lineDeleted = changes.stream()
+			final boolean lineDeleted = relevantChanges.stream()
 					.anyMatch(lc -> lc.getLine() == getLine() &&
 							lc.getType() == LineChange.Type.DELETE);
-			final boolean lineInserted = changes.stream()
+			final boolean lineInserted = relevantChanges.stream()
 					.anyMatch(lc -> lc.getLine() == getLine() &&
 							lc.getType() == LineChange.Type.INSERT);
 			if (lineDeleted && !lineInserted) {
@@ -232,11 +262,11 @@ public interface VCSFile extends VCSModelElement {
 
 			final int line = getLine() -
 					// Remove deleted lines.
-					(int) changes.stream()
+					(int) relevantChanges.stream()
 						.filter(fc -> fc.getType() == LineChange.Type.DELETE)
 						.count() +
 					// Add inserted lines.
-					(int) changes.stream()
+					(int) relevantChanges.stream()
 						.filter(fc -> fc.getType() == LineChange.Type.INSERT)
 						.count();
 			final int column = lineDeleted
