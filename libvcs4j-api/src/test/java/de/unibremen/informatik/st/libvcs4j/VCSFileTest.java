@@ -8,7 +8,6 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -17,7 +16,8 @@ public class VCSFileTest {
 	@Test
 	public void readLinesEOLUnixEOL() throws IOException {
 		VCSFile file = mock(VCSFile.class);
-		when(file.readeContent()).thenReturn("first line\nsecond line\n");
+		when(file.readeContent()).thenReturn(
+				"first line\nsecond line\n");
 		when(file.readLinesWithEOL()).thenCallRealMethod();
 
 		List<String> lines = file.readLinesWithEOL();
@@ -29,7 +29,8 @@ public class VCSFileTest {
 	@Test
 	public void readLinesEOLWindowsEOL() throws IOException {
 		VCSFile file = mock(VCSFile.class);
-		when(file.readeContent()).thenReturn("first line\r\nsecond line\r\n");
+		when(file.readeContent()).thenReturn(
+				"first line\r\nsecond line\r\n");
 		when(file.readLinesWithEOL()).thenCallRealMethod();
 
 		List<String> lines = file.readLinesWithEOL();
@@ -41,7 +42,8 @@ public class VCSFileTest {
 	@Test
 	public void readLinesEOLOldMacEOL() throws IOException {
 		VCSFile file = mock(VCSFile.class);
-		when(file.readeContent()).thenReturn("first line\rsecond line\r");
+		when(file.readeContent()).thenReturn(
+				"first line\rsecond line\r");
 		when(file.readLinesWithEOL()).thenCallRealMethod();
 
 		List<String> lines = file.readLinesWithEOL();
@@ -53,7 +55,8 @@ public class VCSFileTest {
 	@Test
 	public void readLinesEOLMixedEOL() throws IOException {
 		VCSFile file = mock(VCSFile.class);
-		when(file.readeContent()).thenReturn("first\rsecond\r\nthird\n");
+		when(file.readeContent()).thenReturn(
+				"first\rsecond\r\nthird\n");
 		when(file.readLinesWithEOL()).thenCallRealMethod();
 
 		List<String> lines = file.readLinesWithEOL();
@@ -65,7 +68,8 @@ public class VCSFileTest {
 	@Test
 	public void readLinesEOLWithoutLastEOL() throws IOException {
 		VCSFile file = mock(VCSFile.class);
-		when(file.readeContent()).thenReturn("foo\nbar");
+		when(file.readeContent()).thenReturn(
+				"foo\nbar");
 		when(file.readLinesWithEOL()).thenCallRealMethod();
 
 		List<String> lines = file.readLinesWithEOL();
@@ -87,7 +91,8 @@ public class VCSFileTest {
 	@Test
 	public void readLinesMixedEOL() throws IOException {
 		VCSFile file = mock(VCSFile.class);
-		when(file.readeContent()).thenReturn("first\rsecond\r\nthird\n");
+		when(file.readeContent()).thenReturn(
+				"first\rsecond\r\nthird\n");
 		when(file.readLines()).thenCallRealMethod();
 
 		List<String> lines = file.readLines();
@@ -108,27 +113,31 @@ public class VCSFileTest {
 	}
 
 	@Test
-	public void mapOffset() throws IOException {
+	public void positionOfOffset() throws IOException {
 		VCSFile file = mock(VCSFile.class);
-		when(file.readeContent()).thenReturn("first line\nsecond line");
+		when(file.readeContent()).thenReturn(
+				"first line\nsecond line");
 		when(file.readLinesWithEOL()).thenCallRealMethod();
 		when(file.positionOf(4, 4)).thenCallRealMethod();
 		when(file.positionOf(14, 4)).thenCallRealMethod();
 		when(file.positionOf(11, 4)).thenCallRealMethod();
 
-		VCSFile.Position p1 = file.positionOf(4, 4);
+		VCSFile.Position p1 = file.positionOf(4, 4)
+				.orElseThrow(AssertionError::new);
 		assertThat(p1.getOffset()).isEqualTo(4);
 		assertThat(p1.getLine()).isEqualTo(1);
 		assertThat(p1.getColumn()).isEqualTo(5);
 		assertThat(p1.getTabSize()).isEqualTo(4);
 
-		VCSFile.Position p2 = file.positionOf(14, 4);
+		VCSFile.Position p2 = file.positionOf(14, 4)
+				.orElseThrow(AssertionError::new);
 		assertThat(p2.getOffset()).isEqualTo(14);
 		assertThat(p2.getLine()).isEqualTo(2);
 		assertThat(p2.getColumn()).isEqualTo(4);
 		assertThat(p2.getTabSize()).isEqualTo(4);
 
-		VCSFile.Position p3 = file.positionOf(11, 4);
+		VCSFile.Position p3 = file.positionOf(11, 4)
+				.orElseThrow(AssertionError::new);
 		assertThat(p3.getOffset()).isEqualTo(11);
 		assertThat(p3.getLine()).isEqualTo(2);
 		assertThat(p3.getColumn()).isEqualTo(1);
@@ -136,20 +145,38 @@ public class VCSFileTest {
 	}
 
 	@Test
-	public void mapOffsetEmptyString() throws IOException {
+	public void positionOfOffsetEmptyString() throws IOException {
 		VCSFile file = mock(VCSFile.class);
 		when(file.readeContent()).thenReturn("");
 		when(file.readLinesWithEOL()).thenCallRealMethod();
 		when(file.positionOf(1, 4)).thenCallRealMethod();
 
-		assertThatExceptionOfType(IndexOutOfBoundsException.class)
-				.isThrownBy(() -> file.positionOf(1, 4));
+		assertThat(file.positionOf(1, 4)).isEmpty();
 	}
 
 	@Test
-	public void mapLineAndColumn() throws IOException {
+	public void positionOfOffsetInEOL() throws IOException {
 		VCSFile file = mock(VCSFile.class);
-		when(file.readeContent()).thenReturn("first line\nsecond line");
+		when(file.readeContent()).thenReturn(
+				"first\nsecond\rthird\r\nforth");
+		when(file.readLinesWithEOL()).thenCallRealMethod();
+
+		when(file.positionOf(5, 4)).thenCallRealMethod();
+		when(file.positionOf(12, 4)).thenCallRealMethod();
+		when(file.positionOf(18, 4)).thenCallRealMethod();
+		when(file.positionOf(19, 4)).thenCallRealMethod();
+
+		assertThat(file.positionOf(5, 4)).isEmpty();
+		assertThat(file.positionOf(12, 4)).isEmpty();
+		assertThat(file.positionOf(18, 4)).isEmpty();
+		assertThat(file.positionOf(19, 4)).isEmpty();
+	}
+
+	@Test
+	public void positionOfLineAndColumn() throws IOException {
+		VCSFile file = mock(VCSFile.class);
+		when(file.readeContent()).thenReturn(
+				"first line\nsecond line");
 		when(file.readLinesWithEOL()).thenCallRealMethod();
 
 		when(file.positionOf(1, 6, 4)).thenCallRealMethod();
@@ -157,28 +184,39 @@ public class VCSFileTest {
 		when(file.positionOf(1, 11, 4)).thenCallRealMethod();
 		when(file.positionOf(2, 12, 4)).thenCallRealMethod();
 
-		VCSFile.Position p1 = file.positionOf(1, 6, 4);
+		VCSFile.Position p1 = file.positionOf(1, 6, 4)
+				.orElseThrow(AssertionError::new);
 		assertThat(p1.getLine()).isEqualTo(1);
 		assertThat(p1.getColumn()).isEqualTo(6);
 		assertThat(p1.getTabSize()).isEqualTo(4);
 		assertThat(p1.getOffset()).isEqualTo(5);
 
-		VCSFile.Position p2 = file.positionOf(2, 2, 4);
+		VCSFile.Position p2 = file.positionOf(2, 2, 4)
+				.orElseThrow(AssertionError::new);
 		assertThat(p2.getLine()).isEqualTo(2);
 		assertThat(p2.getColumn()).isEqualTo(2);
 		assertThat(p2.getTabSize()).isEqualTo(4);
 		assertThat(p2.getOffset()).isEqualTo(12);
 
-		assertThatExceptionOfType(IndexOutOfBoundsException.class)
-				.isThrownBy(() -> file.positionOf(1, 11, 4));
-		assertThatExceptionOfType(IndexOutOfBoundsException.class)
-				.isThrownBy(() -> file.positionOf(2, 12, 4));
+		assertThat(file.positionOf(1, 11, 4)).isEmpty();
+		assertThat(file.positionOf(2, 12, 4)).isEmpty();
 	}
 
 	@Test
-	public void mapLineAndColumnWithDifferentTabSizes() throws IOException {
+	public void positionOfLienAndColumnEmptyString() throws IOException {
 		VCSFile file = mock(VCSFile.class);
-		when(file.readeContent()).thenReturn("foo\tbar\tfoobar");
+		when(file.readeContent()).thenReturn("");
+		when(file.readLinesWithEOL()).thenCallRealMethod();
+		when(file.positionOf(1, 1, 4)).thenCallRealMethod();
+
+		assertThat(file.positionOf(1, 1, 4)).isEmpty();
+	}
+
+	@Test
+	public void positionOfLineAndColumnDifferentTabSizes() throws IOException {
+		VCSFile file = mock(VCSFile.class);
+		when(file.readeContent()).thenReturn(
+				"foo\tbar\tfoobar");
 		when(file.readLinesWithEOL()).thenCallRealMethod();
 
 		when(file.positionOf(1, 8, 4)).thenCallRealMethod();
@@ -188,40 +226,64 @@ public class VCSFileTest {
 		when(file.positionOf(1, 3, 1)).thenCallRealMethod();
 		when(file.positionOf(1, 12, 2)).thenCallRealMethod();
 
-		VCSFile.Position p1 = file.positionOf(1, 8, 4);
+		VCSFile.Position p1 = file.positionOf(1, 8, 4)
+				.orElseThrow(AssertionError::new);
 		assertThat(p1.getLine()).isEqualTo(1);
 		assertThat(p1.getColumn()).isEqualTo(8);
 		assertThat(p1.getTabSize()).isEqualTo(4);
 		assertThat(p1.getOffset()).isEqualTo(5);
 
-		VCSFile.Position p2 = file.positionOf(1, 12, 8);
+		VCSFile.Position p2 = file.positionOf(1, 12, 8)
+				.orElseThrow(AssertionError::new);
 		assertThat(p2.getLine()).isEqualTo(1);
 		assertThat(p2.getColumn()).isEqualTo(12);
 		assertThat(p2.getTabSize()).isEqualTo(8);
 		assertThat(p2.getOffset()).isEqualTo(5);
 
-		VCSFile.Position p3 = file.positionOf(1, 1, 1);
+		VCSFile.Position p3 = file.positionOf(1, 1, 1)
+				.orElseThrow(AssertionError::new);
 		assertThat(p3.getLine()).isEqualTo(1);
 		assertThat(p3.getColumn()).isEqualTo(1);
 		assertThat(p3.getTabSize()).isEqualTo(1);
 		assertThat(p3.getOffset()).isEqualTo(0);
 
-		VCSFile.Position p4 = file.positionOf(1, 2, 1);
+		VCSFile.Position p4 = file.positionOf(1, 2, 1)
+				.orElseThrow(AssertionError::new);
 		assertThat(p4.getLine()).isEqualTo(1);
 		assertThat(p4.getColumn()).isEqualTo(2);
 		assertThat(p4.getTabSize()).isEqualTo(1);
 		assertThat(p4.getOffset()).isEqualTo(1);
 
-		VCSFile.Position p5 = file.positionOf(1, 3, 1);
+		VCSFile.Position p5 = file.positionOf(1, 3, 1)
+				.orElseThrow(AssertionError::new);
 		assertThat(p5.getLine()).isEqualTo(1);
 		assertThat(p5.getColumn()).isEqualTo(3);
 		assertThat(p5.getTabSize()).isEqualTo(1);
 		assertThat(p5.getOffset()).isEqualTo(2);
 
-		VCSFile.Position p6 = file.positionOf(1, 12, 2);
+		VCSFile.Position p6 = file.positionOf(1, 12, 2)
+				.orElseThrow(AssertionError::new);
 		assertThat(p6.getLine()).isEqualTo(1);
 		assertThat(p6.getColumn()).isEqualTo(12);
 		assertThat(p6.getTabSize()).isEqualTo(2);
 		assertThat(p6.getOffset()).isEqualTo(11);
+	}
+
+	@Test
+	public void positionOfLineAndColumnInEOL() throws IOException {
+		VCSFile file = mock(VCSFile.class);
+		when(file.readeContent()).thenReturn(
+				"first\nsecond\rthird\r\nforth");
+		when(file.readLinesWithEOL()).thenCallRealMethod();
+
+		when(file.positionOf(1, 6, 4)).thenCallRealMethod();
+		when(file.positionOf(2, 7, 4)).thenCallRealMethod();
+		when(file.positionOf(3, 6, 4)).thenCallRealMethod();
+		when(file.positionOf(3, 7, 4)).thenCallRealMethod();
+
+		assertThat(file.positionOf(1, 6, 4)).isEmpty();
+		assertThat(file.positionOf(2, 7, 4)).isEmpty();
+		assertThat(file.positionOf(3, 6, 4)).isEmpty();
+		assertThat(file.positionOf(3, 7, 4)).isEmpty();
 	}
 }

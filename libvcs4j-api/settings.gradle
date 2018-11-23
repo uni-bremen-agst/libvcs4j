@@ -1,0 +1,2 @@
+include 'testutils'
+project(':testutils').projectDir = new File(settingsDir, '../testutils')

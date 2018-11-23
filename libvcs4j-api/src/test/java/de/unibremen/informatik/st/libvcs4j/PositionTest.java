@@ -53,7 +53,8 @@ public class PositionTest {
 		when(fileChange.getNewFile()).thenReturn(Optional.of(newFile));
 		when(fileChange.computeDiff()).thenReturn(Arrays.asList(l1, l2));
 
-		VCSFile.Position oldPosition = oldFile.positionOf(2, 8, 4);
+		VCSFile.Position oldPosition = oldFile.positionOf(2, 8, 4)
+				.orElseThrow(AssertionError::new);
 		VCSFile.Position newPosition = oldPosition.apply(fileChange)
 				.orElseThrow(AssertionError::new);
 
@@ -75,7 +76,8 @@ public class PositionTest {
 		when(file.positionOf(1, 2, 3)).thenCallRealMethod();
 		when(file.positionOf(2, 1, 3)).thenCallRealMethod();
 
-		VCSFile.Position position = file.positionOf(1, 2, 3);
+		VCSFile.Position position = file.positionOf(1, 2, 3)
+				.orElseThrow(AssertionError::new);
 		VCSFile.Position next = position.nextLine()
 				.orElseThrow(AssertionError::new);
 		assertThat(next.getLine()).isEqualTo(2);
@@ -95,7 +97,8 @@ public class PositionTest {
 		when(file.positionOf(2, 2, 3)).thenCallRealMethod();
 		when(file.positionOf(1, 1, 3)).thenCallRealMethod();
 
-		VCSFile.Position position = file.positionOf(2, 2, 3);
+		VCSFile.Position position = file.positionOf(2, 2, 3)
+				.orElseThrow(AssertionError::new);
 		VCSFile.Position previous = position.previousLine()
 				.orElseThrow(AssertionError::new);
 		assertThat(previous.getLine()).isEqualTo(1);
@@ -115,7 +118,8 @@ public class PositionTest {
 		when(file.positionOf(1, 7, 8)).thenCallRealMethod();
 		when(file.positionOf(1, 1, 8)).thenCallRealMethod();
 
-		VCSFile.Position position = file.positionOf(1, 7, 8);
+		VCSFile.Position position = file.positionOf(1, 7, 8)
+				.orElseThrow(AssertionError::new);
 		VCSFile.Position beginOfLine = position.beginOfLine();
 		assertThat(beginOfLine.getLine()).isEqualTo(1);
 		assertThat(beginOfLine.getColumn()).isEqualTo(1);
@@ -134,7 +138,8 @@ public class PositionTest {
 		when(file.positionOf(1, 9, 7)).thenCallRealMethod();
 		when(file.positionOf(1, 21, 7)).thenCallRealMethod();
 
-		VCSFile.Position position = file.positionOf(1, 9, 7);
+		VCSFile.Position position = file.positionOf(1, 9, 7)
+				.orElseThrow(AssertionError::new);
 		VCSFile.Position endOfLine = position.endOfLine();
 		assertThat(endOfLine.getLine()).isEqualTo(1);
 		assertThat(endOfLine.getColumn()).isEqualTo(21);

@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -26,7 +27,25 @@ import java.util.stream.Collectors;
 public interface VCSFile extends VCSModelElement {
 
 	/**
-	 * A position within a file.
+	 * Computes the number of tabs of a string. Using a lambda rather than a
+	 * default method ensures that the behaviour of this function can not be
+	 * changed by implementors of this interface.
+	 */
+	Function<String, Integer> NUMBER_OF_TABS = string -> {
+		int tabs = 0;
+		for (int i = 0; i < string.length(); i++) {
+			if (string.charAt(i) == '\t') {
+				tabs++;
+			}
+		}
+		return tabs;
+	};
+
+	/**
+	 * A position within a file. As a line of text does not include new line
+	 * characters, a position can not point to new line delimiters, such as
+	 * '\n', '\r', and '\r\n'. Use {@link VCSFile#positionOf(int, int, int)} or
+	 * {@link VCSFile#positionOf(int, int)} to create instances of this class.
 	 */
 	class Position {
 
@@ -178,32 +197,62 @@ public interface VCSFile extends VCSModelElement {
 				return Optional.empty();
 			}
 
+			// Find all deletions without insertions and insertions without
+			// deletions.
+			final List<LineChange> changes = fileChange.computeDiff();
+			final List<LineChange> dels = changes.stream()
+					.filter(lc -> lc.getType() == LineChange.Type.DELETE)
+					.sorted(Comparator.comparingInt(LineChange::getLine))
+					.collect(Collectors.toList());
+			final List<LineChange> ins = changes.stream()
+					.filter(lc -> lc.getType() == LineChange.Type.INSERT)
+					.sorted(Comparator.comparingInt(LineChange::getLine))
+					.collect(Collectors.toList());
+			final List<LineChange> delsWithoutIns = new ArrayList<>();
+			final List<LineChange> insWithoutDels = new ArrayList<>();
+			int delsIdx = 0; // Index of the currently processed deletion.
+			int insIdx = 0;  // Index of currently processed insertion.
+			while (delsIdx < dels.size() && insIdx < ins.size()) {
+				final LineChange del = dels.get(delsIdx);
+				final LineChange in = ins.get(insIdx);
+				final int delLine = del.getLine() + insWithoutDels.size();
+				final int inLine = in.getLine() + delsWithoutIns.size();
+				if (delLine == inLine) {
+					delsIdx++;
+					insIdx++;
+				} else if (delLine < inLine) {
+					delsWithoutIns.add(del);
+					delsIdx++;
+				} else {
+					insWithoutDels.add(in);
+					insIdx++;
+				}
+			}
+			for(; delsIdx < dels.size(); delsIdx++) {
+				delsWithoutIns.add(dels.get(delsIdx));
+			}
+			for (; insIdx < ins.size(); insIdx++) {
+				insWithoutDels.add(ins.get(insIdx));
+			}
+
 			// Find all changes applied up to this position.
-			int numIns = 0;
-			final List<LineChange> changes = new ArrayList<>();
-			for (final LineChange lc : fileChange.computeDiff()) {
-				if (lc.getType() == LineChange.Type.INSERT &&
-						// The position of an inserted line is relative to the
-						// position of all previously inserted lines. Thus, we
-						// need to subtract the number of previously inserted
-						// lines before comparing a line's position.
-						lc.getLine() - numIns <= getLine()) {
+			final List<LineChange> relevantChanges = delsWithoutIns.stream()
+					.filter(del -> del.getLine() <= getLine())
+					.collect(Collectors.toList());
+			for (int i = 0, numIns = 0; i < insWithoutDels.size(); i++) {
+				final LineChange in = insWithoutDels.get(i);
+				if (in.getLine() <= getLine() + numIns) {
 					numIns++;
-					changes.add(lc);
-				} else if (lc.getType() == LineChange.Type.DELETE &&
-						// Deleted lines are not relative to the position of
-						// previously changed lines.
-						lc.getLine() <= getLine()) {
-					changes.add(lc);
+					relevantChanges.add(in);
 				}
 			}
 
 			// Has this position been deleted (its corresponding line was
 			// deleted without being inserted)?
-			final boolean lineDeleted = changes.stream()
+			final boolean lineDeleted = relevantChanges.stream()
 					.anyMatch(lc -> lc.getLine() == getLine() &&
 							lc.getType() == LineChange.Type.DELETE);
-			final boolean lineInserted = changes.stream()
+			final boolean lineInserted = relevantChanges.stream()
 					.anyMatch(lc -> lc.getLine() == getLine() &&
 							lc.getType() == LineChange.Type.INSERT);
 			if (lineDeleted && !lineInserted) {
@@ -213,11 +262,11 @@ public interface VCSFile extends VCSModelElement {
 
 			final int line = getLine() -
 					// Remove deleted lines.
-					(int) changes.stream()
+					(int) relevantChanges.stream()
 						.filter(fc -> fc.getType() == LineChange.Type.DELETE)
 						.count() +
 					// Add inserted lines.
-					(int) changes.stream()
+					(int) relevantChanges.stream()
 						.filter(fc -> fc.getType() == LineChange.Type.INSERT)
 						.count();
 			final int column = lineDeleted
@@ -227,7 +276,9 @@ public interface VCSFile extends VCSModelElement {
 					: getColumn();
 			return Optional.of(fileChange.getNewFile()
 					.orElseThrow(IllegalStateException::new)
-					.positionOf(line, column, getTabSize()));
+					.positionOf(line, column, getTabSize())
+					// Validate implementation.
+					.orElseThrow(IllegalStateException::new));
 		}
 
 		/**
@@ -247,7 +298,9 @@ public interface VCSFile extends VCSModelElement {
 				return Optional.empty();
 			}
 			return Optional.of(getFile().positionOf(
-					getLine() + 1, 1, getTabSize()));
+					getLine() + 1, 1, getTabSize())
+					// Validate implementation.
+					.orElseThrow(IllegalStateException::new));
 		}
 
 		/**
@@ -267,7 +320,9 @@ public interface VCSFile extends VCSModelElement {
 				return Optional.empty();
 			}
 			return Optional.of(getFile().positionOf(
-					getLine() - 1, 1, getTabSize()));
+					getLine() - 1, 1, getTabSize())
+					// Validate implementation.
+					.orElseThrow(IllegalStateException::new));
 		}
 
 		/**
@@ -280,7 +335,8 @@ public interface VCSFile extends VCSModelElement {
 		 * 		If an error occurred while reading the file content.
 		 */
 		public Position beginOfLine() throws IOException {
-			return getFile().positionOf(getLine(), 1, getTabSize());
+			return getFile().positionOf(getLine(), 1, getTabSize())
+					.orElseThrow(IllegalStateException::new);
 		}
 
 		/**
@@ -295,7 +351,8 @@ public interface VCSFile extends VCSModelElement {
 			final List<String> lines = getFile().readLines();
 			Validate.validateState(lines.size() >= getLine());
 			final int column = lines.get(getLine() - 1).length();
-			return getFile().positionOf(getLine(), column, getTabSize());
+			return getFile().positionOf(getLine(), column, getTabSize())
+					.orElseThrow(IllegalStateException::new);
 		}
 	}
 
@@ -360,8 +417,8 @@ public interface VCSFile extends VCSModelElement {
 		 * 		If {@code pFile} is {@code null}.
 		 * @throws IllegalArgumentException
 		 * 		If {@code pBegin > pEnd}, or if
-		 * 		{@link VCSFile#positionOf(int, int)} throws an
-		 * 		{@link IllegalArgumentException}.
+		 * 		{@link VCSFile#positionOf(int, int)} returns an empty
+		 * 		{@link Optional}.
 		 * @throws IOException
 		 * 		If an error occurred while reading the content of
 		 * 		{@code pFile}.
@@ -371,8 +428,10 @@ public interface VCSFile extends VCSModelElement {
 				IllegalArgumentException, IOException {
 			Validate.notNull(pFile);
 			Validate.isTrue(pBegin <= pEnd);
-			begin = pFile.positionOf(pBegin, pTabSize);
-			end = pFile.positionOf(pEnd, pTabSize);
+			begin = pFile.positionOf(pBegin, pTabSize)
+					.orElseThrow(IllegalArgumentException::new);
+			end = pFile.positionOf(pEnd, pTabSize)
+					.orElseThrow(IllegalArgumentException::new);
 		}
 
 		/**
@@ -394,8 +453,8 @@ public interface VCSFile extends VCSModelElement {
 		 * 		If {@code pFile} is {@code null}.
 		 * @throws IllegalArgumentException
 		 * 		If begin is after end, or if
-		 * 		{@link VCSFile#positionOf(int, int)} throws an
-		 * 		{@link IllegalArgumentException}.
+		 * 		{@link VCSFile#positionOf(int, int, int)} returns an empty
+		 * 		{@link Optional}.
 		 * @throws IOException
 		 * 		If an error occurred while reading the content of
 		 * 		{@code pFile}.
@@ -409,8 +468,10 @@ public interface VCSFile extends VCSModelElement {
 			Validate.isTrue(pBeginLine < pEndLine ||
 					(pBeginLine == pEndLine &&
 							pBeginColumn <= pEndColumn));
-			begin = pFile.positionOf(pBeginLine, pBeginColumn, pTabSize);
-			end = pFile.positionOf(pEndLine, pEndColumn, pTabSize);
+			begin = pFile.positionOf(pBeginLine, pBeginColumn, pTabSize)
+					.orElseThrow(IllegalArgumentException::new);
+			end = pFile.positionOf(pEndLine, pEndColumn, pTabSize)
+					.orElseThrow(IllegalArgumentException::new);
 		}
 
 		/**
@@ -852,7 +913,9 @@ public interface VCSFile extends VCSModelElement {
 	}
 
 	/**
-	 * Creates a position from the the given offset tab size.
+	 * Creates a position from the the given offset and tab size. Returns an
+	 * empty {@link Optional} if there is no position for {@code offset}, or if
+	 * {@code offset} points to a new line delimiter.
 	 *
 	 * @param offset
 	 * 		The number of characters to move to reach a position.
@@ -862,14 +925,11 @@ public interface VCSFile extends VCSModelElement {
 	 * 		The corresponding position.
 	 * @throws IllegalArgumentException
 	 * 		If {@code offset < 0} or {@code tabSize < 1}.
-	 * @throws IndexOutOfBoundsException
-	 * 		If there is no position for {@code offset}.
 	 * @throws IOException
 	 * 		If an error occurred while reading the file content.
 	 */
-	default Position positionOf(final int offset, final int tabSize)
-			throws IllegalArgumentException, IndexOutOfBoundsException,
-			IOException {
+	default Optional<Position> positionOf(final int offset, final int tabSize)
+			throws IllegalArgumentException, IOException {
 		Validate.notNegative(offset);
 		Validate.isPositive(tabSize);
 
@@ -879,37 +939,31 @@ public interface VCSFile extends VCSModelElement {
 		int offs = offset;
 		while (line <= lines.size()) {
 			final String lineStr = lines.get(line - 1);
-			// Find number of tabs in line.
-			int tabs = 0;
-			for (int i = 0; i < lineStr.length(); i++) {
-				if (lineStr.charAt(i) == '\t') {
-					tabs++;
-				}
-			}
-			// Calculate line length based on the number of tabs found.
-			final int length = lineStr.length() + (tabs * (tabSize - 1));
-			if (length <= offs) {
+			final int lineLen = lineStr.length() +
+					NUMBER_OF_TABS.apply(lineStr) * (tabSize - 1);
+			if (lineLen <= offs) {
 				line++;
-				offs -= length;
+				offs -= lineLen;
 			} else {
 				final String offsStr = lineStr.substring(0, offs + 1);
-				// Find number of tabs in sub-line.
-				tabs = 0;
-				for (int i = 0; i < offsStr.length(); i++) {
-					if (lineStr.charAt(i) == '\t') {
-						tabs++;
-					}
-				}
-				// Calculate column based on the number of tabs found.
-				final int column = offsStr.length() + (tabs * (tabSize - 1));
-				return new Position(this, line, column, offset, tabSize);
+				final int column = offsStr.length() +
+						NUMBER_OF_TABS.apply(offsStr) * (tabSize - 1);
+				return offsStr.endsWith("\n") || offsStr.endsWith("\r")
+							|| offsStr.endsWith("\r\n")
+						? Optional.empty()
+						: Optional.of(new Position(
+								this, line, column, offset, tabSize));
 			}
 		}
-		throw new IndexOutOfBoundsException("offset: " + offset);
+		return Optional.empty();
 	}
 
 	/**
-	 * Creates a position from the given line, column, and tab size.
+	 * Creates a position from the given line, column, and tab size. Returns an
+	 * empty {@link Optional} if there is no position for {@code line} and
+	 * {@code column} with respect to {@code tabSize}, or if {@code line} and
+	 * {@code column} with respect to {@code tabSize} point to a new line
+	 * delimiter.
 	 *
 	 * @param line
 	 * 		The line of the position to create.
@@ -921,49 +975,32 @@ public interface VCSFile extends VCSModelElement {
 	 * 		The corresponding position.
 	 * @throws IllegalArgumentException
 	 * 		If {@code line < 1}, {@code column < 1}, or {@code tabSize < 1}.
-	 * @throws IndexOutOfBoundsException
-	 * 		If there is no position for {@code line} and {@code column} with
-	 * 		respect to {@code tabSize}.
 	 * @throws IOException
 	 * 		If an error occurred while reading the file content.
 	 */
-	default Position positionOf(final int line, final int column,
+	default Optional<Position> positionOf(final int line, final int column,
 			final int tabSize) throws IllegalArgumentException,
 			IndexOutOfBoundsException, IOException {
-		////// Error handling tab size.
+		Validate.isPositive(line);
+		Validate.isPositive(column);
 		Validate.isPositive(tabSize);
 
-		////// Error handling line.
-		Validate.isPositive(line);
+		// We need the lines with EOL to compute the corresponding offset.
 		final List<String> lines = readLinesWithEOL();
 		if (line > lines.size()) {
-			throw new IndexOutOfBoundsException(String.format(
-					"line: %d, lines: %d", line, lines.size()));
+			return Optional.empty();
 		}
 
 		final int lineIdx = line - 1;
 		final String lineStr = lines.get(lineIdx);
-
-		////// Error handling column.
-		// Find number of tabs in line.
-		Validate.isPositive(column);
-		int numTabs = 0;
-		for (int i = 0; i < lineStr.length(); i++) {
-			if (lineStr.charAt(i) == '\t') {
-				numTabs++;
-			}
-		}
-		// Calculate line length based on the number of tabs found.
-		final int lineLen =
+		final int lineLen = // Length of line excluding EOL
 				// Use scanner to remove EOL
 				new Scanner(lineStr).nextLine().length() +
-						(numTabs * (tabSize - 1));
+						NUMBER_OF_TABS.apply(lineStr) * (tabSize - 1);
 		if (column > lineLen) {
-			throw new IndexOutOfBoundsException(String.format(
-					"column: %d, columns: %d", column, lineLen));
+			return Optional.empty();
 		}
 
-		////// Offset calculation
 		int offset = lines.subList(0, lineIdx).stream()
 				.map(String::length)
 				.mapToInt(Integer::intValue)
@@ -974,8 +1011,7 @@ public interface VCSFile extends VCSModelElement {
 			}
 			offset++;
 		}
-
-		////// Result
-		return new Position(this, line, column, offset, tabSize);
+		return Optional.of(new Position(
+				this, line, column, offset, tabSize));
 	}
 }
