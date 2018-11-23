@@ -17,12 +17,12 @@ import java.util.Optional;
 public class NOA extends IntGatherer {
 
 	@Override
-	protected String name() {
+	public String name() {
 		return "NOA";
 	}
 
 	@Override
-	protected String abbreviation() {
+	public String abbreviation() {
 		return "Number of Attributes";
 	}
 
