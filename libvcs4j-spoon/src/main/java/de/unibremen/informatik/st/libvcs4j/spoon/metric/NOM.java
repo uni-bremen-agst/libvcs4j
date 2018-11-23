@@ -15,12 +15,12 @@ public class NOM extends IntGatherer {
 
 	@Override
 	public String name() {
-		return "NOM";
+		return "Number of Methods";
 	}
 
 	@Override
 	public String abbreviation() {
-		return "Number of Methods";
+		return "NOM";
 	}
 
 	/**

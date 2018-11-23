@@ -18,12 +18,12 @@ public class NOA extends IntGatherer {
 
 	@Override
 	public String name() {
-		return "NOA";
+		return "Number of Attributes";
 	}
 
 	@Override
 	public String abbreviation() {
-		return "Number of Attributes";
+		return "NOA";
 	}
 
 	/**

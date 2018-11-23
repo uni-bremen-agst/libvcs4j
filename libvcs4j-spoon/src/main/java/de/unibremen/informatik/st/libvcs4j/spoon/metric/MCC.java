@@ -35,12 +35,12 @@ public class MCC extends IntGatherer {
 
 	@Override
 	public String name() {
-		return "MCC";
+		return "McCabe Complexity";
 	}
 
 	@Override
 	public String abbreviation() {
-		return "McCabe Complexity";
+		return "MCC";
 	}
 
 	/**

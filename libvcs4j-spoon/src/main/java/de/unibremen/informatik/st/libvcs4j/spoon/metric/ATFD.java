@@ -25,12 +25,12 @@ public class ATFD extends IntGatherer {
 
 	@Override
 	public String name() {
-		return "ATFD";
+		return "Access to Foreign Data";
 	}
 
 	@Override
 	public String abbreviation() {
-		return "Access to Foreign Data";
+		return "ATFD";
 	}
 
 	/**

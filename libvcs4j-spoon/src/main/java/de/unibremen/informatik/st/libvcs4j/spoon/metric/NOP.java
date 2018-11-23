@@ -14,12 +14,12 @@ public class NOP extends IntGatherer {
 
 	@Override
 	public String name() {
-		return "NOP";
+		return "Number of Parameters";
 	}
 
 	@Override
 	public String abbreviation() {
-		return "Number of Parameters";
+		return "NOP";
 	}
 
 	/**

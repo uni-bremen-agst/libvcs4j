@@ -36,12 +36,12 @@ public class TCC extends DecimalGatherer {
 
 	@Override
 	public String name() {
-		return "TCC";
+		return "Tight Class Cohesion";
 	}
 
 	@Override
 	public String abbreviation() {
-		return "Tight Class Cohesion";
+		return "TCC";
 	}
 
 	/**
