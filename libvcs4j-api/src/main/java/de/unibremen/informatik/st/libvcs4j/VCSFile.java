@@ -196,6 +196,9 @@ public interface VCSFile extends VCSModelElement {
 			if (fileChange.getType() == FileChange.Type.REMOVE) {
 				return Optional.empty();
 			}
+			// getType() != REMOVE => new file must exist.
+			final VCSFile newFile = fileChange.getNewFile()
+					.orElseThrow(IllegalStateException::new);
 
 			// Find all deletions without insertions and insertions without
 			// deletions.
@@ -235,31 +238,37 @@ public interface VCSFile extends VCSModelElement {
 				insWithoutDels.add(ins.get(insIdx));
 			}
 
-			// Find all changes applied up to this position.
-			final List<LineChange> relevantChanges = delsWithoutIns.stream()
-					.filter(del -> del.getLine() <= getLine())
-					.collect(Collectors.toList());
-			for (int i = 0, numIns = 0; i < insWithoutDels.size(); i++) {
-				final LineChange in = insWithoutDels.get(i);
-				if (in.getLine() <= getLine() + numIns) {
-					numIns++;
-					relevantChanges.add(in);
-				}
-			}
-
-			// Has this position been deleted (its corresponding line was
-			// deleted without being inserted)?
-			final boolean lineDeleted = relevantChanges.stream()
-					.anyMatch(lc -> lc.getLine() == getLine() &&
-							lc.getType() == LineChange.Type.DELETE);
-			final boolean lineInserted = relevantChanges.stream()
-					.anyMatch(lc -> lc.getLine() == getLine() &&
-							lc.getType() == LineChange.Type.INSERT);
-			if (lineDeleted && !lineInserted) {
-				// This position was deleted.
+			// Handle special case: Line was deleted entirely.
+			if (delsWithoutIns.stream().anyMatch(
+					lc -> lc.getLine() == getLine())) {
 				return Optional.empty();
 			}
 
+			// Find all deletions and insertions applied up to this position.
+			final List<LineChange> layoutChanges = new ArrayList<>();
+			layoutChanges.addAll(delsWithoutIns);
+			layoutChanges.addAll(insWithoutDels);
+			layoutChanges.sort(Comparator.comparingInt(LineChange::getLine));
+			final List<LineChange> relevantDels = new ArrayList<>();
+			final List<LineChange> relevantIns = new ArrayList<>();
+			for (LineChange lc : layoutChanges) {
+				if (lc.getType() == LineChange.Type.DELETE &&
+						lc.getLine() <= getLine()) {
+					relevantDels.add(lc);
+				} else if (lc.getType() == LineChange.Type.INSERT) {
+					final int inLine = lc.getLine()
+							+ relevantDels.size()
+							- relevantIns.size();
+					if (inLine <= getLine()) {
+						relevantIns.add(lc);
+					}
+				}
+			}
+			final List<LineChange> relevantChanges = new ArrayList<>();
+			relevantChanges.addAll(relevantDels);
+			relevantChanges.addAll(relevantIns);
+
+			// Map position.
 			final int line = getLine() -
 					// Remove deleted lines.
 					(int) relevantChanges.stream()
@@ -269,9 +278,10 @@ public interface VCSFile extends VCSModelElement {
 					(int) relevantChanges.stream()
 						.filter(fc -> fc.getType() == LineChange.Type.INSERT)
 						.count();
-			final int column = lineDeleted
-					? 1 // lineDeleted? => lineInserted => line change
-					    // We can't determine the column of a changed line, use
+			final String oldLineStr = oldFile.readLines().get(getLine() - 1);
+			final String newLineStr = newFile.readLines().get(line - 1);
+			final int column = !oldLineStr.equals(newLineStr)
+					? 1 // We can't determine the column of a changed line, use
 					    // 1 as fallback.
 					: getColumn();
 			return Optional.of(fileChange.getNewFile()
