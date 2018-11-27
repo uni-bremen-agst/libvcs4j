@@ -21,6 +21,10 @@ public class PositionTest {
 		VCSFile oldFile = mock(VCSFile.class);
 		when(oldFile.getRevision()).thenReturn(oldRevision);
 		when(oldFile.getRelativePath()).thenReturn("A.java");
+		when(oldFile.readLines()).thenReturn(Arrays.asList(
+				"first line",
+				"second line",
+				"third line"));
 		when(oldFile.readLinesWithEOL()).thenReturn(Arrays.asList(
 				"first line\n",
 				"second line\n",
@@ -33,6 +37,10 @@ public class PositionTest {
 		VCSFile newFile = mock(VCSFile.class);
 		when(newFile.getRevision()).thenReturn(newRevision);
 		when(newFile.getRelativePath()).thenReturn("A.java");
+		when(newFile.readLines()).thenReturn(Arrays.asList(
+				"first line",
+				"new line",
+				"second line"));
 		when(newFile.readLinesWithEOL()).thenReturn(Arrays.asList(
 				"first line\n",
 				"new line\n",

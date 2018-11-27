@@ -3,6 +3,7 @@ package de.unibremen.informatik.st.libvcs4j.spoon.codesmell;
 import de.unibremen.informatik.st.libvcs4j.Revision;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.Validate;
+import de.unibremen.informatik.st.libvcs4j.spoon.Scanner;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.slf4j.Logger;
@@ -30,7 +31,7 @@ import java.util.stream.Collectors;
 import static spoon.reflect.cu.SourcePosition.NOPOSITION;
 
 @AllArgsConstructor
-public abstract class CodeSmellDetector {
+public abstract class CodeSmellDetector extends Scanner {
 
 	private static final Logger log =
 			LoggerFactory.getLogger(CodeSmellDetector.class);

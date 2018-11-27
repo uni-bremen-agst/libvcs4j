@@ -35,13 +35,13 @@ public class TCC extends DecimalGatherer {
 			typeInfo = new IdentityHashMap<>();
 
 	@Override
-	protected String name() {
-		return "TCC";
+	public String name() {
+		return "Tight Class Cohesion";
 	}
 
 	@Override
-	protected String abbreviation() {
-		return "Tight Class Cohesion";
+	public String abbreviation() {
+		return "TCC";
 	}
 
 	/**

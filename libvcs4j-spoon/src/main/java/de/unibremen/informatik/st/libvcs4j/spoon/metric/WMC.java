@@ -22,13 +22,13 @@ public class WMC extends IntGatherer {
 	private final MCC mcc = new MCC();
 
 	@Override
-	protected String name() {
-		return "WMC";
+	public String name() {
+		return "Weighted Methods per Class";
 	}
 
 	@Override
-	protected String abbreviation() {
-		return "Weighted Methods per Class";
+	public String abbreviation() {
+		return "WMC";
 	}
 
 	/**

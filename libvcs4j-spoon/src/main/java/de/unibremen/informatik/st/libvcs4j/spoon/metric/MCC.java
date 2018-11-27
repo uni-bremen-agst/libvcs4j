@@ -34,13 +34,13 @@ public class MCC extends IntGatherer {
 	private static final int INITIAL_VALUE = 1;
 
 	@Override
-	protected String name() {
-		return "MCC";
+	public String name() {
+		return "McCabe Complexity";
 	}
 
 	@Override
-	protected String abbreviation() {
-		return "McCabe Complexity";
+	public String abbreviation() {
+		return "MCC";
 	}
 
 	/**

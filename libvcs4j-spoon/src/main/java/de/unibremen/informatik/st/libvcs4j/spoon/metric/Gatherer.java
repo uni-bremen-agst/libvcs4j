@@ -70,7 +70,7 @@ public abstract class Gatherer<T extends Number> extends Scanner {
 	 * @return
 	 * 		The full name of this gatherer.
 	 */
-	protected abstract String name();
+	public abstract String name();
 
 	/**
 	 * Returns the abbreviated name of this gatherer.
@@ -78,7 +78,7 @@ public abstract class Gatherer<T extends Number> extends Scanner {
 	 * @return
 	 * 		The abbreviated name of this gatherer.
 	 */
-	protected abstract String abbreviation();
+	public abstract String abbreviation();
 
 	/**
 	 * Increments the metric of the top element of {@link #stack} by

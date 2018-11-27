@@ -13,13 +13,13 @@ import java.util.Optional;
 public class NOP extends IntGatherer {
 
 	@Override
-	protected String name() {
-		return "NOP";
+	public String name() {
+		return "Number of Parameters";
 	}
 
 	@Override
-	protected String abbreviation() {
-		return "Number of Parameters";
+	public String abbreviation() {
+		return "NOP";
 	}
 
 	/**

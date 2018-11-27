@@ -14,13 +14,13 @@ import java.util.Optional;
 public class NOM extends IntGatherer {
 
 	@Override
-	protected String name() {
-		return "NOM";
+	public String name() {
+		return "Number of Methods";
 	}
 
 	@Override
-	protected String abbreviation() {
-		return "Number of Methods";
+	public String abbreviation() {
+		return "NOM";
 	}
 
 	/**

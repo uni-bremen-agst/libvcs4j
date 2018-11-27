@@ -24,13 +24,13 @@ public class ATFD extends IntGatherer {
 	public static final int INITIAL_VALUE = 0;
 
 	@Override
-	protected String name() {
-		return "ATFD";
+	public String name() {
+		return "Access to Foreign Data";
 	}
 
 	@Override
-	protected String abbreviation() {
-		return "Access to Foreign Data";
+	public String abbreviation() {
+		return "ATFD";
 	}
 
 	/**
