@@ -73,6 +73,6 @@ public class LongMethodDetector extends CodeSmellDetector {
 	}
 
 	private Metric createMetric(final int val) {
-		return new Metric("SLOC", val);
+		return new Metric("Source Line of Code", val);
 	}
 }
