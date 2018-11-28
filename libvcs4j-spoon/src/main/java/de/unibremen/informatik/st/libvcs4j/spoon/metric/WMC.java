@@ -53,21 +53,21 @@ public class WMC extends IntGatherer {
 
 	@Override
 	public <T> void visitCtClass(final CtClass<T> ctClass) {
-		visitNode(ctClass, Propagation.NONE,
+		visitNode(ctClass, super::visitCtClass, Propagation.NONE,
 				mcc.metricOf(ctClass).map(i -> i - 1)
 				.orElseThrow(IllegalStateException::new));
 	}
 
 	@Override
 	public <T> void visitCtInterface(final CtInterface<T> ctInterface) {
-		visitNode(ctInterface, Propagation.NONE,
+		visitNode(ctInterface, super::visitCtInterface, Propagation.NONE,
 				mcc.metricOf(ctInterface).map(i -> i - 1)
 				.orElseThrow(IllegalStateException::new));
 	}
 
 	@Override
 	public <T extends Enum<?>> void visitCtEnum(final CtEnum<T> ctEnum) {
-		visitNode(ctEnum, Propagation.NONE,
+		visitNode(ctEnum, super::visitCtEnum, Propagation.NONE,
 				mcc.metricOf(ctEnum).map(i -> i - 1)
 				.orElseThrow(IllegalStateException::new));
 	}

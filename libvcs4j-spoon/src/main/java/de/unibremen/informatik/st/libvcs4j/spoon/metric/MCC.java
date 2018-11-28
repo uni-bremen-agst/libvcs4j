@@ -87,33 +87,39 @@ public class MCC extends IntGatherer {
 
 	@Override
 	public <T> void visitCtClass(final CtClass<T> pClass) {
-		visitNode(pClass, Propagation.SUM, INITIAL_VALUE);
+		visitNode(pClass, super::visitCtClass,
+				Propagation.SUM, INITIAL_VALUE);
 	}
 
 	@Override
 	public <T> void visitCtInterface(final CtInterface<T> ctInterface) {
-		visitNode(ctInterface, Propagation.SUM, INITIAL_VALUE);
+		visitNode(ctInterface, super::visitCtInterface,
+				Propagation.SUM, INITIAL_VALUE);
 	}
 
 	@Override
 	public <T extends Enum<?>> void visitCtEnum(final CtEnum<T> ctEnum) {
-		visitNode(ctEnum, Propagation.SUM, INITIAL_VALUE);
+		visitNode(ctEnum, super::visitCtEnum,
+				Propagation.SUM, INITIAL_VALUE);
 	}
 
 	@Override
 	public <A extends Annotation> void visitCtAnnotation(
 			final CtAnnotation<A> ctAnnotation) {
-		visitNode(ctAnnotation, Propagation.SUM, INITIAL_VALUE);
+		visitNode(ctAnnotation, super::visitCtAnnotation,
+				Propagation.SUM, INITIAL_VALUE);
 	}
 
 	@Override
 	public <T> void visitCtMethod(final CtMethod<T> method) {
-		visitNode(method, Propagation.SUM, INITIAL_VALUE);
+		visitNode(method, super::visitCtMethod,
+				Propagation.SUM, INITIAL_VALUE);
 	}
 
 	@Override
 	public <T> void visitCtConstructor(final CtConstructor<T> constructor) {
-		visitNode(constructor, Propagation.SUM, INITIAL_VALUE);
+		visitNode(constructor, super::visitCtConstructor,
+				Propagation.SUM, INITIAL_VALUE);
 	}
 
 	@Override

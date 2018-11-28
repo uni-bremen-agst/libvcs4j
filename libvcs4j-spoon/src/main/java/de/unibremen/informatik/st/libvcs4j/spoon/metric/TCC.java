@@ -5,6 +5,7 @@ import spoon.reflect.code.CtFieldAccess;
 import spoon.reflect.code.CtFieldRead;
 import spoon.reflect.code.CtFieldWrite;
 import spoon.reflect.declaration.CtClass;
+import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtEnum;
 import spoon.reflect.declaration.CtField;
 import spoon.reflect.declaration.CtInterface;
@@ -33,6 +34,12 @@ public class TCC extends DecimalGatherer {
 	 */
 	private Map<CtType, Map<CtMethod, Set<CtField>>>
 			typeInfo = new IdentityHashMap<>();
+
+	@Override
+	public void visitRoot(final CtElement element) {
+		typeInfo.clear();
+		super.visitRoot(element);
+	}
 
 	@Override
 	public String name() {

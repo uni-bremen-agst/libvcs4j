@@ -39,17 +39,19 @@ public class NOM extends IntGatherer {
 
 	@Override
 	public <T> void visitCtClass(final CtClass<T> ctClass) {
-		visitNode(ctClass, Propagation.NONE, ctClass.getMethods().size());
+		visitNode(ctClass, super::visitCtClass,
+				Propagation.NONE, ctClass.getMethods().size());
 	}
 
 	@Override
 	public <T> void visitCtInterface(final CtInterface<T> ctInterface) {
-		visitNode(ctInterface, Propagation.NONE,
-				ctInterface.getMethods().size());
+		visitNode(ctInterface, super::visitCtInterface,
+				Propagation.NONE, ctInterface.getMethods().size());
 	}
 
 	@Override
 	public <T extends Enum<?>> void visitCtEnum(CtEnum<T> ctEnum) {
-		visitNode(ctEnum, Propagation.NONE, ctEnum.getMethods().size());
+		visitNode(ctEnum, super::visitCtEnum,
+				Propagation.NONE, ctEnum.getMethods().size());
 	}
 }

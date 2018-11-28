@@ -38,12 +38,13 @@ public class NOP extends IntGatherer {
 
 	@Override
 	public <T> void visitCtMethod(final CtMethod<T> method) {
-		visitNode(method, Propagation.NONE, method.getParameters().size());
+		visitNode(method, super::visitCtMethod,
+				Propagation.NONE, method.getParameters().size());
 	}
 
 	@Override
 	public <T> void visitCtConstructor(final CtConstructor<T> constructor) {
-		visitNode(constructor, Propagation.NONE,
-				constructor.getParameters().size());
+		visitNode(constructor, super::visitCtConstructor,
+				Propagation.NONE, constructor.getParameters().size());
 	}
 }
