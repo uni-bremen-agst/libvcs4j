@@ -76,6 +76,6 @@ public class LongParameterListDetector extends CodeSmellDetector {
 	}
 
 	private Metric createMetric(final int val) {
-		return new Metric(nop.name(), new BigDecimal(val), false);
+		return new Metric(nop.name(), val);
 	}
 }

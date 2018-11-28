@@ -73,6 +73,6 @@ public class LongMethodDetector extends CodeSmellDetector {
 	}
 
 	private Metric createMetric(final int val) {
-		return new Metric("SLOC", new BigDecimal(val), false);
+		return new Metric("SLOC", val);
 	}
 }
