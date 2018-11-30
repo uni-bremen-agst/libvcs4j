@@ -93,7 +93,7 @@ public class TCC extends DecimalGatherer {
 				Propagation.NONE, INITIAL_VALUE);
 	}
 
-	private <T extends CtType> void visitType(final T type) {
+	private void visitType(final CtType type) {
 		final Map<CtMethod, Set<CtField>> ti = typeInfo.get(type);
 		if (ti != null) {
 			final List<CtMethod> methods = new ArrayList<>(ti.keySet());
