@@ -3,6 +3,7 @@ package de.unibremen.informatik.st.libvcs4j.spoon.metric;
 import de.unibremen.informatik.st.libvcs4j.Validate;
 import de.unibremen.informatik.st.libvcs4j.spoon.Scanner;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.Metric;
+import lombok.NonNull;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.visitor.CtScanner;
@@ -99,8 +100,7 @@ public abstract class Gatherer<T extends Number> extends Scanner {
 	 * @throws NullPointerException
 	 * 		If {@code value} is {@code null}.
 	 */
-	void inc(final T value) throws NullPointerException {
-		Validate.notNull(value);
+	void inc(@NonNull final T value) throws NullPointerException {
 		if (!stack.isEmpty()) {
 			final T prev = stack.pop();
 			stack.push(sum(prev, value));
@@ -131,12 +131,10 @@ public abstract class Gatherer<T extends Number> extends Scanner {
 	 * @throws NullPointerException
 	 * 		If any of the given argument is {@code null}.
 	 */
-	<E extends CtElement> void visitNode(final E element,
-			final Consumer<E> superCall, final Propagation propagation,
-			final T initValue) throws NullPointerException {
-		Validate.notNull(element);
-		Validate.notNull(propagation);
-		Validate.notNull(initValue);
+	<E extends CtElement> void visitNode(@NonNull final E element,
+			@NonNull final Consumer<E> superCall,
+			@NonNull final Propagation propagation,
+			@NonNull final T initValue) throws NullPointerException {
 		Validate.validateState(!metrics.containsKey(element),
 				"Element '%s' has already been visited", element);
 		stack.push(initValue);
@@ -154,6 +152,39 @@ public abstract class Gatherer<T extends Number> extends Scanner {
 					Validate.fail("Unknown propagation '%s'", propagation);
 			}
 		}
+	}
+
+	/**
+	 * Visits the given element and gathers its metric. This method extends
+	 * {@link #visitNode(CtElement, Consumer, Propagation, Number)} and allows
+	 * to register another callback which is called after {@code superCall},
+	 * but right before the resulting metric is stored, therefore allowing to
+	 * do some final calculations.
+	 *
+	 * @param element
+	 * 		The element to visit.
+	 * @param superCall
+	 * 		The super function of the corresponding visit method.
+	 * @param callBack
+	 * 		The function to call right before the resulting metric is stored.
+	 * @param propagation
+	 * 		Specifies how to propagate the metric of {@code element} to its
+	 * 		parent.
+	 * @param initValue
+	 * 		The initial metric value of {@code element}.
+	 * @param <E>
+	 *     	The type of the element to visit.
+	 * @throws NullPointerException
+	 * 		If any of the given argument is {@code null}.
+	 */
+	<E extends CtElement> void visitNode(@NonNull final E element,
+			@NonNull final Consumer<E> superCall,
+			@NonNull final Consumer<E> callBack,
+			@NonNull final Propagation propagation, final T initValue) {
+		visitNode(element, __ -> {
+			superCall.accept(element);
+			callBack.accept(element);
+		}, propagation, initValue);
 	}
 
 	/**

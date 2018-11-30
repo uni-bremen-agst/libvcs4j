@@ -4,12 +4,14 @@ import de.unibremen.informatik.st.libvcs4j.Validate;
 import spoon.reflect.code.CtFieldAccess;
 import spoon.reflect.code.CtFieldRead;
 import spoon.reflect.code.CtFieldWrite;
+import spoon.reflect.code.CtInvocation;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtEnum;
 import spoon.reflect.declaration.CtField;
 import spoon.reflect.declaration.CtInterface;
 import spoon.reflect.declaration.CtMethod;
+import spoon.reflect.declaration.CtModifiable;
 import spoon.reflect.declaration.CtType;
 import spoon.reflect.reference.CtFieldReference;
 
@@ -29,8 +31,13 @@ import java.util.Set;
 public class TCC extends DecimalGatherer {
 
 	/**
-	 * Maps a type `t` to its methods, which in turn are mapped to their field
-	 * accesses referencing a field of `t`.
+	 * The initial metric value.
+	 */
+	private static final BigDecimal INITIAL_VALUE = BigDecimal.ZERO;
+
+	/**
+	 * Maps a type `t` to its methods, which in turn are mapped to the fields
+	 * they are accessing, which in turn are in scope of `t`.
 	 */
 	private Map<CtType, Map<CtMethod, Set<CtField>>>
 			typeInfo = new IdentityHashMap<>();
@@ -67,26 +74,29 @@ public class TCC extends DecimalGatherer {
 
 	@Override
 	public <T> void visitCtClass(final CtClass<T> ctClass) {
-		super.visitCtClass(ctClass);
-		visitCtType(ctClass);
+		typeInfo.put(ctClass, new IdentityHashMap<>());
+		visitNode(ctClass, super::visitCtClass, this::visitType,
+				Propagation.NONE, INITIAL_VALUE);
 	}
 
 	@Override
 	public <T> void visitCtInterface(final CtInterface<T> ctInterface) {
-		super.visitCtInterface(ctInterface);
-		visitCtType(ctInterface);
+		typeInfo.put(ctInterface, new IdentityHashMap<>());
+		visitNode(ctInterface, super::visitCtInterface, this::visitType,
+				Propagation.NONE, INITIAL_VALUE);
 	}
 
 	@Override
 	public <T extends Enum<?>> void visitCtEnum(final CtEnum<T> ctEnum) {
-		super.visitCtEnum(ctEnum);
-		visitCtType(ctEnum);
+		typeInfo.put(ctEnum, new IdentityHashMap<>());
+		visitNode(ctEnum, super::visitCtEnum, this::visitType,
+				Propagation.NONE, INITIAL_VALUE);
 	}
 
-	private void visitCtType(final CtType type) {
-		final Map<CtMethod, Set<CtField>> fas = typeInfo.get(type);
-		if (fas != null) {
-			final List<CtMethod> methods = new ArrayList<>(fas.keySet());
+	private <T extends CtType> void visitType(final T type) {
+		final Map<CtMethod, Set<CtField>> ti = typeInfo.get(type);
+		if (ti != null) {
+			final List<CtMethod> methods = new ArrayList<>(ti.keySet());
 			final int numMethods = methods.size();
 			final int totalPairs = numMethods * (numMethods + 1);
 			int pairs = 0;
@@ -95,14 +105,25 @@ public class TCC extends DecimalGatherer {
 					final CtMethod m1 = methods.get(i);
 					final CtMethod m2 = methods.get(j);
 					Validate.validateState(m1 != m2);
-					final Set<CtField> fields = new HashSet<>(fas.get(m1));
-					fields.retainAll(fas.get(m2));
+					final Set<CtField> fields = new HashSet<>(ti.get(m1));
+					fields.retainAll(ti.get(m2));
 					if (!fields.isEmpty()) {
 						pairs++;
 					}
 				}
 			}
+			final BigDecimal tcc = totalPairs == 0 || pairs == 0
+					? BigDecimal.ZERO: BigDecimal.valueOf(
+							(double) pairs/ (double) totalPairs);
+			inc(tcc);
 		}
+	}
+
+	@Override
+	public <T> void visitCtMethod(final CtMethod<T> method) {
+		typeInfo.get(method.getParent(CtType.class))
+				.put(method, new HashSet<>());
+		super.visitCtMethod(method);
 	}
 
 	@Override
@@ -117,21 +138,31 @@ public class TCC extends DecimalGatherer {
 		super.visitCtFieldWrite(fieldWrite);
 	}
 
+	@Override
+	public <T> void visitCtInvocation(final CtInvocation<T> invocation) {
+		resolveToMethod(invocation)
+				.map(this::resolveToFieldAccess)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.ifPresent(this::visitCtFieldAccess);
+		super.visitCtInvocation(invocation);
+	}
+
 	private void visitCtFieldAccess(final CtFieldAccess fieldAccess) {
 		final CtType type = fieldAccess.getParent(CtType.class);
-		Optional.ofNullable(type)
-				.map(__ -> fieldAccess.getVariable())
-				.map(CtFieldReference::getDeclaration)
-				.filter(field -> isInScopeOf(field, type))
-				.ifPresent(field -> {
-					final CtMethod method = field.getParent(CtMethod.class);
-					if (!method.isPrivate()) {
-						typeInfo.computeIfAbsent(type,
-										__ -> new IdentityHashMap<>())
-								.computeIfAbsent(method,
-										__ -> new HashSet<>())
-								.add(field);
-					}
-				});
+		if (type != null && typeInfo.containsKey(type)) {
+			final Optional<CtField> field = Optional
+					.ofNullable(fieldAccess.getVariable())
+					.map(CtFieldReference::getDeclaration)
+					.filter(f -> isInScopeOf(f, type));
+			final Optional<CtMethod> method = field
+					.map(f -> fieldAccess.getParent(CtMethod.class))
+					.filter(CtModifiable::isPublic);
+			if (field.isPresent() && method.isPresent()) {
+				typeInfo.get(type).computeIfAbsent(
+						method.get(), __ -> new HashSet<>())
+						.add(field.get());
+			}
+		}
 	}
 }
