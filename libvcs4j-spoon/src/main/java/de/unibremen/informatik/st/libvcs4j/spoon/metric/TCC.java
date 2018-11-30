@@ -98,7 +98,7 @@ public class TCC extends DecimalGatherer {
 		if (ti != null) {
 			final List<CtMethod> methods = new ArrayList<>(ti.keySet());
 			final int numMethods = methods.size();
-			final int totalPairs = numMethods * (numMethods + 1);
+			final int totalPairs = (numMethods * (numMethods + 1)) / 2;
 			int pairs = 0;
 			for (int i = 0; i < numMethods; i++) {
 				for (int j = i + 1; j < numMethods; j++) {
