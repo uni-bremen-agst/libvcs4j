@@ -1,6 +1,7 @@
 package de.unibremen.informatik.st.libvcs4j.spoon;
 
 import de.unibremen.informatik.st.libvcs4j.Validate;
+import spoon.reflect.CtModel;
 import spoon.reflect.code.CtAssignment;
 import spoon.reflect.code.CtBlock;
 import spoon.reflect.code.CtExpression;
@@ -32,6 +33,19 @@ public class Scanner extends CtScanner {
 	 * been called.
 	 */
 	private boolean initialized = false;
+
+	/**
+	 * Scans the given spoon model. Does nothing if {@code model} is
+	 * {@code null}.
+	 *
+	 * @param model
+	 * 		The model to scan.
+	 */
+	public void scan(final CtModel model) {
+		if (model != null) {
+			scan(model.getRootPackage());
+		}
+	}
 
 	@Override
 	public void scan(final CtElement element) {

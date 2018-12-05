@@ -57,23 +57,26 @@ public class NOA extends IntGatherer {
 
 	@Override
 	public <T> void visitCtClass(final CtClass<T> ctClass) {
-		visitNode(ctClass, Propagation.NONE, ctClass.getFields().size());
+		visitNode(ctClass, super::visitCtClass,
+				Propagation.NONE, ctClass.getFields().size());
 	}
 
 	@Override
 	public <T> void visitCtInterface(final CtInterface<T> ctInterface) {
-		visitNode(ctInterface, Propagation.NONE,
-				ctInterface.getFields().size());
+		visitNode(ctInterface, super::visitCtInterface,
+				Propagation.NONE, ctInterface.getFields().size());
 	}
 
 	@Override
 	public <T extends Enum<?>> void visitCtEnum(CtEnum<T> ctEnum) {
-		visitNode(ctEnum, Propagation.NONE, ctEnum.getFields().size());
+		visitNode(ctEnum, super::visitCtEnum,
+				Propagation.NONE, ctEnum.getFields().size());
 	}
 
 	@Override
 	public <A extends Annotation> void visitCtAnnotation(
 			final CtAnnotation<A> annotation) {
-		visitNode(annotation, Propagation.NONE, annotation.getValues().size());
+		visitNode(annotation, super::visitCtAnnotation,
+				Propagation.NONE, annotation.getValues().size());
 	}
 }

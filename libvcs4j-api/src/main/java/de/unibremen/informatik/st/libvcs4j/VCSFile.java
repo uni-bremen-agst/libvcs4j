@@ -949,8 +949,7 @@ public interface VCSFile extends VCSModelElement {
 		int offs = offset;
 		while (line <= lines.size()) {
 			final String lineStr = lines.get(line - 1);
-			final int lineLen = lineStr.length() +
-					NUMBER_OF_TABS.apply(lineStr) * (tabSize - 1);
+			final int lineLen = lineStr.length();
 			if (lineLen <= offs) {
 				line++;
 				offs -= lineLen;

@@ -31,10 +31,44 @@ public class Metric {
 	private final BigDecimal value;
 
 	/**
-	 * Indicates {@link #value} is decimal or integer.
+	 * Indicates whether {@link #value} is decimal or integer.
 	 */
 	@Getter
 	private final boolean isDecimal;
+
+	/**
+	 * Creates a new decimal metric.
+	 *
+	 * @param name
+	 * 		The name of the metric.
+	 * @param value
+	 * 		The decimal value of the metric.
+	 * @throws NullPointerException
+	 * 		If {@code name} is {@code null}.
+	 */
+	public Metric(@NonNull final String name, final double value)
+			throws NullPointerException {
+		this.name = name;
+		this.value = new BigDecimal(value);
+		this.isDecimal = true;
+	}
+
+	/**
+	 * Creates a new integer metric.
+	 *
+	 * @param name
+	 * 		The name of the metric.
+	 * @param value
+	 * 		The integer value of the metric.
+	 * @throws NullPointerException
+	 * 		If {@code name} is {@code null}.
+	 */
+	public Metric(@NonNull final String name, final int value)
+			throws NullPointerException {
+		this.name = name;
+		this.value = new BigDecimal(value);
+		this.isDecimal = false;
+	}
 
 	/**
 	 * Returns the value of this metric as int.
