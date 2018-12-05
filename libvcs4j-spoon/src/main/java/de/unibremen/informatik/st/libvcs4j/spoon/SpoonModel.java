@@ -1,9 +1,13 @@
 package de.unibremen.informatik.st.libvcs4j.spoon;
 
 import de.unibremen.informatik.st.libvcs4j.FileChange;
+import de.unibremen.informatik.st.libvcs4j.Revision;
 import de.unibremen.informatik.st.libvcs4j.RevisionRange;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.Validate;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,9 +47,11 @@ import static java.lang.System.currentTimeMillis;
 import static spoon.SpoonModelBuilder.InputType;
 
 /**
- * Allows to incrementally build a {@link CtModel}. This class is somewhat
- * similar to {@link spoon.IncrementalLauncher}, except that is utilizes
- * LibVCS4j's {@link RevisionRange} API to update a model.
+ * Wraps a Spoon {@link CtModel} and allows to incrementally update this model.
+ * This class is somewhat similar to {@link spoon.IncrementalLauncher}, except
+ * that it utilizes LibVCS4j's {@link RevisionRange} API to build a model.
+ * Incremental updates can be enabled and disabled with
+ * {@link #setIncremental(boolean)}.
  */
 public class SpoonModel {
 
@@ -54,6 +60,15 @@ public class SpoonModel {
 	 */
 	private static final Logger LOGGER =
 			LoggerFactory.getLogger(SpoonModel.class);
+
+	/**
+	 * Indicates whether {@link #update(RevisionRange)} updates {@link #model}
+	 * incrementally or if a model is build from scratch. The default value is
+	 * {@code true}.
+	 */
+	@Getter
+	@Setter
+	private boolean incremental = true;
 
 	/**
 	 * The internal {@link CtModel}. Is updated by
@@ -86,35 +101,31 @@ public class SpoonModel {
 	/**
 	 * Incrementally builds the underlying spoon model.
 	 *
-	 * @param revisionRange
+	 * @param range
 	 * 		The currently checked out range.
 	 * @return
 	 * 		The updated spoon model. May be an empty {@link Optional}, if spoon
 	 * 		fails to build the model.
 	 */
-	public Optional<CtModel> update(final RevisionRange revisionRange) {
-		Validate.notNull(revisionRange);
+	public Optional<CtModel> update(@NonNull final RevisionRange range) {
 		final long current = currentTimeMillis();
-
 		if (tmpDir == null) {
 			tmpDir = createTmpDir();
 		}
 
-		if (model != null) {
-
+		final Launcher launcher;
+		if (model != null && incremental) {
 			final Factory factory = model.getRootPackage().getFactory();
-			final Launcher launcher = new Launcher(factory);
-			launcher.getEnvironment().setNoClasspath(true);
+			launcher = new Launcher(factory);
 			launcher.getModelBuilder().setSourceClasspath(tmpDir.toString());
-			launcher.setBinaryOutputDirectory(tmpDir.toString());
 			notCompiled.addAll(findPreviouslyNotCompiledSources());
 
-			final List<String> input = revisionRange.getFileChanges()
+			final List<String> input = range.getFileChanges()
 					.stream()
-					.filter(fileChange -> fileChange.getType() != FileChange.Type.REMOVE)
+					.filter(fc -> fc.getType() != FileChange.Type.REMOVE)
 					.map(FileChange::getNewFile)
-					.map(vcsFile -> vcsFile.orElseThrow(IllegalArgumentException::new))
-					.filter(sourceFile -> sourceFile.getPath().endsWith(".java"))
+					.map(f -> f.orElseThrow(IllegalArgumentException::new))
+					.filter(f -> f.getPath().endsWith(".java"))
 					.map(VCSFile::getPath)
 					.collect(Collectors.toList());
 
@@ -127,21 +138,21 @@ public class SpoonModel {
 
 			// delete the removed files from the spoon model
 			removeChangedTypes(extractOldFiles(
-					revisionRange.getRemovedFiles()));
+					range.getRemovedFiles()));
 
 			// delete the relocated files from the spoon model
 			removeChangedTypes(extractOldFiles(
-					revisionRange.getRelocatedFiles()));
+					range.getRelocatedFiles()));
 
 			// delete removed files from the set, because they do not exist
 			// anymore
-			extractOldFiles(revisionRange.getRemovedFiles()).stream()
+			extractOldFiles(range.getRemovedFiles()).stream()
 					.map(this::toCanonicalPath)
 					.forEach(notCompiled::remove);
 
 			// delete relocated files from the set, because their path is
 			// outdated
-			extractOldFiles(revisionRange.getRelocatedFiles()).stream()
+			extractOldFiles(range.getRelocatedFiles()).stream()
 					.map(this::toCanonicalPath)
 					.forEach(notCompiled::remove);
 
@@ -150,31 +161,29 @@ public class SpoonModel {
 
 			launcher.addInputResource(createInputSource(notCompiled));
 			launcher.getModelBuilder().addCompilationUnitFilter(path ->
-					!filesToBuild.contains(toCanonicalPath(path)));
+					!notCompiled.contains(toCanonicalPath(path)));
 			launcher.getModelBuilder().compile(InputType.FILES);
 			model.setBuildModelIsFinished(false);
-			try {
-				model = launcher.buildModel();
-			} catch (final Exception e) {
-				model = null;
-				notCompiled.clear();
-			}
-
 		} else {
-
-			final Launcher launcher = new Launcher();
-			launcher.setBinaryOutputDirectory(tmpDir.toString());
-			launcher.getEnvironment().setNoClasspath(true);
+			launcher = new Launcher();
 			// Add the checked out directory here, so we do not have to add
 			// each single file.
-			launcher.addInputResource(
-					revisionRange.getRevision().getOutput().toString());
+			final Revision revision = range.getRevision();
+			launcher.addInputResource(revision.getOutput().toString());
+		}
+
+		launcher.getEnvironment().setNoClasspath(true);
+		launcher.setBinaryOutputDirectory(tmpDir.toString());
+		try {
 			launcher.getModelBuilder().compile(InputType.FILES);
 			model = launcher.buildModel();
-
+			LOGGER.info(format("Model built in %d milliseconds",
+					currentTimeMillis() - current));
+		} catch (final Exception e) {
+			model = null;
+			notCompiled.clear();
+			LOGGER.info("Unable to build model", e);
 		}
-		LOGGER.info(format("Model built in %d milliseconds",
-				currentTimeMillis() - current));
 		return Optional.ofNullable(model);
 	}
 
