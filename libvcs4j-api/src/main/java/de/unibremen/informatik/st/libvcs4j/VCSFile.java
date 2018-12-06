@@ -167,7 +167,9 @@ public interface VCSFile extends VCSModelElement {
 		 * position. Returns an empty Optional if {@code fileChange} is of type
 		 * {@link FileChange.Type#REMOVE}, or if the line of this position was
 		 * deleted without a corresponding insertion. If the line of this
-		 * position was changed, the resulting column is set to 1.
+		 * position was changed to a non-empty string, the resulting column is
+		 * set to 1. If the line of this position was changed to an empty
+		 * string, an empty {@link Optional} is returned.
 		 *
 		 * @param fileChange
 		 * 		The file change to apply.
@@ -280,6 +282,10 @@ public interface VCSFile extends VCSModelElement {
 						.count();
 			final String oldLineStr = oldFile.readLines().get(getLine() - 1);
 			final String newLineStr = newFile.readLines().get(line - 1);
+			if (newLineStr.isEmpty()) {
+				// We can't create a position for an empty line.
+				return Optional.empty();
+			}
 			final int column = !oldLineStr.equals(newLineStr)
 					? 1 // We can't determine the column of a changed line, use
 					    // 1 as fallback.
