@@ -41,14 +41,15 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * An abstract base implementation of a {@link VCSEngine}. This class assumes
+ * An abstract base implementation of {@link VCSEngine}. This class assumes
  * that an engine has a fixed number of revisions to process. Consequently, an
  * additional method is added to the public API, namely
  * {@link #listRevisions()} which returns the revisions to process.
  */
 public abstract class AbstractVSCEngine implements VCSEngine {
 
-	private static final Logger log = LoggerFactory.getLogger(VCSEngine.class);
+	private static final Logger log = LoggerFactory
+			.getLogger(AbstractVSCEngine.class);
 
 	/* VCS related configurations. */
 	private final String repository;
