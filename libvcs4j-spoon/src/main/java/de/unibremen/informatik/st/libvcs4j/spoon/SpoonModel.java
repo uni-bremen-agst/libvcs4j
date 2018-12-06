@@ -34,7 +34,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -86,7 +85,7 @@ public class SpoonModel {
 	 * Stores all files (as canonical paths) that weren't compiled by the last
 	 * call of {@link #update(RevisionRange)}.
 	 */
-	private Set<Path> notCompiled = new HashSet<>();
+	private final Set<Path> notCompiled = new HashSet<>();
 
 	/**
 	 * Returns the internal {@link CtModel} of this model.
@@ -323,22 +322,22 @@ public class SpoonModel {
 
 		final String output = tmpDir.toString();
 		final Set<Path> result = new HashSet<>();
-		for (final CtType type : model.getAllTypes()) {
+		model.getAllTypes().parallelStream().forEach(type -> {
 			final Path canonicalPath = toCanonicalPath(
 					type.getPosition().getFile());
-
 			final String pkg = type.getPackage().getQualifiedName();
-			final File base = Paths.get(output, pkg.split(".")).toFile();
-
+			final File base = Paths.get(output, pkg.split("\\.")).toFile();
 			if (getExpectedBinaryFiles(base, null, type)
 					.stream().anyMatch(f -> !f.isFile())) {
-				result.add(canonicalPath);
-				result.addAll(findReferencingFiles(
-						Collections.singletonList(canonicalPath)));
+				synchronized (result) {
+					result.add(canonicalPath);
+				}
 			} else {
-				notCompiled.remove(canonicalPath);
+				synchronized (notCompiled) {
+					notCompiled.remove(canonicalPath);
+				}
 			}
-		}
+		});
 		return result;
 	}
 
@@ -386,7 +385,7 @@ public class SpoonModel {
 				.map(this::toCanonicalPath)
 				.collect(Collectors.toList());
 		final List<CtTypeReference> typeReferencesOfFiles =
-				unitMap.keySet().stream()
+				unitMap.keySet().parallelStream()
 						.filter(path -> files.contains(toCanonicalPath(path)))
 						.map(unitMap::get)
 						.map(CompilationUnit::getDeclaredTypes)
@@ -395,13 +394,14 @@ public class SpoonModel {
 						.collect(Collectors.toList());
 
 		final Set<Path> referencingFiles = new HashSet<>();
-		model.getAllTypes().forEach(type -> type.getReferencedTypes().stream()
-				.filter(typeReferencesOfFiles::contains)
-				.findAny()
-				.map(CtElement::getPosition)
-				.map(SourcePosition::getFile)
-				.map(this::toCanonicalPath)
-				.ifPresent(referencingFiles::add));
+		model.getAllTypes().forEach(type ->
+				type.getReferencedTypes().parallelStream()
+						.filter(typeReferencesOfFiles::contains)
+						.findAny()
+						.map(CtElement::getPosition)
+						.map(SourcePosition::getFile)
+						.map(this::toCanonicalPath)
+						.ifPresent(referencingFiles::add));
 		return referencingFiles;
 	}
 
