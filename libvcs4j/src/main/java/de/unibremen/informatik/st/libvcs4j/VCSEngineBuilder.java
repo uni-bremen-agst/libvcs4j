@@ -504,27 +504,23 @@ public class VCSEngineBuilder {
 	 * 		The start range ({@code >= 0}).
 	 * @return
 	 * 		This builder.
-	 * @throws IllegalArgumentException
-	 * 		If {@code start < 0}.
 	 */
 	public VCSEngineBuilder withStart(final int start) {
-		this.start = Validate.notNegative(start);
+		this.start = start;
 		interval = Interval.RANGE;
 		return this;
 	}
 
 	/**
-	 * Sets the inclusive end range. The origin is {@code 0}.
+	 * Sets the exclusive end range. The origin is {@code 1}.
 	 *
 	 * @param end
-	 * 		The inclusive end range ({@code >= 0}).
+	 * 		The exclusive end range ({@code >= 1}).
 	 * @return
 	 * 		This builder.
-	 * @throws IllegalArgumentException
-	 * 		If {@code end < 0}.
 	 */
 	public VCSEngineBuilder withEnd(final int end) {
-		this.end = Validate.notNegative(end);
+		this.end = end;
 		interval = Interval.RANGE;
 		return this;
 	}
