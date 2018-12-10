@@ -23,7 +23,7 @@ configurations {
 }
 
 dependencies {
-	compile 'de.uni-bremen.informatik.st:libvcs4j-api:1.5.0'
+	compile 'de.uni-bremen.informatik.st:libvcs4j-api:1.6.0'
 
 	// add local jars from 'libs' directory
 	extraLibs fileTree(dir: 'libs', include: '*.jar')
