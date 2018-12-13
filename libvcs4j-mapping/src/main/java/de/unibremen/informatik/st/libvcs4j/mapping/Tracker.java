@@ -51,17 +51,22 @@ public class Tracker<T> {
 					.filter(mappable -> mappables.containsKey(
 							result.getPredecessor(mappable).get()))
 					.forEach(to -> {
-						final Mappable<T> predecessor = result.getPredecessor(to).get();
-						final Entity<T> entity = mappables.get(predecessor).getLast();
+						final Mappable<T> predecessor =
+								result.getPredecessor(to).get();
+						final Entity<T> last = mappables.get(predecessor).getLast();
 						final int numChanges = getNumChanges(predecessor,
 								to,
-								entity.getNumChanges());
+								last.getNumChanges());
 						final Entity<T> successor =
 								new Entity<>(to, result.getOrdinal(), numChanges);
-						final Lifespan<T> updated = mappables.get(predecessor).add(successor);
-						localMappables.put(to, updated);
-						if (!lifespans.contains(updated)) {
-							lifespans.add(updated);
+						//just to be sure
+						if (last.getOrdinal() < successor.getOrdinal()) {
+							final Lifespan<T> updated =
+									mappables.get(predecessor).add(successor);
+							localMappables.put(to, updated);
+							if (!lifespans.contains(updated)) {
+								lifespans.add(updated);
+							}
 						}
 
 					});
@@ -130,9 +135,5 @@ public class Tracker<T> {
 			}
 		}
 		return lastNumChanges;
-	}
-
-	public List<Lifespan<T>> getLifespans() {
-		return lifespans;
 	}
 }

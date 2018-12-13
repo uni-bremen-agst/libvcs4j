@@ -1,6 +1,7 @@
 package de.unibremen.informatik.st.libvcs4j.mapping;
 
 import de.unibremen.informatik.st.libvcs4j.FileChange;
+import de.unibremen.informatik.st.libvcs4j.LineChange;
 import de.unibremen.informatik.st.libvcs4j.RevisionRange;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.Validate;
@@ -347,9 +348,20 @@ public class Mapping<T> {
 			for (final Map.Entry<FileChange, VCSFile.Range> changes : map.entrySet()) {
 				final FileChange fileChange = changes.getKey();
 				final VCSFile.Range oldRange = changes.getValue();
-				final VCSFile.Range updatedRange =
-						oldRange.apply(fileChange).orElseThrow(IOException::new);
-				ranges.add(updatedRange);
+				Optional<VCSFile.Range> updatedRange =
+						oldRange.apply(fileChange);
+				if (!updatedRange.isPresent()
+						&& fileChange.getType() != FileChange.Type.REMOVE) {
+					try {
+						updatedRange = computeNewRange(fileChange.computeDiff(),
+								oldRange,
+								fileChange.getNewFile().get());
+					} catch (IllegalStateException e) {
+						updatedRange = Optional.empty();
+					}
+				}
+
+				updatedRange.ifPresent(ranges::add);
 			}
 
 			if (ranges.isEmpty()) {
@@ -417,6 +429,94 @@ public class Mapping<T> {
 							}
 						}));
 		return result;
+	}
+
+	/**
+	 * Computes the new {@link VCSFile.Range} in the given new file. This method
+	 * is used as a utility method by {@link #applyFileChanges(List)}.
+	 *
+	 * @param lineChanges
+	 * 		List of {@link LineChange} objects for the determination if begin
+	 * 		and/or end has been deleted.
+	 * @param oldRange
+	 * 		The given old range.
+	 * @param newFile
+	 * 		The new file where the new {@link VCSFile.Range} object should be created.
+	 * @return
+	 * 		{@link Optional#empty()} if computing failed or a {@link Optional} of
+	 * 		the newly created {@link VCSFile.Range}.
+	 * @throws IOException
+	 * 		If reading the content from the new file fails {@link VCSFile#readLines()}.
+	 */
+	private Optional<VCSFile.Range> computeNewRange(final List<LineChange> lineChanges,
+													final VCSFile.Range oldRange,
+													final VCSFile newFile)
+			throws IOException {
+		final VCSFile.Range result;
+		boolean beginDeleted = false;
+		boolean endDeleted = false;
+		for (final LineChange lineChange : lineChanges) {
+			if (oldRange.getBegin().getLine() == lineChange.getLine()
+					&& lineChange.getType() == LineChange.Type.DELETE) {
+				beginDeleted = true;
+			}
+			if (oldRange.getEnd().getLine() == lineChange.getLine()
+					&& lineChange.getType() == LineChange.Type.DELETE) {
+				endDeleted = true;
+			}
+		}
+		if (beginDeleted && endDeleted) {
+			if (oldRange.getBegin().getLine() == oldRange.getEnd().getLine()) {
+				if (oldRange.getBegin().getLine() > newFile.readLines().size()) {
+					return Optional.empty();
+				}
+				result = createRange(oldRange, newFile, 1, 1);
+			} else if (oldRange.getEnd().getLine() - oldRange.getBegin().getLine() == 1) {
+				result = createRange(oldRange, newFile, -1, -1);
+			} else {
+				result = createRange(oldRange, newFile, 1, -1);
+			}
+		} else if (!endDeleted) {
+			result = createRange(oldRange, newFile, 1, 0);
+		} else {
+			result = createRange(oldRange, newFile, 0, -1);
+		}
+		return Optional.ofNullable(result);
+	}
+
+	/**
+	 * Creates a new {@link VCSFile.Range} with the line from oldRange, the begin and
+	 * end offset in the newFile. This method is used as a utility method by
+	 * {@link #computeNewRange(List, VCSFile.Range, VCSFile)}.
+	 *
+	 * @param oldRange
+	 * 		The given oldRange. This method needs the line number returned
+	 * 		from {@link VCSFile.Position#getLine()}.
+	 * @param newFile
+	 * 		The new file where the new {@link VCSFile.Range} object should be created.
+	 * @param beginOffset
+	 * 		Offset for the beginning line.
+	 * @param endOffset
+	 * 		Offset for the end line.
+	 * @return
+	 * 		The newly created {@link VCSFile.Range} in the given new file.
+	 * @throws IOException
+	 * 		If an error occured while reading the file content in
+	 * 		{@link VCSFile#positionOf(int, int, int)}.
+	 */
+	private VCSFile.Range createRange(final VCSFile.Range oldRange,
+									  final VCSFile newFile,
+									  final int beginOffset,
+									  final int endOffset) throws IOException {
+		return new VCSFile.Range(
+				newFile.positionOf(oldRange.getBegin().getLine() + beginOffset,
+						1,
+						oldRange.getBegin().getTabSize())
+						.orElseThrow(IllegalStateException::new),
+				newFile.positionOf(oldRange.getEnd().getLine() + endOffset,
+						1,
+						oldRange.getEnd().getTabSize())
+						.orElseThrow(IllegalStateException::new).endOfLine());
 	}
 
 	/**
