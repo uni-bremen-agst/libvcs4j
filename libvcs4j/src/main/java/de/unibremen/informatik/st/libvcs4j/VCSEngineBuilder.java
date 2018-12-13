@@ -26,30 +26,53 @@ import java.util.UUID;
  * parameters. That is, for instance, {@code null} and empty parameter values
  * are mapped to default values.
  */
-@SuppressWarnings({"WeakerAccess", "unused", "UnusedReturnValue"})
 public class VCSEngineBuilder {
 
+	/**
+	 * The supported VCS engines.
+	 */
 	private enum Engine { SINGLE, SVN, GIT, HG }
 
+	/**
+	 * The supported commit intervals.
+	 */
 	private enum Interval { DATE, REVISION, RANGE, LATEST }
 
 	//////////////////////////////// Defaults /////////////////////////////////
 
+	/**
+	 * The default root (see {@link #withRoot(String)}).
+	 */
 	public static final String DEFAULT_ROOT = "";
 
-	// Only SVN has restrictions regarding the minimum date.
+	/**
+	 * The default since (see {@link #withSince(LocalDateTime)}) date. Only SVN
+	 * has restrictions regarding the minimum date.
+	 */
 	public static final LocalDateTime DEFAULT_SINCE =
 			SVNEngine.MINIMUM_DATETIME;
 
-	// Year 2200 should be sufficient.
+	/**
+	 * The default until (see {@link #withUntil(LocalDateTime)}) date. Year
+	 * 2200 should be sufficient.
+	 */
 	public static final LocalDateTime DEFAULT_UNTIL =
 			LocalDateTime.of(2200, 1, 1, 0, 0);
 
+	/**
+	 * The default start (see {@link #withStart(int)}).
+	 */
 	public final int DEFAULT_START = AbstractIntervalVCSEngine.MIN_START;
 
+	/**
+	 * The default end (see {@link #withEnd(int)}).
+	 */
 	public final int DEFAULT_END = Integer.MAX_VALUE;
 
-	// Cannot be static since every instance needs its own default value!
+	/**
+	 * The default target (see {@link #withTarget(Path)}). Cannot be static
+	 * since every instance needs its own default value!
+	 */
 	private final String defaultTarget = Paths.get(
 			System.getProperty("java.io.tmpdir"),          // system tmp dir
 			"libvcs4j").toString() +                       // prefix
@@ -57,185 +80,481 @@ public class VCSEngineBuilder {
 
 	////////////////////////////// Configuration //////////////////////////////
 
+	/**
+	 * Stores the repository to process.
+	 */
 	private String repository;
 
+	/**
+	 * Stores the engine that should be used to process {@link #repository}.
+	 * The default engine is {@link Engine#SINGLE}
+	 */
 	private Engine engine = Engine.SINGLE;
 
+	/**
+	 * Stores the root directory.
+	 */
 	private String root = DEFAULT_ROOT;
 
+	/**
+	 * Stores the target.
+	 */
 	private String target = defaultTarget;
 
+	/**
+	 * Stores the branch.
+	 */
 	private String branch = null;
 
+	/**
+	 * Stores the interval type.
+	 */
 	private Interval interval = Interval.DATE;
 
+	/**
+	 * Stores the since date.
+	 */
 	private LocalDateTime since = LocalDateTime.from(DEFAULT_SINCE);
 
+	/**
+	 * Stores the until date.
+	 */
 	private LocalDateTime until = LocalDateTime.from(DEFAULT_UNTIL);
 
+	/**
+	 * Stores the start.
+	 */
 	private int start = DEFAULT_START;
 
+	/**
+	 * Stores the end.
+	 */
 	private int end = DEFAULT_END;
 
+	/**
+	 * Stores the from commit.
+	 */
 	private String from = null;
 
+	/**
+	 * Stores the to commit.
+	 */
 	private String to = null;
 
+	/**
+	 * Stores the {@link ITEngine} that should be used to extract issues.
+	 */
 	private ITEngine itEngine = null;
 
 	////////////////////////////// Constructors ///////////////////////////////
 
-	public VCSEngineBuilder(final String pRepository) {
-		withRepository(pRepository);
+	/**
+	 * Creates a new builder with given repository path.
+	 *
+	 * @param repository
+	 * 		Path to the repository.
+	 * @throws NullPointerException
+	 * 		If {@code repository} is {@code null}.
+	 */
+	public VCSEngineBuilder(final String repository)
+			throws NullPointerException {
+		withRepository(repository);
 	}
 
-	public static VCSEngineBuilder of(final String pRepository) {
-		return new VCSEngineBuilder(pRepository);
+	/**
+	 * Creates a new builder with given repository path.
+	 *
+	 * @param repository
+	 * 		Path to the repository.
+	 * @return
+	 * 		The created builder.
+	 * @throws NullPointerException
+	 * 		If {@code repository} is {@code null}.
+	 */
+	public static VCSEngineBuilder of(final String repository)
+			throws NullPointerException{
+		return new VCSEngineBuilder(repository);
 	}
 
-	public static VCSEngineBuilder ofGit(final String pRepository) {
-		return of(pRepository).withGit();
+	/**
+	 * Creates a new Git builder with given repository path.
+	 *
+	 * @param repository
+	 * 		Path to the repository.
+	 * @return
+	 * 		The created Git builder.
+	 * @throws NullPointerException
+	 * 		If {@code repository} is {@code null}.
+	 */
+	public static VCSEngineBuilder ofGit(final String repository)
+			throws NullPointerException{
+		return of(repository).withGit();
 	}
 
-	public static VCSEngineBuilder ofHG(final String pRepository) {
-		return of(pRepository).withHG();
+	/**
+	 * Creates a new Mercurial builder with given repository path.
+	 *
+	 * @param repository
+	 * 		Path to the repository.
+	 * @return
+	 * 		The created Mercurial builder.
+	 * @throws NullPointerException
+	 * 		If {@code repository} is {@code null}.
+	 */
+	public static VCSEngineBuilder ofHG(final String repository)
+			throws NullPointerException{
+		return of(repository).withHG();
 	}
 
-	public static VCSEngineBuilder ofSingle(final String pRepository) {
-		return of(pRepository).withSingle();
+	/**
+	 * Creates a new single input file/directory builder with given path.
+	 *
+	 * @param repository
+	 * 		Path to the file or directory.
+	 * @return
+	 * 		The created single input file/directory builder.
+	 * @throws NullPointerException
+	 * 		If {@code repository} is {@code null}.
+	 */
+	public static VCSEngineBuilder ofSingle(final String repository)
+			throws NullPointerException{
+		return of(repository).withSingle();
 	}
 
-	public static VCSEngineBuilder ofSVN(final String pRepository) {
-		return of(pRepository).withSVN();
+	/**
+	 * Creates a new SVN builder with given repository path.
+	 *
+	 * @param repository
+	 * 		Path to the repository.
+	 * @return
+	 * 		The created SVN builder.
+	 * @throws NullPointerException
+	 * 		If {@code repository} is {@code null}.
+	 */
+	public static VCSEngineBuilder ofSVN(final String repository)
+			throws NullPointerException{
+		return of(repository).withSVN();
 	}
 
 	/////////////////////////////// Fluent API ////////////////////////////////
 
-	public VCSEngineBuilder withRepository(final String pRepository) {
-		repository = Validate.notNull(pRepository).trim();
+	/**
+	 * Sets the path to repository.
+	 *
+	 * @param repository
+	 * 		Path to the repository.
+	 * @return
+	 * 		This builder.
+	 */
+	public VCSEngineBuilder withRepository(final String repository) {
+		this.repository = Validate.notNull(repository).trim();
 		return this;
 	}
 
+	/**
+	 * Sets the engine to {@link SingleEngine}.
+	 *
+	 * @return
+	 * 		This builder.
+	 */
 	public VCSEngineBuilder withSingle() {
 		engine = Engine.SINGLE;
 		return this;
 	}
 
+	/**
+	 * Sets the engine to {@link SVNEngine}.
+	 *
+	 * @return
+	 * 		This builder.
+	 */
 	public VCSEngineBuilder withSVN() {
 		engine = Engine.SVN;
 		return this;
 	}
 
+	/**
+	 * Sets the engine to {@link GitEngine}.
+	 *
+	 * @return
+	 * 		This builder.
+	 */
 	public VCSEngineBuilder withGit() {
 		engine = Engine.GIT;
 		return this;
 	}
 
+	/**
+	 * Sets the engine to {@link HGEngine}.
+	 *
+	 * @return
+	 * 		This builder.
+	 */
 	public VCSEngineBuilder withHG() {
 		engine = Engine.HG;
 		return this;
 	}
 
-	public VCSEngineBuilder withRoot(final String pRoot) {
-		root = pRoot == null ? DEFAULT_ROOT : pRoot.trim();
+	/**
+	 * Sets the root directory. If {@code root} is {@code null},
+	 * {@link #DEFAULT_ROOT} is used as fallback. The given string is trimmed
+	 * using {@link String#trim()}.
+	 *
+	 * @param root
+	 * 		The root directory.
+	 * @return
+	 * 		This builder.
+	 */
+	public VCSEngineBuilder withRoot(final String root) {
+		this.root = root == null ? DEFAULT_ROOT : root.trim();
 		return this;
 	}
 
-	public VCSEngineBuilder withTarget(final String pTarget) {
-		target = pTarget == null ? defaultTarget : pTarget.trim();
-		target = target.isEmpty() ? defaultTarget : target;
+	/**
+	 * Sets the target directory. That is, the directory where the revisions
+	 * will be checked out. If {@code target} is null or empty,
+	 * {@link #defaultTarget} is used as fallback. The given string is trimmed
+	 * using {@link String#trim()}.
+	 *
+	 * @param target
+	 * 		The directory where the revisions will be checked out.
+	 * @return
+	 * 		This builder.
+	 */
+	public VCSEngineBuilder withTarget(final String target) {
+		this.target = target == null ? defaultTarget : target.trim();
+		this.target = this.target.isEmpty() ? defaultTarget : this.target;
 		return this;
 	}
 
-	public VCSEngineBuilder withTarget(final Path pTarget) {
-		return withTarget(Optional.ofNullable(pTarget)
+	/**
+	 * Sets the target directory. That is, the directory where the revisions
+	 * will be checked out. If {@code target} is null, {@link #defaultTarget}
+	 * is used as fallback.
+	 *
+	 * @param target
+	 * 		The directory where the revisions will be checked out.
+	 * @return
+	 * 		This builder.
+	 */
+	public VCSEngineBuilder withTarget(final Path target) {
+		return withTarget(Optional.ofNullable(target)
 				.map(Path::toString)
 				.orElse(null));
 	}
 
-	public VCSEngineBuilder withBranch(final String pBranch) {
-		branch = pBranch;
+	/**
+	 * Sets the branch to process. If {@code branch} is {@code null}, the
+	 * engine's default branch is used as fallback.
+	 *
+	 * @param branch
+	 * 		The branch to process.
+	 * @return
+	 * 		This builder.
+	 */
+	public VCSEngineBuilder withBranch(final String branch) {
+		this.branch = branch;
 		return this;
 	}
 
-	public VCSEngineBuilder withSince(final LocalDateTime pSince) {
-		since = pSince == null || pSince.isBefore(DEFAULT_SINCE)
+	/**
+	 * Sets the since date as {@link LocalDateTime}. If {@code since} is
+	 * {@code null} or before {@link #DEFAULT_SINCE}, {@link #DEFAULT_SINCE} is
+	 * used as fallback.
+	 *
+	 * @param since
+	 * 		The since date.
+	 * @return
+	 * 		This builder.
+	 */
+	public VCSEngineBuilder withSince(final LocalDateTime since) {
+		this.since = since == null || since.isBefore(DEFAULT_SINCE)
 				? DEFAULT_SINCE
-				: pSince;
+				: since;
 		interval = Interval.DATE;
 		return this;
 	}
 
-	public VCSEngineBuilder withSince(final LocalDate pSince) {
-		since = pSince == null || pSince.isBefore(DEFAULT_SINCE.toLocalDate())
+	/**
+	 * Sets the since date as {@link LocalDate}. If {@code since} is
+	 * {@code null} or before {@link #DEFAULT_SINCE}, {@link #DEFAULT_SINCE} is
+	 * used as fallback.
+	 *
+	 * @param since
+	 * 		The since date.
+	 * @return
+	 * 		This builder.
+	 */
+	public VCSEngineBuilder withSince(final LocalDate since) {
+		final LocalDate defaultSince = DEFAULT_SINCE.toLocalDate();
+		this.since = since == null || since.isBefore(defaultSince)
 				? DEFAULT_SINCE
-				: parseDateTime(pSince.toString(), DEFAULT_SINCE);
+				: parseDateTime(since.toString(), DEFAULT_SINCE);
 		interval = Interval.DATE;
 		return this;
 	}
 
-	public VCSEngineBuilder withSince(final String pSince) {
-		since = parseDateTime(pSince, DEFAULT_SINCE);
+	/**
+	 * Sets the since date as {@link String}. If {@code since} is {@code null}
+	 * or before {@link #DEFAULT_SINCE}, {@link #DEFAULT_SINCE} is used as
+	 * fallback.
+	 *
+	 * @param since
+	 * 		The since date.
+	 * @return
+	 * 		This builder.
+	 * @throws IllegalArgumentException
+	 * 		If parsing {@code since} fails.
+	 */
+	public VCSEngineBuilder withSince(final String since)
+			throws IllegalArgumentException {
+		this.since = parseDateTime(since, DEFAULT_SINCE);
 		interval = Interval.DATE;
 		return this;
 	}
 
-	public VCSEngineBuilder withUntil(final LocalDateTime pUntil) {
-		until = pUntil == null || pUntil.isAfter(DEFAULT_UNTIL)
+	/**
+	 * Sets the until date as {@link LocalDateTime}. If {@code until} is
+	 * {@code null} or after {@link #DEFAULT_UNTIL}, {@link #DEFAULT_UNTIL} is
+	 * used as fallback.
+	 *
+	 * @param until
+	 * 		The until date.
+	 * @return
+	 * 		This builder.
+	 */
+	public VCSEngineBuilder withUntil(final LocalDateTime until) {
+		this.until = until == null || until.isAfter(DEFAULT_UNTIL)
 				? DEFAULT_UNTIL
-				: pUntil;
+				: until;
 		interval = Interval.DATE;
 		return this;
 	}
 
-	public VCSEngineBuilder withUntil(final LocalDate pUntil) {
-		until = pUntil == null || pUntil.isAfter(DEFAULT_UNTIL.toLocalDate())
+	/**
+	 * Sets the until date as {@link LocalDate}. If {@code until} is
+	 * {@code null} or after {@link #DEFAULT_UNTIL}, {@link #DEFAULT_UNTIL} is
+	 * used as fallback.
+	 *
+	 * @param until
+	 * 		The until date.
+	 * @return
+	 * 		This builder.
+	 */
+	public VCSEngineBuilder withUntil(final LocalDate until) {
+		final LocalDate defaultUntil = DEFAULT_UNTIL.toLocalDate();
+		this.until = until == null || until.isAfter(defaultUntil)
 				? DEFAULT_UNTIL
-				: parseDateTime(pUntil.toString(), DEFAULT_UNTIL);
+				: parseDateTime(until.toString(), DEFAULT_UNTIL);
 		interval = Interval.DATE;
 		return this;
 	}
 
-	public VCSEngineBuilder withUntil(final String pUntil) {
-		until = parseDateTime(pUntil, DEFAULT_UNTIL);
+	/**
+	 * Sets the until date as {@link String}. If {@code until} is {@code null}
+	 * or after {@link #DEFAULT_UNTIL}, {@link #DEFAULT_UNTIL} is used as
+	 * fallback.
+	 *
+	 * @param until
+	 * 		The until date.
+	 * @return
+	 * 		This builder.
+	 * @throws IllegalArgumentException
+	 * 		If parsing {@code until} fails.
+	 */
+	public VCSEngineBuilder withUntil(final String until)
+			throws IllegalArgumentException {
+		this.until = parseDateTime(until, DEFAULT_UNTIL);
 		interval = Interval.DATE;
 		return this;
 	}
 
-	public VCSEngineBuilder withFrom(final String pFrom) {
-		from = Validate.notEmpty(pFrom);
+	/**
+	 * Sets the from revision.
+	 *
+	 * @param from
+	 * 		The from revision.
+	 * @return
+	 * 		This builder.
+	 */
+	public VCSEngineBuilder withFrom(final String from) {
+		this.from = Validate.notEmpty(from);
 		interval = Interval.REVISION;
 		return this;
 	}
 
-	public VCSEngineBuilder withTo(final String pTo) {
-		to = Validate.notEmpty(pTo);
+	/**
+	 * Sets the inclusive to revision.
+	 *
+	 * @param to
+	 * 		The inclusive to revision.
+	 * @return
+	 * 		This builder.
+	 */
+	public VCSEngineBuilder withTo(final String to) {
+		this.to = Validate.notEmpty(to);
 		interval = Interval.REVISION;
 		return this;
 	}
 
-	public VCSEngineBuilder withStart(final int pStart) {
-		start = pStart;
+	/**
+	 * Sets the start range. The origin is {@code 0}.
+	 *
+	 * @param start
+	 * 		The start range ({@code >= 0}).
+	 * @return
+	 * 		This builder.
+	 */
+	public VCSEngineBuilder withStart(final int start) {
+		this.start = start;
 		interval = Interval.RANGE;
 		return this;
 	}
 
-	public VCSEngineBuilder withEnd(final int pEnd) {
-		end = pEnd;
+	/**
+	 * Sets the exclusive end range. The origin is {@code 1}.
+	 *
+	 * @param end
+	 * 		The exclusive end range ({@code >= 1}).
+	 * @return
+	 * 		This builder.
+	 */
+	public VCSEngineBuilder withEnd(final int end) {
+		this.end = end;
 		interval = Interval.RANGE;
 		return this;
 	}
 
+	/**
+	 * Configures the engine such that only the latest revision is checked out.
+	 *
+	 * @return
+	 * 		This builder.
+	 */
 	public VCSEngineBuilder withLatestRevision() {
 		interval = Interval.LATEST;
 		return this;
 	}
 
-	public VCSEngineBuilder withITEngine(final ITEngine pITEngine) {
-		itEngine = pITEngine;
+	/**
+	 * Sets the {@link ITEngine}. {@code null} values are permitted.
+	 *
+	 * @param itEngine
+	 * 		The {@link ITEngine}.
+	 * @return
+	 * 		This builder.
+	 */
+	public VCSEngineBuilder withITEngine(final ITEngine itEngine) {
+		this.itEngine = itEngine;
 		return this;
 	}
 
+	/**
+	 * Creates the engine.
+	 *
+	 * @return
+	 * 		The created engine.
+	 */
 	@SuppressWarnings("deprecation")
 	public VCSEngine build() {
 		final VCSEngine vcsEngine;
@@ -349,9 +668,8 @@ public class VCSEngineBuilder {
 
 	///////////////////////////////// Helper //////////////////////////////////
 
-	private LocalDateTime parseDateTime(
-			final String pDateTime,
-			final LocalDateTime pDefault) {
+	private LocalDateTime parseDateTime(final String pDateTime,
+			final LocalDateTime pDefault) throws IllegalArgumentException {
 		if (pDateTime == null) {
 			return pDefault;
 		}
