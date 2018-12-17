@@ -230,8 +230,8 @@ public class Mapping<T> {
 	public Result<T> map(final Collection<Mappable<T>> from,
 			final Collection<Mappable<T>> to, final RevisionRange range)
 			throws NullPointerException, IOException {
-		Validate.notNull(from);
-		Validate.notNull(to);
+		Validate.noNullElements(from);
+		Validate.noNullElements(to);
 		Validate.notNull(range);
 
 		to.forEach(successor -> successor.getRanges().forEach(fileRange -> {

@@ -54,7 +54,7 @@ public class Tracker<T> {
 						final Mappable<T> predecessor =
 								result.getPredecessor(to).get();
 						final Entity<T> last = mappables.get(predecessor).getLast();
-						final int numChanges = getNumChanges(predecessor,
+						final int numChanges = incrementNumChanges(predecessor,
 								to,
 								last.getNumChanges());
 						final Entity<T> successor =
@@ -81,7 +81,7 @@ public class Tracker<T> {
 	}
 
 	/**
-	 * Converts a given mappable to a {@link Entity} and adds it the given map.
+	 * Converts a given mappable to an {@link Entity} and adds it the given map.
 	 * A {@link Lifespan} is created aswell. This method is used as a utility
 	 * method by {@link #add(Mapping.Result)}.
 	 *
@@ -105,19 +105,20 @@ public class Tracker<T> {
 
 	/**
 	 * Increments the given last number of changes, if there is a change present.
+	 * Otherwise this method just returns {@code lastNumChanges}.
 	 *
 	 * @param predecessor
 	 * 		The predecessor mappable.
 	 * @param successor
 	 *		The successor mappable.
 	 * @param lastNumChanges
-	 * 		The number of changes, that will be incremented.
+	 * 		The number of changes, that may be incremented.
 	 * @return
 	 * 		The incremented number of changes.
 	 */
-	private int getNumChanges(final Mappable<T> predecessor,
-							  final Mappable<T> successor,
-							  final int lastNumChanges) {
+	private int incrementNumChanges(final Mappable<T> predecessor,
+									final Mappable<T> successor,
+									final int lastNumChanges) {
 		for (final VCSFile.Range predRange : predecessor.getRanges()) {
 			for (final VCSFile.Range succRange : successor.getRanges()) {
 				try {
