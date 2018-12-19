@@ -11,8 +11,9 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Collection;
-import java.util.Optional;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
@@ -52,7 +53,7 @@ public class Mapping<T> {
 
 
 		/**
-		 * Stores all mappables, whose lifespans are ending. These are all the
+		 * Stores all mappables, whose lifespans are starting. These are all the
 		 * mappables from the second argument of
 		 * {@link Mapping#map(Collection, Collection, RevisionRange)} that
 		 * did not have a predecessor mappable.
@@ -66,7 +67,7 @@ public class Mapping<T> {
 		 * @return
 		 * 		The list of mappables, whose lifespans are starting.
 		 */
-		public  List<Mappable<T>> getStartingLifespans() {
+		List<Mappable<T>> getStartingLifespans() {
 			return new ArrayList<>(startingLifespans);
 		}
 
@@ -230,9 +231,15 @@ public class Mapping<T> {
 	public Result<T> map(final Collection<Mappable<T>> from,
 			final Collection<Mappable<T>> to, final RevisionRange range)
 			throws NullPointerException, IOException {
-		Validate.noNullElements(from);
-		Validate.noNullElements(to);
+		Validate.notNull(from);
+		Validate.notNull(to);
 		Validate.notNull(range);
+
+		final Collection<Mappable<T>> fromFiltered =
+				from.stream().filter(Objects::nonNull).collect(Collectors.toList());
+
+		final Collection<Mappable<T>> toFiltered =
+				to.stream().filter(Objects::nonNull).collect(Collectors.toList());
 
 		to.forEach(successor -> successor.getRanges().forEach(fileRange -> {
 			if (!fileRange.getFile().getRevision().getId()
@@ -251,12 +258,12 @@ public class Mapping<T> {
 
 		final Result<T> result = new Result<>();
 		//first check for equal signatures
-		result.mapping.putAll(checkSignatures(from, to));
+		result.mapping.putAll(checkSignatures(fromFiltered, toFiltered));
 
 
 		//find corresponding file change objects
 		final List<CorrespondingFileChanges> hMap =
-				findFileChanges(from.stream()
+				findFileChanges(fromFiltered.stream()
 						.filter(predecessor -> !result.mapping.containsKey(predecessor))
 						.collect(Collectors.toList()), range);
 
@@ -266,11 +273,11 @@ public class Mapping<T> {
 
 		//search for compatible mappables
 		final Map<Mappable<T>, Mappable<T>> mappings =
-				computeMapping(updatedRanges, to.stream()
+				computeMapping(updatedRanges, toFiltered.stream()
 						.filter(successor -> !result.mapping.containsValue(successor))
 						.collect(Collectors.toList()));
 
-		result.startingLifespans = to.stream()
+		result.startingLifespans = toFiltered.stream()
 				.filter(tMappable -> !mappings.containsValue(tMappable))
 				.collect(Collectors.toList());
 		result.ordinal = range.getOrdinal();
