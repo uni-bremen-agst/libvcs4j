@@ -122,7 +122,7 @@ public class Mapping<T> {
 		 */
 		public Optional<Mappable<T>> getSuccessor(
 				final Mappable<T> mappable) {
-			return Optional.ofNullable(mapping.get(mappable));
+			return Optional.ofNullable(mappable).map(mapping::get);
 		}
 
 		/**
