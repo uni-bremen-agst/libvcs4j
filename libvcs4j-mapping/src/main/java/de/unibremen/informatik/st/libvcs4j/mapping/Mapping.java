@@ -53,25 +53,6 @@ public class Mapping<T> {
 
 
 		/**
-		 * Stores all mappables, whose lifespans are starting. These are all the
-		 * mappables from the second argument of
-		 * {@link Mapping#map(Collection, Collection, RevisionRange)} that
-		 * did not have a predecessor mappable.
-		 */
-		private List<Mappable<T>> startingLifespans;
-
-
-		/**
-		 * Returns the list of all mappables, whose lifespans are starting.
-		 *
-		 * @return
-		 * 		The list of mappables, whose lifespans are starting.
-		 */
-		List<Mappable<T>> getStartingLifespans() {
-			return new ArrayList<>(startingLifespans);
-		}
-
-		/**
 		 * Returns the ordinal of the range
 		 * ({@link RevisionRange#getOrdinal()}) that was passed to
 		 * {@link Mapping#map(Collection, Collection, RevisionRange)}.
@@ -277,9 +258,6 @@ public class Mapping<T> {
 						.filter(successor -> !result.mapping.containsValue(successor))
 						.collect(Collectors.toList()));
 
-		result.startingLifespans = toFiltered.stream()
-				.filter(tMappable -> !mappings.containsValue(tMappable))
-				.collect(Collectors.toList());
 		result.ordinal = range.getOrdinal();
 		result.mapping = mappings;
 

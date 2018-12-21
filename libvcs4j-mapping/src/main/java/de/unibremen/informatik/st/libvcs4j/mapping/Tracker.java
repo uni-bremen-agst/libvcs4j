@@ -72,11 +72,6 @@ public class Tracker<T> {
 					});
 		}
 
-
-		final List<Mappable<T>> startingLifespans = result.getStartingLifespans();
-		startingLifespans.forEach(mappable -> convertToEntityAndAddToMap(
-				mappable, result.getOrdinal(), localMappables));
-
 		mappables = localMappables;
 	}
 
