@@ -47,10 +47,7 @@ public class Tracker<T> {
 							result.getOrdinal(),
 							localMappables));
 		} else {
-			mappedTo.stream()
-					.filter(mappable -> mappables.containsKey(
-							result.getPredecessor(mappable).get()))
-					.forEach(to -> {
+			mappedTo.forEach(to -> {
 						final Mappable<T> predecessor =
 								result.getPredecessor(to).get();
 						final Entity<T> last = mappables.get(predecessor).getLast();
@@ -72,6 +69,11 @@ public class Tracker<T> {
 					});
 		}
 
+		final List<Mappable<T>> startingLifespans = result.getUnmapped();
+		startingLifespans.forEach(mappable -> convertToEntityAndAddToMap(
+				mappable,
+				result.getOrdinal(),
+				localMappables));
 		mappables = localMappables;
 	}
 
