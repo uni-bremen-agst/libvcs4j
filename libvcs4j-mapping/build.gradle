@@ -11,9 +11,8 @@ repositories {
 }
 
 dependencies {
-    compile 'de.uni-bremen.informatik.st:libvcs4j-api:1.5.0'
-
-    compile 'org.slf4j:slf4j-api:1.7.22'
+    compile 'de.uni-bremen.informatik.st:libvcs4j-pmd:1.5.1'
+    compile 'de.uni-bremen.informatik.st:libvcs4j-api:1.6.0'
     testCompile 'junit:junit:4.12'
     testCompile 'org.assertj:assertj-core:3.8.0'
     testCompile 'org.mockito:mockito-core:2.18.3'
@@ -54,6 +53,10 @@ build {
                         email 'marcel@informatik.uni-bremen.de'
                         organization 'AG Softwaretechnik (University of Bremen)'
                         organizationUrl 'https://www.informatik.uni-bremen.de/st'
+                    }
+                    developer {
+                        name 'Dominique Schulz'
+                        email 'do_sc@uni-bremen.de'
                     }
                 }
                 scm {

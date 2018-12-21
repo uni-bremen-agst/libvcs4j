@@ -34,7 +34,7 @@ public class Lifespan<T> {
 		Validate.notNull(first);
 		Validate.isPositive(first.getOrdinal());
 		Validate.notNegative(first.getNumChanges());
-		add(first);
+		entities.add(first);
 	}
 
 	/**
