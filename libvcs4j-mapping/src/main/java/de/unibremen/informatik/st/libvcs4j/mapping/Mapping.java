@@ -51,6 +51,17 @@ public class Mapping<T> {
 		 */
 		private Map<Mappable<T>, Mappable<T>> mapping = new IdentityHashMap<>();
 
+		/**
+		 * Stores all mappables of the first argument of
+		 * {@link Mapping#map(Collection, Collection, RevisionRange)}
+		 */
+		private Collection<Mappable<T>> from = new ArrayList<>();
+
+		/**
+		 * Stores all mappables of the second argument of
+		 * {@link Mapping#map(Collection, Collection, RevisionRange)}
+		 */
+		private Collection<Mappable<T>> to = new ArrayList<>();
 
 		/**
 		 * Returns the ordinal of the range
@@ -74,7 +85,7 @@ public class Mapping<T> {
 		 * 		All {@code from} mappables.
 		 */
 		public List<Mappable<T>> getFrom() {
-			return new ArrayList<>(mapping.keySet());
+			return new ArrayList<>(from);
 		}
 
 		/**
@@ -86,7 +97,7 @@ public class Mapping<T> {
 		 * 		All {@code to} mappables.
 		 */
 		public List<Mappable<T>> getTo() {
-			return new ArrayList<>(mapping.values());
+			return new ArrayList<>(to);
 		}
 
 		/**
@@ -259,6 +270,8 @@ public class Mapping<T> {
 						.collect(Collectors.toList()));
 
 		result.ordinal = range.getOrdinal();
+		result.from = fromFiltered;
+		result.to = toFiltered;
 		result.mapping = mappings;
 
 		return result;

@@ -39,7 +39,7 @@ public class Tracker<T> {
 			throws NullPointerException {
 		Validate.notNull(result);
 		final Map<Mappable<T>, Lifespan<T>> localMappables = new IdentityHashMap<>();
-		final List<Mappable<T>> mappedTo = result.getTo();
+		final List<Mappable<T>> mappedTo = result.getMapped();
 
 		if (mappables.isEmpty()) {
 			mappedTo.forEach(to ->
