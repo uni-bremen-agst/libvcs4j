@@ -15,7 +15,7 @@ read -s PASSPHRASE
 
 echo "[INFO] Building modules"
 pushd $BASE_DIR > /dev/null
-	gradle clean build -x test
+	./gradlew clean build -x test
 popd > /dev/null
 
 echo "[INFO] Signing modules"
