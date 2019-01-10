@@ -1,0 +1,37 @@
+
+--------------------------------------------------------------------------------
+
+LibVCS4j-Tools includes ConQAT
+ (https://www.cqse.eu/en/products/conqat/overview),
+licensed under Apache License 2.0
+ (https://opensource.org/licenses/Apache-2.0).
+
+--------------------------------------------------------------------------------
+
+LibVCS4j-Tools uses D3
+ (https://d3js.org),
+licensed under 3-Clause BSD License
+ (https://opensource.org/licenses/BSD-3-Clause).
+
+--------------------------------------------------------------------------------
+
+LibVCS4j-Tools uses PMD
+ (https://pmd.github.io/),
+licensed under BSD-style license
+ (https://pmd.sourceforge.io/license.html).
+
+--------------------------------------------------------------------------------
+
+LibVCS4j-Tools uses SLF4J
+ (https://www.slf4j.org),
+licensed under MIT Licence
+ (https://opensource.org/licenses/MIT).
+
+--------------------------------------------------------------------------------
+
+LibVCS4j-Tools uses SPOON
+ (https://github.com/INRIA/spoon),
+licensed under CeCILL-C FREE SOFTWARE LICENSE
+ (https://github.com/INRIA/spoon/blob/master/LICENSE.txt).
+
+--------------------------------------------------------------------------------

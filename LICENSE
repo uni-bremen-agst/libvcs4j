@@ -5,6 +5,9 @@ LibVCS4j (API): MIT Licence
 LibVCS4j (implementation): GNU General Public License
   (https://opensource.org/licenses/GPL-3.0)
 
+LibVCS4j (Tools): GNU Lesser General Public License
+  (https://opensource.org/licenses/LGPL-3.0)
+
 ConQAT: Apache License 2.0
  (http://www.apache.org/licenses/LICENSE-2.0)
 

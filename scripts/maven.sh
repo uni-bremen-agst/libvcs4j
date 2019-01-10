@@ -5,7 +5,7 @@ set -e
 readonly SCRIPT_DIR=$( cd $(dirname $0); pwd -P)
 
 # The modules to build, sign, and zip.
-readonly MODULES=("libvcs4j-api" "libvcs4j-d3" "libvcs4j-metrics" "libvcs4j-pmd" "libvcs4j")
+readonly MODULES=("libvcs4j-api" "libvcs4j" "libvcs4j-tools")
 
 # Directory containing the modules to process.
 readonly BASE_DIR="$SCRIPT_DIR/.."

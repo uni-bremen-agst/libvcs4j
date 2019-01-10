@@ -1,0 +1,111 @@
+plugins {
+	id 'java'
+	id 'maven'
+	id 'io.franzbecker.gradle-lombok' version '1.14'
+}
+
+group = 'de.uni-bremen.informatik.st'
+version = '1.6.0'
+
+lombok {
+	version = "1.16.20"
+	sha256 = "c5178b18caaa1a15e17b99ba5e4023d2de2ebc18b58cde0f5a04ca4b31c10e6d"
+}
+
+repositories {
+	mavenCentral()
+}
+
+configurations {
+	extraLibs
+}
+
+dependencies {
+	compile 'de.uni-bremen.informatik.st:libvcs4j-api:1.6.0'
+	compile 'fr.inria.gforge.spoon:spoon-core:7.0.0'
+	compile 'net.sourceforge.pmd:pmd:5.0.0'
+	compile 'org.slf4j:slf4j-api:1.7.22'
+	extraLibs project(':conqat')
+	testCompile 'junit:junit:4.12'
+	testCompile 'org.assertj:assertj-core:3.8.0'
+	testCompile 'org.mockito:mockito-core:2.18.3'
+	testCompile 'org.slf4j:slf4j-simple:1.7.25'
+	configurations.compile.extendsFrom(configurations.extraLibs)
+}
+
+import io.franzbecker.gradle.lombok.task.DelombokTask
+task delombok(type: DelombokTask) {
+	dependsOn compileJava
+	ext.outputDir = file("$buildDir/delombok")
+	outputs.dir(outputDir)
+	sourceSets.main.java.srcDirs.each {
+		inputs.dir(it)
+		args(it, "-d", outputDir)
+	}
+}
+
+jar {
+	from {
+		configurations.extraLibs.collect {
+			it.isDirectory() ? it : zipTree(it)
+		}
+	}
+}
+
+task sourcesJar(type: Jar) {
+	dependsOn classes
+	dependsOn delombok
+	classifier = 'sources'
+	from delombok.outputDir
+}
+
+javadoc {
+	dependsOn delombok
+	source = delombok.outputDir
+}
+
+task javadocJar(type: Jar) {
+	dependsOn javadoc
+	classifier = 'javadoc'
+	from javadoc.destinationDir
+}
+
+artifacts {
+	archives sourcesJar
+	archives javadocJar
+}
+
+build {
+	doLast {
+		pom {
+			project {
+				name 'libvcs4j-tools'
+				description 'LibVCS4j tools'
+				url 'https://github.com/uni-bremen-agst/libvcs4j'
+				licenses {
+					license {
+						name 'LGPL-3.0'
+						url 'https://opensource.org/licenses/LGPL-3.0'
+					}
+				}
+				developers {
+					developer {
+						name 'Marcel Steinbeck'
+						email 'marcel@informatik.uni-bremen.de'
+						organization 'AG Softwaretechnik (University of Bremen)'
+						organizationUrl 'https://www.informatik.uni-bremen.de/st'
+					}
+					developer {
+						name 'Dominique Schulz'
+						email 'do_sc@uni-bremen.de'
+					}
+				}
+				scm {
+					connection 'scm:git:git://github.com/uni-bremen-agst/libvcs4j.git'
+					developerConnection 'scm:git:ssh://github.com:uni-bremen-agst/libvcs4j.git'
+					url 'https://github.com/uni-bremen-agst/libvcs4j'
+				}
+			}
+		}.writeTo("${buildDir}/libs/pom.xml")
+	}
+}
