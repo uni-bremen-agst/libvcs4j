@@ -233,14 +233,14 @@ public class Mapping<T> {
 		final Collection<Mappable<T>> toFiltered =
 				to.stream().filter(Objects::nonNull).collect(Collectors.toList());
 
-		to.forEach(successor -> successor.getRanges().forEach(fileRange -> {
+		toFiltered.forEach(successor -> successor.getRanges().forEach(fileRange -> {
 			if (!fileRange.getFile().getRevision().getId()
 					.equals(range.getRevision().getId())) {
 				throw new IllegalArgumentException();
 			}
 		}));
 
-		from.forEach(predecessor -> predecessor.getRanges().forEach(fileRange -> {
+		fromFiltered.forEach(predecessor -> predecessor.getRanges().forEach(fileRange -> {
 			if (!fileRange.getFile().getRevision().getId().equals(
 					range.getPredecessorRevision()
 							.orElseThrow(IllegalArgumentException::new).getId())) {
@@ -272,7 +272,7 @@ public class Mapping<T> {
 		result.ordinal = range.getOrdinal();
 		result.from = fromFiltered;
 		result.to = toFiltered;
-		result.mapping = mappings;
+		result.mapping.putAll(mappings);
 
 		return result;
 	}
@@ -419,6 +419,7 @@ public class Mapping<T> {
 
 		from.stream()
 				.filter(predecessor -> predecessor.getSignature().isPresent())
+				.filter(predecessor -> !predecessor.getSignature().get().trim().isEmpty())
 				.forEach(predecessor ->
 						to.forEach(successor -> {
 							if (predecessor.getSignature().get()
