@@ -75,6 +75,7 @@ public class MappingTest {
 
     @Test
     public void testMappingWithSignatures() throws IOException {
+        //From mappables
         VCSFile.Range range = createMockRange(11,
                 22,
                 "/path/to/file/",
@@ -90,6 +91,7 @@ public class MappingTest {
                 predDataClump,
                 predDeadCode);
 
+        //To mappables
         range = createMockRange(
                 123,
                 126,
@@ -121,6 +123,7 @@ public class MappingTest {
 
     @Test
     public void testMappingWithSingleRange() throws IOException {
+        //From mappables
         VCSFile.Range range = createMockRange(111,
                 222,
                 "/path/to/file/with/temporaryField",
@@ -144,6 +147,7 @@ public class MappingTest {
                 predDataClump,
                 predDeadCode);
 
+        //To mappables
         range = createMockRange(
                 123,
                 126,
@@ -350,48 +354,6 @@ public class MappingTest {
     ////////////////////////////////////////////////////////////////////////////
     ///////////////////////// Helper methods ///////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-
-
-    private List<Mappable<String>> createToMappables() {
-        List<Mappable<String>> result = new ArrayList<>();
-        VCSFile.Range range = mock(VCSFile.Range.class);
-        VCSFile file = mock(VCSFile.class);
-        Revision revision = mock(Revision.class);
-        when(file.getRevision()).thenReturn(revision);
-        when(range.getFile()).thenReturn(file);
-        when(revision.getId()).thenReturn("2");
-        List ranges = Collections.singletonList(range);
-        MockMappable mappable =
-                new MockMappable(ranges, "Class A", "");
-        result.add(mappable);
-        mappable = new MockMappable(ranges, "Class B", "");
-        result.add(mappable);
-        mappable = new MockMappable(ranges, "Class C", "");
-        result.add(mappable);
-        return result;
-    }
-
-    private List<Mappable<String>> createFromMappables() {
-        VCSFile.Range range = mock(VCSFile.Range.class);
-        VCSFile file = mock(VCSFile.class);
-        Revision revision = mock(Revision.class);
-        when(file.getRevision()).thenReturn(revision);
-        when(range.getFile()).thenReturn(file);
-        when(revision.getId()).thenReturn("1");
-        Revision predRevision = mock(Revision.class);
-        when(predRevision.getId()).thenReturn("1");
-        when(revisionRange.getPredecessorRevision()).thenReturn(Optional.of(predRevision));
-        List ranges = Collections.singletonList(range);
-        List<Mappable<String>> result = new ArrayList<>();
-        MockMappable mappable =
-                new MockMappable(ranges, "Class C", "");
-        result.add(mappable);
-        mappable = new MockMappable(ranges, "Class A", "");
-        result.add(mappable);
-        mappable = new MockMappable(ranges, "Class B", "");
-        result.add(mappable);
-        return result;
-    }
 
     private VCSFile.Range createMockRange(final int withBeginPosition,
                                           final int withEndPosition,
