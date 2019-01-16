@@ -341,11 +341,11 @@ public class Mapping<T> {
 
 		for (final CorrespondingFileChanges correspondingFileChanges : changesToApply) {
 			final Mappable<T> mappable = correspondingFileChanges.mappable;
-			final Map<FileChange, VCSFile.Range> map = correspondingFileChanges.map;
+			final Map<VCSFile.Range, FileChange> map = correspondingFileChanges.map;
 			final List<VCSFile.Range> ranges = new ArrayList<>();
-			for (final Map.Entry<FileChange, VCSFile.Range> changes : map.entrySet()) {
-				final FileChange fileChange = changes.getKey();
-				final VCSFile.Range oldRange = changes.getValue();
+			for (final Map.Entry<VCSFile.Range, FileChange> changes : map.entrySet()) {
+				final FileChange fileChange = changes.getValue();
+				final VCSFile.Range oldRange = changes.getKey();
 				Optional<VCSFile.Range> updatedRange =
 						oldRange.apply(fileChange);
 				if (!updatedRange.isPresent()
@@ -565,10 +565,10 @@ public class Mapping<T> {
 	 */
 	private final class CorrespondingFileChanges {
 		private Mappable<T> mappable;
-		private Map<FileChange, VCSFile.Range> map = new HashMap<>();
+		private Map<VCSFile.Range, FileChange> map = new HashMap<>();
 
 		void put(final FileChange fileChange, final VCSFile.Range range) {
-			map.put(fileChange, range);
+			map.put(range, fileChange);
 		}
 	}
 }
