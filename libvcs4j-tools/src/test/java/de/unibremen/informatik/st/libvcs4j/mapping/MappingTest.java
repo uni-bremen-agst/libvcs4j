@@ -2,7 +2,9 @@ package de.unibremen.informatik.st.libvcs4j.mapping;
 
 import de.unibremen.informatik.st.libvcs4j.*;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
 import java.util.*;
@@ -19,6 +21,9 @@ public class MappingTest {
 
     private RevisionRange revisionRange;
 
+    @Rule
+    public ExpectedException expected = ExpectedException.none();
+
     @Before
     public void setUp() {
         mapping = new Mapping<>();
@@ -28,7 +33,7 @@ public class MappingTest {
         when(revisionRange.getRevision()).thenReturn(revision);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testInvalidRevisionsOfTo() throws IOException {
         VCSFile.Range range = mock(VCSFile.Range.class);
         VCSFile file = mock(VCSFile.class);
@@ -40,10 +45,12 @@ public class MappingTest {
         Mappable mockMappable = mock(Mappable.class);
         when(mockMappable.getRanges()).thenReturn(ranges);
         List to = Collections.singletonList(mockMappable);
+        
+        expected.expect(IllegalArgumentException.class);
         mapping.map(new ArrayList<>(), to, revisionRange);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testInvalidRevisionsOfFrom() throws IOException {
         VCSFile.Range range = mock(VCSFile.Range.class);
         VCSFile file = mock(VCSFile.class);
@@ -70,6 +77,7 @@ public class MappingTest {
         when(mockMappable.getRanges()).thenReturn(ranges);
         List from = Collections.singletonList(mockMappable);
 
+        expected.expect(IllegalArgumentException.class);
         mapping.map(from, to, revisionRange);
     }
 
