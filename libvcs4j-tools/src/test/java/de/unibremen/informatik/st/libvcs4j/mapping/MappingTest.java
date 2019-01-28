@@ -143,9 +143,11 @@ public class MappingTest {
         MockMappable predDeadCode =
                 new MockMappable(Collections.singletonList(range), "", "DeadCode");
         List<Mappable<String>> from = Arrays.asList(
+                null,
                 predTemporaryField,
                 predDataClump,
-                predDeadCode);
+                predDeadCode,
+                null);
 
         //To mappables
         range = createMockRange(
@@ -179,8 +181,10 @@ public class MappingTest {
         List<Mappable<String>> to = Arrays.asList(
                 succDataClump,
                 succDeadCode,
+                null,
                 succTemporaryField,
-                succUnmapped);
+                succUnmapped,
+                null);
 
         List<FileChange> fileChanges = new ArrayList<>();
         FileChange fileChange = createMockFileChange("/path/to/file/with/dataClump");
@@ -192,8 +196,14 @@ public class MappingTest {
         when(revisionRange.getFileChanges()).thenReturn(fileChanges);
 
         Mapping.Result<String> result = mapping.map(from, to, revisionRange);
-        from.forEach(mappable -> assertThat(result.getFrom().contains(mappable)).isTrue());
-        to.forEach(mappable -> assertThat(result.getTo().contains(mappable)).isTrue());
+        from.stream()
+                .filter(Objects::nonNull)
+                .forEach(mappable -> assertThat(result.getFrom().contains(mappable))
+                        .isTrue());
+        to.stream()
+                .filter(Objects::nonNull)
+                .forEach(mappable -> assertThat(result.getTo().contains(mappable))
+                        .isTrue());
         assertThat(result.getWithMapping().isEmpty()).isFalse();
         assertThat(result.getUnmapped().contains(succUnmapped)).isTrue();
         assertThat(result.getMapped().contains(succUnmapped)).isFalse();
