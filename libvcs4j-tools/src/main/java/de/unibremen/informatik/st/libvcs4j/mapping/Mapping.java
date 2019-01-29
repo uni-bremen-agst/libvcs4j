@@ -233,14 +233,14 @@ public class Mapping<T> {
 		final Collection<Mappable<T>> toFiltered =
 				to.stream().filter(Objects::nonNull).collect(Collectors.toList());
 
-		to.forEach(successor -> successor.getRanges().forEach(fileRange -> {
+		toFiltered.forEach(successor -> successor.getRanges().forEach(fileRange -> {
 			if (!fileRange.getFile().getRevision().getId()
 					.equals(range.getRevision().getId())) {
 				throw new IllegalArgumentException();
 			}
 		}));
 
-		from.forEach(predecessor -> predecessor.getRanges().forEach(fileRange -> {
+		fromFiltered.forEach(predecessor -> predecessor.getRanges().forEach(fileRange -> {
 			if (!fileRange.getFile().getRevision().getId().equals(
 					range.getPredecessorRevision()
 							.orElseThrow(IllegalArgumentException::new).getId())) {
@@ -272,7 +272,7 @@ public class Mapping<T> {
 		result.ordinal = range.getOrdinal();
 		result.from = fromFiltered;
 		result.to = toFiltered;
-		result.mapping = mappings;
+		result.mapping.putAll(mappings);
 
 		return result;
 	}
@@ -341,11 +341,11 @@ public class Mapping<T> {
 
 		for (final CorrespondingFileChanges correspondingFileChanges : changesToApply) {
 			final Mappable<T> mappable = correspondingFileChanges.mappable;
-			final Map<FileChange, VCSFile.Range> map = correspondingFileChanges.map;
+			final Map<VCSFile.Range, FileChange> map = correspondingFileChanges.map;
 			final List<VCSFile.Range> ranges = new ArrayList<>();
-			for (final Map.Entry<FileChange, VCSFile.Range> changes : map.entrySet()) {
-				final FileChange fileChange = changes.getKey();
-				final VCSFile.Range oldRange = changes.getValue();
+			for (final Map.Entry<VCSFile.Range, FileChange> changes : map.entrySet()) {
+				final FileChange fileChange = changes.getValue();
+				final VCSFile.Range oldRange = changes.getKey();
 				Optional<VCSFile.Range> updatedRange =
 						oldRange.apply(fileChange);
 				if (!updatedRange.isPresent()
@@ -419,6 +419,7 @@ public class Mapping<T> {
 
 		from.stream()
 				.filter(predecessor -> predecessor.getSignature().isPresent())
+				.filter(predecessor -> !predecessor.getSignature().get().trim().isEmpty())
 				.forEach(predecessor ->
 						to.forEach(successor -> {
 							if (predecessor.getSignature().get()
@@ -564,10 +565,10 @@ public class Mapping<T> {
 	 */
 	private final class CorrespondingFileChanges {
 		private Mappable<T> mappable;
-		private Map<FileChange, VCSFile.Range> map = new HashMap<>();
+		private Map<VCSFile.Range, FileChange> map = new HashMap<>();
 
 		void put(final FileChange fileChange, final VCSFile.Range range) {
-			map.put(fileChange, range);
+			map.put(range, fileChange);
 		}
 	}
 }
