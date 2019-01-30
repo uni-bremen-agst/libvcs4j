@@ -1,5 +1,5 @@
 install:
-    - ps: choco install -y -r hg
+    - ps: choco install -y -r hg --version 4.6.1
 # See https://github.com/appveyor/ci/issues/1745
     - ps: Set-Content -Path "gradle.properties" -Value "org.gradle.daemon=false"
 
