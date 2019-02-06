@@ -79,8 +79,10 @@ public class CommentsDetector extends CodeSmellDetector {
                 .map(p -> p.getEndLine() - p.getLine() + 1)
                 .reduce(0, Integer::sum);
 
-        final BigDecimal ratio = BigDecimal.valueOf(
-                (double) numberOfComments / numberOfStatements);
+        final BigDecimal ratio = BigDecimal.valueOf(numberOfComments)
+                .divide(BigDecimal.valueOf(numberOfStatements),
+                        8,
+                        BigDecimal.ROUND_UP);
 
         if (ratio.compareTo(threshold) >= 0) {
             addCodeSmell(executable,
@@ -100,6 +102,6 @@ public class CommentsDetector extends CodeSmellDetector {
     }
 
     private Metric createMetric(final BigDecimal val) {
-        return new Metric("Ratio of CLOC to SLOC", val.doubleValue());
+        return new Metric("Comment Ratio", val.doubleValue());
     }
 }
