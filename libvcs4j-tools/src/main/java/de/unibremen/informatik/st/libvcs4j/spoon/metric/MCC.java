@@ -1,6 +1,7 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.metric;
 
 import spoon.reflect.code.CtAssert;
+import spoon.reflect.code.CtCase;
 import spoon.reflect.code.CtConditional;
 import spoon.reflect.code.CtDo;
 import spoon.reflect.code.CtFor;
@@ -24,7 +25,7 @@ import java.util.Optional;
  * This scanner gathers the 'McCabe Complexity' metric for {@link CtClass},
  * {@link CtInterface} (since Java 8 interfaces may have default
  * implementations), {@link CtEnum}, {@link CtAnnotation}, {@link CtMethod},
- * and {@link CtConstructor} elements.
+ * {@link CtConstructor}, and {@link CtCase} elements.
  */
 public class MCC extends IntGatherer {
 
@@ -83,6 +84,20 @@ public class MCC extends IntGatherer {
 	 */
 	public Optional<Integer> MCCOf(final CtExecutable executable) {
 		return metricOf(executable);
+	}
+
+	/**
+	 * Returns the 'McCabe Complexity' metric of {@code ctCase}. Returns an
+	 * empty {@link Optional} if {@code ctCase} is {@code null}, or if
+	 * {@code ctCase} was not scanned.
+	 *
+	 * @param ctCase
+	 * 		The case statement whose 'McCabe Complexity' metric is requested.
+	 * @return
+	 * 		The 'McCabe Complexity' metric of {@code ctCase}.
+	 */
+	public Optional<Integer> MCCOf(final CtCase ctCase) {
+		return metricOf(ctCase);
 	}
 
 	@Override
@@ -169,5 +184,11 @@ public class MCC extends IntGatherer {
 	public void visitCtWhile(final CtWhile whileLoop) {
 		inc();
 		super.visitCtWhile(whileLoop);
+	}
+
+	@Override
+	public <S> void visitCtCase(final CtCase<S> caseStatement) {
+		visitNode(caseStatement, super::visitCtCase,
+				(c, p) -> (c - 1) + p, INITIAL_VALUE);
 	}
 }
