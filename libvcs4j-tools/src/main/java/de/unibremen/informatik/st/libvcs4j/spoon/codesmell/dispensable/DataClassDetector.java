@@ -5,6 +5,7 @@ import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmell;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmellDetector;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.Thresholds;
 import lombok.NonNull;
+import spoon.reflect.code.CtFieldAccess;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtInterface;
@@ -15,6 +16,7 @@ import spoon.reflect.reference.CtTypeReference;
 import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.Optional;
 
 public class DataClassDetector extends CodeSmellDetector {
 
@@ -66,13 +68,18 @@ public class DataClassDetector extends CodeSmellDetector {
 
 	@Override
 	public <T> void visitCtMethod(final CtMethod<T> method) {
-		if (!isDataClass.isEmpty()) {
-			resolveToFieldAccess(method)
-					.map(fa -> fa.hasParent(method.getParent(CtType.class)))
-					.ifPresent(__ -> {
-						isDataClass.pop();
-						isDataClass.push(false);
-					});
+		// Is the current class still considered a DataClass?
+		if (!isDataClass.isEmpty() && isDataClass.peek()) {
+			final Optional<CtFieldAccess> fieldAccess =
+					resolveToFieldAccess(method);
+			isDataClass.pop();
+			// Does method access a foreign field?
+			if (!fieldAccess.isPresent() || !fieldAccess.get()
+					.hasParent(method.getParent(CtType.class))) {
+				isDataClass.push(false);
+			} else {
+				isDataClass.push(true);
+			}
 		}
 		super.visitCtMethod(method);
 	}
