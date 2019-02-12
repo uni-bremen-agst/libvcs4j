@@ -74,8 +74,8 @@ public abstract class Gatherer<T extends Number> extends Scanner {
 	public abstract String abbreviation();
 
 	/**
-	 * Replaces the metric of the top element of {@link #stack} with
-	 * {@code value}. Does nothing if {@link #stack} is empty.
+	 * Replaces the top of {@link #stack} with {@code value}. Does nothing if
+	 * {@link #stack} is empty.
 	 *
 	 * @param value
 	 * 		The value to set.
@@ -90,8 +90,8 @@ public abstract class Gatherer<T extends Number> extends Scanner {
 	}
 
 	/**
-	 * Increments the metric of the top element of {@link #stack} by
-	 * {@code value}. Does nothing if {@link #stack} is empty.
+	 * Increments top of {@link #stack} by {@code value}. Does nothing if
+	 * {@link #stack} is empty.
 	 *
 	 * @param value
 	 * 		The increment value.
@@ -152,7 +152,7 @@ public abstract class Gatherer<T extends Number> extends Scanner {
 	 * {@link #visitNode(CtElement, Consumer, BiFunction, Number)} and allows
 	 * to register another callback which is called after {@code superCall},
 	 * but right before the resulting metric is stored, therefore allowing to
-	 * do some final calculations.
+	 * do final calculations.
 	 *
 	 * @param element
 	 * 		The element to visit.
@@ -171,7 +171,7 @@ public abstract class Gatherer<T extends Number> extends Scanner {
 	 * @param <E>
 	 *     	The type of the element to visit.
 	 * @throws NullPointerException
-	 * 		If any of the given argument is {@code null}.
+	 * 		If any of the given arguments is {@code null}.
 	 */
 	<E extends CtElement> void visitNode(@NonNull final E element,
 			@NonNull final Consumer<E> superCall,
