@@ -50,19 +50,19 @@ public class ATFD extends IntGatherer {
 	@Override
 	public <T> void visitCtClass(final CtClass<T> ctClass) {
 		visitNode(ctClass, super::visitCtClass,
-				Propagation.SUM, INITIAL_VALUE);
+				Integer::sum, INITIAL_VALUE);
 	}
 
 	@Override
 	public <T> void visitCtInterface(final CtInterface<T> ctInterface) {
 		visitNode(ctInterface, super::visitCtInterface,
-				Propagation.SUM, INITIAL_VALUE);
+				Integer::sum, INITIAL_VALUE);
 	}
 
 	@Override
 	public <T extends Enum<?>> void visitCtEnum(final CtEnum<T> ctEnum) {
 		visitNode(ctEnum, super::visitCtEnum,
-				Propagation.SUM, INITIAL_VALUE);
+				Integer::sum, INITIAL_VALUE);
 	}
 
 	@Override

@@ -13,6 +13,7 @@ import java.util.Deque;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 /**
@@ -24,25 +25,6 @@ import java.util.function.Consumer;
  *     The type of the gathered metric value, e. g. {@link Integer}.
  */
 public abstract class Gatherer<T extends Number> extends Scanner {
-
-	/**
-	 * Specifies how propagate the metric of an element to its parent.
-	 */
-	enum Propagation {
-		/**
-		 * Do nothing.
-		 */
-		NONE,
-
-		/**
-		 * Add the metric of an element to the metric of its parent.
-		 *
-		 * @see #sum(Number, Number)
-		 */
-		SUM
-
-		/* Further strategies may be: SUBTRACT, MAX, MIN, ... */
-	}
 
 	/**
 	 * Stacks the metric of nested elements.
@@ -92,6 +74,22 @@ public abstract class Gatherer<T extends Number> extends Scanner {
 	public abstract String abbreviation();
 
 	/**
+	 * Replaces the metric of the top element of {@link #stack} with
+	 * {@code value}. Does nothing if {@link #stack} is empty.
+	 *
+	 * @param value
+	 * 		The value to set.
+	 * @throws NullPointerException
+	 * 		If {@code value} is {@code null}.
+	 */
+	void set(@NonNull final T value) throws NullPointerException {
+		if (!stack.isEmpty()) {
+			stack.pop();
+			stack.push(value);
+		}
+	}
+
+	/**
 	 * Increments the metric of the top element of {@link #stack} by
 	 * {@code value}. Does nothing if {@link #stack} is empty.
 	 *
@@ -123,17 +121,20 @@ public abstract class Gatherer<T extends Number> extends Scanner {
 	 * 		The super function of the corresponding visit method.
 	 * @param propagation
 	 * 		Specifies how to propagate the metric of {@code element} to its
-	 * 		parent.
+	 * 		parent. The first argument of the given function is the metric of
+	 * 		{@code element}. The second argument is the metric of the parent of
+	 * 		{@code element}. The returned value must be the propagated metric,
+	 * 		that is, the new metric of the parent of {@code element}.
 	 * @param initValue
 	 * 		The initial metric value of {@code element}.
 	 * @param <E>
 	 *     	The type of the element to visit.
 	 * @throws NullPointerException
-	 * 		If any of the given argument is {@code null}.
+	 * 		If any of the given arguments is {@code null}.
 	 */
 	<E extends CtElement> void visitNode(@NonNull final E element,
 			@NonNull final Consumer<E> superCall,
-			@NonNull final Propagation propagation,
+			@NonNull final BiFunction<T, T, T> propagation,
 			@NonNull final T initValue) throws NullPointerException {
 		Validate.validateState(!metrics.containsKey(element),
 				"Element '%s' has already been visited", element);
@@ -142,21 +143,13 @@ public abstract class Gatherer<T extends Number> extends Scanner {
 		final T metric = stack.pop();
 		metrics.put(element, metric);
 		if (!stack.isEmpty()) {
-			switch (propagation) {
-				case NONE:
-					break;
-				case SUM:
-					inc(metric);
-					break;
-				default:
-					Validate.fail("Unknown propagation '%s'", propagation);
-			}
+			stack.push(propagation.apply(metric, stack.pop()));
 		}
 	}
 
 	/**
 	 * Visits the given element and gathers its metric. This method extends
-	 * {@link #visitNode(CtElement, Consumer, Propagation, Number)} and allows
+	 * {@link #visitNode(CtElement, Consumer, BiFunction, Number)} and allows
 	 * to register another callback which is called after {@code superCall},
 	 * but right before the resulting metric is stored, therefore allowing to
 	 * do some final calculations.
@@ -169,7 +162,10 @@ public abstract class Gatherer<T extends Number> extends Scanner {
 	 * 		The function to call right before the resulting metric is stored.
 	 * @param propagation
 	 * 		Specifies how to propagate the metric of {@code element} to its
-	 * 		parent.
+	 * 		parent. The first argument of the given function is the metric of
+	 * 		{@code element}. The second argument is the metric of the parent of
+	 * 		{@code element}. The returned value must be the propagated metric,
+	 * 		that is, the new metric of the parent of {@code element}.
 	 * @param initValue
 	 * 		The initial metric value of {@code element}.
 	 * @param <E>
@@ -180,7 +176,8 @@ public abstract class Gatherer<T extends Number> extends Scanner {
 	<E extends CtElement> void visitNode(@NonNull final E element,
 			@NonNull final Consumer<E> superCall,
 			@NonNull final Consumer<E> callBack,
-			@NonNull final Propagation propagation, final T initValue) {
+			@NonNull final BiFunction<T, T, T> propagation,
+			@NonNull final T initValue) {
 		visitNode(element, __ -> {
 			superCall.accept(element);
 			callBack.accept(element);

@@ -76,21 +76,21 @@ public class TCC extends DecimalGatherer {
 	public <T> void visitCtClass(final CtClass<T> ctClass) {
 		typeInfo.put(ctClass, new IdentityHashMap<>());
 		visitNode(ctClass, super::visitCtClass, this::visitType,
-				Propagation.NONE, INITIAL_VALUE);
+				(__, parent) -> parent, INITIAL_VALUE);
 	}
 
 	@Override
 	public <T> void visitCtInterface(final CtInterface<T> ctInterface) {
 		typeInfo.put(ctInterface, new IdentityHashMap<>());
 		visitNode(ctInterface, super::visitCtInterface, this::visitType,
-				Propagation.NONE, INITIAL_VALUE);
+				(__, parent) -> parent, INITIAL_VALUE);
 	}
 
 	@Override
 	public <T extends Enum<?>> void visitCtEnum(final CtEnum<T> ctEnum) {
 		typeInfo.put(ctEnum, new IdentityHashMap<>());
 		visitNode(ctEnum, super::visitCtEnum, this::visitType,
-				Propagation.NONE, INITIAL_VALUE);
+				(__, parent) -> parent, INITIAL_VALUE);
 	}
 
 	private void visitType(final CtType type) {
