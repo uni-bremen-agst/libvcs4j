@@ -45,7 +45,7 @@ public class SwitchStatementsDetector extends CodeSmellDetector {
     public <S> void visitCtSwitch(CtSwitch<S> switchStatement) {
         super.visitCtSwitch(switchStatement);
         switchStatement.getCases().forEach(caseStatement -> {
-            int mccVal = mcc.MCCOf(caseStatement)
+            final int mccVal = mcc.MCCOf(caseStatement)
                     .orElseThrow(IllegalStateException::new);
             if (mccVal >= mccThreshold) {
                 addCodeSmell(switchStatement,
