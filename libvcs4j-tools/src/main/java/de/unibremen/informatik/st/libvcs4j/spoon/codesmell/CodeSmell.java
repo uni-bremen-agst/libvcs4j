@@ -2,6 +2,7 @@ package de.unibremen.informatik.st.libvcs4j.spoon.codesmell;
 
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.Validate;
+import de.unibremen.informatik.st.libvcs4j.mapping.Mappable;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
@@ -15,7 +16,7 @@ import java.util.Optional;
 /**
  * An unmodifiable representation of a code smell.
  */
-public class CodeSmell {
+public class CodeSmell implements Mappable<String> {
 
 	/**
 	 * Describes of what kind a code smell is.
@@ -147,5 +148,10 @@ public class CodeSmell {
 	 */
 	public List<VCSFile.Range> getRanges() {
 		return new ArrayList<>(ranges);
+	}
+
+	@Override
+	public Optional<String> getMetadata() {
+		return Optional.of(definition.getName());
 	}
 }
