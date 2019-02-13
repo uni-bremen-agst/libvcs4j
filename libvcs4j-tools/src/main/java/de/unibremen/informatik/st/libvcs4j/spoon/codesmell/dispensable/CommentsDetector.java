@@ -97,7 +97,7 @@ public class CommentsDetector extends CodeSmellDetector {
         if (ratio.compareTo(ratioThreshold) >= 0) {
             addCodeSmell(executable,
                     Arrays.asList(createRatioMetric(ratio),
-                            createLocMetric(locThreshold)),
+                            createLocMetric(numberOfStatements)),
                     createSignature(executable).orElse(null));
 
         }
