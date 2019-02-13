@@ -1,6 +1,7 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.codesmell.dispensable;
 
 import de.unibremen.informatik.st.libvcs4j.Revision;
+import de.unibremen.informatik.st.libvcs4j.Validate;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.Metric;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmellDetector;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmell;
@@ -17,22 +18,31 @@ import spoon.reflect.declaration.CtElement;
 import spoon.reflect.visitor.filter.TypeFilter;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Collections;
 
 public class CommentsDetector extends CodeSmellDetector {
 
-    private static final BigDecimal DEFAULT_THRESHOLD = BigDecimal.valueOf(0.5);
+    private static final BigDecimal DEFAULT_RATIO_THRESHOLD =
+            BigDecimal.valueOf(0.5);
+    private static final int DEFAULT_LOC_THRESHOLD = 10;
 
-    private BigDecimal threshold;
+    private BigDecimal ratioThreshold;
+    private int locThreshold;
 
     public CommentsDetector(@NonNull final Revision revision,
-                            final BigDecimal threshold) {
+                            final int locThreshold,
+                            final BigDecimal ratioThreshold)
+            throws NullPointerException, IllegalArgumentException {
         super(revision);
-        this.threshold = threshold;
+        this.locThreshold = Validate.notNegative(locThreshold);
+        Validate.isTrue(ratioThreshold.compareTo(BigDecimal.ZERO) >= 0);
+        this.ratioThreshold = ratioThreshold;
     }
 
-    public CommentsDetector(@NonNull final Revision revision) {
-        this(revision, DEFAULT_THRESHOLD);
+    public CommentsDetector(@NonNull final Revision revision)
+            throws NullPointerException, IllegalArgumentException{
+        this(revision, DEFAULT_LOC_THRESHOLD, DEFAULT_RATIO_THRESHOLD);
     }
 
     @Override
@@ -66,7 +76,7 @@ public class CommentsDetector extends CodeSmellDetector {
                 .map(p -> p.getEndLine() - p.getLine() + 1)
                 .reduce(0, Integer::sum);
 
-        if (numberOfStatements == 0) {
+        if (numberOfStatements < locThreshold) {
             return;
         }
 
@@ -84,9 +94,10 @@ public class CommentsDetector extends CodeSmellDetector {
                         8,
                         BigDecimal.ROUND_UP);
 
-        if (ratio.compareTo(threshold) >= 0) {
+        if (ratio.compareTo(ratioThreshold) >= 0) {
             addCodeSmell(executable,
-                    Collections.singletonList(createMetric(ratio)),
+                    Arrays.asList(createRatioMetric(ratio),
+                            createLocMetric(numberOfStatements)),
                     createSignature(executable).orElse(null));
 
         }
@@ -94,14 +105,23 @@ public class CommentsDetector extends CodeSmellDetector {
 
     @Override
     public CodeSmell.Definition getDefinition() {
-        final Threshold threshold = new Threshold(
-                createMetric(this.threshold),
+        final Threshold ratioThreshold = new Threshold(
+                createRatioMetric(this.ratioThreshold),
                 Threshold.Relation.GREATER_EQUALS);
-        final Thresholds thresholds = new Thresholds(threshold);
+        final Threshold locThreshold = new Threshold(
+                createLocMetric(this.locThreshold),
+                Threshold.Relation.GREATER_EQUALS);
+        final Thresholds thresholds = new Thresholds(
+                Arrays.asList(ratioThreshold, locThreshold),
+                Thresholds.Connective.AND);
         return new CodeSmell.Definition("Comments", thresholds);
     }
 
-    private Metric createMetric(final BigDecimal val) {
+    private Metric createLocMetric(final int val) {
+        return new Metric("Lines of Code", val);
+    }
+
+    private Metric createRatioMetric(final BigDecimal val) {
         return new Metric("Comment Ratio", val.doubleValue());
     }
 }
