@@ -13,6 +13,8 @@ import spoon.reflect.code.CtSwitch;
 import spoon.reflect.declaration.CtElement;
 
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class SwitchStatementsDetector extends CodeSmellDetector {
@@ -44,16 +46,19 @@ public class SwitchStatementsDetector extends CodeSmellDetector {
     @Override
     public <S> void visitCtSwitch(CtSwitch<S> switchStatement) {
         super.visitCtSwitch(switchStatement);
-        switchStatement.getCases().forEach(caseStatement -> {
-            final int mccVal = mcc.MCCOf(caseStatement)
-                    .orElseThrow(IllegalStateException::new);
-            if (mccVal >= mccThreshold) {
-                addCodeSmell(switchStatement,
-                        Collections.singletonList(createMccMetric(mccVal)),
-                        createSignature(switchStatement).orElse(null));
-                return;
-            }
-        });
+        final List<Integer> mccValues = switchStatement.getCases()
+                .stream()
+                .map(mcc::MCCOf)
+                .map(o -> o.orElseThrow(IllegalStateException::new))
+                .collect(Collectors.toList());
+
+        if (mccValues.stream().allMatch(mccValue -> mccValue >= mccThreshold)) {
+            addCodeSmell(switchStatement,
+                    mccValues.stream()
+                            .map(this::createMccMetric)
+                            .collect(Collectors.toList()),
+                    createSignature(switchStatement).orElse(null));
+        }
 
     }
 

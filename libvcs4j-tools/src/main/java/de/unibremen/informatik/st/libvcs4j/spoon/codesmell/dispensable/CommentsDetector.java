@@ -76,7 +76,7 @@ public class CommentsDetector extends CodeSmellDetector {
                 .map(p -> p.getEndLine() - p.getLine() + 1)
                 .reduce(0, Integer::sum);
 
-        if (numberOfStatements == 0 || numberOfStatements < locThreshold) {
+        if (numberOfStatements < locThreshold) {
             return;
         }
 
@@ -96,7 +96,8 @@ public class CommentsDetector extends CodeSmellDetector {
 
         if (ratio.compareTo(ratioThreshold) >= 0) {
             addCodeSmell(executable,
-                    Collections.singletonList(createRatioMetric(ratio)),
+                    Arrays.asList(createRatioMetric(ratio),
+                            createLocMetric(locThreshold)),
                     createSignature(executable).orElse(null));
 
         }
