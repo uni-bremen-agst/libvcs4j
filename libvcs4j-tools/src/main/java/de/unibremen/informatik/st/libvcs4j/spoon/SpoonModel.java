@@ -98,15 +98,19 @@ public class SpoonModel {
 	}
 
 	/**
-	 * Incrementally builds the underlying spoon model.
+	 * Builds the underlying spoon model.
 	 *
 	 * @param range
 	 * 		The currently checked out range.
 	 * @return
-	 * 		The updated spoon model. May be an empty {@link Optional}, if spoon
-	 * 		fails to build the model.
+	 * 		The updated spoon model.
+	 * @throws NullPointerException
+	 * 		If {@code range} is {@code null}.
+	 * @throws BuildException
+	 * 		If an error occurred while building the spoon model.
 	 */
-	public Optional<CtModel> update(@NonNull final RevisionRange range) {
+	public CtModel update(@NonNull final RevisionRange range)
+			throws BuildException {
 		final long current = currentTimeMillis();
 		if (tmpDir == null) {
 			tmpDir = createTmpDir();
@@ -178,12 +182,13 @@ public class SpoonModel {
 			model = launcher.buildModel();
 			LOGGER.info(format("Model built in %d milliseconds",
 					currentTimeMillis() - current));
+			return model;
 		} catch (final Exception e) {
 			model = null;
 			notCompiled.clear();
 			LOGGER.info("Unable to build model", e);
+			throw new BuildException(e);
 		}
-		return Optional.ofNullable(model);
 	}
 
 	////////////////////////////// Util Methods ///////////////////////////////

@@ -3,7 +3,6 @@ package de.unibremen.informatik.st.libvcs4j.spoon;
 import de.unibremen.informatik.st.libvcs4j.*;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -23,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -78,16 +78,14 @@ public class SpoonModelTest {
 	}
 
 	@Test
-	public void updateD() throws IOException {
-		byte[] original = save(spoonModel.update(firstRange)
-				.orElseThrow(IllegalStateException::new));
+	public void updateD() throws IOException, BuildException {
+		byte[] original = save(spoonModel.update(firstRange));
 
 		updateFile("D.java");
 		VCSFile dFile = new VCSFileMock("D.java");
 		FileChange dChange = new FileChangeMock(dFile, dFile);
 		RevisionRange second = new RevisionRangeMock(Arrays.asList(dChange));
-		byte[] update = save(spoonModel.update(second)
-				.orElseThrow(IllegalStateException::new));
+		byte[] update = save(spoonModel.update(second));
 
 		CtModel originalModel = load(original);
 		CtModel updatedModel = load(update);
@@ -118,10 +116,9 @@ public class SpoonModelTest {
 	}
 
 	@Test
-	public void removeCAndAddD() throws IOException {
+	public void removeCAndAddD() throws IOException, BuildException {
 		deleteFile("D.java");
-		byte[] original = save(spoonModel.update(firstRange)
-				.orElseThrow(IllegalStateException::new));
+		byte[] original = save(spoonModel.update(firstRange));
 
 		deleteFile("C.java");
 		addFile("D.java");
@@ -131,8 +128,7 @@ public class SpoonModelTest {
 		FileChange dChange = new FileChangeMock(null, dFile);
 		RevisionRange second = new RevisionRangeMock(
 				Arrays.asList(cChange, dChange));
-		byte[] update = save(spoonModel.update(second)
-				.orElseThrow(IllegalStateException::new));
+		byte[] update = save(spoonModel.update(second));
 
 		CtModel originalModel = load(original);
 		CtModel updatedModel = load(update);
@@ -161,17 +157,15 @@ public class SpoonModelTest {
 	}
 
 	@Test
-	public void updateTypeOfC() throws IOException {
+	public void updateTypeOfC() throws IOException, BuildException {
 		deleteFile("D.java");
-		byte[] original = save(spoonModel.update(firstRange)
-				.orElseThrow(IllegalStateException::new));
+		byte[] original = save(spoonModel.update(firstRange));
 
 		updateFile("C.java");
 		VCSFile cFile = new VCSFileMock("C.java");
 		FileChange cChange = new FileChangeMock(cFile, cFile);
 		RevisionRange second = new RevisionRangeMock(Arrays.asList(cChange));
-		byte[] update = save(spoonModel.update(second)
-				.orElseThrow(IllegalStateException::new));
+		byte[] update = save(spoonModel.update(second));
 
 		CtModel originalModel = load(original);
 		CtModel updatedModel = load(update);
@@ -207,10 +201,9 @@ public class SpoonModelTest {
 	}
 
 	@Test
-	public void relocateCToD() throws IOException {
+	public void relocateCToD() throws IOException, BuildException {
 		deleteFile("D.java");
-		byte[] original = save(spoonModel.update(firstRange)
-				.orElseThrow(IllegalStateException::new));
+		byte[] original = save(spoonModel.update(firstRange));
 
 		deleteFile("C.java");
 		addFile("D.java");
@@ -219,8 +212,7 @@ public class SpoonModelTest {
 		VCSFile dFile = new VCSFileMock("D.java");
 		FileChange change = new FileChangeMock(cFile, dFile);
 		RevisionRange second = new RevisionRangeMock(Arrays.asList(change));
-		byte[] update = save(spoonModel.update(second)
-				.orElseThrow(IllegalStateException::new));
+		byte[] update = save(spoonModel.update(second));
 
 		CtModel originalModel = load(original);
 		CtModel updatedModel = load(update);
@@ -249,10 +241,9 @@ public class SpoonModelTest {
 	}
 
 	@Test
-	public void canonicalPathD() throws IOException {
+	public void canonicalPathD() throws IOException, BuildException {
 		deleteFile("D.java");
-		byte[] original = save(spoonModel.update(firstRange)
-				.orElseThrow(IllegalStateException::new));
+		byte[] original = save(spoonModel.update(firstRange));
 
 		addFile("D.java");
 		String folderName = folder.getRoot().toPath().getName(
@@ -261,8 +252,7 @@ public class SpoonModelTest {
 		VCSFile dFile = new VCSFileMock(dPath);
 		FileChange dChange = new FileChangeMock(null, dFile);
 		RevisionRange second = new RevisionRangeMock(Arrays.asList(dChange));
-		byte[] update = save(spoonModel.update(second)
-				.orElseThrow(IllegalStateException::new));
+		byte[] update = save(spoonModel.update(second));
 
 		CtModel originalModel = load(original);
 		CtModel updatedModel = load(update);
