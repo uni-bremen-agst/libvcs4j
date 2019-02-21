@@ -220,8 +220,9 @@ public class Mapping<T> {
 	 * 		If updating a range ({@link VCSFile.Range#apply(FileChange)})
 	 * 		fails.
 	 */
-	public Result<T> map(final Collection<Mappable<T>> from,
-			final Collection<Mappable<T>> to, final RevisionRange range)
+	public Result<T> map(final Collection<? extends Mappable<T>> from,
+			final Collection<? extends Mappable<T>> to,
+			final RevisionRange range)
 			throws NullPointerException, IOException {
 		Validate.notNull(from);
 		Validate.notNull(to);
