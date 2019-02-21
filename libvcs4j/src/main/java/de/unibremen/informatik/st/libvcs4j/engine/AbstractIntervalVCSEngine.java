@@ -17,7 +17,6 @@ import java.util.Optional;
  * intervals are supported: datetime interval, revision interval, and range
  * interval.
  */
-@SuppressWarnings({"unused", "WeakerAccess"})
 public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 
 	public static final int MIN_START = 0;

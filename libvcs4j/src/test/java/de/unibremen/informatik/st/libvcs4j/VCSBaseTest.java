@@ -545,10 +545,12 @@ public abstract class VCSBaseTest {
 	protected abstract String getTarGZFile();
 
 	/**
-	 * Returns the path within {@link #getTarGZFile()} containing the VCS.
+	 * Returns the path within {@link #getTarGZFile()} that contains the VCS to
+	 * process.
 	 *
 	 * @return
-	 * 		The path within {@link #getTarGZFile()} containing the VCS.
+	 * 		The path within {@link #getTarGZFile()} that contains the VCS to
+	 * 		process.
 	 */
 	protected abstract String getFolderInTarGZ();
 
