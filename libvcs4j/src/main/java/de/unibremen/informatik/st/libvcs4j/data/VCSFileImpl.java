@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.nio.charset.Charset;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Pojo implementation of {@link VCSFile}.
@@ -35,29 +36,42 @@ public class VCSFileImpl extends VCSModelElementImpl implements VCSFile {
 	private Revision revision;
 
 	/**
-	 * Caches the contents of this file (see {@link #readAllBytes()}).
+	 * Caches the contents of this file (see {@link #readAllBytes()}). Use a
+	 * {@link SoftReference} to avoid an {@link OutOfMemoryError} due to
+	 * hundrets of thousands of cached file contents.
 	 */
-	private SoftReference<byte[]> cache = new SoftReference<>(null);
+	private SoftReference<byte[]> contentsCache = new SoftReference<>(null);
+
+	/**
+	 * Caches the charset of this file (see {@link #guessCharset()}).
+	 */
+	private AtomicReference<Charset> charsetCache = null;
 
 	@Override
 	public Optional<Charset> guessCharset() throws IOException {
-		final CharsetDetector detector = new CharsetDetector();
-		detector.setText(readAllBytes());
-		final CharsetMatch match = detector.detect();
-		try {
-			return Optional.ofNullable(match)
-					.map(m -> Charset.forName(m.getName()));
-		} catch (final Exception e) {
-			return Optional.empty();
+		if (charsetCache == null) {
+			final CharsetDetector detector = new CharsetDetector();
+			detector.setText(readAllBytes());
+			final CharsetMatch match = detector.detect();
+			Charset charset;
+			try {
+				charset = Optional.ofNullable(match)
+						.map(m -> Charset.forName(m.getName()))
+						.orElse(null);
+			} catch (final Exception e) {
+				charset = null;
+			}
+			charsetCache = new AtomicReference<>(charset);
 		}
+		return Optional.ofNullable(charsetCache.get());
 	}
 
 	@Override
 	public byte[] readAllBytes() throws IOException {
-		byte[] bytes = cache.get();
+		byte[] bytes = contentsCache.get();
 		if (bytes == null) {
 			bytes = getVCSEngine().readAllBytes(this);
-			cache = new SoftReference<>(bytes);
+			contentsCache = new SoftReference<>(bytes);
 		}
 		return bytes;
 	}
