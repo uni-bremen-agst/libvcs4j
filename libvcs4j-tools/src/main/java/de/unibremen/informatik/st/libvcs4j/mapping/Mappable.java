@@ -23,13 +23,13 @@ public interface Mappable<T> {
 	List<VCSFile.Range> getRanges();
 
 	/**
-	 * Returns the signature of this mappable. A signature uniquely identifies
-	 * a mappable within a collection of mappables and allows {@link Mapping}
-	 * to map two compatible mappables without comparing their ranges. A
-	 * reasonable signature, for instance, could be the fully qualified name of
-	 * a class (in case the mappable represents a class). The default
-	 * implementation returns an empty {@link Optional}. Thus, by default, a
-	 * mappable has no signature.
+	 * Returns the signature of this mappable.
+	 *
+	 * A signature identifies a mappable without consideration of its positions
+	 * (see {@link #getRanges()}). A reasonable signature, for instance, could
+	 * be the fully qualified name of a class (in case the mappable represents
+	 * a class). The default implementation returns an empty {@link Optional}.
+	 * Thus, by default, a mappable has no signature.
 	 *
 	 * @return
 	 * 		The signature of this mappable.
@@ -39,12 +39,13 @@ public interface Mappable<T> {
 	}
 
 	/**
-	 * Returns the metadata of this mappable. The metadata of a mappable may be
-	 * used to determine whether it is compatible with another mappable (as
-	 * done by the default implementation of {@link #isCompatible(Mappable)}),
-	 * or to store additional information that are required while generating or
-	 * querying a {@link Lifespan}. The default implementation returns an empty
-	 * {@link Optional}.
+	 * Returns the metadata of this mappable.
+	 *
+	 * The metadata of a mappable may be used to determine whether it is
+	 * compatible with another mappable (as done by the default implementation
+	 * of {@link #isCompatible(Mappable)}), or to store additional information
+	 * that are required while generating or querying a {@link Lifespan}. The
+	 * default implementation returns an empty {@link Optional}.
 	 *
 	 * @return
 	 * 		The metadata of this mappable.
@@ -59,13 +60,14 @@ public interface Mappable<T> {
 	 * This method is used by {@link Mapping} to determine whether a mapping
 	 * between two mappables is applicable at all. The default implementation
 	 * checks whether the metadata (see {@link #getMetadata()}) of this and the
-	 * given mappable are equals according to {@link Object#equals(Object)}. If
+	 * given mappable are equal according to {@link Object#equals(Object)}. If
 	 * this or the given mappable has no metadata, that is, an empty
 	 * {@link Optional} is returned by {@link #getMetadata()}, the default
 	 * implementation considers them as compatible. Subclasses may provide an
-	 * entirely different behaviour though. However, {@code null} arguments are
-	 * supported but can never be compatible with an actual mappable. This
-	 * property, for the sake of fail-safeness, should not be violated.
+	 * entirely different behaviour though. Only the following property, for
+	 * the sake of fail-safeness, must not be changed by subclasses: This
+	 * method does not throw a {@link NullPointerException} if {@code mappable}
+	 * is {@code null}. {@code null} arguments, however, are never compatible.
 	 *
 	 * @param mappable
 	 * 		The mappable to check.
@@ -73,8 +75,7 @@ public interface Mappable<T> {
 	 * 		{@code true} if {@code mappable} is compatible with this mappable,
 	 * 		{@code false} otherwise.
 	 */
-	default boolean isCompatible(final Mappable<T> mappable)
-			throws NullPointerException {
+	default boolean isCompatible(final Mappable<T> mappable) {
 		if (mappable == null) {
 			return false;
 		}
