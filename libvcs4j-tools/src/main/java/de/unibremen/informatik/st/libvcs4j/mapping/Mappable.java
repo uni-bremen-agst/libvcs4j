@@ -2,6 +2,8 @@ package de.unibremen.informatik.st.libvcs4j.mapping;
 
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 
+import java.nio.file.Path;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -83,5 +85,67 @@ public interface Mappable<T> {
 		final Optional<T> om = mappable.getMetadata();
 		return !tm.isPresent() || !om.isPresent()
 				|| tm.get().equals(om.get());
+	}
+
+	/**
+	 * Returns whether the ranges of this mappable match with the ranges of
+	 * {@code mappable}.
+	 *
+	 * This method is used by {@link Mapping} to determine whether two
+	 * mappables have the same positions (see {@link #getRanges()}). The
+	 * default implementation checks whether this and the given mappable have
+	 * the same number of ranges and tries to match each range of this mappable
+	 * with a distinct range of {@code mappable}. Two ranges {@code r1} and
+	 * {@code r2} match if their relative paths match according to
+	 * {@link Path#equals(Object)} and if their begin and end positions match
+	 * according to {@link VCSFile.Position#OFFSET_COMPARATOR}. Subclasses may
+	 * override this method and provide a different behaviour. However, note
+	 * that this may have a negative effect on mapping results. The following
+	 * property, for the sake of fail-safeness, must not be changed by
+	 * subclasses: This method does not throw a {@link NullPointerException} if
+	 * {@code mappable} is {@code null}. {@code null} arguments, however, never
+	 * match.
+	 *
+	 * @param mappable
+	 * 		The mappable whose ranges to check.
+	 * @return
+	 * 		{@code true} if the ranges of {@code mappable} match with the
+	 * 		ranges of this mappable, {@code false} otherwise.
+	 */
+	default boolean rangesMatch(final Mappable<T> mappable) {
+		if (mappable == null) {
+			return false;
+		}
+		final List<VCSFile.Range> thisRanges = getRanges();
+		final List<VCSFile.Range> otherRanges = mappable.getRanges();
+		if (thisRanges.size() != mappable.getRanges().size()) {
+			return false;
+		}
+		thisRanges.forEach(tr -> {
+			final Iterator<VCSFile.Range> it = otherRanges.iterator();
+			while (it.hasNext()) {
+				final VCSFile.Range or = it.next();
+				// Match path.
+				final Path r1RelPath = tr.getFile().toRelativePath();
+				final Path r2RelPath = or.getFile().toRelativePath();
+				final boolean pathMatch = r1RelPath.equals(r2RelPath);
+				// Match begin.
+				final VCSFile.Position r1Begin = tr.getBegin();
+				final VCSFile.Position r2Begin = or.getBegin();
+				final boolean beginMatch = VCSFile.Position
+						.OFFSET_COMPARATOR.compare(r1Begin, r2Begin) == 0;
+				// Match end.
+				final VCSFile.Position r1End = tr.getEnd();
+				final VCSFile.Position r2End = or.getEnd();
+				final boolean endMatch = VCSFile.Position
+						.OFFSET_COMPARATOR.compare(r1End, r2End) == 0;
+				// Do not reuse or in case of a match.
+				if (pathMatch && beginMatch && endMatch) {
+					it.remove();
+					break;
+				}
+			}
+		});
+		return otherRanges.isEmpty();
 	}
 }
