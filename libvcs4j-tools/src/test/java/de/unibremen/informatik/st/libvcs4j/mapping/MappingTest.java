@@ -2,6 +2,7 @@ package de.unibremen.informatik.st.libvcs4j.mapping;
 
 import de.unibremen.informatik.st.libvcs4j.*;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -369,6 +370,7 @@ public class MappingTest {
     }
 
     @Test
+    @Ignore
     public void testNoMappingFound() throws IOException {
         //From mappables
         VCSFile.Range range = createMockRange(
