@@ -248,6 +248,22 @@ public class Mapping<T> {
 		return result;
 	}
 
+	public Result<T> map(
+			@NonNull final Collection<? extends  Mappable<T>> from,
+			@NonNull final Collection<? extends  Mappable<T>> to,
+			@NonNull final RevisionRange range) throws IOException {
+		if (range.getPredecessorRevision().isPresent()) {
+			final List<Mappable<T>> prev = filterOutNull(from);
+			validateSameRevisions(prev);
+			validateHaveRevision(prev, range.getPredecessorRevision().get());
+			previous.clear();
+			previous.addAll(prev);
+		} else {
+			previous.clear();
+		}
+		return map(to, range);
+	}
+
 	/////////////////////////// Filter & Validation ///////////////////////////
 
 	private static <T> List<Mappable<T>> filterOutNull(
@@ -360,7 +376,7 @@ public class Mapping<T> {
 				final Iterator<Mappable<T>> it = toWorker.iterator();
 				while (it.hasNext()) {
 					final Mappable<T> t = it.next();
-					if (rangesMatch(u, t)) {
+					if (u.rangesMatch(t)) {
 						it.remove();
 						mapping.put(f, t);
 						break;
@@ -497,41 +513,5 @@ public class Mapping<T> {
 		return files.isEmpty()
 				? Optional.empty()
 				: Optional.of(files.get(0));
-	}
-
-	private static <T> boolean rangesMatch(
-			@NonNull final Mappable<T> m1,
-			@NonNull final Mappable<T> m2) {
-		final List<VCSFile.Range> m1Ranges = m1.getRanges();
-		final List<VCSFile.Range> m2Ranges = m2.getRanges();
-		if (m1Ranges.size() != m2.getRanges().size()) {
-			return false;
-		}
-		m1Ranges.forEach(r1 -> {
-			final Iterator<VCSFile.Range> it = m2Ranges.iterator();
-			while (it.hasNext()) {
-				final VCSFile.Range r2 = it.next();
-				// Match path.
-				final String r1RelPath = r1.getFile().getRelativePath();
-				final String r2RelPath = r2.getFile().getRelativePath();
-				final boolean pathMatch = r1RelPath.equals(r2RelPath);
-				// Match begin.
-				final VCSFile.Position r1Begin = r1.getBegin();
-				final VCSFile.Position r2Begin = r2.getBegin();
-				final boolean beginMatch = VCSFile.Position
-						.OFFSET_COMPARATOR.compare(r1Begin, r2Begin) == 0;
-				// Match end.
-				final VCSFile.Position r1End = r1.getEnd();
-				final VCSFile.Position r2End = r2.getEnd();
-				final boolean endMatch = VCSFile.Position
-						.OFFSET_COMPARATOR.compare(r1End, r2End) == 0;
-				// Do not reuse r2 in case of a match.
-				if (pathMatch && beginMatch && endMatch) {
-					it.remove();
-					break;
-				}
-			}
-		});
-		return m2Ranges.isEmpty();
 	}
 }
