@@ -43,25 +43,23 @@ public class Mapping<T> {
 
 		/**
 		 * Stores the ordinal of the range ({@link RevisionRange#getOrdinal()})
-		 * that was passed to {@link Mapping#map(Collection, RevisionRange)}.
+		 * that was passed to {@link Mapping#map(Collection, RevisionRange)} or
+		 * {@link Mapping#map(Collection, Collection, RevisionRange)}.
 		 */
 		private final int ordinal;
 
 		/**
-		 * Stores the computed mapping result from
-		 * {@link Mapping#map(Collection, RevisionRange)}.
+		 * Stores the computed mapping result.
 		 */
 		private final IdentityHashMap<Mappable<T>, Mappable<T>> mapping;
 
 		/**
-		 * Stores all mappables of the first argument of
-		 * {@link Mapping#map(Collection, RevisionRange)}
+		 * Stores all from mappables.
 		 */
 		private final Collection<Mappable<T>> from;
 
 		/**
-		 * Stores all mappables of the second argument of
-		 * {@link Mapping#map(Collection, RevisionRange)}
+		 * Stores all to mappables.
 		 */
 		private final Collection<Mappable<T>> to;
 
@@ -82,19 +80,20 @@ public class Mapping<T> {
 		/**
 		 * Returns the ordinal of the range
 		 * ({@link RevisionRange#getOrdinal()}) that was passed to
-		 * {@link Mapping#map(Collection, RevisionRange)}.
+		 * {@link Mapping#map(Collection, RevisionRange)} or
+		 * {@link Mapping#map(Collection, Collection, RevisionRange)}.
 		 *
 		 * @return
 		 * 		The ordinal of the range that was passed to
-		 * 		{@link Mapping#map(Collection, RevisionRange)}.
+		 * 		{@link Mapping#map(Collection, RevisionRange)} or
+		 * 		{@link Mapping#map(Collection, Collection, RevisionRange)}.
 		 */
 		public int getOrdinal() {
 			return ordinal;
 		}
 
 		/**
-		 * Returns all {@code from} mappables. That is, all mappables of the
-		 * first argument of {@link Mapping#map(Collection, RevisionRange)}.
+		 * Returns all {@code from} mappables.
 		 *
 		 * @return
 		 * 		All {@code from} mappables.
@@ -104,8 +103,7 @@ public class Mapping<T> {
 		}
 
 		/**
-		 * Returns all {@code to} mappables. That is, all mappables of the
-		 * second argument of {@link Mapping#map(Collection, RevisionRange)}.
+		 * Returns all {@code to} mappables.
 		 *
 		 * @return
 		 * 		All {@code to} mappables.
@@ -209,18 +207,63 @@ public class Mapping<T> {
 		}
 	}
 
+	/**
+	 * Stores the mappables of the last call of
+	 * {@link #map(Collection, RevisionRange)} and
+	 * {@link #map(Collection, Collection, RevisionRange)}.
+	 */
 	private final List<Mappable<T>> previous;
 
+	/**
+	 * Creates a new instance with an empty list of previous mappables (see
+	 * {@link #previous}).
+	 */
 	public Mapping() {
 		this(Collections.emptyList());
 	}
 
+	/**
+	 * Creates a new instance with a given collection of previous mappables
+	 * (see {@link #previous}). Filters out {@code null} values.
+	 *
+	 * @param mappables
+	 * 		The mappables which are stored in {@link #previous}.
+	 * @throws NullPointerException
+	 * 		If {@code mappables} is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If {@code mappables} contains a mappable without a range or if
+	 * 		{@code mappables} contains two mappables that refer to different
+	 * 		revisions (through the ranges of a mappable).
+	 */
 	public Mapping(
 			@NonNull final Collection<? extends Mappable<T>> mappables) {
 		previous = filterOutNull(mappables);
 		validateSameRevisions(previous);
 	}
 
+	/**
+	 * Tries to find a mapping for all mappables in {@link #previous} (from)
+	 * and {@code mappables} (to). Automatically updates {@link #previous}
+	 * afterwards. That is, after calling this method {@link #previous}
+	 * contains the mappables of {@code mappables}. {@code null} values in
+	 * {@code mappables} are filtered out.
+	 *
+	 * @param mappables
+	 * 		The "to" mappables.
+	 * @param range
+	 * 		The revision range containing the mappables of {@code mappables}.
+	 * @return
+	 * 		The mapping result.
+	 * @throws NullPointerException
+	 * 		If any of the given arguments is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If {@code mappables} contains a mappable without a range, or if
+	 * 		{@code mappables} contains a mappable that does not correspond to
+	 * 		{@code range}.
+	 * @throws IOException
+	 * 		If an error occurred while applying changes (see
+	 * 		{@link VCSFile.Range#apply(FileChange)}).
+	 */
 	public Result<T> map(
 			@NonNull final Collection<? extends  Mappable<T>> mappables,
 			@NonNull final RevisionRange range) throws IOException {
@@ -248,20 +291,54 @@ public class Mapping<T> {
 		return result;
 	}
 
+	/**
+	 * Overrides {@link #previous} with {@code from} and delegates {@code to}
+	 * and {@code range} to {@link #map(Collection, RevisionRange)}. If this
+	 * method throws an exception, {@link #previous} contains its old values.
+	 * {@code null} values in {@code from} and {@code to} are filtered out.
+	 *
+	 * @param from
+	 * 		The "from" mappables.
+	 * @param to
+	 * 		The "to" mappables.
+	 * @param range
+	 * 		The revision range containing the mappables of {@code from} and
+	 * 		{@code to}.
+	 * @return
+	 * 		The mapping result.
+	 * @throws NullPointerException
+	 * 		If any of the given arguments is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If {@code range} has no predecessor (see
+	 * 		{@link RevisionRange#getPredecessorRevision()}), if {@code from} or
+	 * 		{@code to} contain a mappable without a range, or if {@code from}
+	 * 		or {@code to} contain a mappable that does not correspond to
+	 * 		{@code range}.
+	 * @throws IOException
+	 * 		If an error occurred while applying changes (see
+	 * 		{@link VCSFile.Range#apply(FileChange)}).
+	 */
 	public Result<T> map(
 			@NonNull final Collection<? extends  Mappable<T>> from,
 			@NonNull final Collection<? extends  Mappable<T>> to,
 			@NonNull final RevisionRange range) throws IOException {
-		if (range.getPredecessorRevision().isPresent()) {
+		final List<Mappable<T>> backup = new ArrayList<>(previous);
+		try {
+			if (!range.getPredecessorRevision().isPresent()) {
+				throw new IllegalArgumentException(
+						"Revision range without predecessor");
+			}
 			final List<Mappable<T>> prev = filterOutNull(from);
 			validateSameRevisions(prev);
 			validateHaveRevision(prev, range.getPredecessorRevision().get());
 			previous.clear();
 			previous.addAll(prev);
-		} else {
+			return map(to, range);
+		} catch (final Exception e) {
 			previous.clear();
+			previous.addAll(backup);
+			throw e;
 		}
-		return map(to, range);
 	}
 
 	/////////////////////////// Filter & Validation ///////////////////////////
@@ -302,7 +379,7 @@ public class Mapping<T> {
 					.findAny()
 					.ifPresent(id -> {
 						throw new IllegalArgumentException(String.format(
-								"Ambiguous revision: %s and %s",
+								"Ambiguous revisions: %s and %s",
 								revision, id));
 					});
 		}
@@ -322,9 +399,13 @@ public class Mapping<T> {
 			@NonNull final Revision revision) {
 		if (!mappables.isEmpty()) {
 			final String expected = revision.getId();
-			final String actual = mappables.iterator().next().getRanges()
-					.get(0).getFile().getRevision().getId();
-			return expected.equals(actual);
+			return mappables.stream()
+					.map(Mappable::getRanges)
+					.flatMap(Collection::stream)
+					.map(VCSFile.Range::getFile)
+					.map(VCSFile::getRevision)
+					.map(Revision::getId)
+					.allMatch(expected::equals);
 		}
 		return true;
 	}
