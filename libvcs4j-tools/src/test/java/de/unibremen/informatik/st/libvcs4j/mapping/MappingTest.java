@@ -120,8 +120,8 @@ public class MappingTest {
         Mapping.Result<String> result = mapping.map(from, to, revisionRange);
         from.forEach(mappable -> assertThat(result.getFrom().contains(mappable)).isTrue());
         to.forEach(mappable -> assertThat(result.getTo().contains(mappable)).isTrue());
-        assertThat(result.getWithMapping().isEmpty()).isFalse();
-        assertThat(result.getWithoutMapping().isEmpty()).isTrue();
+        assertThat(result.getWithSuccessor().isEmpty()).isFalse();
+        assertThat(result.getWithoutSuccessor().isEmpty()).isTrue();
         assertThat(result.getPredecessor(succDataClump))
                 .isEqualTo(Optional.of(predDataClump));
         assertThat(result.getPredecessor(succDeadCode))
@@ -213,9 +213,9 @@ public class MappingTest {
                 .filter(Objects::nonNull)
                 .forEach(mappable -> assertThat(result.getTo().contains(mappable))
                         .isTrue());
-        assertThat(result.getWithMapping().isEmpty()).isFalse();
-        assertThat(result.getUnmapped().contains(succUnmapped)).isTrue();
-        assertThat(result.getMapped().contains(succUnmapped)).isFalse();
+        assertThat(result.getWithSuccessor().isEmpty()).isFalse();
+        assertThat(result.getWithoutPredecessor().contains(succUnmapped)).isTrue();
+        assertThat(result.getWithPredecessor().contains(succUnmapped)).isFalse();
         assertThat(result.getPredecessor(succDataClump))
                 .isEqualTo(Optional.of(predDataClump));
         assertThat(result.getPredecessor(succDeadCode))
@@ -357,9 +357,9 @@ public class MappingTest {
         Mapping.Result<String> result = mapping.map(from, to, revisionRange);
         from.forEach(mappable -> assertThat(result.getFrom().contains(mappable)).isTrue());
         to.forEach(mappable -> assertThat(result.getTo().contains(mappable)).isTrue());
-        assertThat(result.getWithMapping().isEmpty()).isFalse();
-        assertThat(result.getUnmapped().contains(succUnmapped)).isTrue();
-        assertThat(result.getMapped().contains(succUnmapped)).isFalse();
+        assertThat(result.getWithSuccessor().isEmpty()).isFalse();
+        assertThat(result.getWithoutPredecessor().contains(succUnmapped)).isTrue();
+        assertThat(result.getWithPredecessor().contains(succUnmapped)).isFalse();
         assertThat(result.getPredecessor(succDataClump))
                 .isEqualTo(Optional.of(predDataClump));
         assertThat(result.getPredecessor(succDeadCode))
@@ -438,9 +438,9 @@ public class MappingTest {
         Mapping.Result<String> result = mapping.map(from, to, revisionRange);
         from.forEach(mappable -> assertThat(result.getFrom().contains(mappable)).isTrue());
         to.forEach(mappable -> assertThat(result.getTo().contains(mappable)).isTrue());
-        assertThat(result.getUnmapped().isEmpty()).isFalse();
-        assertThat(result.getWithoutMapping().isEmpty()).isFalse();
-        assertThat(result.getWithMapping().isEmpty()).isTrue();
+        assertThat(result.getWithoutPredecessor().isEmpty()).isFalse();
+        assertThat(result.getWithoutSuccessor().isEmpty()).isFalse();
+        assertThat(result.getWithSuccessor().isEmpty()).isTrue();
         assertThat(result.getPredecessor(succDataClump))
                 .isEqualTo(Optional.empty());
         assertThat(result.getPredecessor(succDeadCode))

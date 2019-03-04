@@ -161,7 +161,7 @@ public class Mapping<T> {
 		 * @return
 		 * 		All mappables with a successor.
 		 */
-		public List<Mappable<T>> getWithMapping() {
+		public List<Mappable<T>> getWithSuccessor() {
 			return getFrom().stream()
 					.filter(m -> getSuccessor(m).isPresent())
 					.collect(Collectors.toList());
@@ -174,7 +174,7 @@ public class Mapping<T> {
 		 * @return
 		 * 		All mappables without a successor.
 		 */
-		public List<Mappable<T>> getWithoutMapping() {
+		public List<Mappable<T>> getWithoutSuccessor() {
 			return getFrom().stream()
 					.filter(m -> !getSuccessor(m).isPresent())
 					.collect(Collectors.toList());
@@ -187,7 +187,7 @@ public class Mapping<T> {
 		 * @return
 		 * 		All mappables with a predecessor.
 		 */
-		public List<Mappable<T>> getMapped() {
+		public List<Mappable<T>> getWithPredecessor() {
 			return getTo().stream()
 					.filter(m -> getPredecessor(m).isPresent())
 					.collect(Collectors.toList());
@@ -200,7 +200,7 @@ public class Mapping<T> {
 		 * @return
 		 * 		All mappables without a predecessor.
 		 */
-		public List<Mappable<T>> getUnmapped() {
+		public List<Mappable<T>> getWithoutPredecessor() {
 			return getTo().stream()
 					.filter(m -> !getPredecessor(m).isPresent())
 					.collect(Collectors.toList());

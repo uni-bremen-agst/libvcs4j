@@ -39,7 +39,7 @@ public class Tracker<T> {
 			throws NullPointerException {
 		Validate.notNull(result);
 		final Map<Mappable<T>, Lifespan<T>> localMappables = new IdentityHashMap<>();
-		final List<Mappable<T>> mappedTo = result.getMapped();
+		final List<Mappable<T>> mappedTo = result.getWithPredecessor();
 
 		if (mappables.isEmpty()) {
 			mappedTo.forEach(to ->
@@ -69,7 +69,7 @@ public class Tracker<T> {
 					});
 		}
 
-		final List<Mappable<T>> startingLifespans = result.getUnmapped();
+		final List<Mappable<T>> startingLifespans = result.getWithoutPredecessor();
 		startingLifespans.forEach(mappable -> convertToEntityAndAddToMap(
 				mappable,
 				result.getOrdinal(),
