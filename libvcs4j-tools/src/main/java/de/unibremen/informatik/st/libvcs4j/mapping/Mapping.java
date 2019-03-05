@@ -7,6 +7,8 @@ import de.unibremen.informatik.st.libvcs4j.RevisionRange;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.Validate;
 import lombok.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,6 +33,11 @@ import java.util.stream.Collectors;
  *     The type of the metadata of a {@link Mappable}.
  */
 public class Mapping<T> {
+
+	/**
+	 * The logger of this class.
+	 */
+	private static final Logger log = LoggerFactory.getLogger(Mapping.class);
 
 	/**
 	 * Stores the mapping result computed by
@@ -267,6 +274,7 @@ public class Mapping<T> {
 	public Result<T> map(
 			@NonNull final Collection<? extends  Mappable<T>> mappables,
 			@NonNull final RevisionRange range) throws IOException {
+		log.info("Mapping {}/{} elements", previous.size(), mappables.size());
 		final List<Mappable<T>> current = filterOutNull(mappables);
 		validateSameRevisions(current);
 		validateHaveRevision(current, range.getRevision());
@@ -288,6 +296,11 @@ public class Mapping<T> {
 				range.getOrdinal(), bySignature, previous, current);
 		previous.clear();
 		previous.addAll(current);
+		log.info("Result: w/suc {}, wo/suc {}, w/pre {}, wo/pre {}",
+				result.getWithSuccessor().size(),
+				result.getWithoutSuccessor().size(),
+				result.getWithPredecessor().size(),
+				result.getWithoutPredecessor().size());
 		return result;
 	}
 
