@@ -45,9 +45,10 @@ public interface Mappable<T> {
 	 *
 	 * The metadata of a mappable may be used to determine whether it is
 	 * compatible with another mappable (as done by the default implementation
-	 * of {@link #isCompatible(Mappable)}), or to store additional information
-	 * that are required while generating or querying a {@link Lifespan}. The
-	 * default implementation returns an empty {@link Optional}.
+	 * of {@link #isCompatibleWith(Mappable)}), or to store additional
+	 * information that are required while generating or querying a
+	 * {@link Lifespan}. The default implementation returns an empty
+	 * {@link Optional}.
 	 *
 	 * @return
 	 * 		The metadata of this mappable.
@@ -77,7 +78,7 @@ public interface Mappable<T> {
 	 * 		{@code true} if {@code mappable} is compatible with this mappable,
 	 * 		{@code false} otherwise.
 	 */
-	default boolean isCompatible(final Mappable<T> mappable) {
+	default boolean isCompatibleWith(final Mappable<T> mappable) {
 		if (mappable == null) {
 			return false;
 		}
@@ -85,6 +86,40 @@ public interface Mappable<T> {
 		final Optional<T> om = mappable.getMetadata();
 		return !tm.isPresent() || !om.isPresent()
 				|| tm.get().equals(om.get());
+	}
+
+	/**
+	 * Returns whether the signature of this mappable match with the signature
+	 * of {@code mappable}.
+	 *
+	 * This method is used by {@link Mapping} to determine whether two
+	 * mappables match without consideration of their positions (see
+	 * {@link #rangesMatchWith(Mappable)}). The default implementation checks
+	 * the signature of this and the given mappable using
+	 * {@link String#equals(Object)}. If this or the given mappable has no
+	 * signature, that is, an empty {@link Optional} is returned by
+	 * {@link #getSignature()}, the default implementation returns
+	 * {@code false}. Subclasses may override this method and provide a
+	 * different behaviour. However, note that this may have a negative effect
+	 * on mapping results. The following property, for the sake of
+	 * fail-safeness, must not be changed by subclasses: This method does not
+	 * throw a {@link NullPointerException} if {@code mappable} is
+	 * {@code null}. {@code null} arguments, however, never match.
+	 *
+	 * @param mappable
+	 * 		The mappable whose signature to check.
+	 * @return
+	 * 		{@code true} if the signature of {@code mappable} match with the
+	 * 		signature of this mappable, {@code false} otherwise.
+	 */
+	default boolean signatureMatchesWith(final Mappable<T> mappable) {
+		if (mappable == null) {
+			return false;
+		}
+		final Optional<String> ts = getSignature();
+		final Optional<String> os = mappable.getSignature();
+		return !ts.isPresent() || !os.isPresent()
+				|| ts.get().equals(os.get());
 	}
 
 	/**
@@ -112,7 +147,7 @@ public interface Mappable<T> {
 	 * 		{@code true} if the ranges of {@code mappable} match with the
 	 * 		ranges of this mappable, {@code false} otherwise.
 	 */
-	default boolean rangesMatch(final Mappable<T> mappable) {
+	default boolean rangesMatchWith(final Mappable<T> mappable) {
 		if (mappable == null) {
 			return false;
 		}

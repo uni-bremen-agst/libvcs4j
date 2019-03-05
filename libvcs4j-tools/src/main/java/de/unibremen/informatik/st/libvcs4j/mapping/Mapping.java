@@ -352,7 +352,7 @@ public class Mapping<T> {
 
 	private static void validateNumFileRanges(
 			@NonNull final Collection<? extends Mappable<?>> mappables) {
-		mappables.stream()
+		mappables.parallelStream()
 				.filter(Objects::nonNull)
 				.map(Mappable::getRanges)
 				.filter(List::isEmpty)
@@ -369,7 +369,7 @@ public class Mapping<T> {
 		if (mappables.size() >= 2) {
 			final String revision = mappables.iterator().next().getRanges()
 					.get(0).getFile().getRevision().getId();
-			mappables.stream()
+			mappables.parallelStream()
 					.map(Mappable::getRanges)
 					.flatMap(Collection::stream)
 					.map(VCSFile.Range::getFile)
@@ -399,7 +399,7 @@ public class Mapping<T> {
 			@NonNull final Revision revision) {
 		if (!mappables.isEmpty()) {
 			final String expected = revision.getId();
-			return mappables.stream()
+			return mappables.parallelStream()
 					.map(Mappable::getRanges)
 					.flatMap(Collection::stream)
 					.map(VCSFile.Range::getFile)
@@ -417,18 +417,18 @@ public class Mapping<T> {
 				   @NonNull final List<Mappable<T>> to) {
 		final IdentityHashMap<Mappable<T>, Mappable<T>> mapping =
 				new IdentityHashMap<>();
-		from.stream()
-				.filter(fm -> fm.getSignature().isPresent())
-				.forEach(fm -> {
-					final String signature = fm.getSignature()
-							.orElseThrow(IllegalStateException::new);
-					to.stream()
-							.filter(tm -> tm.isCompatible(fm))
-							.filter(tm -> tm.getSignature().map(ts ->
-									ts.equals(signature)).orElse(false))
-							.findAny()
-							.ifPresent(tm -> mapping.put(fm , tm));
-				});
+		final List<Mappable<T>> toWorker = new ArrayList<>(to);
+		from.forEach(f -> {
+			final Iterator<Mappable<T>> it = toWorker.iterator();
+			while (it.hasNext()) {
+				final Mappable<T> t = it.next();
+				if (f.isCompatibleWith(t) && f.signatureMatchesWith(t)) {
+					it.remove();
+					mapping.put(f, t);
+					break;
+				}
+			}
+		});
 		return mapping;
 	}
 
@@ -457,7 +457,7 @@ public class Mapping<T> {
 				final Iterator<Mappable<T>> it = toWorker.iterator();
 				while (it.hasNext()) {
 					final Mappable<T> t = it.next();
-					if (u.rangesMatch(t)) {
+					if (u.isCompatibleWith(t) && u.rangesMatchWith(t)) {
 						it.remove();
 						mapping.put(f, t);
 						break;
@@ -564,7 +564,8 @@ public class Mapping<T> {
 	private static Optional<FileChange> findRelevantChange(
 			@NonNull final VCSFile.Range range,
 			@NonNull final RevisionRange revRange) {
-		final List<FileChange> changes = revRange.getFileChanges().stream()
+		final List<FileChange> changes = revRange.getFileChanges()
+				.parallelStream()
 				.filter(fc -> fc.getType() != FileChange.Type.ADD)
 				.filter(fc -> fc.getOldFile()
 						.orElseThrow(IllegalStateException::new)
@@ -583,7 +584,8 @@ public class Mapping<T> {
 	private static Optional<VCSFile> findRelevantFile(
 			@NonNull final VCSFile.Range range,
 			@NonNull final Revision revision) {
-		final List<VCSFile> files = revision.getFiles().stream()
+		final List<VCSFile> files = revision.getFiles()
+				.parallelStream()
 				.filter(file -> file.getRelativePath()
 						.equals(range.getFile().getRelativePath()))
 				.collect(Collectors.toList());
