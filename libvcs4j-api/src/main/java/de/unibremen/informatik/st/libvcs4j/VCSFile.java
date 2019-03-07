@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -50,10 +51,24 @@ public interface VCSFile extends VCSModelElement {
 	class Position {
 
 		/**
-		 * Compares two positions using their offsets.
+		 * Compares two positions using their {@link #offset}s.
 		 */
 		public static final Comparator<Position> OFFSET_COMPARATOR =
 				Comparator.comparingInt(Position::getOffset);
+
+		/**
+		 * Tests if two positions are equal according to their {@link #offset}s
+		 * (using {@link #OFFSET_COMPARATOR}) and their relative paths (using
+		 * {@link VCSFile#toRelativePath()} and {@link Path#equals(Object)}).
+		 * {@code null} matches {@code null}, but not a {@code non-null} value.
+		 */
+		public static final BiPredicate<Position, Position>
+				RELATIVE_PATH_PREDICATE = (p1, p2) ->
+				p1 == null && p2 == null || // null is equal to null
+						p1 != null && p2 != null &&
+						OFFSET_COMPARATOR.compare(p1, p2) == 0 &&
+						p1.getFile().toRelativePath().equals(
+								p2.getFile().toRelativePath());
 
 		/**
 		 * The referenced file.
@@ -393,12 +408,27 @@ public interface VCSFile extends VCSModelElement {
 	class Range {
 
 		/**
-		 * Compares two ranges using their begin positions and
+		 * Compares two ranges using their {@link #begin} positions and
 		 * {@link Position#OFFSET_COMPARATOR}.
 		 */
 		public static final Comparator<Range> BEGIN_COMPARATOR =
 				(r1, r2) -> Position.OFFSET_COMPARATOR.compare(
 						r1.getBegin(), r2.getBegin());
+
+		/**
+		 * Tests if two ranges are equal according to their {@link #begin} and
+		 * {@link #end} positions (by matching the {@link #begin} and
+		 * {@link #end} positions with {@link Position#RELATIVE_PATH_PREDICATE}.
+		 * {@code null} matches {@code null}, but not a {@code non-null} value.
+		 */
+		public static final BiPredicate<Range, Range>
+				RELATIVE_PATH_PREDICATE = (r1, r2) ->
+				r1 == null && r2 == null || // null is equal to null
+						r1 != null && r2 != null &&
+						Position.RELATIVE_PATH_PREDICATE.test(
+								r1.getBegin(), r2.getBegin()) &&
+						Position.RELATIVE_PATH_PREDICATE.test(
+								r1.getEnd(), r2.getEnd());
 
 		/**
 		 * The begin position.

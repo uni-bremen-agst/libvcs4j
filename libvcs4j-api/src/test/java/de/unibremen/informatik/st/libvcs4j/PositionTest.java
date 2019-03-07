@@ -3,6 +3,7 @@ package de.unibremen.informatik.st.libvcs4j;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -233,5 +234,28 @@ public class PositionTest {
 		assertThat(position.mapTo(file)).isEmpty();
 		verify(file, times(1)).positionOf(position.getLine(),
 				position.getColumn(), position.getTabSize());
+	}
+
+	@Test
+	public void relativePathPredicate() {
+		VCSFile file = mock(VCSFile.class);
+		when(file.toRelativePath()).thenReturn(
+				Paths.get("src", "main", "File.java"));
+
+		VCSFile.Position p1 = mock(VCSFile.Position.class);
+		when(p1.getFile()).thenReturn(file);
+		when(p1.getOffset()).thenReturn(1000);
+		VCSFile.Position p2 = mock(VCSFile.Position.class);
+		when(p2.getFile()).thenReturn(file);
+		when(p2.getOffset()).thenReturn(1000, 1001, 999);
+
+		// Only the first call matches.
+		assertThat(VCSFile.Position.RELATIVE_PATH_PREDICATE
+				.test(p1, p2)).isTrue();
+		assertThat(VCSFile.Position.RELATIVE_PATH_PREDICATE
+				.test(p1, p2)).isFalse();
+		assertThat(VCSFile.Position.RELATIVE_PATH_PREDICATE
+				.test(p1, p2)).isFalse();
+		verify(p2, times(3)).getOffset();
 	}
 }
