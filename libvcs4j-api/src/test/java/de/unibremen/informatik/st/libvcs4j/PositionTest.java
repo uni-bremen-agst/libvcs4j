@@ -154,4 +154,36 @@ public class PositionTest {
 		assertThat(endOfLine.getTabSize()).isEqualTo(7);
 		assertThat(endOfLine.getOffset()).isEqualTo(20);
 	}
+
+	@Test
+	public void nextLineBlank() throws IOException {
+		List<String> lines = Arrays.asList("some text", "");
+		List<String> linesEOL = Arrays.asList("some text\n", "\n");
+
+		VCSFile file = mock(VCSFile.class);
+		when(file.readLines()).thenReturn(lines);
+		when(file.readLinesWithEOL()).thenReturn(linesEOL);
+		when(file.positionOf(1, 2, 4)).thenCallRealMethod();
+		when(file.positionOf(2, 1, 4)).thenCallRealMethod();
+
+		VCSFile.Position position = file.positionOf(1, 2, 4)
+				.orElseThrow(AssertionError::new);
+		assertThat(position.nextLine()).isEmpty();
+	}
+
+	@Test
+	public void previousLineBlank() throws IOException {
+		List<String> lines = Arrays.asList("", "some text");
+		List<String> linesEOL = Arrays.asList("\n", "some text");
+
+		VCSFile file = mock(VCSFile.class);
+		when(file.readLines()).thenReturn(lines);
+		when(file.readLinesWithEOL()).thenReturn(linesEOL);
+		when(file.positionOf(2, 2, 4)).thenCallRealMethod();
+		when(file.positionOf(1, 1, 4)).thenCallRealMethod();
+
+		VCSFile.Position position = file.positionOf(2, 2, 4)
+				.orElseThrow(AssertionError::new);
+		assertThat(position.previousLine()).isEmpty();
+	}
 }

@@ -299,8 +299,8 @@ public interface VCSFile extends VCSModelElement {
 
 		/**
 		 * Returns the position located at the first column of the next line.
-		 * If this position is located at the last line, an empty
-		 * {@link Optional} is returned.
+		 * If this position is located at the last line, or if the next line is
+		 * empty, an empty {@link Optional} is returned.
 		 *
 		 * @return
 		 * 		The position located at the first column of the next line.
@@ -313,16 +313,13 @@ public interface VCSFile extends VCSModelElement {
 			if (lines.size() == getLine()) {
 				return Optional.empty();
 			}
-			return Optional.of(getFile().positionOf(
-					getLine() + 1, 1, getTabSize())
-					// Validate implementation.
-					.orElseThrow(IllegalStateException::new));
+			return getFile().positionOf(getLine() + 1, 1, getTabSize());
 		}
 
 		/**
 		 * Returns the position located at the first column of the previous
-		 * line. If this position is located at the first line, an empty
-		 * {@link Optional} is returned.
+		 * line. If this position is located at the first line, or if the
+		 * previous line is empty, an empty {@link Optional} is returned.
 		 *
 		 * @return
 		 * 		The position located at the first column of the previous line.
@@ -335,10 +332,7 @@ public interface VCSFile extends VCSModelElement {
 			if (getLine() == 1) {
 				return Optional.empty();
 			}
-			return Optional.of(getFile().positionOf(
-					getLine() - 1, 1, getTabSize())
-					// Validate implementation.
-					.orElseThrow(IllegalStateException::new));
+			return getFile().positionOf(getLine() - 1, 1, getTabSize());
 		}
 
 		/**
