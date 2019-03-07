@@ -6,12 +6,14 @@ import de.unibremen.informatik.st.libvcs4j.Validate;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Pojo implementation of {@link LineChange}.
  */
 @Getter
 @Setter
+@ToString(of = {"type", "line", "file"}, doNotUseGetters = true)
 public class LineChangeImpl extends VCSModelElementImpl implements LineChange {
 
 	/**

@@ -7,6 +7,7 @@ import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.io.IOException;
 import java.lang.ref.SoftReference;
@@ -17,6 +18,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Pojo implementation of {@link VCSFile}.
  */
+@ToString(of = {"relativePath", "revision"}, doNotUseGetters = true)
 public class VCSFileImpl extends VCSModelElementImpl implements VCSFile {
 
 	/**

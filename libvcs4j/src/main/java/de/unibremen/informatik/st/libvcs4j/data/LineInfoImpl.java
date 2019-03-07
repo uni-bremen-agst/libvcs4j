@@ -2,16 +2,15 @@ package de.unibremen.informatik.st.libvcs4j.data;
 
 import de.unibremen.informatik.st.libvcs4j.LineInfo;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @AllArgsConstructor
+@ToString(of = {"id", "author", "message", "dateTime", "line",
+		"content", "file"}, doNotUseGetters = true)
 public class LineInfoImpl implements LineInfo {
 
 	@NonNull

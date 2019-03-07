@@ -3,6 +3,7 @@ package de.unibremen.informatik.st.libvcs4j.data;
 import de.unibremen.informatik.st.libvcs4j.FileChange;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.util.Optional;
 
@@ -10,6 +11,7 @@ import java.util.Optional;
  * Pojo implementation of {@link FileChange}.
  */
 @Setter
+@ToString(of = {"oldFile", "newFile"}, doNotUseGetters = true)
 public class FileChangeImpl extends VCSModelElementImpl implements FileChange {
 
 	/**

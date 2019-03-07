@@ -5,6 +5,7 @@ import de.unibremen.informatik.st.libvcs4j.Validate;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import java.util.List;
  */
 @Getter
 @Setter
+@ToString(of = {"id", "author", "title", "dateTime"}, doNotUseGetters = true)
 public class IssueImpl extends ITModelElementImpl implements Issue {
 
 	/**

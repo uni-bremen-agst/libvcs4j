@@ -4,6 +4,7 @@ import de.unibremen.informatik.st.libvcs4j.Issue;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
  */
 @Getter
 @Setter
+@ToString(doNotUseGetters = true)
 public class CommentImpl extends ITModelElementImpl implements Issue.Comment {
 
 	/**

@@ -7,6 +7,7 @@ import de.unibremen.informatik.st.libvcs4j.Validate;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,8 @@ import java.util.Optional;
 /**
  * Pojo implementation of {@link RevisionRange}.
  */
+@ToString(of = {"ordinal", "predecessorRevision", "revision"},
+		doNotUseGetters = true)
 public class RevisionRangeImpl extends VCSModelElementImpl
 		implements RevisionRange {
 

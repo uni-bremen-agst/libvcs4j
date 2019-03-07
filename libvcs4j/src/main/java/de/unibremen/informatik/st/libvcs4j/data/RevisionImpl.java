@@ -6,6 +6,7 @@ import de.unibremen.informatik.st.libvcs4j.Validate;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import java.util.List;
  */
 @Getter
 @Setter
+@ToString(of = "id", doNotUseGetters = true)
 public class RevisionImpl extends VCSModelElementImpl implements Revision {
 
 	/**

@@ -7,6 +7,7 @@ import de.unibremen.informatik.st.libvcs4j.Validate;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -18,6 +19,8 @@ import java.util.List;
  */
 @Getter
 @Setter
+@ToString(of = {"id", "author", "message", "dateTime", "parentIds"},
+		doNotUseGetters = true)
 public class CommitImpl extends VCSModelElementImpl implements Commit {
 
 	/**
