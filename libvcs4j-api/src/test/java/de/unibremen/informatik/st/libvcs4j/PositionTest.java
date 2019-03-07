@@ -186,4 +186,52 @@ public class PositionTest {
 				.orElseThrow(AssertionError::new);
 		assertThat(position.previousLine()).isEmpty();
 	}
+
+	@Test
+	public void mapToExistingPosition() throws IOException {
+		VCSFile file = mock(VCSFile.class);
+		when(file.getRelativePath()).thenReturn("File.java");
+		when(file.readLinesWithEOL()).thenReturn(
+				Arrays.asList("come\n", "content"));
+
+		VCSFile.Position position = mock(VCSFile.Position.class);
+		when(position.getLine()).thenReturn(2);
+		when(position.getColumn()).thenReturn(4);
+		when(position.getOffset()).thenReturn(8);
+		when(position.getTabSize()).thenReturn(2);
+		when(position.mapTo(file)).thenCallRealMethod();
+
+		when(file.positionOf(position.getLine(), position.getColumn(),
+				position.getTabSize())).thenCallRealMethod();
+
+		VCSFile.Position mapped = position.mapTo(file)
+				.orElseThrow(AssertionError::new);
+		assertThat(mapped.getFile()).isSameAs(file);
+		assertThat(mapped.getLine()).isEqualTo(position.getLine());
+		assertThat(mapped.getColumn()).isEqualTo(position.getColumn());
+		assertThat(mapped.getOffset()).isEqualTo(position.getOffset());
+		assertThat(mapped.getTabSize()).isEqualTo(position.getTabSize());
+	}
+
+	@Test
+	public void mapToNotExistingPosition() throws IOException {
+		VCSFile file = mock(VCSFile.class);
+		when(file.getRelativePath()).thenReturn("File.java");
+		when(file.readLinesWithEOL()).thenReturn(
+				Arrays.asList("come\n", "content"));
+
+		VCSFile.Position position = mock(VCSFile.Position.class);
+		when(position.getLine()).thenReturn(1);
+		when(position.getColumn()).thenReturn(5);
+		when(position.getOffset()).thenReturn(4);
+		when(position.getTabSize()).thenReturn(2);
+		when(position.mapTo(file)).thenCallRealMethod();
+
+		when(file.positionOf(position.getLine(), position.getColumn(),
+				position.getTabSize())).thenCallRealMethod();
+
+		assertThat(position.mapTo(file)).isEmpty();
+		verify(file, times(1)).positionOf(position.getLine(),
+				position.getColumn(), position.getTabSize());
+	}
 }

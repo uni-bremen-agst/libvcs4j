@@ -364,6 +364,27 @@ public interface VCSFile extends VCSModelElement {
 			return getFile().positionOf(getLine(), column, getTabSize())
 					.orElseThrow(IllegalStateException::new);
 		}
+
+		/**
+		 * Returns a position with same line, column, offset, and tab size, but
+		 * located in {@code file}. Returns an empty optional, if this position
+		 * does not exist in {@code file}.
+		 *
+		 * @param file
+		 * 		The file to map this position to.
+		 * @return
+		 * 		A position with same line, column, offset, and tab size, but
+		 * 		located in {@code file}.
+		 * @throws NullPointerException
+		 * 		If {@code file} is {@code null}.
+		 * @throws IOException
+		 * 		If an error occurred while reading the file content.
+		 */
+		public Optional<Position> mapTo(final VCSFile file)
+				throws IOException {
+			Validate.notNull(file);
+			return file.positionOf(getLine(), getColumn(), getTabSize());
+		}
 	}
 
 	/**
@@ -654,6 +675,29 @@ public interface VCSFile extends VCSModelElement {
 			Validate.notNull(fileChange);
 			final Optional<Position> newBegin = getBegin().apply(fileChange);
 			final Optional<Position> newEnd = getEnd().apply(fileChange);
+			return newBegin.isPresent() && newEnd.isPresent()
+					? Optional.of(new Range(newBegin.get(), newEnd.get()))
+					: Optional.empty();
+		}
+
+		/**
+		 * Returns a range with same begin and end, but located in
+		 * {@code file}. Returns an empty optional, if this range does not
+		 * exist in {@code file}.
+		 *
+		 * @param file
+		 * 		The file to map this range to.
+		 * @return
+		 * 		A range with same begin and end, but located in {@code file}.
+		 * @throws NullPointerException
+		 * 		If {@code file} is {@code null}.
+		 * @throws IOException
+		 * 		If an error occurred while reading the file content.
+		 */
+		public Optional<Range> mapTo(final VCSFile file) throws IOException {
+			Validate.notNull(file);
+			final Optional<Position> newBegin = getBegin().mapTo(file);
+			final Optional<Position> newEnd = getEnd().mapTo(file);
 			return newBegin.isPresent() && newEnd.isPresent()
 					? Optional.of(new Range(newBegin.get(), newEnd.get()))
 					: Optional.empty();
