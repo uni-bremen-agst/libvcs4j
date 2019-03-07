@@ -258,4 +258,16 @@ public class PositionTest {
 				.test(p1, p2)).isFalse();
 		verify(p2, times(3)).getOffset();
 	}
+
+	@Test
+	public void relativePathPredicateNullWithNull() {
+		assertThat(VCSFile.Position.RELATIVE_PATH_PREDICATE.test(null, null))
+				.isTrue();
+	}
+
+	@Test
+	public void relativePathPredicateNullWithNonNull() {
+		assertThat(VCSFile.Position.RELATIVE_PATH_PREDICATE.test(null,
+				mock(VCSFile.Position.class))).isFalse();
+	}
 }

@@ -2,6 +2,8 @@ package de.unibremen.informatik.st.libvcs4j;
 
 import org.junit.Test;
 
+import java.nio.file.Paths;
+
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -152,5 +154,52 @@ public class RangeTest {
 				.orElseThrow(AssertionError::new);
 		assertThat(merge.getBegin().getOffset()).isEqualTo(begin1.getOffset());
 		assertThat(merge.getEnd().getOffset()).isEqualTo(end1.getOffset());
+	}
+
+	@Test
+	public void relativePathPredicate() {
+		VCSFile file = mock(VCSFile.class);
+		when(file.toRelativePath()).thenReturn(
+				Paths.get("src", "main", "File.java"));
+
+		VCSFile.Position r1b = mock(VCSFile.Position.class);
+		when(r1b.getFile()).thenReturn(file);
+		when(r1b.getOffset()).thenReturn(500);
+		VCSFile.Position r1e = mock(VCSFile.Position.class);
+		when(r1e.getFile()).thenReturn(file);
+		when(r1e.getOffset()).thenReturn(800);
+		VCSFile.Range r1 = mock(VCSFile.Range.class);
+		when(r1.getBegin()).thenReturn(r1b);
+		when(r1.getEnd()).thenReturn(r1e);
+
+		VCSFile.Position r2b = mock(VCSFile.Position.class);
+		when(r2b.getFile()).thenReturn(file);
+		when(r2b.getOffset()).thenReturn(500);
+		VCSFile.Position r2e = mock(VCSFile.Position.class);
+		when(r2e.getFile()).thenReturn(file);
+		when(r2e.getOffset()).thenReturn(800, 801, 799);
+		VCSFile.Range r2 = mock(VCSFile.Range.class);
+		when(r2.getBegin()).thenReturn(r2b);
+		when(r2.getEnd()).thenReturn(r2e);
+
+		// Only the first call matches.
+		assertThat(VCSFile.Range.RELATIVE_PATH_PREDICATE
+				.test(r1, r2)).isTrue();
+		assertThat(VCSFile.Range.RELATIVE_PATH_PREDICATE
+				.test(r1, r2)).isFalse();
+		assertThat(VCSFile.Range.RELATIVE_PATH_PREDICATE
+				.test(r1, r2)).isFalse();
+	}
+
+	@Test
+	public void relativePathPredicateNullWithNull() {
+		assertThat(VCSFile.Range.RELATIVE_PATH_PREDICATE.test(null, null))
+				.isTrue();
+	}
+
+	@Test
+	public void relativePathPredicateNullWithNonNull() {
+		assertThat(VCSFile.Range.RELATIVE_PATH_PREDICATE.test(null,
+				mock(VCSFile.Range.class))).isFalse();
 	}
 }
