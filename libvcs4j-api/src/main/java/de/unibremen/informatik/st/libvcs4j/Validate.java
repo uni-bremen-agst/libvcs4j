@@ -1,6 +1,7 @@
 package de.unibremen.informatik.st.libvcs4j;
 
 import java.util.Collection;
+import java.util.Map;
 
 import static java.lang.String.format;
 
@@ -107,6 +108,53 @@ public class Validate {
 				throw new IllegalArgumentException(format(message, args));
 			}
 		}
+		return t;
+	}
+
+	/**
+	 * Validates that {@code t} is not {@code null} and does not contain
+	 * {@code null} keys and values.
+	 *
+	 * @param t
+	 * 		The value to validate.
+	 * @param <T>
+	 * 		The type of {@code t}.
+	 * @return
+	 * 		{@code t}, never {@code null}.
+	 * @throws NullPointerException
+	 * 		If {@code t} is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If {@code t} contains {@code null} keys or values.
+	 */
+	public static <T extends Map<?, ?>> T noNullElements(final T t) {
+		noNullElements(notNull(t.keySet()));
+		noNullElements(notNull(t.values()));
+		return t;
+	}
+
+	/**
+	 * Validates that {@code t} is not {@code null} and does not contain
+	 * {@code null} keys and values.
+	 *
+	 * @param t
+	 * 		The value to validate.
+	 * @param message
+	 * 		The message of the thrown exception.
+	 * @param args
+	 * 		The arguments to pass to {@link String#format(String, Object...)}.
+	 * @param <T>
+	 * 		The type of {@code t}.
+	 * @return
+	 * 		{@code t}, never {@code null}.
+	 * @throws NullPointerException
+	 * 		If {@code t} is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If {@code t} contains {@code null} keys or values.
+	 */
+	public static <T extends Map<?, ?>> T noNullElements(final T t,
+			final String message, final Object... args) {
+		noNullElements(notNull(t.keySet()), message, args);
+		noNullElements(notNull(t.values()), message, args);
 		return t;
 	}
 

@@ -2,11 +2,7 @@ package de.unibremen.informatik.st.libvcs4j;
 
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -64,6 +60,29 @@ public class ValidationTest {
 		final List<String> list = Arrays.asList("1", "2", "3");
 		assertThat(Validate.noNullElements(list, "%s", "foobar"))
 				.isEqualTo(list);
+	}
+
+	@Test
+	public void noNullElementsMapKey() {
+		final Map<String, String> map  = new HashMap<>();
+		map.put("foo", null);
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> Validate.noNullElements(map));
+	}
+
+	@Test
+	public void noNullElementsMapValue() {
+		final Map<String, String> map  = new HashMap<>();
+		map.put(null, "bar");
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> Validate.noNullElements(map));
+	}
+
+	@Test
+	public void noNullElementsMapWithNonNull() {
+		final Map<String, String> map  = new HashMap<>();
+		map.put("foo", "bar");
+		Validate.noNullElements(map);
 	}
 
 	@Test
