@@ -6,6 +6,8 @@ matrix:
           jdk: openjdk8
         - os: osx
           osx_image: xcode8.3
+        - os: osx
+          osx_image: xcode10.1
 
 script:
     - ./gradlew build
