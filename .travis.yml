@@ -6,7 +6,7 @@ matrix:
           osx_image: xcode10.1
 
 script:
-    - ./gradlew build --stacktrace
+    - ./gradlew build --stacktrace --scan
 
 after_success:
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then gradle jacocoTestReport coveralls; fi
