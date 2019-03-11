@@ -340,13 +340,12 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 
 		try {
 			final LogCommand logCmd = openRepository().log();
-			final Iterable<RevCommit> iter = addRootPath(logCmd).call();
-			//noinspection LoopStatementThatDoesntLoop
-			for (RevCommit rv : iter) {
-				// Return first
-				return Optional.of(rv.getName());
-			}
-			return Optional.empty();
+			final Iterable<RevCommit> it = addRootPath(logCmd).call();
+			final List<RevCommit> revs = new ArrayList<>();
+			it.forEach(revs::add);
+			return revs.isEmpty()
+					? Optional.empty()
+					: Optional.of(revs.get(0).getName());
 		} catch (NoHeadException e) {
 			return Optional.empty();
 		} catch (final GitAPIException e) {
