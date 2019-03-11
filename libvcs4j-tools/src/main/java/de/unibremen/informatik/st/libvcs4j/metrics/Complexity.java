@@ -1,6 +1,8 @@
 package de.unibremen.informatik.st.libvcs4j.metrics;
 
 import de.unibremen.informatik.st.libvcs4j.Validate;
+import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * Stores different complexity metrics.
@@ -20,115 +22,84 @@ public class Complexity {
 		/**
 		 * Number of distinct operators.
 		 */
-		private final int n1;
+		@Getter
+		private final int numDistinctOperators;
 
 		/**
 		 * Number of distinct operands.
 		 */
-		private final int n2;
+		@Getter
+		private final int numDistinctOperands;
 
 		/**
 		 * Number of operators.
 		 */
-		private final int N1;
+		@Getter
+		private final int numOperators;
 
 		/**
 		 * Number of operands.
 		 */
-		private final int N2;
+		@Getter
+		private final int numOperands;
 
 		/**
 		 * Creates a new halstead with given values.
 		 *
-		 * @param pn1
+		 * @param n1
 		 * 		The number of distinct operators.
-		 * @param pn2
+		 * @param n2
 		 * 		The number of distinct operands.
-		 * @param pN1
+		 * @param N1
 		 * 		The number of operators.
-		 * @param pN2
+		 * @param N2
 		 * 		The number of operands.
 		 * @throws IllegalArgumentException
 		 * 		If an of the given value is negative.
 		 */
-		public Halstead(final int pn1, final int pn2,
-						final int pN1, final int pN2) {
-			n1 = Validate.notNegative(pn1, "n1 < 0");
-			n2 = Validate.notNegative(pn2, "n2 < 0");
-			N1 = Validate.notNegative(pN1, "N1 < 0");
-			N2 = Validate.notNegative(pN2, "N2 < 0");
+		public Halstead(final int n1, final int n2,
+						final int N1, final int N2) {
+			numDistinctOperators = Validate.notNegative(n1, "n1 < 0");
+			numDistinctOperands = Validate.notNegative(n2, "n2 < 0");
+			numOperators = Validate.notNegative(N1, "N1 < 0");
+			numOperands = Validate.notNegative(N2, "N2 < 0");
 		}
 
 		/**
 		 * Copy constructor.
 		 *
-		 * @param pOther
+		 * @param other
 		 * 		The halstead to copy.
 		 * @throws NullPointerException
-		 * 		If {@code pOther} is {@code null}.
+		 * 		If {@code other} is {@code null}.
 		 */
-		public Halstead(final Halstead pOther) {
-			this(pOther.n1, pOther.n2, pOther.N1, pOther.N2);
+		public Halstead(@NonNull final Halstead other) {
+			this(other.getNumDistinctOperators(),
+					other.getNumDistinctOperands(),
+					other.getNumOperators(),
+					other.getNumOperands());
 		}
 
 		/**
-		 * Returns the number of distinct operators.
-		 *
-		 * @return
-		 * 		The number of distinct operators.
-		 */
-		public int getn1() {
-			return n1;
-		}
-
-		/**
-		 * Returns the number of distinct operands.
-		 *
-		 * @return
-		 * 		The number of distinct operands.
-		 */
-		public int getn2() {
-			return n2;
-		}
-
-		/**
-		 * Returns the number of operators.
-		 *
-		 * @return
-		 * 		The number of operators.
-		 */
-		public int getN1() {
-			return N1;
-		}
-
-		/**
-		 * Returns the number of operands.
-		 *
-		 * @return
-		 * 		The number of operands.
-		 */
-		public int getN2() {
-			return N2;
-		}
-
-		/**
-		 * Returns the vocabulary (n = n1 + n2).
+		 * Returns the vocabulary.
+		 * (n = numDistinctOperators + numDistinctOperands)
 		 *
 		 * @return
 		 * 		The vocabulary.
 		 */
 		public int getVocabulary() {
-			return getn1() + getn2();
+			return getNumDistinctOperators() + getNumDistinctOperands();
 		}
 
 		/**
-		 * Returns the program length (N = N1 + N2).
+		 * Returns the program length.
+		 * (N = numOperators + numOperands)
 		 *
 		 * @return
 		 * 		The program length.
 		 */
 		public int getProgramLength() {
-			return getN1() + getN2();
+			return getNumOperators() + getNumOperands();
 		}
 
 		/**
@@ -146,20 +117,22 @@ public class Complexity {
 		}
 
 		/**
-		 * Returns the estimated difficulty (D = n1/2 * N2/n2).
+		 * Returns the estimated difficulty.
+		 * (D = numDistinctOperators/2 * numOperands/numDistinctOperands)
 		 *
 		 * @return
 		 * 		The estimated difficulty.
 		 */
 		public double getDifficulty() {
-			final int n1 = getn1();
-			final int N2 = getN2();
-			final int n2 = getn2();
+			final int n1 = getNumDistinctOperators();
+			final int N2 = getNumOperands();
+			final int n2 = getNumDistinctOperands();
 			return n2 == 0 ? 0 : (n1 / 2.0) * ((double)N2 / n2);
 		}
 
 		/**
-		 * Returns the estimated program level (L = 1/D).
+		 * Returns the estimated program level.
+		 * (L = 1/D)
 		 *
 		 * @see #getDifficulty()
 		 * @return
@@ -171,7 +144,8 @@ public class Complexity {
 		}
 
 		/**
-		 * Returns the estimated effort (E = D * V).
+		 * Returns the estimated effort.
+		 * (E = D * V)
 		 *
 		 * @see #getDifficulty()
 		 * @see #getVolume()
@@ -183,8 +157,8 @@ public class Complexity {
 		}
 
 		/**
-		 * Returns the estimated time in seconds required to program
-		 * (T = E/18).
+		 * Returns the estimated time in seconds required to program.
+		 * (T = E/18)
 		 *
 		 * @see #getEffort()
 		 * @return
@@ -195,7 +169,8 @@ public class Complexity {
 		}
 
 		/**
-		 * Returns the estimated number of bugs (B = E^(2/3) / 3000).
+		 * Returns the estimated number of bugs.
+		 * (B = E^(2/3) / 3000)
 		 *
 		 * @see #getEffort()
 		 * @return
@@ -208,18 +183,18 @@ public class Complexity {
 		/**
 		 * Returns the sum of this and the given halstead.
 		 *
-		 * @param pHalstead
+		 * @param other
 		 * 		The other halstead.
 		 * @return
 		 * 		A new instance containing the sum of this and the given
 		 * 		halstead.
 		 */
-		public Halstead add(final Halstead pHalstead) {
+		public Halstead add(final Halstead other) {
 			return new Halstead(
-					n1 + pHalstead.n1,
-					n2 + pHalstead.n2,
-					N1 + pHalstead.N1,
-					N2 + pHalstead.N2);
+					getNumDistinctOperators()+ other.getNumDistinctOperators(),
+					getNumDistinctOperands() + other.getNumDistinctOperands(),
+					getNumOperators()        + other.getNumOperators(),
+					getNumOperands()         + other.getNumOperands());
 		}
 	}
 
@@ -232,11 +207,14 @@ public class Complexity {
 	/**
 	 * McCabe complexity.
 	 */
+	@Getter
 	private final int mcCabe;
 
 	/**
 	 * Halstead complexity.
 	 */
+	@Getter
+	@NonNull
 	private final Halstead halstead;
 
 	/**
@@ -251,56 +229,36 @@ public class Complexity {
 	 * @throws IllegalArgumentException
 	 * 		If {@code pMcCabe} is negative.
 	 */
-	public Complexity(final int pMcCabe, final Halstead pHalstead)
+	public Complexity(final int pMcCabe, @NonNull final Halstead pHalstead)
 			throws NullPointerException, IllegalArgumentException {
 		Validate.isTrue(pMcCabe >= 0, "McCabe < 0");
 		mcCabe = pMcCabe;
-		halstead = Validate.notNull(pHalstead);
+		halstead = pHalstead;
 	}
 
 	/**
 	 * Copy constructor.
 	 *
-	 * @param pOther
+	 * @param other
 	 * 		The complexity to copy.
 	 * @throws NullPointerException
-	 * 		If {@code pOther} is {@code null}.
+	 * 		If {@code other} is {@code null}.
 	 */
-	public Complexity(final Complexity pOther) {
-		this(pOther.mcCabe, pOther.halstead);
+	public Complexity(final Complexity other) {
+		this(other.getMcCabe(), other.getHalstead());
 	}
 
 	/**
-	 * Returns the McCabe complexity.
+	 * Returns the sum of this and the given other.
 	 *
+	 * @param other
+	 * 		The other other.
 	 * @return
-	 * 		The McCabe metric.
+	 * 		A new instance containing the sum of this and the given other.
 	 */
-	public int getMcCabe() {
-		return mcCabe;
-	}
-
-	/**
-	 * Returns the halstead complexity.
-	 *
-	 * @return
-	 * 		The halstead complexity.
-	 */
-	public Halstead getHalstead() {
-		return halstead;
-	}
-
-	/**
-	 * Returns the sum of this and the given complexity.
-	 *
-	 * @param complexity
-	 * 		The other complexity.
-	 * @return
-	 * 		A new instance containing the sum of this and the given complexity.
-	 */
-	public Complexity add(final Complexity complexity) {
+	public Complexity add(final Complexity other) {
 		return new Complexity(
-				mcCabe + complexity.mcCabe,
-				halstead.add(complexity.halstead));
+				getMcCabe() + other.getMcCabe(),
+				getHalstead().add(other.getHalstead()));
 	}
 }
