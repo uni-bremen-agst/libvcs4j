@@ -815,11 +815,12 @@ public interface VCSFile extends VCSModelElement {
 	 */
 	default List<String> readLines() throws IOException {
 		final List<String> lines = new ArrayList<>();
-		final Scanner scanner = new Scanner(readeContent());
-		while (scanner.hasNextLine()) {
-			lines.add(scanner.nextLine());
+		try (final Scanner scanner = new Scanner(readeContent())) {
+			while (scanner.hasNextLine()) {
+				lines.add(scanner.nextLine());
+			}
+			return lines;
 		}
-		return lines;
 	}
 
 	/**
@@ -1076,10 +1077,12 @@ public interface VCSFile extends VCSModelElement {
 
 		final int lineIdx = line - 1;
 		final String lineStr = lines.get(lineIdx);
-		final int lineLen = // Length of line excluding EOL
-				// Use scanner to remove EOL
-				new Scanner(lineStr).nextLine().length() +
-						NUMBER_OF_TABS.apply(lineStr) * (tabSize - 1);
+		final int lineLen; // Length of line excluding EOL.
+		// Use scanner to remove EOL.
+		try (final Scanner scanner = new Scanner(lineStr)) {
+			lineLen = scanner.nextLine().length() +
+					NUMBER_OF_TABS.apply(lineStr) * (tabSize - 1);
+		}
 		if (column > lineLen) {
 			return Optional.empty();
 		}
