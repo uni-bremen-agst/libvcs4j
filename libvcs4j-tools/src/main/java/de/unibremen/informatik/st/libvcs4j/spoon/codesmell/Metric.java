@@ -49,7 +49,7 @@ public class Metric {
 	public Metric(@NonNull final String name, final double value)
 			throws NullPointerException {
 		this.name = name;
-		this.value = new BigDecimal(value);
+		this.value = BigDecimal.valueOf(value);
 		this.isDecimal = true;
 	}
 
@@ -66,7 +66,7 @@ public class Metric {
 	public Metric(@NonNull final String name, final int value)
 			throws NullPointerException {
 		this.name = name;
-		this.value = new BigDecimal(value);
+		this.value = BigDecimal.valueOf(value);
 		this.isDecimal = false;
 	}
 
