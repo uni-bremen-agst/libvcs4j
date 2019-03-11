@@ -22,6 +22,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static javax.xml.stream.XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES;
+import static javax.xml.stream.XMLInputFactory.SUPPORT_DTD;
+
 /**
  * Allows to configure and run PMD on a single {@link Revision} or on all
  * revisions of a {@link VCSEngine}.
@@ -147,6 +150,8 @@ public class PMDRunner {
 
 			// Parse output
 			final SAXParserFactory factory = SAXParserFactory.newInstance();
+			factory.setFeature(IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+			factory.setFeature(SUPPORT_DTD, false);
 			final SAXParser saxParser = factory.newSAXParser();
 			final InputStream bis = new ByteArrayInputStream(
 					output.getBytes(StandardCharsets.UTF_8.name()));
