@@ -3,7 +3,6 @@ plugins {
 	id 'maven'
 	id 'jacoco'
 	id 'io.franzbecker.gradle-lombok' version '1.14'
-	id 'com.github.kt3k.coveralls' version '2.6.3'
 }
 
 group = 'de.uni-bremen.informatik.st'
@@ -44,7 +43,7 @@ dependencies {
 
 jacocoTestReport {
 	reports {
-		xml.enabled = true // required by Coveralls
+		xml.enabled = true
 		html.enabled = true
 	}
 	afterEvaluate {
