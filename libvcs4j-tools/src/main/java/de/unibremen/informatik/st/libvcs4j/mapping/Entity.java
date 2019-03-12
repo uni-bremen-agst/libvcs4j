@@ -101,7 +101,7 @@ public class Entity<T> {
 				.map(Location::new)
 				.collect(Collectors.toList());
 		this.numChanges = numChanges;
-		metadata = mappable.getMetadata().orElseGet(null);
+		metadata = mappable.getMetadata().orElse(null);
 	}
 
 	/**
