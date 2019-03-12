@@ -98,7 +98,7 @@ public class HalsteadTest {
 
 	@Test
 	public void volumeOfEmpty() {
-		assertThat(Complexity.Halstead.EMPTY_HALSTEAD.getVocabulary())
+		assertThat(Complexity.Halstead.EMPTY_HALSTEAD.getVolume())
 				.isEqualTo(0);
 	}
 
