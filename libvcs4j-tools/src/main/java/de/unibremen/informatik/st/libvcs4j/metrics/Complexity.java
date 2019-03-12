@@ -61,8 +61,10 @@ public class Complexity {
 						final int N1, final int N2) {
 			numDistinctOperators = Validate.notNegative(n1, "n1 < 0");
 			numDistinctOperands = Validate.notNegative(n2, "n2 < 0");
-			numOperators = Validate.notNegative(N1, "N1 < 0");
-			numOperands = Validate.notNegative(N2, "N2 < 0");
+			numOperators = Validate.isGreaterThanOrEquals(
+					N1, n1, "%d < %d", N1, n1);
+			numOperands = Validate.isGreaterThanOrEquals(
+					N2, n2, "%d < %d", N2, n2);
 		}
 
 		/**
