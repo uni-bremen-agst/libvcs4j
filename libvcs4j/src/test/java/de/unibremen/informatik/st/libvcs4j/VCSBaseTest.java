@@ -110,7 +110,7 @@ public abstract class VCSBaseTest {
 		LocalDateTime dt = LocalDateTime.of(2010, 1, 1, 0, 0);
 		builder.withSince(dt);
 		builder.withUntil(dt);
-		builder.build();
+		assertThat(builder.build()).isNotNull();
 	}
 
 	@Test
@@ -119,7 +119,7 @@ public abstract class VCSBaseTest {
 		LocalDateTime dt = LocalDateTime.of(2010, 1, 1, 0, 0);
 		builder.withSince(dt);
 		builder.withUntil(dt.plusSeconds(1));
-		builder.build();
+		assertThat(builder.build()).isNotNull();
 	}
 
 	@Test
@@ -134,14 +134,14 @@ public abstract class VCSBaseTest {
 	public void startZero() {
 		VCSEngineBuilder builder = createBuilder();
 		builder.withStart(0);
-		builder.build();
+		assertThat(builder.build()).isNotNull();
 	}
 
 	@Test
 	public void startPositive() {
 		VCSEngineBuilder builder = createBuilder();
 		builder.withStart(10);
-		builder.build();
+		assertThat(builder.build()).isNotNull();
 	}
 
 	@Test
@@ -164,7 +164,7 @@ public abstract class VCSBaseTest {
 	public void endPositive() {
 		VCSEngineBuilder builder = createBuilder();
 		builder.withEnd(10);
-		builder.build();
+		assertThat(builder.build()).isNotNull();
 	}
 
 	@Test
@@ -172,7 +172,7 @@ public abstract class VCSBaseTest {
 		VCSEngineBuilder builder = createBuilder();
 		builder.withStart(10);
 		builder.withEnd(11);
-		builder.build();
+		assertThat(builder.build()).isNotNull();
 	}
 
 	@Test
@@ -468,6 +468,7 @@ public abstract class VCSBaseTest {
 			}
 			lastRevision = range.getRevision();
 		}
+		assertThat(lastRevision).isNotNull();
 	}
 
 	@Test

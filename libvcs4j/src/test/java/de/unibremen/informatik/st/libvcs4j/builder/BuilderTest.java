@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -42,25 +43,25 @@ public class BuilderTest {
 
 	@Test
 	public void testDateTime() {
-		VCSEngineBuilder.of("")
+		VCSEngineBuilder builder = VCSEngineBuilder.of("")
 				.withSince(LocalDateTime.now())
-				.withUntil(LocalDateTime.now())
-				.build();
+				.withUntil(LocalDateTime.now());
+		assertThat(builder.build()).isNotNull();
 	}
 
 	@Test
 	public void testDate() {
-		VCSEngineBuilder.of("")
+		VCSEngineBuilder builder = VCSEngineBuilder.of("")
 				.withSince(LocalDate.now())
-				.withUntil(LocalDate.now())
-				.build();
+				.withUntil(LocalDate.now());
+		assertThat(builder.build()).isNotNull();
 	}
 
 	@Test
 	public void testDateString() {
-		VCSEngineBuilder.of("")
+		VCSEngineBuilder builder =  VCSEngineBuilder.of("")
 				.withSince("2000-01-01")
-				.withUntil("2017-01-01")
-				.build();
+				.withUntil("2017-01-01");
+		assertThat(builder.build()).isNotNull();
 	}
 }
