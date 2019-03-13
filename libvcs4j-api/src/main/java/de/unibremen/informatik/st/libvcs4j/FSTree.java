@@ -90,6 +90,7 @@ public class FSTree<V> {
 		 * 		The file to visit.
 		 */
 		protected void visitFile(final VCSFile pFile) {
+			// Do nothing.
 		}
 	}
 

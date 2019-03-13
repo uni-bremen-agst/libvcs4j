@@ -279,10 +279,11 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 		private final List<LineInfo> lineInfoList = new ArrayList<>();
 
 		@Override
-		@SuppressWarnings("deprecation")
 		public void handleLine(final Date pDate, long pRevision,
 				final String pAuthor, final String pLine)
-				throws SVNException {}
+				throws SVNException {
+			// Do nothing.
+		}
 
 		@Override
 		public void handleLine(final Date pDate, final long pRevision,
@@ -312,7 +313,9 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 		}
 
 		@Override
-		public void handleEOF() throws SVNException {}
+		public void handleEOF() throws SVNException {
+			// Do nothing.
+		}
 	}
 
 	///////////////////////////////////////////////////////////////////////////
@@ -435,11 +438,10 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 			final String pRevision) throws IOException {
 		final SvnOperationFactory factory = new SvnOperationFactory();
 
-		try {
+		try(final ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
 			final SVNRevision revision = createSVNRevision(pRevision);
 			final SvnTarget path = SvnTarget.fromURL(
 					createSVNURL(toSVNPath(pPath)), revision);
-			final ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
 			final SvnCat cat = factory.createCat();
 			cat.setRevision(revision);

@@ -91,7 +91,9 @@ public class SingleEngine extends AbstractVSCEngine {
 	}
 
 	@Override
-	protected void checkoutImpl(final String revision) {}
+	protected void checkoutImpl(final String revision) {
+		// Nothing to checkout.
+	}
 
 	@Override
 	protected Changes createChangesImpl(final String fromRev,
