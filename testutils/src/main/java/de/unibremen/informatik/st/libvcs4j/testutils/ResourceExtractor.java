@@ -105,7 +105,7 @@ public class ResourceExtractor {
                          BufferedOutputStream out =
                                  new BufferedOutputStream(os)) {
                         int n;
-                        final byte buffer[] = new byte[16384];
+                        final byte[] buffer = new byte[16384];
                         while (-1 != (n = in.read(buffer, 0, buffer.length))) {
                             out.write(buffer, 0, n);
                         }

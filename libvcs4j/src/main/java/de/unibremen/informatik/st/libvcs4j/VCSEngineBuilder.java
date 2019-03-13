@@ -692,7 +692,7 @@ public class VCSEngineBuilder {
 		}
 		try {
 			final DateFormat dateFormat = new SimpleDateFormat();
-			final LocalDateTime dateTime = LocalDateTime.ofInstant(
+			return LocalDateTime.ofInstant(
 					dateFormat.parse(pDateTime).toInstant(),
 					ZoneId.systemDefault());
 		} catch (final ParseException ignored) {

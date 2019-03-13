@@ -83,6 +83,7 @@ public class ValidationTest {
 		final Map<String, String> map  = new HashMap<>();
 		map.put("foo", "bar");
 		Validate.noNullElements(map);
+		assertThat(map).containsOnlyKeys("foo", "bar");
 	}
 
 	@Test

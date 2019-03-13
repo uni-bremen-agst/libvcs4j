@@ -26,11 +26,11 @@ import java.util.List;
  */
 public class SingleEngine extends AbstractVSCEngine {
 
-	private final static String DEFAULT_REVISION = "0";
+	private static final String DEFAULT_REVISION = "0";
 
-	private final static String DEFAULT_MESSAGE = "(no log)";
+	private static final String DEFAULT_MESSAGE = "(no log)";
 
-	private final static String DEFAULT_AUTHOR = "(no author)";
+	private static final String DEFAULT_AUTHOR = "(no author)";
 
 	/**
 	 * Use {@link VCSEngineBuilder} instead.

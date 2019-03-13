@@ -299,7 +299,7 @@ public class UnusedCodeDetector extends CodeSmellDetector {
 	private boolean modifierMatchesMode(final CtModifiable modifiable) {
 		boolean isPrivate = modifiable.getModifiers()
 				.contains(ModifierKind.PRIVATE);
-		return !(!isPrivate & privateMode);
+		return !(!isPrivate && privateMode);
 	}
 
 	@Override
