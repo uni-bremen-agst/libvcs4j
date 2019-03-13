@@ -374,8 +374,9 @@ public class FSTree<V> {
 	 */
 	public FSTree<V> getRoot() {
 		FSTree<V> root = this;
-		while (root.getParent().isPresent()) {
-			root = root.getParent().get();
+		Optional<FSTree<V>> parent;
+		while ((parent = root.getParent()).isPresent()) {
+			root = parent.get();
 		}
 		return root;
 	}

@@ -203,9 +203,9 @@ public interface VCSFile extends VCSModelElement {
 				throws NullPointerException, IllegalArgumentException,
 				IOException {
 			Validate.notNull(fileChange);
-			Validate.isTrue(fileChange.getOldFile().isPresent(),
-					"The given file change has no old file.");
-			final VCSFile oldFile = fileChange.getOldFile().get();
+			final VCSFile oldFile = fileChange.getOldFile().orElseThrow(
+					() -> new IllegalArgumentException(
+							"The given file change has no old file."));
 			Validate.isEqualTo(oldFile, getFile(),
 					"The given file change references an invalid file.");
 

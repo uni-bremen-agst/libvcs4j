@@ -105,10 +105,13 @@ public interface RevisionRange extends VCSModelElement {
 					// Used to export the match from within a lambda
 					final Deque<FileChange> matches = new ArrayDeque<>();
 					if (type == ADD || type == REMOVE) {
-						@SuppressWarnings("ConstantConditions")
 						final Path path = type == ADD
-								? change.getNewFile().get().toRelativePath()
-								: change.getOldFile().get().toRelativePath();
+								? change.getNewFile()
+									.orElseThrow(IllegalStateException::new)
+									.toRelativePath()
+								: change.getOldFile()
+									.orElseThrow(IllegalStateException::new)
+									.toRelativePath();
 						toProcess.stream().filter(c ->
 								(type == ADD
 										? c.getOldFile()

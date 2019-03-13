@@ -337,13 +337,12 @@ public class Mapping<T> {
 			@NonNull final RevisionRange range) throws IOException {
 		final List<Mappable<T>> backup = new ArrayList<>(previous);
 		try {
-			if (!range.getPredecessorRevision().isPresent()) {
-				throw new IllegalArgumentException(
-						"Revision range without predecessor");
-			}
+			final Revision preRev = range.getPredecessorRevision()
+					.orElseThrow(() -> new IllegalArgumentException(
+							"Revision range without predecessor"));
 			final List<Mappable<T>> prev = filterOutNull(from);
 			validateSameRevisions(prev);
-			validateHaveRevision(prev, range.getPredecessorRevision().get());
+			validateHaveRevision(prev, preRev);
 			previous.clear();
 			previous.addAll(prev);
 			return map(to, range);
@@ -454,8 +453,9 @@ public class Mapping<T> {
 		final IdentityHashMap<Mappable<T>, Mappable<T>> fromToUpdated =
 				new IdentityHashMap<>();
 		from.forEach(f -> fromToUpdated.put(f, f));
-		final boolean applyChanges = range.getPredecessorRevision().isPresent()
-				&& haveRevision(from, range.getPredecessorRevision().get());
+		final Optional<Revision> preRev = range.getPredecessorRevision();
+		final boolean applyChanges = preRev.isPresent()
+				&& haveRevision(from, preRev.get());
 		if (applyChanges) {
 			for (final Mappable<T> f : from) {
 				fromToUpdated.put(f, applyChanges(f, range).orElse(null));

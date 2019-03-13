@@ -205,18 +205,18 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 	}
 
 	@Override
-	public List<LineChange> computeDiff(final FileChange pFileChange)
+	public List<LineChange> computeDiff(final FileChange fileChange)
 			throws NullPointerException, IOException {
-		Validate.notNull(pFileChange);
+		Validate.notNull(fileChange);
 		final String LINE_SEPARATOR = "\\r?\\n";
 
-		final String[] old = pFileChange.getOldFile().isPresent()
-				? pFileChange.getOldFile().get()
-					.readeContent().split(LINE_SEPARATOR)
+		final Optional<VCSFile> oldFile = fileChange.getOldFile();
+		final String[] old = oldFile.isPresent()
+				? oldFile.get().readeContent().split(LINE_SEPARATOR)
 				: new String[0];
-		final String[] nev = pFileChange.getNewFile().isPresent()
-				? pFileChange.getNewFile().get()
-					.readeContent().split(LINE_SEPARATOR)
+		final Optional<VCSFile> nevFile = fileChange.getNewFile();
+		final String[] nev = nevFile.isPresent()
+				? nevFile.get().readeContent().split(LINE_SEPARATOR)
 				: new String[0];
 
 		final Diff diff = new Diff(old, nev);
@@ -229,8 +229,8 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 				lineChange.setType(LineChange.Type.DELETE);
 				lineChange.setLine(c.line0 + i + 1);
 				lineChange.setContent(old[lineChange.getLine() - 1]);
-				lineChange.setFile(pFileChange.getOldFile()
-						.orElseThrow(IllegalStateException::new));
+				lineChange.setFile(oldFile.orElseThrow(() ->
+						new IllegalStateException("Missing old file.")));
 				lineChanges.add(lineChange);
 			}
 			for (int i = 0; i < change.inserted; i++) {
@@ -238,8 +238,8 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 				lineChange.setType(LineChange.Type.INSERT);
 				lineChange.setLine(c.line1 + i + 1);
 				lineChange.setContent(nev[lineChange.getLine() - 1]);
-				lineChange.setFile(pFileChange.getNewFile()
-						.orElseThrow(IllegalStateException::new));
+				lineChange.setFile(nevFile.orElseThrow(() ->
+						new IllegalStateException("Missing new file.")));
 				lineChanges.add(lineChange);
 			}
 			change = change.link;
