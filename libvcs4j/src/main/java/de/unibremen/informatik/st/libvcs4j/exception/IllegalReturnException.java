@@ -1,6 +1,7 @@
 package de.unibremen.informatik.st.libvcs4j.exception;
 
 import java.util.Collection;
+import java.util.Objects;
 
 /**
  * A {@link RuntimeException} to indicate that a subclass or implementation
@@ -23,9 +24,10 @@ public class IllegalReturnException extends RuntimeException {
 	public static void noNullElements(final Collection<?> pCollection)
 			throws IllegalReturnException {
 		notNull(pCollection);
-		if (pCollection.contains(null)) {
-			throw new IllegalReturnException(
-					"Unexpected null element in collection");
-		}
+		pCollection.stream().filter(Objects::isNull).findAny()
+				.ifPresent(__ -> {
+					throw new IllegalReturnException(
+							"Unexpected null element in collection");
+				});
 	}
 }
