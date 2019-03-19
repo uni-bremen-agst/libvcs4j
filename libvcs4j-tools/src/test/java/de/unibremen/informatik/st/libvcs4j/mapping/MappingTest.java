@@ -1,6 +1,12 @@
 package de.unibremen.informatik.st.libvcs4j.mapping;
 
-import de.unibremen.informatik.st.libvcs4j.*;
+import de.unibremen.informatik.st.libvcs4j.FileChange;
+import de.unibremen.informatik.st.libvcs4j.Revision;
+import de.unibremen.informatik.st.libvcs4j.RevisionRange;
+import de.unibremen.informatik.st.libvcs4j.VCSFile;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NonNull;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -8,8 +14,14 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -133,24 +145,18 @@ public class MappingTest {
     @Test
     public void testMappingWithSingleRange() throws IOException {
         //From mappables
-        VCSFile.Range range = createMockRange(111,
-                222,
-                "/path/to/file/with/temporaryField",
-                true);
-        MockMappable predTemporaryField =
-                new MockMappable(Collections.singletonList(range), "", "TemporaryField");
-        range = createMockRange(123,
-                126,
-                "/path/to/file/with/dataClump",
-                true);
-        MockMappable predDataClump =
-                new MockMappable(Collections.singletonList(range), "", "DataClump");
-        range = createMockRange(155,
-                255,
-                "/path/to/file/with/deadCode",
-                true);
-        MockMappable predDeadCode =
-                new MockMappable(Collections.singletonList(range), "", "DeadCode");
+        VCSFile.Range range = createMockRange(111, 222,
+                "/path/to/file/with/temporaryField", true);
+        MockMappable predTemporaryField = new MockMappable(
+                singletonList(range), null, "TemporaryField");
+        range = createMockRange(123, 126,
+                "/path/to/file/with/dataClump", true);
+        MockMappable predDataClump = new MockMappable(
+                singletonList(range), null, "DataClump");
+        range = createMockRange(155, 255,
+                "/path/to/file/with/deadCode", true);
+        MockMappable predDeadCode = new MockMappable(
+                singletonList(range), null, "DeadCode");
         List<Mappable<String>> from = Arrays.asList(
                 null,
                 predTemporaryField,
@@ -159,34 +165,22 @@ public class MappingTest {
                 null);
 
         //To mappables
-        range = createMockRange(
-                123,
-                126,
-                "/path/to/file/with/dataClump",
-                false);
-        MockMappable succDataClump =
-                new MockMappable(Collections.singletonList(range), "", "DataClump");
-        range = createMockRange(
-                111,
-                222,
-                "/path/to/file/with/temporaryField",
-                false);
-        MockMappable succTemporaryField =
-                new MockMappable(Collections.singletonList(range), "", "TemporaryField");
-        range = createMockRange(
-                155,
-                255,
-                "/path/to/file/with/deadCode",
-                false);
-        MockMappable succDeadCode =
-                new MockMappable(Collections.singletonList(range), "", "DeadCode");
-        range = createMockRange(
-                77,
-                88,
-                "/path/to/file/with/unmapped",
-                false);
-        MockMappable succUnmapped =
-                new MockMappable(Collections.singletonList(range), "", "Unmapped");
+        range = createMockRange(123, 126,
+                "/path/to/file/with/dataClump", false);
+        MockMappable succDataClump = new MockMappable(
+                singletonList(range), null, "DataClump");
+        range = createMockRange(111, 222,
+                "/path/to/file/with/temporaryField", false);
+        MockMappable succTemporaryField = new MockMappable(
+                Collections.singletonList(range), null, "TemporaryField");
+        range = createMockRange(155, 255,
+                "/path/to/file/with/deadCode", false);
+        MockMappable succDeadCode = new MockMappable(
+                singletonList(range), null, "DeadCode");
+        range = createMockRange(77, 88,
+                "/path/to/file/with/unmapped", false);
+        MockMappable succUnmapped = new MockMappable(
+                Collections.singletonList(range), null, "Unmapped");
         List<Mappable<String>> to = Arrays.asList(
                 succDataClump,
                 succDeadCode,
@@ -207,22 +201,24 @@ public class MappingTest {
         Mapping.Result<String> result = mapping.map(from, to, revisionRange);
         from.stream()
                 .filter(Objects::nonNull)
-                .forEach(mappable -> assertThat(result.getFrom().contains(mappable))
-                        .isTrue());
+                .forEach(m -> assertThat(result.getFrom()).contains(m));
         to.stream()
                 .filter(Objects::nonNull)
-                .forEach(mappable -> assertThat(result.getTo().contains(mappable))
-                        .isTrue());
-        assertThat(result.getWithSuccessor().isEmpty()).isFalse();
-        assertThat(result.getWithoutPredecessor().contains(succUnmapped)).isTrue();
-        assertThat(result.getWithPredecessor().contains(succUnmapped)).isFalse();
+                .forEach(m -> assertThat(result.getTo().contains(m)));
+        assertThat(result.getWithSuccessor())
+                .isNotEmpty();
+        assertThat(result.getWithoutPredecessor())
+                .contains(succUnmapped);
+        assertThat(result.getWithPredecessor())
+                .doesNotContain(succUnmapped);
         assertThat(result.getPredecessor(succDataClump))
                 .isEqualTo(Optional.of(predDataClump));
         assertThat(result.getPredecessor(succDeadCode))
                 .isEqualTo(Optional.of(predDeadCode));
         assertThat(result.getPredecessor(succTemporaryField))
                 .isEqualTo(Optional.of(predTemporaryField));
-        assertThat(result.getPredecessor(succUnmapped).isPresent()).isFalse();
+        assertThat(result.getPredecessor(succUnmapped))
+                .isEmpty();
     }
 
     @Test
@@ -455,10 +451,8 @@ public class MappingTest {
     ////////////////////////////////////////////////////////////////////////////
 
     private VCSFile.Range createMockRange(final int withBeginPosition,
-                                          final int withEndPosition,
-                                          final String withPathToFile,
-                                          final boolean isFromRange)
-            throws IOException {
+            final int withEndPosition, final String withPathToFile,
+            final boolean isFromRange) throws IOException {
         VCSFile.Range range = mock(VCSFile.Range.class);
         when(range.apply(any(FileChange.class))).thenReturn(Optional.of(range));
         VCSFile.Position begin = mock(VCSFile.Position.class);
@@ -468,7 +462,10 @@ public class MappingTest {
         when(end.getOffset()).thenReturn(withEndPosition);
         when(range.getEnd()).thenReturn(end);
         VCSFile file = mock(VCSFile.class);
-        when(file.getPath()).thenReturn(withPathToFile);
+        when(file.getRelativePath()).thenReturn(withPathToFile);
+        when(file.toRelativePath()).thenCallRealMethod();
+        when(begin.getFile()).thenReturn(file);
+        when(end.getFile()).thenReturn(file);
         Revision revision = mock(Revision.class);
         when(file.getRevision()).thenReturn(revision);
         when(range.getFile()).thenReturn(file);
@@ -487,7 +484,8 @@ public class MappingTest {
     private FileChange createMockFileChange(final String withPathToFile) {
         FileChange fileChange = mock(FileChange.class);
         VCSFile vcsFile = mock(VCSFile.class);
-        when(vcsFile.getPath()).thenReturn(withPathToFile);
+        when(vcsFile.getRelativePath()).thenReturn(withPathToFile);
+        when(vcsFile.toRelativePath()).thenCallRealMethod();
         when(fileChange.getType()).thenReturn(FileChange.Type.MODIFY);
         when(fileChange.getOldFile()).thenReturn(Optional.of(vcsFile));
         return fileChange;
@@ -497,35 +495,23 @@ public class MappingTest {
     ///////////////////////// Helper class /////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
 
+    @AllArgsConstructor
     private class MockMappable implements Mappable<String> {
 
+        @Getter
+        @NonNull
         private List<VCSFile.Range> ranges;
-
         private String signature;
-
         private String metadata;
-
-        MockMappable(final List<VCSFile.Range> ranges,
-                     final String signature,
-                     final String metadata) {
-            this.ranges = ranges;
-            this.signature = signature;
-            this.metadata = metadata;
-        }
-
-        @Override
-        public List<VCSFile.Range> getRanges() {
-            return ranges;
-        }
 
         @Override
         public Optional<String> getSignature() {
-            return Optional.of(signature);
+            return Optional.ofNullable(signature);
         }
 
         @Override
         public Optional<String> getMetadata() {
-            return Optional.of(metadata);
+            return Optional.ofNullable(metadata);
         }
     }
 }
