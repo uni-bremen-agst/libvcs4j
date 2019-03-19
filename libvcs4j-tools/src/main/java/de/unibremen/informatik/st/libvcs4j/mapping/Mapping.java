@@ -491,27 +491,30 @@ public class Mapping<T> {
 			final Optional<FileChange> fileChange =
 					findRelevantChange(range, revRange);
 
-			// One of the files of range does not exist anymore. We are done.
+			// One of the files of range does not exist anymore. Unable to
+			// apply changes.
 			if (fileChange.isPresent() && fileChange.get().getType()
 					== FileChange.Type.REMOVE) {
 				return Optional.empty();
 			}
 
-			// File of range in current revision.
-			final VCSFile file = findRelevantFile(range, revision)
-					.orElseThrow(() -> new IllegalArgumentException(
-							String.format(
-									"Unable to find '%s' in current revision",
-									range.getFile().getRelativePath())));
-
+			// The file was not changed.
 			if (!fileChange.isPresent()) {
-				// The file was not changed.
-				ranges.add(new VCSFile.Range(file,
-						range.getBegin().getOffset(),
-						range.getEnd().getOffset(),
-						range.getBegin().getTabSize()));
+				// File of range in current revision.
+				final VCSFile file = findRelevantFile(range, revision)
+						.orElseThrow(() -> new IllegalArgumentException(
+								String.format(
+										"Unable to find '%s' in current revision",
+										range.getFile().getRelativePath())));
+				// Range mapped to the file in current revision.
+				final VCSFile.Range updatedRange = range.mapTo(file)
+						.orElseThrow(() -> new IllegalArgumentException(
+								String.format(
+										"Unable to map range to unmodified file '%s'",
+										range.getFile().getRelativePath())));
+				ranges.add(updatedRange);
+			// The file was updated or relocated.
 			} else {
-				// The file was updated or relocated.
 				final Optional<VCSFile.Range> updatedRange =
 						range.apply(fileChange.get());
 				if (updatedRange.isPresent()) {
@@ -522,6 +525,14 @@ public class Mapping<T> {
 					// either the begin of range or the end of range (or both)
 					// do not exist anymore. Let's try to shrink our mappable
 					// by one line accordingly.
+
+					// New file must exist.
+					final VCSFile file = fileChange.get().getNewFile()
+							.orElseThrow(() -> new IllegalArgumentException(
+									String.format(
+											"File change of type '%s' without new file (old file: '%s')",
+											fileChange.get().getType(),
+											range.getFile().getRelativePath())));
 
 					// Move begin to next line if necessary.
 					final boolean beginDeleted = fileChange.get()

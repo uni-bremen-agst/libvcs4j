@@ -2,7 +2,6 @@ package de.unibremen.informatik.st.libvcs4j.mapping;
 
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 
-import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -66,7 +65,7 @@ public interface Mappable<T> {
 	 * given mappable are equal according to {@link Object#equals(Object)}. If
 	 * this or the given mappable has no metadata, that is, an empty
 	 * {@link Optional} is returned by {@link #getMetadata()}, the default
-	 * implementation considers them as compatible. Subclasses may provide an
+	 * implementation considers them as compatible. Subclasses may implement an
 	 * entirely different behaviour though. Only the following property, for
 	 * the sake of fail-safeness, must not be changed by subclasses: This
 	 * method does not throw a {@link NullPointerException} if {@code mappable}
@@ -99,7 +98,7 @@ public interface Mappable<T> {
 	 * {@link String#equals(Object)}. If this or the given mappable has no
 	 * signature, that is, an empty {@link Optional} is returned by
 	 * {@link #getSignature()}, the default implementation returns
-	 * {@code false}. Subclasses may override this method and provide a
+	 * {@code false}. Subclasses may override this method and implement a
 	 * different behaviour. However, note that this may have a negative effect
 	 * on mapping results. The following property, for the sake of
 	 * fail-safeness, must not be changed by subclasses: This method does not
@@ -130,16 +129,13 @@ public interface Mappable<T> {
 	 * mappables have the same positions (see {@link #getRanges()}). The
 	 * default implementation checks whether this and the given mappable have
 	 * the same number of ranges and tries to match each range of this mappable
-	 * with a distinct range of {@code mappable}. Two ranges {@code r1} and
-	 * {@code r2} match if their relative paths match according to
-	 * {@link Path#equals(Object)} and if their begin and end positions match
-	 * according to {@link VCSFile.Position#OFFSET_COMPARATOR}. Subclasses may
-	 * override this method and provide a different behaviour. However, note
-	 * that this may have a negative effect on mapping results. The following
-	 * property, for the sake of fail-safeness, must not be changed by
-	 * subclasses: This method does not throw a {@link NullPointerException} if
-	 * {@code mappable} is {@code null}. {@code null} arguments, however, never
-	 * match.
+	 * with a distinct range of {@code mappable} (using
+	 * {@link VCSFile.Range#RELATIVE_PATH_PREDICATE}). Subclasses may override
+	 * this method and implement a different behaviour. However, note that this
+	 * may have a negative effect on mapping results. The following property,
+	 * for the sake of fail-safeness, must not be changed by subclasses: This
+	 * method does not throw a {@link NullPointerException} if {@code mappable}
+	 * is {@code null}. {@code null} arguments, however, never match.
 	 *
 	 * @param mappable
 	 * 		The mappable whose ranges to check.
@@ -160,22 +156,8 @@ public interface Mappable<T> {
 			final Iterator<VCSFile.Range> it = otherRanges.iterator();
 			while (it.hasNext()) {
 				final VCSFile.Range or = it.next();
-				// Match path.
-				final Path r1RelPath = tr.getFile().toRelativePath();
-				final Path r2RelPath = or.getFile().toRelativePath();
-				final boolean pathMatch = r1RelPath.equals(r2RelPath);
-				// Match begin.
-				final VCSFile.Position r1Begin = tr.getBegin();
-				final VCSFile.Position r2Begin = or.getBegin();
-				final boolean beginMatch = VCSFile.Position
-						.OFFSET_COMPARATOR.compare(r1Begin, r2Begin) == 0;
-				// Match end.
-				final VCSFile.Position r1End = tr.getEnd();
-				final VCSFile.Position r2End = or.getEnd();
-				final boolean endMatch = VCSFile.Position
-						.OFFSET_COMPARATOR.compare(r1End, r2End) == 0;
 				// Do not reuse or in case of a match.
-				if (pathMatch && beginMatch && endMatch) {
+				if (VCSFile.Range.RELATIVE_PATH_PREDICATE.test(tr, or)) {
 					it.remove();
 					break;
 				}
