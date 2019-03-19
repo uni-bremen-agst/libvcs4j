@@ -2,6 +2,7 @@ package de.unibremen.informatik.st.libvcs4j.mapping;
 
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -117,8 +118,8 @@ public interface Mappable<T> {
 		}
 		final Optional<String> ts = getSignature();
 		final Optional<String> os = mappable.getSignature();
-		return !ts.isPresent() || !os.isPresent()
-				|| ts.get().equals(os.get());
+		return ts.isPresent() && os.isPresent()
+				&& ts.get().equals(os.get());
 	}
 
 	/**
@@ -148,7 +149,10 @@ public interface Mappable<T> {
 			return false;
 		}
 		final List<VCSFile.Range> thisRanges = getRanges();
-		final List<VCSFile.Range> otherRanges = mappable.getRanges();
+		// This list will be changed (elements are removed in case of a match).
+		// Make sure to work on a copy to preserve the state of this mappable.
+		final List<VCSFile.Range> otherRanges =
+				new ArrayList<>(mappable.getRanges());
 		if (thisRanges.size() != mappable.getRanges().size()) {
 			return false;
 		}
