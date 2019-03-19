@@ -12,12 +12,11 @@ import lombok.NonNull;
 import spoon.reflect.code.CtSwitch;
 import spoon.reflect.declaration.CtElement;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 
-public class SwitchStatementsDetector extends CodeSmellDetector {
+public class SwitchStatementDetector extends CodeSmellDetector {
 
     private static final int DEFAULT_MCC_THRESHOLD = 3;
 
@@ -25,14 +24,14 @@ public class SwitchStatementsDetector extends CodeSmellDetector {
 
     private final MCC mcc = new MCC();
 
-    public SwitchStatementsDetector(@NonNull final Revision revision,
-                                    final int mccThreshold)
+    public SwitchStatementDetector(@NonNull final Revision revision,
+                                   final int mccThreshold)
             throws NullPointerException, IllegalArgumentException {
         super(revision);
         this.mccThreshold = Validate.notNegative(mccThreshold);
     }
 
-    public SwitchStatementsDetector(@NonNull final Revision revision)
+    public SwitchStatementDetector(@NonNull final Revision revision)
             throws NullPointerException, IllegalArgumentException{
         this(revision, DEFAULT_MCC_THRESHOLD);
     }
