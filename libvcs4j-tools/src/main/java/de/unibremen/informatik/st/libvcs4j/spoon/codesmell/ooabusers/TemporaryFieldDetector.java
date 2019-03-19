@@ -7,10 +7,12 @@ import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.Thresholds;
 import lombok.NonNull;
 import spoon.reflect.code.CtFieldAccess;
 import spoon.reflect.code.CtFieldWrite;
+import spoon.reflect.declaration.CtType;
 import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtField;
 import spoon.reflect.declaration.CtMethod;
+import spoon.reflect.declaration.CtConstructor;
 import spoon.reflect.declaration.CtModifiable;
 import spoon.reflect.reference.CtFieldReference;
 import spoon.reflect.visitor.filter.FieldAccessFilter;
@@ -62,20 +64,30 @@ public class TemporaryFieldDetector extends CodeSmellDetector {
     }
 
     @Override
+    public <T> void visitCtConstructor(CtConstructor<T> c) {
+        visitCtExecutable(c, c.getDeclaringType());
+        super.visitCtConstructor(c);
+    }
+
+    @Override
     public <T> void visitCtMethod(CtMethod<T> m) {
-        m.getElements(new TypeFilter<>(CtFieldAccess.class))
+        visitCtExecutable(m, m.getDeclaringType());
+        super.visitCtMethod(m);
+    }
+
+    private void visitCtExecutable(final CtExecutable executable,
+                                   final CtType declaringType) {
+        executable.getElements(new TypeFilter<>(CtFieldAccess.class))
                 .stream()
                 .map(CtFieldAccess::getVariable)
                 .filter(ref -> ref.getDeclaration() != null)
                 .map(CtFieldReference::getDeclaration)
                 .filter(field -> field.getDeclaringType() != null)
-                .filter(field -> field.getDeclaringType()
-                        .equals(m.getDeclaringType()))
+                .filter(field -> field.getDeclaringType().equals(declaringType))
                 .filter(CtModifiable::isPrivate)
                 .filter(field -> !field.isStatic())
                 .forEach(field -> fieldAccesses.computeIfAbsent(
-                        m, __ -> new HashSet<>()).add(field));
-        super.visitCtMethod(m);
+                        executable, __ -> new HashSet<>()).add(field));
     }
 
     @Override
