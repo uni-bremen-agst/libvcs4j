@@ -383,30 +383,30 @@ public class FSTree<V> {
 	}
 
 	/**
-	 * Navigates to the tree located at {@code pPath}. Unlike conventional
+	 * Navigates to the tree located at {@code path}. Unlike conventional
 	 * navigation rules, this method allows to navigate "beyond" a regular
 	 * file. That is, for instance, a file's parent may be addressed like this:
 	 *
 	 *     "src/A.java/.."
 	 *
 	 * where "A.java" is a regular file and ".." points to its parent. If
-	 * {@code pPath} is empty, {@code this} is returned.
+	 * {@code path} is empty, {@code this} is returned.
 	 *
-	 * @param pPath
+	 * @param path
 	 * 		The relative path of the tree to navigate to.
 	 * @return
-	 * 		The tree located at {@code pPath}, if such a tree exists.
+	 * 		The tree located at {@code path}, if such a tree exists.
 	 * @throws NullPointerException
-	 * 		If {@code pPath} is {@code null}.
+	 * 		If {@code path} is {@code null}.
 	 */
-	public Optional<FSTree<V>> navigateTo(final String pPath) {
-		Validate.notNull(pPath);
-		if (pPath.isEmpty()) {
+	public Optional<FSTree<V>> navigateTo(final String path) {
+		Validate.notNull(path);
+		if (path.isEmpty()) {
 			return Optional.of(this);
 		}
 
 		final Queue<String> parts = new ArrayDeque<>();
-		parts.addAll(Arrays.asList(pPath.replace("\\", "/").split("/")));
+		parts.addAll(Arrays.asList(path.replace("\\", "/").split("/")));
 		final String head = parts.poll();
 		final String tail = String.join("/", parts);
 
@@ -414,21 +414,22 @@ public class FSTree<V> {
 			case ".":
 				return navigateTo(tail);
 			case "..":
-				final Optional<FSTree<V>> parent = getParent();
-				return parent.isPresent()
-						? parent.get().navigateTo(tail)
-						: navigateTo(tail);
+				return getParent()
+						// Navigate to parent and process tail.
+						.map(p -> p.navigateTo(tail))
+						// Stay here and process tail.
+						.orElseGet(() -> navigateTo(tail));
 			default:
 				if (isFile()) {
 					return tail.isEmpty() && hasFileName(head)
 							? Optional.of(this) : Optional.empty();
 				} else {
-					for (final FSTree<V> node : nodes) {
-						if (node.hasFileName(head)) {
-							return node.navigateTo(tail);
-						}
-					}
-					return Optional.empty();
+					return nodes.stream()
+							.filter(n -> n.hasFileName(head))
+							.findFirst()
+							.map(n -> n.navigateTo(tail))
+							.filter(Optional::isPresent)
+							.map(Optional::get);
 				}
 		}
 	}
