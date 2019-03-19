@@ -61,6 +61,18 @@ public class FSTreeTest {
 	}
 
 	@Test
+	public void navigateToParent() {
+		VCSFile a = mock(VCSFile.class);
+		when(a.toRelativePath()).thenReturn(
+				Paths.get("src", "main", "A.java"));
+
+		FSTree<Void> root = FSTree.of(Collections.singletonList(a));
+		FSTree<Void> file = root.navigateTo("main/A.java")
+				.orElseThrow(AssertionError::new);
+		assertThat(file.navigateTo("../../../")).hasValue(root);
+	}
+
+	@Test
 	public void root() {
 		VCSFile a = mock(VCSFile.class);
 		when(a.toRelativePath()).thenReturn(
