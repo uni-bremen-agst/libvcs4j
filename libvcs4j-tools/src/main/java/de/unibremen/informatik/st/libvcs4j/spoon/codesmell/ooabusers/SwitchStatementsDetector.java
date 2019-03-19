@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 public class SwitchStatementsDetector extends CodeSmellDetector {
 
-    private static final int DEFAULT_MCC_THRESHOLD = 4;
+    private static final int DEFAULT_MCC_THRESHOLD = 3;
 
     private final int mccThreshold;
 
