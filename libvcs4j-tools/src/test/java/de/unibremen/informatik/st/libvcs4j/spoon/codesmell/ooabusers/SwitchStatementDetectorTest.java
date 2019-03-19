@@ -60,13 +60,12 @@ public class SwitchStatementDetectorTest {
                         .collect(Collectors.toList());
         when(revision.getFiles()).thenReturn(mockList);
         switchStatementDetector = new SwitchStatementDetector(revision);
-
     }
 
     @Test
-    public void test() {
+    public void simpleDetection() {
         switchStatementDetector.scan(model);
-        assertThat(switchStatementDetector.getCodeSmells().isEmpty()).isFalse();
+        assertThat(switchStatementDetector.getCodeSmells()).isNotEmpty();
         CodeSmell codeSmell = switchStatementDetector.getCodeSmells().get(0);
         VCSFile.Range range = codeSmell.getRanges().get(0);
         assertThat(range.getBegin().getLine()).isEqualTo(4);

@@ -65,7 +65,7 @@ public class TemporaryFieldDetectorTest {
     @Test
     public void simpleDetection() {
         temporaryFieldDetector.scan(model);
-        assertThat(temporaryFieldDetector.getCodeSmells().isEmpty()).isFalse();
+        assertThat(temporaryFieldDetector.getCodeSmells()).hasSize(2);
         CodeSmell codeSmell = temporaryFieldDetector.getCodeSmells().get(0);
         assertThat(codeSmell.getSignature()).isEqualTo(Optional.of("A#abc"));
         VCSFile.Range range = codeSmell.getRanges().get(0);
