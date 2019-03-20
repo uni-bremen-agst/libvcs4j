@@ -1,5 +1,7 @@
 package de.unibremen.informatik.st.libvcs4j;
 
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,12 +12,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Objects;
 
 /**
  * Recursively deletes a directory or file. This class is primarily intended to
  * be used in shutdown hooks to delete temporarily created directories.
  */
+@AllArgsConstructor
 public class DeleteTask extends Thread {
 
 	/**
@@ -26,20 +28,8 @@ public class DeleteTask extends Thread {
 	/**
 	 * Path to file or directory that will be deleted.
 	 */
+	@NonNull
 	private final Path path;
-
-	/**
-	 * Creates a new task that deletes {@code pPath} when calling
-	 * {@link #run()}.
-	 *
-	 * @param pPath
-	 *      Path to the file or directory to delete.
-	 * @throws NullPointerException
-	 *      If {@code pPath == null}.
-	 */
-	public DeleteTask(final Path pPath) {
-		path = Objects.requireNonNull(pPath);
-	}
 
 	/**
 	 * Convenience constructor for {@link #DeleteTask(Path)}.
@@ -57,7 +47,7 @@ public class DeleteTask extends Thread {
 	public void run() {
 		LOGGER.info("Deleting '{}'", path);
 		try {
-			if (Files.exists(path)) {
+			if (path.toFile().exists()) {
 				Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
 					@Override
 					public FileVisitResult visitFile(

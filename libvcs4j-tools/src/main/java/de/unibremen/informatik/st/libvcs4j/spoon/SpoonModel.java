@@ -207,9 +207,9 @@ public class SpoonModel {
 	private FilteringFolder createInputSource(final Collection<Path> input) {
 		FilteringFolder folder = new FilteringFolder();
 		input.stream()
-				.filter(Files::isRegularFile)
-				.filter(Files::isReadable)
 				.map(Path::toFile)
+				.filter(File::exists)
+				.filter(File::canRead)
 				.forEach(file -> folder.addFile(new FileSystemFile(file)));
 		return folder;
 	}

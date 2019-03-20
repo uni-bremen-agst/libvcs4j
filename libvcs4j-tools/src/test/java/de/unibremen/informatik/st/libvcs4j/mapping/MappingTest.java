@@ -190,11 +190,14 @@ public class MappingTest {
                 null);
 
         List<FileChange> fileChanges = new ArrayList<>();
-        FileChange fileChange = createMockFileChange("/path/to/file/with/dataClump");
+        FileChange fileChange = createMockFileChange(
+                "/path/to/file/with/dataClump");
         fileChanges.add(fileChange);
-        fileChange = createMockFileChange("/path/to/file/with/temporaryField");
+        fileChange = createMockFileChange(
+                "/path/to/file/with/temporaryField");
         fileChanges.add(fileChange);
-        fileChange = createMockFileChange("/path/to/file/with/deadCode");
+        fileChange = createMockFileChange(
+                "/path/to/file/with/deadCode");
         fileChanges.add(fileChange);
         when(revisionRange.getFileChanges()).thenReturn(fileChanges);
 
@@ -212,11 +215,11 @@ public class MappingTest {
         assertThat(result.getWithPredecessor())
                 .doesNotContain(succUnmapped);
         assertThat(result.getPredecessor(succDataClump))
-                .isEqualTo(Optional.of(predDataClump));
+                .hasValue(predDataClump);
         assertThat(result.getPredecessor(succDeadCode))
-                .isEqualTo(Optional.of(predDeadCode));
+                .hasValue(predDeadCode);
         assertThat(result.getPredecessor(succTemporaryField))
-                .isEqualTo(Optional.of(predTemporaryField));
+                .hasValue(predTemporaryField);
         assertThat(result.getPredecessor(succUnmapped))
                 .isEmpty();
     }
@@ -308,11 +311,14 @@ public class MappingTest {
                 succUnmapped);
 
         List<FileChange> fileChanges = new ArrayList<>();
-        FileChange fileChange = createMockFileChange("/path/to/file/with/dataClump");
+        FileChange fileChange = createMockFileChange(
+                "/path/to/file/with/dataClump");
         fileChanges.add(fileChange);
-        fileChange = createMockFileChange("/path/to/file/with/temporaryField");
+        fileChange = createMockFileChange(
+                "/path/to/file/with/temporaryField");
         fileChanges.add(fileChange);
-        fileChange = createMockFileChange("/path/to/file/with/deadCode");
+        fileChange = createMockFileChange(
+                "/path/to/file/with/deadCode");
         fileChanges.add(fileChange);
         when(revisionRange.getFileChanges()).thenReturn(fileChanges);
 
@@ -323,14 +329,15 @@ public class MappingTest {
                 .isNotEmpty();
         assertThat(result.getWithoutPredecessor())
                 .contains(succUnmapped);
-        assertThat(result.getWithPredecessor()
-                .contains(succUnmapped));
+        assertThat(result.getWithPredecessor())
+                .containsExactlyInAnyOrder(
+                        succDataClump, succDeadCode, succTemporaryField);
         assertThat(result.getPredecessor(succDataClump))
-                .isEqualTo(Optional.of(predDataClump));
+                .hasValue(predDataClump);
         assertThat(result.getPredecessor(succDeadCode))
-                .isEqualTo(Optional.of(predDeadCode));
+                .hasValue(predDeadCode);
         assertThat(result.getPredecessor(succTemporaryField))
-                .isEqualTo(Optional.of(predTemporaryField));
+                .hasValue(predTemporaryField);
         assertThat(result.getPredecessor(succUnmapped)).isEmpty();
     }
 

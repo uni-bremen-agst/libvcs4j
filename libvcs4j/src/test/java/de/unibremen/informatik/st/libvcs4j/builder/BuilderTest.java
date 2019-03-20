@@ -42,24 +42,27 @@ public class BuilderTest {
 	}
 
 	@Test
-	public void testDateTime() {
-		VCSEngineBuilder builder = VCSEngineBuilder.of("")
+	public void testDateTime() throws IOException {
+		VCSEngineBuilder builder = VCSEngineBuilder
+				.of(folder.newFolder().getPath())
 				.withSince(LocalDateTime.now())
 				.withUntil(LocalDateTime.now());
 		assertThat(builder.build()).isNotNull();
 	}
 
 	@Test
-	public void testDate() {
-		VCSEngineBuilder builder = VCSEngineBuilder.of("")
+	public void testDate() throws IOException {
+		VCSEngineBuilder builder = VCSEngineBuilder
+				.of(folder.newFolder().getPath())
 				.withSince(LocalDate.now())
 				.withUntil(LocalDate.now());
 		assertThat(builder.build()).isNotNull();
 	}
 
 	@Test
-	public void testDateString() {
-		VCSEngineBuilder builder =  VCSEngineBuilder.of("")
+	public void testDateString() throws IOException {
+		VCSEngineBuilder builder =  VCSEngineBuilder
+				.of(folder.newFolder().getPath())
 				.withSince("2000-01-01")
 				.withUntil("2017-01-01");
 		assertThat(builder.build()).isNotNull();

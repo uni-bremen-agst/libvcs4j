@@ -36,9 +36,9 @@ import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -149,12 +149,12 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 				"Unsupported protocol: '%s'", pRepository);
 		if (FILE_PROTOCOL.test(pRepository)) {
 			final String repository = pRepository.substring(7);
-			final Path path = Paths.get(repository).toAbsolutePath();
-			IllegalRepositoryException.isTrue(Files.exists(path),
+			final File file = new File(repository);
+			IllegalRepositoryException.isTrue(file.exists(),
 					"'%s' does not exist", pRepository);
-			IllegalRepositoryException.isTrue(Files.isDirectory(path),
+			IllegalRepositoryException.isTrue(file.isDirectory(),
 					"'%s' is not a directory", pRepository);
-			IllegalRepositoryException.isTrue(Files.isReadable(path),
+			IllegalRepositoryException.isTrue(file.canRead(),
 					"'%s' is not readable", pRepository);
 		}
 		return normalizePath(pRepository);
@@ -171,9 +171,10 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	protected Path validateMapTarget(final Path pTarget) {
 		Validate.notNull(pTarget);
 		Validate.notEmpty(pTarget.toString());
-		IllegalTargetException.isTrue(!Files.exists(pTarget),
+		final File file = pTarget.toFile();
+		IllegalTargetException.isTrue(!file.exists(),
 				"'%s' already exists", pTarget);
-		IllegalTargetException.isTrue(Files.isWritable(pTarget.getParent()),
+		IllegalTargetException.isTrue(file.getParentFile().canWrite(),
 				"Parent of '%s' is not writable", pTarget);
 		return pTarget.toAbsolutePath();
 	}

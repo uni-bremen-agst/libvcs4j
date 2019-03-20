@@ -126,6 +126,7 @@ public class CodeSmell implements Mappable<String> {
 	 * @return
 	 * 		The signature of this code smell.
 	 */
+	@Override
 	public Optional<String> getSignature() {
 		return Optional.ofNullable(signature);
 	}

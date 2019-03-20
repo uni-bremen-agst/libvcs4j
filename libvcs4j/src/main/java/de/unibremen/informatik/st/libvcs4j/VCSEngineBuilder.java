@@ -6,7 +6,6 @@ import de.unibremen.informatik.st.libvcs4j.git.GitEngine;
 import de.unibremen.informatik.st.libvcs4j.hg.HGEngine;
 import de.unibremen.informatik.st.libvcs4j.svn.SVNEngine;
 
-import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -566,7 +565,7 @@ public class VCSEngineBuilder {
 				path = Optional.of(Paths.get(repository));
 			} catch (final InvalidPathException ignored) {}
 			final String repo = path
-					.filter(Files::isDirectory)
+					.filter(p -> p.toFile().isDirectory())
 					.map(r -> "file://" + r)
 					.orElse(repository);
 			if (engine == Engine.SVN) {

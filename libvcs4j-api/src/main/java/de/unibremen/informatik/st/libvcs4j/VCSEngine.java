@@ -229,12 +229,12 @@ public interface VCSEngine extends Iterable<RevisionRange> {
 	 * 		If an error occurred while collecting files.
 	 */
 	default List<Path> listFilesInOutput() throws IOException {
-		final Path output = getOutput();
-		if (!Files.exists(output)) {
+		final File output = getOutput().toFile();
+		if (!output.exists()) {
 			throw new FileNotFoundException(
 					String.format("'%s' does not exist", getOutput()));
-		} else if (Files.isRegularFile(output)) {
-			return Collections.singletonList(output.toAbsolutePath());
+		} else if (output.isFile()) {
+			return Collections.singletonList(getOutput().toAbsolutePath());
 		} else {
 			final List<Path> filesInOutput = new ArrayList<>();
 			// For the sake of stability, handle null filters.

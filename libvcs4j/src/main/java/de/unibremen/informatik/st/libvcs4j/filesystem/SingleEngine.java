@@ -11,6 +11,7 @@ import de.unibremen.informatik.st.libvcs4j.engine.Changes;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalRepositoryException;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalTargetException;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -47,13 +48,12 @@ public class SingleEngine extends AbstractVSCEngine {
 	@Override
 	protected String validateMapRepository(final String pRepository) {
 		Validate.notNull(pRepository);
-		final Path path = Paths.get(pRepository);
-		IllegalRepositoryException.isTrue(Files.exists(path),
-				"'%s' does not exist", path);
-		IllegalRepositoryException.isTrue(
-				Files.isReadable(path),
-				"'%s' is not readable", path);
-		return path.toAbsolutePath().toString();
+		final File file = new File(pRepository);
+		IllegalRepositoryException.isTrue(file.exists(),
+				"'%s' does not exist", file);
+		IllegalRepositoryException.isTrue(file.canRead(),
+				"'%s' is not readable", file);
+		return file.getAbsolutePath();
 	}
 
 	@Override
@@ -106,7 +106,7 @@ public class SingleEngine extends AbstractVSCEngine {
 	protected byte[] readAllBytesImpl(final String pPath,
 			final String pRevision) throws IOException {
 		final Path path = getOutput().resolve(pPath);
-		Validate.isTrue(Files.isRegularFile(path),
+		Validate.isTrue(path.toFile().isFile(),
 				"'%s' is not a regular file", path);
 		return Files.readAllBytes(path);
 	}
@@ -114,9 +114,9 @@ public class SingleEngine extends AbstractVSCEngine {
 	@Override
 	public List<LineInfo> readLineInfoImpl(final VCSFile pFile)
 			throws IOException {
-		final Path path = pFile.toPath();
-		Validate.isTrue(Files.isRegularFile(path),
-				"'%s' is not a regular file", path);
+		final File file = pFile.toFile();
+		Validate.isTrue(file.isFile(),
+				"'%s' is not a regular file", file);
 		final List<LineInfo> lineInfo = new ArrayList<>();
 		final List<String> lines = pFile.readLinesWithEOL();
 		for (int i = 0; i < lines.size(); i++) {
