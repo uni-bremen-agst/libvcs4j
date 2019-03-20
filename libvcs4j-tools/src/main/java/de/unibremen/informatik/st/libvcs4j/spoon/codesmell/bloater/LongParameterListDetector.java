@@ -15,7 +15,6 @@ import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtParameter;
 
-import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
@@ -56,7 +55,7 @@ public class LongParameterListDetector extends CodeSmellDetector {
 		super.visitCtConstructor(constructor);
 	}
 
-	private <T> void visitExecutable(CtExecutable<?> executable) {
+	private void visitExecutable(CtExecutable<?> executable) {
 		final int val = nop.NOPOf(executable)
 				.orElseThrow(IllegalStateException::new);
 		if (val >= threshold) {
@@ -68,10 +67,10 @@ public class LongParameterListDetector extends CodeSmellDetector {
 
 	@Override
 	public CodeSmell.Definition getDefinition() {
-		final Threshold threshold = new Threshold(
-				createMetric(this.threshold),
+		final Threshold th = new Threshold(
+				createMetric(threshold),
 				Threshold.Relation.GREATER_EQUALS);
-		final Thresholds thresholds = new Thresholds(threshold);
+		final Thresholds thresholds = new Thresholds(th);
 		return new CodeSmell.Definition("Long Parameter List", thresholds);
 	}
 

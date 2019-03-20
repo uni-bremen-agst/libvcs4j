@@ -286,7 +286,7 @@ public interface VCSFile extends VCSModelElement {
 			relevantChanges.addAll(relevantIns);
 
 			// Map position.
-			final int line = getLine() -
+			final int mappedLine = getLine() -
 					// Remove deleted lines.
 					(int) relevantChanges.stream()
 						.filter(fc -> fc.getType() == LineChange.Type.DELETE)
@@ -296,18 +296,18 @@ public interface VCSFile extends VCSModelElement {
 						.filter(fc -> fc.getType() == LineChange.Type.INSERT)
 						.count();
 			final String oldLineStr = oldFile.readLines().get(getLine() - 1);
-			final String newLineStr = newFile.readLines().get(line - 1);
+			final String newLineStr = newFile.readLines().get(mappedLine - 1);
 			if (newLineStr.isEmpty()) {
 				// We can't create a position for an empty line.
 				return Optional.empty();
 			}
-			final int column = !oldLineStr.equals(newLineStr)
+			final int mappedColumn = !oldLineStr.equals(newLineStr)
 					? 1 // We can't determine the column of a changed line, use
 					    // 1 as fallback.
 					: getColumn();
 			return Optional.of(fileChange.getNewFile()
 					.orElseThrow(IllegalStateException::new)
-					.positionOf(line, column, getTabSize())
+					.positionOf(mappedLine, mappedColumn, getTabSize())
 					// Validate implementation.
 					.orElseThrow(IllegalStateException::new));
 		}
@@ -375,8 +375,8 @@ public interface VCSFile extends VCSModelElement {
 		public Position endOfLine() throws IOException {
 			final List<String> lines = getFile().readLines();
 			Validate.validateState(lines.size() >= getLine());
-			final int column = lines.get(getLine() - 1).length();
-			return getFile().positionOf(getLine(), column, getTabSize())
+			final int lastColumn = lines.get(getLine() - 1).length();
+			return getFile().positionOf(getLine(), lastColumn, getTabSize())
 					.orElseThrow(IllegalStateException::new);
 		}
 
@@ -549,16 +549,14 @@ public interface VCSFile extends VCSModelElement {
 		 * 		If the ranges reference different files.
 		 */
 		public static int lengthOf(final Collection<Range> ranges) {
-			if (ranges == null) {
-				return 0;
-			} else if (ranges.isEmpty()) {
+			if (ranges == null || ranges.isEmpty()) {
 				return 0;
 			}
-			final Deque<Range> queue = new ArrayDeque<>(ranges.stream()
+			final Deque<Range> queue = ranges.stream()
 					.filter(Objects::nonNull)
 					.sorted((r1, r2) -> Position.OFFSET_COMPARATOR
 							.compare(r1.getBegin(), r2.getBegin()))
-					.collect(Collectors.toList()));
+					.collect(Collectors.toCollection(ArrayDeque::new));
 			final List<Range> parts = new ArrayList<>();
 			while (queue.size() >= 2) {
 				final Range head = queue.poll();

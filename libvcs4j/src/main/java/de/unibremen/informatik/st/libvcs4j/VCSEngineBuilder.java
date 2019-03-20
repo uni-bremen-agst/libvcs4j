@@ -563,7 +563,7 @@ public class VCSEngineBuilder {
 			Optional<Path> path = Optional.empty();
 			try {
 				path = Optional.of(Paths.get(repository));
-			} catch (final InvalidPathException ignored) {}
+			} catch (final InvalidPathException ignored) { /* ignored */ }
 			final String repo = path
 					.filter(p -> p.toFile().isDirectory())
 					.map(r -> "file://" + r)
@@ -678,8 +678,7 @@ public class VCSEngineBuilder {
 		}
 		try {
 			return LocalDateTime.parse(tmp);
-		} catch (final DateTimeParseException ignored) {
-		}
+		} catch (final DateTimeParseException ignored) { /* try next */ }
 		try {
 			final LocalDate date = LocalDate.parse(tmp);
 			return LocalDateTime.of(
@@ -687,21 +686,18 @@ public class VCSEngineBuilder {
 					date.getMonth(),
 					date.getDayOfMonth(),
 					0, 0);
-		}catch (final DateTimeParseException ignored) {
-		}
+		}catch (final DateTimeParseException ignored) { /* try next */ }
 		try {
 			final DateFormat dateFormat = new SimpleDateFormat();
 			return LocalDateTime.ofInstant(
 					dateFormat.parse(pDateTime).toInstant(),
 					ZoneId.systemDefault());
-		} catch (final ParseException ignored) {
-		}
+		} catch (final ParseException ignored) { /* try next */ }
 		try {
 			final int year = Integer.parseInt(pDateTime);
 			return LocalDateTime.of(year, 0, 0, 0, 0);
 		} catch (final NumberFormatException |
-				DateTimeParseException ignored) {
-		}
+				DateTimeParseException ignored) { /* try next */ }
 		throw new IllegalArgumentException(String.format(
 				"Unable to parse '%s'", pDateTime));
 	}

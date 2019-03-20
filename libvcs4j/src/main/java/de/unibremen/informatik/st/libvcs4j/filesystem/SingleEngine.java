@@ -75,7 +75,7 @@ public class SingleEngine extends AbstractVSCEngine {
 	protected List<String> validateMapRevisions(
 			final List<String> pRevisions) {
 		Validate.fail("This method should not have been called");
-		return null; // just for the compiler
+		return Collections.emptyList(); // just for the compiler
 	}
 
 	///////////////////////////////////////////////////////////////////////////

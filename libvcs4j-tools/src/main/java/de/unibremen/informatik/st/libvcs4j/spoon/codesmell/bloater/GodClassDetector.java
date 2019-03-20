@@ -101,24 +101,21 @@ public class GodClassDetector extends CodeSmellDetector {
 
 	@Override
 	public CodeSmell.Definition getDefinition() {
-		final Threshold noaThreshold = new Threshold(
-				createNOAMetric(this.noaThreshold),
+		final Threshold nth = new Threshold(
+				createNOAMetric(noaThreshold),
 				Threshold.Relation.GREATER_EQUALS);
-		final Threshold wmcThreshold = new Threshold(
-				createWMCMetric(this.wmcThreshold),
+		final Threshold wth = new Threshold(
+				createWMCMetric(wmcThreshold),
 				Threshold.Relation.GREATER_EQUALS);
-		final Threshold atfdThreshold = new Threshold(
-				createATFDMetric(this.atfdThreshold),
+		final Threshold ath = new Threshold(
+				createATFDMetric(atfdThreshold),
 				Threshold.Relation.GREATER_EQUALS);
-		final Threshold tccThreshold = new Threshold(
-				createTCCMetric(this.tccThreshold),
+		final Threshold tth = new Threshold(
+				createTCCMetric(tccThreshold),
 				Threshold.Relation.GREATER_EQUALS);
 
 		final Thresholds thresholds = new Thresholds(
-				Arrays.asList(noaThreshold,
-						wmcThreshold,
-						atfdThreshold,
-						tccThreshold),
+				Arrays.asList(nth, wth, ath, tth),
 				Thresholds.Connective.AND);
 
 		return new CodeSmell.Definition("God Class", thresholds);

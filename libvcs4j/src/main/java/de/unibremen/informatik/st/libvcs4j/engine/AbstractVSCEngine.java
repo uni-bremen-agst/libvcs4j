@@ -150,8 +150,8 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 		init();
 		Validate.isTrue(revisions.contains(rev));
 		if (revision != null && revision.equals(rev)) {
-			Validate.isTrue(Files.isRegularFile(pFile.toPath()),
-					"'%s' is not a regular file", pFile.toPath());
+			Validate.isTrue(pFile.toFile().isFile(),
+					"'%s' is not a file", pFile.toPath());
 			return Files.readAllBytes(pFile.toPath());
 		} else {
 			final byte[] bytes = readAllBytesImpl(

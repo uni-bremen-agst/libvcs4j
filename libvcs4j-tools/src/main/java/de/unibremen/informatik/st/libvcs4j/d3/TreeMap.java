@@ -99,9 +99,8 @@ public class TreeMap {
 		 * 		The aggregation of {@code c1} and {@code c2}.
 		 */
 		protected Cell aggregate(final Cell c1, final Cell c2) {
-			final double size = c1.getSize() + c2.getSize();
-			final double color = c1.getColor() + c2.getColor();
-			return new Cell(size, color);
+			return new Cell(c1.getSize() + c2.getSize(),
+					c1.getColor() + c2.getColor());
 		}
 	}
 
@@ -284,7 +283,6 @@ public class TreeMap {
 
 			@Override
 			protected void visitDirectory(final FSTree<Cell> pDirectory) {
-				final List<FSTree<Cell>> nodes = pDirectory.getNodes();
 				final String name = pDirectory.getName();
 				final Cell cell = pDirectory.getValue()
 						.orElseThrow(IllegalStateException::new);

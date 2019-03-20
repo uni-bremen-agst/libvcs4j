@@ -14,6 +14,13 @@ import static java.lang.String.format;
 public class Validate {
 
 	/**
+	 * Static only class.
+	 */
+	private Validate() {
+		// Static only class.
+	}
+
+	/**
 	 * Validates that {@code t} is not {@code null}.
 	 *
 	 * @param t
@@ -619,9 +626,7 @@ public class Validate {
 		notNull(from);
 		notNull(to);
 		notNull(t);
-		if (from.compareTo(t) > 0) {
-			throw new IllegalArgumentException();
-		} else if (to.compareTo(t) < 0) {
+		if (from.compareTo(t) > 0 || to.compareTo(t) < 0) {
 			throw new IllegalArgumentException();
 		}
 		return t;
@@ -655,9 +660,7 @@ public class Validate {
 		notNull(from);
 		notNull(to);
 		notNull(t);
-		if (from.compareTo(t) > 0) {
-			throw new IllegalArgumentException(format(message, args));
-		} else if (to.compareTo(t) < 0) {
+		if (from.compareTo(t) > 0 || to.compareTo(t) < 0) {
 			throw new IllegalArgumentException(format(message, args));
 		}
 		return t;

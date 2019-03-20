@@ -379,7 +379,7 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 							status.equals(SVNStatusType.STATUS_REPLACED)) {
 						changes.getModified().add(toAbsolutePath(entry.getPath()));
 					} else {
-						System.out.println("Unsupported change type");
+						log.warn("Unsupported change type");
 					}
 				}
 			});

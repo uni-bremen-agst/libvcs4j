@@ -86,10 +86,10 @@ public class MethodChain extends CodeSmellDetector {
 
 	@Override
 	public CodeSmell.Definition getDefinition() {
-		final Threshold threshold = new Threshold(
-				createMetric(this.threshold),
+		final Threshold th = new Threshold(
+				createMetric(threshold),
 				Threshold.Relation.GREATER_EQUALS);
-		final Thresholds thresholds = new Thresholds(threshold);
+		final Thresholds thresholds = new Thresholds(th);
 		return new CodeSmell.Definition("Method Chain", thresholds);
 	}
 

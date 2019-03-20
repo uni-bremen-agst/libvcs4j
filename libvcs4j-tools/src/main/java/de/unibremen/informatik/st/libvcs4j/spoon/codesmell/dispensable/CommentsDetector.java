@@ -19,7 +19,6 @@ import spoon.reflect.visitor.filter.TypeFilter;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
-import java.util.Collections;
 
 public class CommentsDetector extends CodeSmellDetector {
 
@@ -105,14 +104,14 @@ public class CommentsDetector extends CodeSmellDetector {
 
     @Override
     public CodeSmell.Definition getDefinition() {
-        final Threshold ratioThreshold = new Threshold(
-                createRatioMetric(this.ratioThreshold),
+        final Threshold rth = new Threshold(
+                createRatioMetric(ratioThreshold),
                 Threshold.Relation.GREATER_EQUALS);
-        final Threshold locThreshold = new Threshold(
-                createLocMetric(this.locThreshold),
+        final Threshold lth = new Threshold(
+                createLocMetric(locThreshold),
                 Threshold.Relation.GREATER_EQUALS);
         final Thresholds thresholds = new Thresholds(
-                Arrays.asList(ratioThreshold, locThreshold),
+                Arrays.asList(rth, lth),
                 Thresholds.Connective.AND);
         return new CodeSmell.Definition("Comments", thresholds);
     }
