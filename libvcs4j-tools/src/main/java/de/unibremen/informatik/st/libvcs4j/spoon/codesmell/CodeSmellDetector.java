@@ -286,7 +286,7 @@ public abstract class CodeSmellDetector extends Scanner {
 							}
 						})
 						.findFirst())
-				.map(f -> f.orElseGet(null));
+				.map(f -> f.orElse(null));
 	}
 
 	/**
