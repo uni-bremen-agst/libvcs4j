@@ -22,10 +22,10 @@ import java.util.Arrays;
 
 public class GodClassDetector extends CodeSmellDetector {
 
-	private static final int DEFAULT_NOA_THRESHOLD = 5;
-	private static final int DEFAULT_WMC_THRESHOLD = 75;
-	private static final int DEFAULT_ATFD_THRESHOLD = 5;
-	private static final BigDecimal DEFAULT_TCC_THRESHOLD =
+	public static final int DEFAULT_NOA_THRESHOLD = 5;
+	public static final int DEFAULT_WMC_THRESHOLD = 75;
+	public static final int DEFAULT_ATFD_THRESHOLD = 5;
+	public static final BigDecimal DEFAULT_TCC_THRESHOLD =
 			BigDecimal.valueOf(0.1);
 
 	private final int noaThreshold;
@@ -121,19 +121,19 @@ public class GodClassDetector extends CodeSmellDetector {
 		return new CodeSmell.Definition("God Class", thresholds);
 	}
 
-	private Metric createNOAMetric(final int val) {
+	public Metric createNOAMetric(final int val) {
 		return new Metric(noa.name(), val);
 	}
 
-	private Metric createWMCMetric(final int val) {
+	public Metric createWMCMetric(final int val) {
 		return new Metric(wmc.name(), val);
 	}
 
-	private Metric createATFDMetric(final int val) {
+	public Metric createATFDMetric(final int val) {
 		return new Metric(atfd.name(), val);
 	}
 
-	private Metric createTCCMetric(final BigDecimal val) {
+	public Metric createTCCMetric(final BigDecimal val) {
 		return new Metric(tcc.name(), val, true);
 	}
 }
