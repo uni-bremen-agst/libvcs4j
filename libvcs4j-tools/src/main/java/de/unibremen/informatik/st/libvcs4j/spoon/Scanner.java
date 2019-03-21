@@ -11,6 +11,7 @@ import spoon.reflect.code.CtReturn;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtNamedElement;
+import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtReference;
 import spoon.reflect.visitor.CtScanner;
 
@@ -33,6 +34,8 @@ public class Scanner extends CtScanner {
 	 * been called.
 	 */
 	private boolean initialized = false;
+
+	////////////////////////// Traversing utilities. //////////////////////////
 
 	/**
 	 * Scans the given spoon model. Does nothing if {@code model} is
@@ -68,15 +71,17 @@ public class Scanner extends CtScanner {
 		initialized = false;
 	}
 
+	//////////////////////////// Method utilities. ////////////////////////////
+
 	/**
-	 * Tries to resolve the given invocation to a {@link CtMethod}. Returns an
+	 * Tries to resolve {@code invocation} to a {@link CtMethod}. Returns an
 	 * empty {@link Optional} if {@code invocation} is {@code null}, is not
-	 * resolvable, or is not a {@link CtMethod}.
+	 * resolvable, or does not target a {@link CtMethod}.
 	 *
 	 * @param invocation
-	 * 			The invocation which may call a method.
+	 * 		The invocation to resolve.
 	 * @return
-	 * 			The resolved {@link CtMethod}.
+	 * 		The resolved {@link CtMethod}.
 	 */
 	public Optional<CtMethod> resolveToMethod(final CtInvocation invocation) {
 		return Optional.of(invocation)
@@ -90,24 +95,18 @@ public class Scanner extends CtScanner {
 	}
 
 	/**
-	 * Tries to resolve the given method to a {@link CtFieldAccess}. Returns an
+	 * Tries to resolve {@code method} to a {@link CtFieldAccess}. Returns an
 	 * empty {@link Optional} if either {@code method} or its body (see
 	 * {@link CtMethod#getBody()}) is {@code null}, or if {@code method} does
 	 * not consist of a single {@link CtReturn} or {@link CtAssignment}
-	 * referencing a field.
-	 *
-	 * This method may be used to get the field that is accessed by a getter or
-	 * setter function. Use {@link #isFieldAccess(CtMethod)} to heuristically
-	 * determine whether a method without body is a getter/setter.
+	 * statement that references a {@link spoon.reflect.declaration.CtField}.
 	 *
 	 * @param method
-	 * 			The method to resolve.
+	 * 		The method to resolve.
 	 * @return
-	 * 			The {@link CtFieldAccess} of {@code method} if {@code method}
-	 * 			is a getter or setter function.
+	 * 		The {@link CtFieldAccess} of {@code method}.
 	 */
-	public Optional<CtFieldAccess> resolveToFieldAccess(
-			final CtMethod method) {
+	public Optional<CtFieldAccess> resolveToFieldAccess(final CtMethod method) {
 		return Optional.ofNullable(method)
 				.map(CtMethod::getBody)
 				.map(CtBlock::getStatements)
@@ -127,26 +126,60 @@ public class Scanner extends CtScanner {
 	}
 
 	/**
-	 * Determines whether {@code method} is a getter or setter function. A
-	 * getter or setter consists either of a single {@link CtFieldAccess}
-	 * statement (see {@link #resolveToFieldAccess(CtMethod)}), or has no body
-	 * (see {@link CtMethod#getBody()}), but its name starts with
-	 * {@link #GETTER_SETTER_REGEX}.
+	 * Determines whether {@code method} is a field access method
+	 * (getter/setter) (using {@link #resolveToFieldAccess(CtMethod)}). If
+	 * {@link #resolveToFieldAccess(CtMethod)} returns an empty
+	 * {@link Optional} the name of {@code method} is matched with
+	 * {@link #GETTER_SETTER_REGEX}. If the name matches, {@code method} is
+	 * considered a field access method.
 	 *
 	 * @param method
-	 * 			The method to analyse.
+	 * 		The method to analyse.
 	 * @return
-	 * 			{@code true} if {@code method} is a getter or setter function,
-	 * 			{@code false} otherwise.
+	 * 		{@code true} if {@code method} is a field access method
+	 * 		(getter/setter), {@code false} otherwise.
 	 */
-	public boolean isFieldAccess(final CtMethod method)
-			throws NullPointerException {
-		final String name = Optional.ofNullable(method)
-				.map(CtNamedElement::getSimpleName).orElse(null);
+	public boolean isFieldAccess(final CtMethod method) {
+		final Optional<String> name = Optional.ofNullable(method)
+				.map(CtNamedElement::getSimpleName);
 		return resolveToFieldAccess(method).isPresent() ||
 				// Abstract method or interface.
-				name != null && name.matches(GETTER_SETTER_REGEX);
+				name.isPresent() && name.get().matches(GETTER_SETTER_REGEX);
 	}
+
+	/**
+	 * Determines whether {@code invocation} targets a field access method
+	 * (getter/setter) (using {@link #resolveToMethod(CtInvocation)} and
+	 * {@link #isFieldAccess(CtMethod)}). If
+	 * {@link #resolveToMethod(CtInvocation)} returns am empty
+	 * {@link Optional}, or if {@link #isFieldAccess(CtMethod)} returns
+	 * {@code false}, the name of the target of {@code invocation} is matched
+	 * with {@link #GETTER_SETTER_REGEX}. If the name matches,
+	 * {@code invocation} is considered a field access invocation.
+	 *
+	 * @param invocation
+	 * 		The invocation to analyse.
+	 * @return
+	 * 		{@code true} if {@code invocation} targets a field access method
+	 * 		(getter/setter), {@code false} otherwise.
+	 */
+	public boolean isFieldAccess(final CtInvocation invocation) {
+		return Optional.ofNullable(invocation)
+				.map(this::resolveToMethod)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.map(this::isFieldAccess)
+				.filter(Boolean::booleanValue)
+				.isPresent() ||
+					Optional.ofNullable(invocation)
+					.map(CtInvocation::getExecutable)
+					.map(CtExecutableReference::getSimpleName)
+					.map(name -> name.matches(GETTER_SETTER_REGEX))
+					.filter(Boolean::booleanValue)
+					.isPresent();
+	}
+
+	//////////////////////////// Scope utilities. /////////////////////////////
 
 	/**
 	 * Returns whether {@code element} is in scope of {@code scope}. An element

@@ -6,7 +6,9 @@ import spoon.reflect.code.CtFieldWrite;
 import spoon.reflect.code.CtInvocation;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtEnum;
+import spoon.reflect.declaration.CtField;
 import spoon.reflect.declaration.CtInterface;
+import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtType;
 import spoon.reflect.reference.CtFieldReference;
 
@@ -78,23 +80,28 @@ public class ATFD extends IntGatherer {
 	}
 
 	private void visitCtFieldAccess(final CtFieldAccess fieldAccess) {
-		final CtType type = fieldAccess.getParent(CtType.class);
-		Optional.ofNullable(type)
-				.map(__ -> fieldAccess.getVariable())
-				.map(CtFieldReference::getDeclaration)
-				.filter(field -> !isInScopeOf(field, type))
-				.ifPresent(__ -> inc());
+		final Optional<CtField> field = Optional.of(fieldAccess)
+				.map(CtFieldAccess::getVariable)
+				.map(CtFieldReference::getDeclaration);
+		if (!field.isPresent() || // An field that is not part of the
+				                  // classpath => foreign access.
+				!isInScopeOf(field.get(),
+						fieldAccess.getParent(CtType.class))) {
+			inc();
+		}
 	}
 
 	@Override
 	public <T> void visitCtInvocation(final CtInvocation<T> invocation) {
-		final CtType parent = invocation.getParent(CtType.class);
-		Optional.ofNullable(parent)
-				.map(__ -> resolveToMethod(invocation))
-				.map(o -> o.orElse(null))
-				.filter(this::isFieldAccess)
-				.filter(method -> !isInScopeOf(method, parent))
-				.ifPresent(__ -> inc());
+		if (isFieldAccess(invocation)) {
+			final Optional<CtMethod> method = resolveToMethod(invocation);
+			if (!method.isPresent() || // A method that is not part of the
+					                   // classpath => foreign access.
+					!isInScopeOf(method.get(),
+							invocation.getParent(CtType.class))) {
+				inc();
+			}
+		}
 		super.visitCtInvocation(invocation);
 	}
 }
