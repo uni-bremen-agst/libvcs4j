@@ -98,7 +98,7 @@ public class TCC extends DecimalGatherer {
 		if (ti != null) {
 			final List<CtMethod> methods = new ArrayList<>(ti.keySet());
 			final int numMethods = methods.size();
-			final int totalPairs = (numMethods * (numMethods + 1)) / 2;
+			final int totalPairs = (numMethods * (numMethods - 1)) / 2;
 			int pairs = 0;
 			for (int i = 0; i < numMethods; i++) {
 				for (int j = i + 1; j < numMethods; j++) {
@@ -138,16 +138,6 @@ public class TCC extends DecimalGatherer {
 		super.visitCtFieldWrite(fieldWrite);
 	}
 
-	@Override
-	public <T> void visitCtInvocation(final CtInvocation<T> invocation) {
-		resolveToMethod(invocation)
-				.map(this::resolveToFieldAccess)
-				.filter(Optional::isPresent)
-				.map(Optional::get)
-				.ifPresent(this::visitCtFieldAccess);
-		super.visitCtInvocation(invocation);
-	}
-
 	private void visitCtFieldAccess(final CtFieldAccess fieldAccess) {
 		final CtType type = fieldAccess.getParent(CtType.class);
 		if (type != null && typeInfo.containsKey(type)) {
@@ -164,5 +154,22 @@ public class TCC extends DecimalGatherer {
 						.add(field.get());
 			}
 		}
+	}
+
+	@Override
+	public <T> void visitCtInvocation(final CtInvocation<T> invocation) {
+		resolveToMethod(invocation)
+				.map(this::resolveToFieldAccess)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.map(CtFieldAccess::getVariable)
+				.map(CtFieldReference::getDeclaration)
+				.ifPresent(field -> {
+					final CtType type = invocation.getParent(CtType.class);
+					final CtMethod met =invocation.getParent(CtMethod.class);
+					typeInfo.get(type).computeIfAbsent(
+							met, __ -> new HashSet<>()).add(field);
+				});
+		super.visitCtInvocation(invocation);
 	}
 }
