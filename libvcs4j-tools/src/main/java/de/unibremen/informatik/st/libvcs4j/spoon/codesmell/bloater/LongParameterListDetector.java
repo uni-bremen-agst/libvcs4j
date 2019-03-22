@@ -20,7 +20,7 @@ import java.util.List;
 
 public class LongParameterListDetector extends CodeSmellDetector {
 
-	private static final int DEFAULT_THRESHOLD = 5;
+	public static final int DEFAULT_THRESHOLD = 5;
 
 	private final int threshold;
 
@@ -74,7 +74,7 @@ public class LongParameterListDetector extends CodeSmellDetector {
 		return new CodeSmell.Definition("Long Parameter List", thresholds);
 	}
 
-	private Metric createMetric(final int val) {
+	public Metric createMetric(final int val) {
 		return new Metric(nop.name(), val);
 	}
 }
