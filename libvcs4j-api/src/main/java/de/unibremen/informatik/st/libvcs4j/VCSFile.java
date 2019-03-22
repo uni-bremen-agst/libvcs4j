@@ -769,7 +769,7 @@ public interface VCSFile extends VCSModelElement {
 	 * 		The absolute path of this file.
 	 */
 	default String getPath() {
-		return getVCSEngine().getOutput()
+		return getRevision().getOutput()
 				.resolve(getRelativePath()).toString();
 	}
 
