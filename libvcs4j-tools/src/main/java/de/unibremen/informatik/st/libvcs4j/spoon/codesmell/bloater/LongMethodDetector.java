@@ -14,13 +14,12 @@ import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtMethod;
 
-import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Optional;
 
 public class LongMethodDetector extends CodeSmellDetector {
 
-	private static final int DEFAULT_THRESHOLD = 30;
+	public static final int DEFAULT_THRESHOLD = 30;
 
 	private final int threshold;
 
@@ -72,7 +71,7 @@ public class LongMethodDetector extends CodeSmellDetector {
 		return new CodeSmell.Definition("Long Method", thresholds);
 	}
 
-	private Metric createMetric(final int val) {
-		return new Metric("Source Line of Code", val);
+	public Metric createMetric(final int val) {
+		return new Metric("Source Lines of Code", val);
 	}
 }
