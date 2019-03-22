@@ -22,7 +22,7 @@ configurations {
 
 dependencies {
 	compile project(':libvcs4j-api')
-	compile 'fr.inria.gforge.spoon:spoon-core:7.0.0'
+	compile 'fr.inria.gforge.spoon:spoon-core:7.3.0'
 	compile 'net.sourceforge.pmd:pmd:5.0.0'
 	compile 'org.slf4j:slf4j-api:1.7.22'
 	extraLibs project(':conqat')
