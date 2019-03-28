@@ -9,7 +9,6 @@ import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.Threshold;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.Thresholds;
 import lombok.NonNull;
 import spoon.reflect.code.CtInvocation;
-import spoon.reflect.code.CtTargetedExpression;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtTypedElement;
 import spoon.reflect.reference.CtTypeReference;
@@ -53,7 +52,7 @@ public class MethodChain extends CodeSmellDetector {
 			// ... and reached the end of the chain
 			} else {
 				final List<String> targets = invocations.stream()
-						.map(CtTargetedExpression::getTarget)
+						.map(CtInvocation::getTarget)
 						.filter(Objects::nonNull)
 						.map(CtTypedElement::getType)
 						.filter(Objects::nonNull)
