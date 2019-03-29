@@ -1,5 +1,6 @@
 include 'conqat',
         'libvcs4j-api',
+        'libvcs4j-all',
         'libvcs4j',
         'libvcs4j-tools',
         'testutils'

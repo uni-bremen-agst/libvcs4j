@@ -3,7 +3,6 @@ plugins {
 	id 'maven'
 	id 'jacoco'
 	id 'io.franzbecker.gradle-lombok' version '1.14'
-	id 'com.github.johnrengelman.shadow' version '5.0.0'
 }
 
 group = 'de.uni-bremen.informatik.st'

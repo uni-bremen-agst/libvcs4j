@@ -1,0 +1,6 @@
+include ':conqat', ':libvcs4j', ':libvcs4j-api', ':libvcs4j-tools', 'testutils'
+project(':conqat').projectDir = new File(settingsDir, '../conqat')
+project(':libvcs4j').projectDir = new File(settingsDir, '../libvcs4j')
+project(':libvcs4j-api').projectDir = new File(settingsDir, '../libvcs4j-api')
+project(':libvcs4j-tools').projectDir = new File(settingsDir, '../libvcs4j-tools')
+project(':testutils').projectDir = new File(settingsDir, '../testutils')

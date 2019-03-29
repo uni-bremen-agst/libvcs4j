@@ -1,0 +1,24 @@
+plugins {
+	id 'java'
+	id 'maven'
+	id 'com.github.johnrengelman.shadow' version '5.0.0'
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compile project(':libvcs4j')
+	compile project(':libvcs4j-api')
+	compile project(':libvcs4j-tools')
+}
+
+// Rename the shadow jar artifact to it's original name:
+// https://stackoverflow.com/questions/48105889/rename-shadow-jar-produced-by-shadow-plugin-to-original-artifact-name
+tasks.jar.configure {
+	classifier = 'default'
+}
+tasks.shadowJar.configure {
+	classifier = null
+}
