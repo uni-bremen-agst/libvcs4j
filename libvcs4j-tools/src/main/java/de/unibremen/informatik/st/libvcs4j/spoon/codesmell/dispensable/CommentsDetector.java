@@ -79,17 +79,17 @@ public class CommentsDetector extends CodeSmellDetector {
             return;
         }
 
-        final int numberOfComments = executable.getBody()
+        final long numberOfComments = executable.getBody()
                 .getElements(new TypeFilter<>(CtComment.class))
                 .stream()
                 .filter(ctStatement -> !ctStatement.isImplicit())
                 .map(CtElement::getPosition)
                 .filter(p -> !p.equals(SourcePosition.NOPOSITION))
-                .map(p -> p.getEndLine() - p.getLine() + 1)
-                .reduce(0, Integer::sum);
+                .count();
+        final long numTotalElements = numberOfStatements + numberOfComments;
 
         final BigDecimal ratio = BigDecimal.valueOf(numberOfComments)
-                .divide(BigDecimal.valueOf(numberOfStatements),
+                .divide(BigDecimal.valueOf(numTotalElements),
                         8,
                         BigDecimal.ROUND_UP);
 
@@ -116,11 +116,11 @@ public class CommentsDetector extends CodeSmellDetector {
         return new CodeSmell.Definition("Comments", thresholds);
     }
 
-    private Metric createLocMetric(final int val) {
+    public Metric createLocMetric(final int val) {
         return new Metric("Lines of Code", val);
     }
 
-    private Metric createRatioMetric(final BigDecimal val) {
+    public Metric createRatioMetric(final BigDecimal val) {
         return new Metric("Comment Ratio", val.doubleValue());
     }
 }
