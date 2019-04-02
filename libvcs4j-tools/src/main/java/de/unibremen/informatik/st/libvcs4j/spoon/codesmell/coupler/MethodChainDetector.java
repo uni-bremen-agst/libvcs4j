@@ -21,7 +21,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class MethodChain extends CodeSmellDetector {
+public class MethodChainDetector extends CodeSmellDetector {
 
 	private static final String
 			QUALIFIED_NAME_OF_UNKNOWN_DECLARATION = "<unknown>";
@@ -32,13 +32,14 @@ public class MethodChain extends CodeSmellDetector {
 
 	private List<CtInvocation> invocations = null;
 
-	public MethodChain(@NonNull final Revision revision, final int threshold)
-			throws NullPointerException, IllegalArgumentException {
+	public MethodChainDetector(@NonNull final Revision revision,
+			final int threshold) throws NullPointerException,
+			IllegalArgumentException {
 		super(revision);
 		this.threshold = Validate.notNegative(threshold);
 	}
 
-	public MethodChain(@NonNull final Revision revision) {
+	public MethodChainDetector(@NonNull final Revision revision) {
 		this(revision, DEFAULT_THRESHOLD);
 	}
 
@@ -65,8 +66,7 @@ public class MethodChain extends CodeSmellDetector {
 				final Set<String> distinctTargets = new HashSet<>(targets);
 				final int midVal = distinctTargets.size();
 				if (midVal >= threshold) {
-					addCodeSmellRange(invocations.get(0),
-							invocations.get(invocations.size() - 1),
+					addCodeSmell(invocations.get(0),
 							Collections.singletonList(createMetric(midVal)),
 							null);
 				}
@@ -92,7 +92,7 @@ public class MethodChain extends CodeSmellDetector {
 		return new CodeSmell.Definition("Method Chain", thresholds);
 	}
 
-	private Metric createMetric(final int val) {
+	public Metric createMetric(final int val) {
 		return new Metric("Method Invocation Distance", val);
 	}
 }
