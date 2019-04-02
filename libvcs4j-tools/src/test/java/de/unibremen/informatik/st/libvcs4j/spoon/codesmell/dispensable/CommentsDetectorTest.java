@@ -15,7 +15,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CommentDetectorTest {
+public class CommentsDetectorTest {
 
 	@Rule
 	public TemporaryFolder folder = new TemporaryFolder();
