@@ -298,6 +298,7 @@ public class SpoonModel {
 		unitsToRemove.stream()
 				.map(factory::removeFromCache)
 				.forEach(cu -> {
+					cu.getBinaryFiles().forEach(File::delete);
 					cu.getDeclaredTypes().forEach(type -> {
 						final CtPackage pkg = type.getPackage();
 						type.delete();
@@ -307,7 +308,6 @@ public class SpoonModel {
 							pkg.delete();
 						}
 					});
-					cu.getBinaryFiles().forEach(File::delete);
 				});
 	}
 
