@@ -118,10 +118,10 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	@Deprecated
 	@SuppressWarnings("DeprecatedIsStillUsed")
 	public GitEngine(final String pRepository, final String pRoot,
-			final Path pTarget, final String pBranch, final int pStart,
-			final int pEnd) throws NullPointerException,
+			final Path pTarget, final String pBranch, final int pStartIdx,
+			final int pEndIdx) throws NullPointerException,
 			IllegalIntervalException {
-		super(pRepository, pRoot, pTarget, pStart, pEnd);
+		super(pRepository, pRoot, pTarget, pStartIdx, pEndIdx);
 		branch = pBranch == null ? DEFAULT_BRANCH : pBranch;
 	}
 

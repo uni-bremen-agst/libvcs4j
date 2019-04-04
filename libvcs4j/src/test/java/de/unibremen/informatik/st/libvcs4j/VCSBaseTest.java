@@ -125,7 +125,7 @@ public abstract class VCSBaseTest {
 	@Test
 	public void startNegative() {
 		VCSEngineBuilder builder = createBuilder();
-		builder.withStart(-1);
+		builder.withStartIdx(-1);
 		thrown.expect(IllegalIntervalException.class);
 		builder.build();
 	}
@@ -133,21 +133,21 @@ public abstract class VCSBaseTest {
 	@Test
 	public void startZero() {
 		VCSEngineBuilder builder = createBuilder();
-		builder.withStart(0);
+		builder.withStartIdx(0);
 		assertThat(builder.build()).isNotNull();
 	}
 
 	@Test
 	public void startPositive() {
 		VCSEngineBuilder builder = createBuilder();
-		builder.withStart(10);
+		builder.withStartIdx(10);
 		assertThat(builder.build()).isNotNull();
 	}
 
 	@Test
 	public void endNegative() {
 		VCSEngineBuilder builder = createBuilder();
-		builder.withEnd(-1);
+		builder.withEndIdx(-1);
 		thrown.expect(IllegalIntervalException.class);
 		builder.build();
 	}
@@ -155,7 +155,7 @@ public abstract class VCSBaseTest {
 	@Test
 	public void endZero() {
 		VCSEngineBuilder builder = createBuilder();
-		builder.withEnd(0);
+		builder.withEndIdx(0);
 		thrown.expect(IllegalIntervalException.class);
 		builder.build();
 	}
@@ -163,23 +163,23 @@ public abstract class VCSBaseTest {
 	@Test
 	public void endPositive() {
 		VCSEngineBuilder builder = createBuilder();
-		builder.withEnd(10);
+		builder.withEndIdx(10);
 		assertThat(builder.build()).isNotNull();
 	}
 
 	@Test
 	public void startLessEnd() {
 		VCSEngineBuilder builder = createBuilder();
-		builder.withStart(10);
-		builder.withEnd(11);
+		builder.withStartIdx(10);
+		builder.withEndIdx(11);
 		assertThat(builder.build()).isNotNull();
 	}
 
 	@Test
 	public void startEqualsEnd() {
 		VCSEngineBuilder builder = createBuilder();
-		builder.withStart(4);
-		builder.withEnd(4);
+		builder.withStartIdx(4);
+		builder.withEndIdx(4);
 		thrown.expect(IllegalIntervalException.class);
 		builder.build();
 	}
@@ -187,8 +187,8 @@ public abstract class VCSBaseTest {
 	@Test
 	public void startGreaterEnd() {
 		VCSEngineBuilder builder = createBuilder();
-		builder.withStart(7);
-		builder.withEnd(6);
+		builder.withStartIdx(7);
+		builder.withEndIdx(6);
 		thrown.expect(IllegalIntervalException.class);
 		builder.build();
 	}
@@ -270,8 +270,8 @@ public abstract class VCSBaseTest {
 		List<String> revisionIds = readIds(getRootRevisionIdFile());
 		assertEquals(commitIds.size(), revisionIds.size());
 		VCSEngine engine = createBuilder()
-				.withStart(0)
-				.withEnd(3)
+				.withStartIdx(0)
+				.withEndIdx(3)
 				.build();
 
 		List<RevisionRange> ranges = new ArrayList<>();
@@ -291,8 +291,8 @@ public abstract class VCSBaseTest {
 		List<String> revisionIds = readIds(getRootRevisionIdFile());
 		assertEquals(commitIds.size(), revisionIds.size());
 		VCSEngine engine = createBuilder()
-				.withStart(5)
-				.withEnd(9)
+				.withStartIdx(5)
+				.withEndIdx(9)
 				.build();
 
 		List<RevisionRange> ranges = new ArrayList<>();
@@ -312,7 +312,7 @@ public abstract class VCSBaseTest {
 		List<String> revisionIds = readIds(getRootRevisionIdFile());
 		assertEquals(commitIds.size(), revisionIds.size());
 		VCSEngine engine = createBuilder()
-				.withEnd(2)
+				.withEndIdx(2)
 				.build();
 
 		List<RevisionRange> ranges = new ArrayList<>();
@@ -333,7 +333,7 @@ public abstract class VCSBaseTest {
 		assertEquals(commitIds.size(), revisionIds.size());
 		int start = commitIds.size() - 3;
 		VCSEngine engine = createBuilder()
-				.withStart(start)
+				.withStartIdx(start)
 				.build();
 
 		List<RevisionRange> ranges = new ArrayList<>();
@@ -456,7 +456,7 @@ public abstract class VCSBaseTest {
 	@Test
 	public void readAllBytesOfOldRevision() throws IOException {
 		VCSEngine engine = createBuilder()
-				.withEnd(5)
+				.withEndIdx(5)
 				.build();
 
 		Revision lastRevision = null;
@@ -474,8 +474,8 @@ public abstract class VCSBaseTest {
 	@Test
 	public void readLineInfoOfOldRevision() throws IOException {
 		VCSEngine engine = createBuilder()
-				.withStart(3)
-				.withEnd(7)
+				.withStartIdx(3)
+				.withEndIdx(7)
 				.build();
 
 		Revision lastRevision = null;
@@ -499,8 +499,8 @@ public abstract class VCSBaseTest {
 	@Test
 	public void computeDiffOfOldRange() throws IOException {
 		VCSEngine engine = createBuilder()
-				.withStart(5)
-				.withEnd(9)
+				.withStartIdx(5)
+				.withEndIdx(9)
 				.build();
 
 		RevisionRange lastRange = null;

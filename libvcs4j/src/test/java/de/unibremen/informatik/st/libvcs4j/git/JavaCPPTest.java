@@ -177,7 +177,7 @@ public class JavaCPPTest extends VCSBaseTest {
 	@Test
 	public void doesNotIncludeGitDir() throws IOException {
 		VCSEngine engine = createBuilder()
-				.withEnd(10)
+				.withEndIdx(10)
 				.build();
 
 		List<RevisionRange> ranges = new ArrayList<>();

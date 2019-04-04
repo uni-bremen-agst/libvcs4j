@@ -59,14 +59,15 @@ public class VCSEngineBuilder {
 			LocalDateTime.of(2200, 1, 1, 0, 0);
 
 	/**
-	 * The default start (see {@link #withStart(int)}).
+	 * The default start index (see {@link #withStartIdx(int)}).
 	 */
-	public final int DEFAULT_START = AbstractIntervalVCSEngine.MIN_START;
+	public final int DEFAULT_START_IDX =
+			AbstractIntervalVCSEngine.MIN_START_IDX;
 
 	/**
-	 * The default end (see {@link #withEnd(int)}).
+	 * The default end index (see {@link #withEndIdx(int)}).
 	 */
-	public final int DEFAULT_END = Integer.MAX_VALUE;
+	public final int DEFAULT_END_IDX = Integer.MAX_VALUE;
 
 	/**
 	 * The default target (see {@link #withTarget(Path)}). Cannot be static
@@ -121,14 +122,14 @@ public class VCSEngineBuilder {
 	private LocalDateTime until = LocalDateTime.from(DEFAULT_UNTIL);
 
 	/**
-	 * Stores the start.
+	 * Stores the start index.
 	 */
-	private int start = DEFAULT_START;
+	private int startIdx = DEFAULT_START_IDX;
 
 	/**
-	 * Stores the end.
+	 * Stores the end index.
 	 */
-	private int end = DEFAULT_END;
+	private int endIdx = DEFAULT_END_IDX;
 
 	/**
 	 * Stores the from commit.
@@ -497,29 +498,29 @@ public class VCSEngineBuilder {
 	}
 
 	/**
-	 * Sets the start range. The origin is {@code 0}.
+	 * Sets the start index. The origin is {@code 0}.
 	 *
 	 * @param start
-	 * 		The start range ({@code >= 0}).
+	 * 		The start index ({@code >= 0}).
 	 * @return
 	 * 		This builder.
 	 */
-	public VCSEngineBuilder withStart(final int start) {
-		this.start = start;
+	public VCSEngineBuilder withStartIdx(final int start) {
+		this.startIdx = start;
 		interval = Interval.RANGE;
 		return this;
 	}
 
 	/**
-	 * Sets the exclusive end range. The origin is {@code 1}.
+	 * Sets the exclusive end index.
 	 *
 	 * @param end
-	 * 		The exclusive end range ({@code >= 1}).
+	 * 		The exclusive end index ({@code >= 1}).
 	 * @return
 	 * 		This builder.
 	 */
-	public VCSEngineBuilder withEnd(final int end) {
-		this.end = end;
+	public VCSEngineBuilder withEndIdx(final int end) {
+		this.endIdx = end;
 		interval = Interval.RANGE;
 		return this;
 	}
@@ -583,7 +584,7 @@ public class VCSEngineBuilder {
 					vcsEngine = new SVNEngine(
 							repo, root,
 							Paths.get(target),
-							start, end);
+							startIdx, endIdx);
 				} else if (interval == Interval.LATEST) {
 					vcsEngine = new SVNEngine(
 							repo, root,
@@ -610,7 +611,7 @@ public class VCSEngineBuilder {
 							repo, root,
 							Paths.get(target),
 							branch,
-							start, end);
+							startIdx, endIdx);
 				} else if (interval == Interval.LATEST) {
 					vcsEngine = new GitEngine(
 							repo, root,
@@ -638,7 +639,7 @@ public class VCSEngineBuilder {
 							repo, root,
 							Paths.get(target),
 							branch,
-							start, end);
+							startIdx, endIdx);
 				} else if (interval == Interval.LATEST) {
 					vcsEngine = new HGEngine(
 							repo, root,

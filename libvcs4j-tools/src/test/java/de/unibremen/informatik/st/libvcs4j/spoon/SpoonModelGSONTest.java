@@ -36,8 +36,8 @@ public class SpoonModelGSONTest {
 		VCSEngine engine = VCSEngineBuilder
 				.ofGit(repository.toString())
 				.withTarget(target.toAbsolutePath())
-				.withStart(4)
-				.withEnd(6)
+				.withStartIdx(4)
+				.withEndIdx(6)
 				.build();
 
 		SpoonModel model = new SpoonModel();

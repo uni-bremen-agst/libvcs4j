@@ -15,11 +15,11 @@ import java.util.Optional;
 /**
  * An {@link AbstractVSCEngine} with interval fields. Three different kinds of
  * intervals are supported: datetime interval, revision interval, and range
- * interval.
+ * interval (inclusive start, exclusive end, origin 0).
  */
 public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 
-	public static final int MIN_START = 0;
+	public static final int MIN_START_IDX = 0;
 
 	/* Datetime interval. */
 	private final LocalDateTime since, until;
@@ -28,7 +28,7 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 	private final String from, to;
 
 	/* Range interval. */
-	private final int start, end;
+	private final int startIdx, endIdx;
 
 	/**
 	 * Latest revision constructor.
@@ -39,7 +39,7 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 		super(pRepository, pRoot, pTarget);
 		since = until = null;
 		from = to = null;
-		start = end = -1;
+		startIdx = endIdx = -1;
 	}
 
 	/**
@@ -52,7 +52,7 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 		super(pRepository, pRoot, pTarget, pRevisions);
 		since = until = null;
 		from = to = null;
-		start = end = -1;
+		startIdx = endIdx = -1;
 	}
 
 	/**
@@ -64,7 +64,7 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 			IllegalIntervalException {
 		super(pRepository, pRoot, pTarget);
 		from = to = null;
-		start = end = -1;
+		startIdx = endIdx = -1;
 		since = Validate.notNull(validateMapDateTime(pSince));
 		until = Validate.notNull(validateMapDateTime(pUntil));
 		IllegalIntervalException.isTrue(!since.isAfter(until),
@@ -79,29 +79,30 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 			final String pTo) throws NullPointerException {
 		super(pRepository, pRoot, pTarget);
 		since = until = null;
-		start = end = -1;
+		startIdx = endIdx = -1;
 		from = Validate.notNull(validateMapIntervalRevision(pFrom));
 		to = Validate.notNull(validateMapIntervalRevision(pTo));
-		// We can not validate if from <= to because this requires a method
+		// We can not validate that from <= to because this requires a method
 		// call to a not (yet) fully available subclass instance.
 	}
 
 	/**
-	 * Range interval constructor. Validates that {@code 0 <= pStart < pEnd}.
+	 * Range interval constructor. Validates that
+	 * {@code 0 <= pStartIdx < pEndIdx}.
 	 */
 	public AbstractIntervalVCSEngine(final String pRepository,
-			final String pRoot, final Path pTarget, final int pStart,
-			final int pEnd) throws NullPointerException,
+			final String pRoot, final Path pTarget, final int pStartIdx,
+			final int pEndIdx) throws NullPointerException,
 			IllegalIntervalException {
 		super(pRepository, pRoot, pTarget);
 		since = until = null;
 		from = to = null;
-		start = pStart;
-		end = pEnd;
-		IllegalIntervalException.isTrue(
-				start >= MIN_START, "Start (%d) < %d", start, MIN_START);
-		IllegalIntervalException.isTrue(
-				start < end, "Start (%d) >= end (%d)", start, end);
+		startIdx = pStartIdx;
+		endIdx = pEndIdx;
+		IllegalIntervalException.isTrue(startIdx >= MIN_START_IDX,
+				"Start (%d) < %d", startIdx, MIN_START_IDX);
+		IllegalIntervalException.isTrue(startIdx < endIdx,
+				"Start (%d) >= end (%d)", startIdx, endIdx);
 	}
 
 	boolean isDateTimeInterval() {
@@ -113,7 +114,7 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 	}
 
 	boolean isRangeInterval() {
-		return start >= 0;
+		return startIdx >= 0;
 	}
 
 	@Override
@@ -124,7 +125,7 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 		} else if (isRevisionInterval()) {
 			revisions = listRevisionsImpl(from, to);
 		} else if (isRangeInterval()) {
-			revisions = listRevisionsImpl(start, end);
+			revisions = listRevisionsImpl(startIdx, endIdx);
 		} else {
 			final Optional<String> latest = getLatestRevision();
 			return latest.map(Collections::singletonList)
@@ -134,15 +135,15 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 		return revisions;
 	}
 
-	private List<String> listRevisionsImpl(int start, int end)
-			throws IOException {
+	private List<String> listRevisionsImpl(final int startIdx,
+			final int endIdx) throws IOException {
 		final List<String> revs = listRevisionsImpl(
 				VCSEngineBuilder.DEFAULT_SINCE,
 				VCSEngineBuilder.DEFAULT_UNTIL);
-		if (start >= revs.size()) {
+		if (startIdx >= revs.size()) {
 			return Collections.emptyList();
 		}
-		return revs.subList(start, Math.min(end, revs.size()));
+		return revs.subList(startIdx, Math.min(endIdx, revs.size()));
 	}
 
 	protected abstract Optional<String> getLatestRevision() throws IOException;

@@ -116,9 +116,9 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 	@Deprecated
 	@SuppressWarnings("DeprecatedIsStillUsed")
 	public SVNEngine(final String pRepository, final String pRoot,
-			final Path pTarget, final int pStart, int pEnd)
+			final Path pTarget, final int pStartIdx, int pEndIdx)
 			throws NullPointerException, IllegalIntervalException {
-		super(pRepository, pRoot, pTarget, pStart, pEnd);
+		super(pRepository, pRoot, pTarget, pStartIdx, pEndIdx);
 	}
 
 	/**
