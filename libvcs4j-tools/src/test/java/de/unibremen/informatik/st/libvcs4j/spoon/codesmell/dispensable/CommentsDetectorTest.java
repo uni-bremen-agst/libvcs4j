@@ -1,5 +1,6 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.codesmell.dispensable;
 
+import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmell;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.RevisionMock;
 import org.junit.Rule;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -44,5 +46,37 @@ public class CommentsDetectorTest {
 				.matches(range -> range.getBegin().getColumn() == 5)
 				.matches(range -> range.getEnd().getLine() == 10)
 				.matches(range -> range.getEnd().getColumn() == 5);
+	}
+
+	@Test
+	public void testTwice() throws IOException {
+		RevisionMock revision = new RevisionMock(folder);
+		revision.addFile(Paths.get("comments", "Comments.java"));
+
+		Launcher launcher = new Launcher();
+		launcher.addInputResource(folder.getRoot().getAbsolutePath());
+		CtModel model = launcher.buildModel();
+
+		CommentsDetector cmDetector = new CommentsDetector(revision);
+		cmDetector.scan(model);
+		List<CodeSmell> codeSmells = cmDetector.getCodeSmells();
+
+		assertThat(codeSmells).hasSize(2);
+		CodeSmell codeSmell = codeSmells.get(0);
+		assertThat(codeSmell.getSignature())
+				.isEqualTo(Optional.of("Comments()"));
+		VCSFile.Range range = codeSmell.getRanges().get(0);
+		assertThat(range.getBegin().getLine()).isEqualTo(3);
+		assertThat(range.getBegin().getColumn()).isEqualTo(5);
+		assertThat(range.getEnd().getLine()).isEqualTo(14);
+		assertThat(range.getEnd().getColumn()).isEqualTo(5);
+		codeSmell = codeSmells.get(1);
+		assertThat(codeSmell.getSignature())
+				.isEqualTo(Optional.of("Comments#method(java.lang.String)"));
+		range = codeSmell.getRanges().get(0);
+		assertThat(range.getBegin().getLine()).isEqualTo(23);
+		assertThat(range.getBegin().getColumn()).isEqualTo(5);
+		assertThat(range.getEnd().getLine()).isEqualTo(47);
+		assertThat(range.getEnd().getColumn()).isEqualTo(5);
 	}
 }
