@@ -1,6 +1,7 @@
 package de.unibremen.informatik.st.libvcs4j.git;
 
 import de.unibremen.informatik.st.libvcs4j.LineInfo;
+import de.unibremen.informatik.st.libvcs4j.VCSEngine;
 import de.unibremen.informatik.st.libvcs4j.VCSEngineBuilder;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.Validate;
@@ -74,10 +75,22 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	private final String branch;
 
 	/**
-	 * Use {@link VCSEngineBuilder} instead.
+	 * Creates a new Git engine that processes all commits of the given root
+	 * directory and branch. Use {@link VCSEngineBuilder} for convenience.
+	 *
+	 * @param pRepository
+	 * 		The repository to process (see {@link VCSEngine#getRepository()}).
+	 * @param pRoot
+	 * 		The root directory (see {@link VCSEngine#getRoot()}.
+	 * @param pTarget
+	 * 		The target directory (see {@link VCSEngine#getTarget()}).
+	 * @param pBranch
+	 * 		The branch to process.
+	 * @throws NullPointerException
+	 * 		If any of the given arguments is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If any of the given arguments is invalid.
 	 */
-	@Deprecated
-	@SuppressWarnings("DeprecatedIsStillUsed")
 	public GitEngine(final String pRepository, final String pRoot,
 			final Path pTarget, final String pBranch)
 			throws NullPointerException, IllegalArgumentException {
@@ -86,10 +99,27 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	}
 
 	/**
-	 * Use {@link VCSEngineBuilder} instead.
+	 * Creates a new Git engine that processes all commits of the given root
+	 * directory and branch within the given time range. Use
+	 * {@link VCSEngineBuilder} for convenience.
+	 *
+	 * @param pRepository
+	 * 		The repository to process (see {@link VCSEngine#getRepository()}).
+	 * @param pRoot
+	 * 		The root directory (see {@link VCSEngine#getRoot()}.
+	 * @param pTarget
+	 * 		The target directory (see {@link VCSEngine#getTarget()}).
+	 * @param pBranch
+	 * 		The branch to process.
+	 * @param pSince
+	 * 		The since date.
+	 * @param pUntil
+	 * 		The until date.
+	 * @throws NullPointerException
+	 * 		If any of the given arguments is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If any of the given arguments is invalid.
 	 */
-	@Deprecated
-	@SuppressWarnings("DeprecatedIsStillUsed")
 	public GitEngine(final String pRepository, final String pRoot,
 			final Path pTarget, final String pBranch,
 			final LocalDateTime pSince, final LocalDateTime pUntil)
@@ -100,10 +130,27 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	}
 
 	/**
-	 * Use {@link VCSEngineBuilder} instead.
+	 * Creates a new Git engine that processes all commits of the given root
+	 * directory and branch within the given revision range (inclusive). Use
+	 * {@link VCSEngineBuilder} for convenience.
+	 *
+	 * @param pRepository
+	 * 		The repository to process (see {@link VCSEngine#getRepository()}).
+	 * @param pRoot
+	 * 		The root directory (see {@link VCSEngine#getRoot()}.
+	 * @param pTarget
+	 * 		The target directory (see {@link VCSEngine#getTarget()}).
+	 * @param pBranch
+	 * 		The branch to process.
+	 * @param pFrom
+	 * 		The start revision.
+	 * @param pTo
+	 * 		The end revision (inclusive).
+	 * @throws NullPointerException
+	 * 		If any of the given arguments is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If any of the given arguments is invalid.
 	 */
-	@Deprecated
-	@SuppressWarnings("DeprecatedIsStillUsed")
 	public GitEngine(final String pRepository, final String pRoot,
 			final Path pTarget, final String pBranch, final String pFrom,
 			final String pTo) throws NullPointerException,
@@ -113,10 +160,27 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	}
 
 	/**
-	 * Use {@link VCSEngineBuilder} instead.
+	 * Creates a new Git engine that processes all commits of the given root
+	 * directory and branch within the given revision index range (exclusive).
+	 * Use {@link VCSEngineBuilder} for convenience.
+	 *
+	 * @param pRepository
+	 * 		The repository to process (see {@link VCSEngine#getRepository()}).
+	 * @param pRoot
+	 * 		The root directory (see {@link VCSEngine#getRoot()}.
+	 * @param pTarget
+	 * 		The target directory (see {@link VCSEngine#getTarget()}).
+	 * @param pBranch
+	 * 		The branch to process.
+	 * @param pStartIdx
+	 * 		The index of the start revision ({@code >= 0}).
+	 * @param pEndIdx
+	 * 		The index of the end revision (exclusive).
+	 * @throws NullPointerException
+	 * 		If any of the given arguments is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If any of the given arguments is invalid.
 	 */
-	@Deprecated
-	@SuppressWarnings("DeprecatedIsStillUsed")
 	public GitEngine(final String pRepository, final String pRoot,
 			final Path pTarget, final String pBranch, final int pStartIdx,
 			final int pEndIdx) throws NullPointerException,
@@ -126,10 +190,25 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	}
 
 	/**
-	 * Use {@link VCSEngineBuilder} instead.
+	 * Creates a new Git engine that processes the given commits with respect
+	 * to the given root directory and branch. Use {@link VCSEngineBuilder} for
+	 * convenience.
+	 *
+	 * @param pRepository
+	 * 		The repository to process (see {@link VCSEngine#getRepository()}).
+	 * @param pRoot
+	 * 		The root directory (see {@link VCSEngine#getRoot()}.
+	 * @param pTarget
+	 * 		The target directory (see {@link VCSEngine#getTarget()}).
+	 * @param pBranch
+	 * 		The branch to process.
+	 * @param pRevisions
+	 * 		The revisions to process.
+	 * @throws NullPointerException
+	 * 		If any of the given arguments is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If any of the given arguments is invalid.
 	 */
-	@Deprecated
-	@SuppressWarnings("DeprecatedIsStillUsed")
 	public GitEngine(final String pRepository, final String pRoot,
 			final Path pTarget, final String pBranch,
 			final List<String> pRevisions) throws NullPointerException,
