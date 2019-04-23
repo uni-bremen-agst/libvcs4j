@@ -8,7 +8,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -207,7 +206,7 @@ public class MappingTest {
                 .forEach(m -> assertThat(result.getFrom()).contains(m));
         to.stream()
                 .filter(Objects::nonNull)
-                .forEach(m -> assertThat(result.getTo().contains(m)));
+                .forEach(m -> assertThat(result.getTo()).contains(m));
         assertThat(result.getWithSuccessor())
                 .isNotEmpty();
         assertThat(result.getWithoutPredecessor())
