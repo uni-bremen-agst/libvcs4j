@@ -444,10 +444,8 @@ public class SpoonModel {
 						&& !(inner instanceof CtTypeParameter))
 				// Include only direct inner types.
 				.filter(inner -> inner.getParent(CtType.class).equals(type))
-				.forEach(inner -> {
-					binaries.addAll(getExpectedBinaryFiles(
-							baseDir, name, inner));
-				});
+				.forEach(inner -> binaries.addAll(getExpectedBinaryFiles(
+						baseDir, name, inner)));
 		return binaries;
 	}
 }
