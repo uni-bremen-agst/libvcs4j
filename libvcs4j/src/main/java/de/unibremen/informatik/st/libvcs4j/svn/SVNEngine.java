@@ -185,11 +185,10 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 				SUPPORTED_PROTOCOLS.test(pRepository),
 				"Unsupported protocol: '%s'", pRepository);
 		if (FILE_PROTOCOL.test(pRepository)) {
-			final String repository = pRepository.substring(7);
-			final Path path = Paths.get(repository).toAbsolutePath();
-			IllegalRepositoryException.isTrue(Files.isDirectory(path),
+			final File file = new File(pRepository.substring(7));
+			IllegalRepositoryException.isTrue(file.isDirectory(),
 					"'%s' is not a directory", pRepository);
-			IllegalRepositoryException.isTrue(Files.isReadable(path),
+			IllegalRepositoryException.isTrue(file.canRead(),
 					"'%s' is not readable", pRepository);
 		}
 		return normalizePath(pRepository);
