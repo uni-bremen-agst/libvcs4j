@@ -50,7 +50,12 @@ public class Metrics {
 				.newLenientScanner(lang, content, "");
 
 		final String LINE_SEP = "\\r?\\n";
-		int loc = 0, sloc = 0, cloc = 0, not = 0, snot = 0, cnot = 0;
+		int loc  = 0;
+		int sloc = 0;
+		int cloc = 0;
+		int not  = 0;
+		int snot = 0;
+		int cnot = 0;
 		IToken lastToken = null;
 		try {
 			for (IToken token = scanner.getNextToken();
