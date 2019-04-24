@@ -329,7 +329,7 @@ public class UnusedCodeDetector extends CodeSmellDetector {
 			if (!constructor.isImplicit()) {
 				// exclude private default constructor
 				final boolean isPrivateDefaultConstructor =
-						constructor.getParameters().size() == 0 &&
+						constructor.getParameters().isEmpty() &&
 								constructor.hasModifier(ModifierKind.PRIVATE);
 				if (modifierMatchesMode(constructor) &&
 						!isPrivateDefaultConstructor) {
