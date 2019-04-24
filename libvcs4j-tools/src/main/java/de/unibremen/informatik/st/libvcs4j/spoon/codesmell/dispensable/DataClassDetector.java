@@ -74,12 +74,8 @@ public class DataClassDetector extends CodeSmellDetector {
 					resolveToFieldAccess(method);
 			isDataClass.pop();
 			// Does method access a foreign field?
-			if (!fieldAccess.isPresent() || !fieldAccess.get()
-					.hasParent(method.getParent(CtType.class))) {
-				isDataClass.push(false);
-			} else {
-				isDataClass.push(true);
-			}
+			isDataClass.push(fieldAccess.isPresent() && fieldAccess.get()
+					.hasParent(method.getParent(CtType.class)));
 		}
 		super.visitCtMethod(method);
 	}
