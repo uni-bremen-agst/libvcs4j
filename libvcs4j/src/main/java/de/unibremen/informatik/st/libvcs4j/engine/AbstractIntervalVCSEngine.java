@@ -43,19 +43,6 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 	}
 
 	/**
-	 * Interval constructor with given revision list.
-	 */
-	public AbstractIntervalVCSEngine(final String pRepository,
-			final String pRoot, final Path pTarget,
-			final List<String> pRevisions) throws NullPointerException,
-			IllegalArgumentException {
-		super(pRepository, pRoot, pTarget, pRevisions);
-		since = until = null;
-		from = to = null;
-		startIdx = endIdx = -1;
-	}
-
-	/**
 	 * Datetime interval constructor. Validates that {@code pSince <= pUntil}.
 	 */
 	public AbstractIntervalVCSEngine(final String pRepository,

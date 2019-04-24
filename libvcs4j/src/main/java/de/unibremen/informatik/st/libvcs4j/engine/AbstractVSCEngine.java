@@ -75,16 +75,6 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 		target = Validate.notNull(validateMapTarget(pTarget)).toAbsolutePath();
 	}
 
-	public AbstractVSCEngine(
-			final String pRepository, final String pRoot, final Path pTarget,
-			final List<String> pRevisions) throws NullPointerException,
-			IllegalArgumentException {
-		this(pRepository, pRoot, pTarget);
-		revisions = validateMapRevisions(pRevisions).stream()
-				.map(Validate::notNull)
-				.collect(Collectors.toList());
-	}
-
 	@Override
 	public final String getRepository() {
 		return repository;
