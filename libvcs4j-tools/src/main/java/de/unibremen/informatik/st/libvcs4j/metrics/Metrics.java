@@ -143,9 +143,7 @@ public class Metrics {
 			for (IToken token = scanner.getNextToken();
 				 token.getType() != ETokenType.EOF;
 				 token = scanner.getNextToken()) {
-				if (isCommentType(token)) {
-					continue;
-				} else if (token.getType().isError()) {
+				if (isCommentType(token) || token.getType().isError()) {
 					continue;
 				} else if (token.getType().isOperator()) {
 					operators.add(token);
