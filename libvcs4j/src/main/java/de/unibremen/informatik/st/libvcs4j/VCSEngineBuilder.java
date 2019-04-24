@@ -61,13 +61,13 @@ public class VCSEngineBuilder {
 	/**
 	 * The default start index (see {@link #withStartIdx(int)}).
 	 */
-	public final int DEFAULT_START_IDX =
+	public static final int DEFAULT_START_IDX =
 			AbstractIntervalVCSEngine.MIN_START_IDX;
 
 	/**
 	 * The default end index (see {@link #withEndIdx(int)}).
 	 */
-	public final int DEFAULT_END_IDX = Integer.MAX_VALUE;
+	public static final int DEFAULT_END_IDX = Integer.MAX_VALUE;
 
 	/**
 	 * The default target (see {@link #withTarget(Path)}). Cannot be static
