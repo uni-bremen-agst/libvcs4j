@@ -1,7 +1,6 @@
 package de.unibremen.informatik.st.libvcs4j.filesystem;
 
 import de.unibremen.informatik.st.libvcs4j.LineInfo;
-import de.unibremen.informatik.st.libvcs4j.VCSEngineBuilder;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.Validate;
 import de.unibremen.informatik.st.libvcs4j.data.CommitImpl;
