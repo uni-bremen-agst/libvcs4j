@@ -12,7 +12,6 @@ import spoon.reflect.code.CtComment;
 import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtConstructor;
-import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.visitor.filter.TypeFilter;
@@ -42,11 +41,6 @@ public class CommentsDetector extends CodeSmellDetector {
     public CommentsDetector(@NonNull final Revision revision)
             throws NullPointerException, IllegalArgumentException{
         this(revision, DEFAULT_LOC_THRESHOLD, DEFAULT_RATIO_THRESHOLD);
-    }
-
-    @Override
-    public <T> void visitCtClass(CtClass<T> ctClass) {
-        super.visitCtClass(ctClass);
     }
 
     @Override
