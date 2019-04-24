@@ -189,34 +189,6 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 		branch = pBranch == null ? DEFAULT_BRANCH : pBranch;
 	}
 
-	/**
-	 * Creates a new Git engine that processes the given commits with respect
-	 * to the given root directory and branch. Use {@link VCSEngineBuilder} for
-	 * convenience.
-	 *
-	 * @param pRepository
-	 * 		The repository to process (see {@link VCSEngine#getRepository()}).
-	 * @param pRoot
-	 * 		The root directory (see {@link VCSEngine#getRoot()}.
-	 * @param pTarget
-	 * 		The target directory (see {@link VCSEngine#getTarget()}).
-	 * @param pBranch
-	 * 		The branch to process.
-	 * @param pRevisions
-	 * 		The revisions to process.
-	 * @throws NullPointerException
-	 * 		If any of the given arguments is {@code null}.
-	 * @throws IllegalArgumentException
-	 * 		If any of the given arguments is invalid.
-	 */
-	public GitEngine(final String pRepository, final String pRoot,
-			final Path pTarget, final String pBranch,
-			final List<String> pRevisions) throws NullPointerException,
-			IllegalArgumentException {
-		super(pRepository, pRoot, pTarget, pRevisions);
-		branch = pBranch == null ? DEFAULT_BRANCH : pBranch;
-	}
-
 	///////////////////////// Validation and mapping //////////////////////////
 
 	@Override

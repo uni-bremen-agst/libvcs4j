@@ -176,30 +176,6 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 		super(pRepository, pRoot, pTarget, pStartIdx, pEndIdx);
 	}
 
-	/**
-	 * Creates a new SVN engine that processes the given commits with respect
-	 * to the given root directory. Use {@link VCSEngineBuilder} for
-	 * convenience.
-	 *
-	 * @param pRepository
-	 * 		The repository to process (see {@link VCSEngine#getRepository()}).
-	 * @param pRoot
-	 * 		The root directory (see {@link VCSEngine#getRoot()}.
-	 * @param pTarget
-	 * 		The target directory (see {@link VCSEngine#getTarget()}).
-	 * @param pRevisions
-	 * 		The revisions to process.
-	 * @throws NullPointerException
-	 * 		If any of the given arguments is {@code null}.
-	 * @throws IllegalArgumentException
-	 * 		If any of the given arguments is invalid.
-	 */
-	public SVNEngine(final String pRepository, final String pRoot,
-			final Path pTarget, final List<String> pRevisions)
-			throws NullPointerException, IllegalArgumentException {
-		super(pRepository, pRoot, pTarget, pRevisions);
-	}
-
 	///////////////////////// Validation and mapping //////////////////////////
 
 	@Override
