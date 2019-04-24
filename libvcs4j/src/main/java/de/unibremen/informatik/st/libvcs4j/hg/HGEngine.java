@@ -198,10 +198,10 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 		Validate.notEmpty(pRepository);
 		Validate.isTrue(SUPPORTED_PROTOCOLS.test(pRepository),
 				"Unsupported protocol: '%s'", pRepository);
-		String repository = normalizePath(pRepository);
+		String rep = normalizePath(pRepository);
 		if (FILE_PROTOCOL.test(pRepository)) {
 			// Remove file protocol prefix before creating Path.
-			final Path path = Paths.get(repository.substring(7));
+			final Path path = Paths.get(rep.substring(7));
 			IllegalRepositoryException.isTrue(Files.exists(path),
 					"'%s' does not exist", pRepository);
 			IllegalRepositoryException.isTrue(Files.isDirectory(path),
@@ -210,17 +210,17 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 					"'%s' is not readable", pRepository);
 			final String os = System.getProperty("os.name").toLowerCase();
 			if (os.contains("windows") &&
-					!repository.startsWith("localhost/")) {
-				repository =
+					!rep.startsWith("localhost/")) {
+				rep =
 						// file protocol prefix
-						repository.substring(0, 7) +
+						rep.substring(0, 7) +
 						// only required for windows
 						"localhost/" +
 						// path to repository
-						repository.substring(7);
+						rep.substring(7);
 			}
 		}
-		return repository;
+		return rep;
 	}
 
 	@Override
