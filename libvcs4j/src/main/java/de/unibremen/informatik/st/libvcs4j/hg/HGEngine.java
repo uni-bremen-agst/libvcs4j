@@ -561,6 +561,7 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	protected void initImpl() throws IOException {
 		Validate.validateState(repository == null);
 		try {
+			log.info("Cloning {} to {}", getRepository(), getTarget());
 			repository = Repository.clone(
 					getTarget().toFile(), getRepository());
 		} catch (final RuntimeException e) {
