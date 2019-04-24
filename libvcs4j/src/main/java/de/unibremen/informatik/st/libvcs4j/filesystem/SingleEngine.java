@@ -34,10 +34,15 @@ public class SingleEngine extends AbstractVSCEngine {
 	private static final String DEFAULT_AUTHOR = "(no author)";
 
 	/**
-	 * Use {@link VCSEngineBuilder} instead.
+	 * Creates a new single engine that processes the given path.
+	 *
+	 * @param pPath
+	 * 		The path to process.
+	 * @throws NullPointerException
+	 * 		If {@code pPath} is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If {@code pPath} does not exist or is not readable.
 	 */
-	@Deprecated
-	@SuppressWarnings("DeprecatedIsStillUsed")
 	public SingleEngine(final Path pPath) throws NullPointerException,
 			IllegalArgumentException {
 		super(pPath.toString(), "", pPath);

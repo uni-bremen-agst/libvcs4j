@@ -75,10 +75,20 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 			LocalDateTime.of(1980, 1, 1, 0, 0, 0);
 
 	/**
-	 * Use {@link VCSEngineBuilder} instead.
+	 * Creates a new SVN engine that processes all commits of the given root
+	 * directory. Use {@link VCSEngineBuilder} for convenience.
+	 *
+	 * @param pRepository
+	 * 		The repository to process (see {@link VCSEngine#getRepository()}).
+	 * @param pRoot
+	 * 		The root directory (see {@link VCSEngine#getRoot()}.
+	 * @param pTarget
+	 * 		The target directory (see {@link VCSEngine#getTarget()}).
+	 * @throws NullPointerException
+	 * 		If any of the given arguments is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If any of the given arguments is invalid.
 	 */
-	@Deprecated
-	@SuppressWarnings("DeprecatedIsStillUsed")
 	public SVNEngine(final String pRepository, final String pRoot,
 			final Path pTarget) throws NullPointerException,
 			IllegalArgumentException {
@@ -86,10 +96,25 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 	}
 
 	/**
-	 * Use {@link VCSEngineBuilder} instead.
+	 * Creates a new SVN engine that processes all commits of the given root
+	 * directory within the given time range. Use {@link VCSEngineBuilder} for
+	 * convenience.
+	 *
+	 * @param pRepository
+	 * 		The repository to process (see {@link VCSEngine#getRepository()}).
+	 * @param pRoot
+	 * 		The root directory (see {@link VCSEngine#getRoot()}.
+	 * @param pTarget
+	 * 		The target directory (see {@link VCSEngine#getTarget()}).
+	 * @param pSince
+	 * 		The since date.
+	 * @param pUntil
+	 * 		The until date.
+	 * @throws NullPointerException
+	 * 		If any of the given arguments is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If any of the given arguments is invalid.
 	 */
-	@Deprecated
-	@SuppressWarnings("DeprecatedIsStillUsed")
 	public SVNEngine(final String pRepository, final String pRoot,
 			final Path pTarget, final LocalDateTime pSince,
 			final LocalDateTime pUntil) throws NullPointerException,
@@ -99,10 +124,25 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 	}
 
 	/**
-	 * Use {@link VCSEngineBuilder} instead.
+	 * Creates a new SVN engine that processes all commits of the given root
+	 * directory within the given revision range (inclusive). Use
+	 * {@link VCSEngineBuilder} for convenience.
+	 *
+	 * @param pRepository
+	 * 		The repository to process (see {@link VCSEngine#getRepository()}).
+	 * @param pRoot
+	 * 		The root directory (see {@link VCSEngine#getRoot()}.
+	 * @param pTarget
+	 * 		The target directory (see {@link VCSEngine#getTarget()}).
+	 * @param pFrom
+	 * 		The start revision.
+	 * @param pTo
+	 * 		The end revision (inclusive).
+	 * @throws NullPointerException
+	 * 		If any of the given arguments is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If any of the given arguments is invalid.
 	 */
-	@Deprecated
-	@SuppressWarnings("DeprecatedIsStillUsed")
 	public SVNEngine(final String pRepository, final String pRoot,
 			final Path pTarget, final String pFrom, final String pTo)
 			throws NullPointerException, IllegalRepositoryException,
@@ -111,25 +151,29 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 	}
 
 	/**
-	 * Use {@link VCSEngineBuilder} instead.
+	 * Creates a new SVN engine that processes all commits of the given root
+	 * directory within the given revision index range (exclusive). Use
+	 * {@link VCSEngineBuilder} for convenience.
+	 *
+	 * @param pRepository
+	 * 		The repository to process (see {@link VCSEngine#getRepository()}).
+	 * @param pRoot
+	 * 		The root directory (see {@link VCSEngine#getRoot()}.
+	 * @param pTarget
+	 * 		The target directory (see {@link VCSEngine#getTarget()}).
+	 * @param pStartIdx
+	 * 		The index of the start revision ({@code >= 0}).
+	 * @param pEndIdx
+	 * 		The index of the end revision (exclusive).
+	 * @throws NullPointerException
+	 * 		If any of the given arguments is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If any of the given arguments is invalid.
 	 */
-	@Deprecated
-	@SuppressWarnings("DeprecatedIsStillUsed")
 	public SVNEngine(final String pRepository, final String pRoot,
 			final Path pTarget, final int pStartIdx, int pEndIdx)
 			throws NullPointerException, IllegalIntervalException {
 		super(pRepository, pRoot, pTarget, pStartIdx, pEndIdx);
-	}
-
-	/**
-	 * Use {@link VCSEngineBuilder} instead.
-	 */
-	@Deprecated
-	@SuppressWarnings("DeprecatedIsStillUsed")
-	public SVNEngine(final String pRepository, final String pRoot,
-			final Path pTarget, final List<String> pRevisions)
-			throws NullPointerException, IllegalArgumentException {
-		super(pRepository, pRoot, pTarget, pRevisions);
 	}
 
 	///////////////////////// Validation and mapping //////////////////////////

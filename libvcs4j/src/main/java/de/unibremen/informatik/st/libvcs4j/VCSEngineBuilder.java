@@ -555,7 +555,6 @@ public class VCSEngineBuilder {
 	 * @return
 	 * 		The created engine.
 	 */
-	@SuppressWarnings("deprecation")
 	public VCSEngine build() {
 		final VCSEngine vcsEngine;
 		if (engine == Engine.SINGLE) {

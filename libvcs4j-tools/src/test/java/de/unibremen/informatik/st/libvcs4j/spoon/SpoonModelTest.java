@@ -20,11 +20,12 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -83,7 +84,7 @@ public class SpoonModelTest {
 		updateFile("D.java");
 		VCSFile dFile = new VCSFileMock("D.java");
 		FileChange dChange = new FileChangeMock(dFile, dFile);
-		RevisionRange second = new RevisionRangeMock(Arrays.asList(dChange));
+		RevisionRange second = new RevisionRangeMock(singletonList(dChange));
 		byte[] update = save(spoonModel.update(second));
 
 		CtModel originalModel = load(original);
@@ -125,8 +126,7 @@ public class SpoonModelTest {
 		FileChange cChange = new FileChangeMock(cFile, null);
 		VCSFile dFile = new VCSFileMock("D.java");
 		FileChange dChange = new FileChangeMock(null, dFile);
-		RevisionRange second = new RevisionRangeMock(
-				Arrays.asList(cChange, dChange));
+		RevisionRange second = new RevisionRangeMock(asList(cChange, dChange));
 		byte[] update = save(spoonModel.update(second));
 
 		CtModel originalModel = load(original);
@@ -163,7 +163,7 @@ public class SpoonModelTest {
 		updateFile("C.java");
 		VCSFile cFile = new VCSFileMock("C.java");
 		FileChange cChange = new FileChangeMock(cFile, cFile);
-		RevisionRange second = new RevisionRangeMock(Arrays.asList(cChange));
+		RevisionRange second = new RevisionRangeMock(singletonList(cChange));
 		byte[] update = save(spoonModel.update(second));
 
 		CtModel originalModel = load(original);
@@ -210,7 +210,7 @@ public class SpoonModelTest {
 		VCSFile cFile = new VCSFileMock("C.java");
 		VCSFile dFile = new VCSFileMock("D.java");
 		FileChange change = new FileChangeMock(cFile, dFile);
-		RevisionRange second = new RevisionRangeMock(Arrays.asList(change));
+		RevisionRange second = new RevisionRangeMock(singletonList(change));
 		byte[] update = save(spoonModel.update(second));
 
 		CtModel originalModel = load(original);
@@ -250,7 +250,7 @@ public class SpoonModelTest {
 		String dPath = Paths.get("..", folderName, "D.java").toString();
 		VCSFile dFile = new VCSFileMock(dPath);
 		FileChange dChange = new FileChangeMock(null, dFile);
-		RevisionRange second = new RevisionRangeMock(Arrays.asList(dChange));
+		RevisionRange second = new RevisionRangeMock(singletonList(dChange));
 		byte[] update = save(spoonModel.update(second));
 
 		CtModel originalModel = load(original);
@@ -309,7 +309,7 @@ public class SpoonModelTest {
 
 		private final String file;
 
-		public VCSFileMock(String file) {
+		VCSFileMock(String file) {
 			this.file = file;
 		}
 
@@ -324,7 +324,7 @@ public class SpoonModelTest {
 		}
 
 		@Override
-		public Optional<Charset> guessCharset() throws IOException {
+		public Optional<Charset> guessCharset() {
 			return Optional.empty();
 		}
 
@@ -344,7 +344,7 @@ public class SpoonModelTest {
 		private final VCSFile oldFile;
 		private final VCSFile newFile;
 
-		public FileChangeMock(VCSFile oldFile, VCSFile newFile) {
+		FileChangeMock(VCSFile oldFile, VCSFile newFile) {
 			this.oldFile = oldFile;
 			this.newFile = newFile;
 		}
@@ -369,7 +369,7 @@ public class SpoonModelTest {
 
 		private final List<FileChange> fileChanges;
 
-		public RevisionRangeMock(List<FileChange> fileChanges) {
+		RevisionRangeMock(List<FileChange> fileChanges) {
 			this.fileChanges = fileChanges;
 		}
 
