@@ -125,7 +125,6 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 		} else {
 			changes = createChangesImpl(getPreviousRevision(), revision);
 			mapChanges(changes);
-			//validate(changes);
 		}
 		final RevisionRange range = createRevisionRange(changes);
 		currentRevision = range.getRevision();

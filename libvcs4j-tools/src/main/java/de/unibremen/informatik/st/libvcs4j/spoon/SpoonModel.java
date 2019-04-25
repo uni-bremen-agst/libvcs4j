@@ -41,7 +41,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static java.lang.String.format;
 import static java.lang.System.currentTimeMillis;
 import static spoon.SpoonModelBuilder.InputType;
 
@@ -57,7 +56,7 @@ public class SpoonModel {
 	/**
 	 * The logger of this class.
 	 */
-	private static final Logger LOGGER =
+	private static final Logger log =
 			LoggerFactory.getLogger(SpoonModel.class);
 
 	/**
@@ -180,13 +179,13 @@ public class SpoonModel {
 		try {
 			launcher.getModelBuilder().compile(InputType.FILES);
 			model = launcher.buildModel();
-			LOGGER.info(format("Model built in %d milliseconds",
-					currentTimeMillis() - current));
+			log.info("Model built in {} milliseconds",
+					currentTimeMillis() - current);
 			return model;
 		} catch (final Exception e) {
 			model = null;
 			notCompiled.clear();
-			LOGGER.info("Unable to build model", e);
+			log.info("Unable to build model", e);
 			throw new BuildException(e);
 		}
 	}
