@@ -22,13 +22,16 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 	public static final int MIN_START_IDX = 0;
 
 	/* Datetime interval. */
-	private final LocalDateTime since, until;
+	private final LocalDateTime since;
+	private final LocalDateTime until;
 
 	/* Revision interval. */
-	private final String from, to;
+	private final String from;
+	private final String to;
 
 	/* Range interval. */
-	private final int startIdx, endIdx;
+	private final int startIdx;
+	private final int endIdx;
 
 	/**
 	 * Latest revision constructor.
@@ -37,19 +40,6 @@ public abstract class AbstractIntervalVCSEngine extends AbstractVSCEngine {
 			final String pRoot, final Path pTarget)
 			throws NullPointerException, IllegalArgumentException {
 		super(pRepository, pRoot, pTarget);
-		since = until = null;
-		from = to = null;
-		startIdx = endIdx = -1;
-	}
-
-	/**
-	 * Interval constructor with given revision list.
-	 */
-	public AbstractIntervalVCSEngine(final String pRepository,
-			final String pRoot, final Path pTarget,
-			final List<String> pRevisions) throws NullPointerException,
-			IllegalArgumentException {
-		super(pRepository, pRoot, pTarget, pRevisions);
 		since = until = null;
 		from = to = null;
 		startIdx = endIdx = -1;

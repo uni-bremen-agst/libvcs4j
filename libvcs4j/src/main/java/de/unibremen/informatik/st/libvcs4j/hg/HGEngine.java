@@ -27,10 +27,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -198,29 +198,29 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 		Validate.notEmpty(pRepository);
 		Validate.isTrue(SUPPORTED_PROTOCOLS.test(pRepository),
 				"Unsupported protocol: '%s'", pRepository);
-		String repository = normalizePath(pRepository);
+		String rep = normalizePath(pRepository);
 		if (FILE_PROTOCOL.test(pRepository)) {
-			// Remove file protocol prefix before creating Path.
-			final Path path = Paths.get(repository.substring(7));
-			IllegalRepositoryException.isTrue(Files.exists(path),
+			// Remove file protocol prefix before creating File.
+			final File file = new File(rep.substring(7));
+			IllegalRepositoryException.isTrue(file.exists(),
 					"'%s' does not exist", pRepository);
-			IllegalRepositoryException.isTrue(Files.isDirectory(path),
+			IllegalRepositoryException.isTrue(file.isDirectory(),
 					"'%s' is not a directory", pRepository);
-			IllegalRepositoryException.isTrue(Files.isReadable(path),
+			IllegalRepositoryException.isTrue(file.canRead(),
 					"'%s' is not readable", pRepository);
 			final String os = System.getProperty("os.name").toLowerCase();
 			if (os.contains("windows") &&
-					!repository.startsWith("localhost/")) {
-				repository =
+					!rep.startsWith("localhost/")) {
+				rep =
 						// file protocol prefix
-						repository.substring(0, 7) +
+						rep.substring(0, 7) +
 						// only required for windows
 						"localhost/" +
 						// path to repository
-						repository.substring(7);
+						rep.substring(7);
 			}
 		}
-		return repository;
+		return rep;
 	}
 
 	@Override
@@ -234,9 +234,9 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	protected Path validateMapTarget(final Path pTarget) {
 		Validate.notNull(pTarget);
 		Validate.notEmpty(pTarget.toString());
-		IllegalTargetException.isTrue(!Files.exists(pTarget),
+		IllegalTargetException.isTrue(!pTarget.toFile().exists(),
 				"'%s' already exists", pTarget);
-		IllegalTargetException.isTrue(Files.isWritable(pTarget.getParent()),
+		IllegalTargetException.isTrue(pTarget.getParent().toFile().canWrite(),
 				"Parent of '%s' is not writable", pTarget);
 		return pTarget.toAbsolutePath();
 	}
@@ -561,6 +561,7 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	protected void initImpl() throws IOException {
 		Validate.validateState(repository == null);
 		try {
+			log.info("Cloning {} to {}", getRepository(), getTarget());
 			repository = Repository.clone(
 					getTarget().toFile(), getRepository());
 		} catch (final RuntimeException e) {

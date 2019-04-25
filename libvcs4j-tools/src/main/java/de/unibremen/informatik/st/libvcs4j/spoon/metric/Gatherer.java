@@ -13,7 +13,7 @@ import java.util.Deque;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 
 /**
@@ -134,7 +134,7 @@ public abstract class Gatherer<T extends Number> extends Scanner {
 	 */
 	<E extends CtElement> void visitNode(@NonNull final E element,
 			@NonNull final Consumer<E> superCall,
-			@NonNull final BiFunction<T, T, T> propagation,
+			@NonNull final BinaryOperator<T> propagation,
 			@NonNull final T initValue) throws NullPointerException {
 		Validate.validateState(!metrics.containsKey(element),
 				"Element '%s' has already been visited", element);
@@ -149,10 +149,10 @@ public abstract class Gatherer<T extends Number> extends Scanner {
 
 	/**
 	 * Visits the given element and gathers its metric. This method extends
-	 * {@link #visitNode(CtElement, Consumer, BiFunction, Number)} and allows
-	 * to register another callback which is called after {@code superCall},
-	 * but right before the resulting metric is stored, therefore allowing to
-	 * do final calculations.
+	 * {@link #visitNode(CtElement, Consumer, BinaryOperator, Number)} and
+	 * allows to register another callback which is called after
+	 * {@code superCall}, but right before the resulting metric is stored,
+	 * therefore allowing to do final calculations.
 	 *
 	 * @param element
 	 * 		The element to visit.
@@ -176,7 +176,7 @@ public abstract class Gatherer<T extends Number> extends Scanner {
 	<E extends CtElement> void visitNode(@NonNull final E element,
 			@NonNull final Consumer<E> superCall,
 			@NonNull final Consumer<E> callBack,
-			@NonNull final BiFunction<T, T, T> propagation,
+			@NonNull final BinaryOperator<T> propagation,
 			@NonNull final T initValue) {
 		visitNode(element, __ -> {
 			superCall.accept(element);

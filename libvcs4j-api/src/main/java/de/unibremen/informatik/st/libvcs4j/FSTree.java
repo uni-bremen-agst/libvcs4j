@@ -16,7 +16,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
-import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
 /**
@@ -128,7 +128,7 @@ public class FSTree<V> {
 	 * Is used to calculate the value of a directory by aggregating the values
 	 * of all sub files and directories.
 	 */
-	private final BiFunction<V, V, V> aggregator;
+	private final BinaryOperator<V> aggregator;
 
 	/**
 	 * Creates a file with given parent, {@link VCSFile}, and value function.
@@ -169,7 +169,7 @@ public class FSTree<V> {
 	 *      If {@code pPath} or {@code pAggregator} is {@code null}.
 	 */
 	private FSTree(final FSTree<V> pParent, final String pPath,
-			final BiFunction<V, V, V> pAggregator) {
+			final BinaryOperator<V> pAggregator) {
 		parent = pParent;
 		path = Validate.notNull(pPath);
 		nodes = new ArrayList<>();
@@ -200,7 +200,7 @@ public class FSTree<V> {
 	 */
 	public static <V> FSTree<V> of(final Collection<VCSFile> pFiles,
 			final Function<VCSFile, V> pValueOf,
-			final BiFunction<V, V, V> pAggregator)
+			final BinaryOperator<V> pAggregator)
 			throws NullPointerException {
 		Validate.notNull(pFiles);
 		Validate.notNull(pValueOf);
@@ -475,7 +475,7 @@ public class FSTree<V> {
 		}
 		final String path = current.path;
 		final T value = current.value;
-		final BiFunction<T, T, T> aggregator = current.aggregator;
+		final BinaryOperator<T> aggregator = current.aggregator;
 		final FSTree<T> compacted = current.isDirectory()
 				? new FSTree<>(pParent, path, aggregator)
 				: new FSTree<>(pParent, current.file, f -> value);

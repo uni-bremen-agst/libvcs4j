@@ -17,7 +17,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.function.BiPredicate;
-import java.util.function.Function;
+import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
 /**
@@ -32,7 +32,7 @@ public interface VCSFile extends VCSModelElement {
 	 * default method ensures that the behaviour of this function can not be
 	 * changed by implementors of this interface.
 	 */
-	Function<String, Integer> NUMBER_OF_TABS = string -> {
+	ToIntFunction<String> NUMBER_OF_TABS = string -> {
 		int tabs = 0;
 		for (int i = 0; i < string.length(); i++) {
 			if (string.charAt(i) == '\t') {
@@ -1029,7 +1029,7 @@ public interface VCSFile extends VCSModelElement {
 			} else {
 				final String offsStr = lineStr.substring(0, offs + 1);
 				final int column = offsStr.length() +
-						NUMBER_OF_TABS.apply(offsStr) * (tabSize - 1);
+						NUMBER_OF_TABS.applyAsInt(offsStr) * (tabSize - 1);
 				return offsStr.endsWith("\n") || offsStr.endsWith("\r")
 							|| offsStr.endsWith("\r\n")
 						? Optional.empty()
@@ -1079,7 +1079,7 @@ public interface VCSFile extends VCSModelElement {
 		// Use scanner to remove EOL.
 		try (final Scanner scanner = new Scanner(lineStr)) {
 			lineLen = scanner.nextLine().length() +
-					NUMBER_OF_TABS.apply(lineStr) * (tabSize - 1);
+					NUMBER_OF_TABS.applyAsInt(lineStr) * (tabSize - 1);
 		}
 		if (column > lineLen) {
 			return Optional.empty();

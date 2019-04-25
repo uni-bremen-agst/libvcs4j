@@ -8,7 +8,6 @@ import lombok.NonNull;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtField;
 import spoon.reflect.declaration.CtType;
-import spoon.reflect.factory.TypeFactory;
 import spoon.reflect.reference.CtTypeReference;
 
 import java.util.Arrays;
@@ -30,7 +29,6 @@ public class CycleDetector extends CodeSmellDetector {
 	@Override
 	public void visitRoot(final CtElement element) {
 		super.visitRoot(element);
-		final TypeFactory typeFactory = element.getFactory().Type();
 		final Set<CtType> types = new HashSet<>(dependencies.keySet());
 
 		for (final CtType t1 : types) {

@@ -23,7 +23,8 @@ public class DeleteTask extends Thread {
 	/**
 	 * The {@link Logger} of this class.
 	 */
-	private final Logger LOGGER = LoggerFactory.getLogger(DeleteTask.class);
+	private static final Logger log =
+			LoggerFactory.getLogger(DeleteTask.class);
 
 	/**
 	 * Path to file or directory that will be deleted.
@@ -45,7 +46,7 @@ public class DeleteTask extends Thread {
 
 	@Override
 	public void run() {
-		LOGGER.info("Deleting '{}'", path);
+		log.info("Deleting '{}'", path);
 		try {
 			if (path.toFile().exists()) {
 				Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
@@ -67,7 +68,7 @@ public class DeleteTask extends Thread {
 				});
 			}
 		} catch (final IOException e) {
-			LOGGER.warn("Error while deleting '{}'", path, e);
+			log.warn("Error while deleting '{}'", path, e);
 		}
 	}
 }

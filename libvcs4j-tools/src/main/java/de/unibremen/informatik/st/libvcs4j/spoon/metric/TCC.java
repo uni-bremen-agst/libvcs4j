@@ -166,7 +166,7 @@ public class TCC extends DecimalGatherer {
 				.map(CtFieldReference::getDeclaration)
 				.ifPresent(field -> {
 					final CtType type = invocation.getParent(CtType.class);
-					final CtMethod met =invocation.getParent(CtMethod.class);
+					final CtMethod met = invocation.getParent(CtMethod.class);
 					typeInfo.get(type).computeIfAbsent(
 							met, __ -> new HashSet<>()).add(field);
 				});

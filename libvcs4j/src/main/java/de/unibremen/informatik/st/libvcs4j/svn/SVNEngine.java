@@ -41,7 +41,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -185,11 +184,10 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 				SUPPORTED_PROTOCOLS.test(pRepository),
 				"Unsupported protocol: '%s'", pRepository);
 		if (FILE_PROTOCOL.test(pRepository)) {
-			final String repository = pRepository.substring(7);
-			final Path path = Paths.get(repository).toAbsolutePath();
-			IllegalRepositoryException.isTrue(Files.isDirectory(path),
+			final File file = new File(pRepository.substring(7));
+			IllegalRepositoryException.isTrue(file.isDirectory(),
 					"'%s' is not a directory", pRepository);
-			IllegalRepositoryException.isTrue(Files.isReadable(path),
+			IllegalRepositoryException.isTrue(file.canRead(),
 					"'%s' is not readable", pRepository);
 		}
 		return normalizePath(pRepository);
@@ -204,7 +202,7 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 	@Override
 	protected Path validateMapTarget(final Path pTarget) {
 		Validate.notNull(pTarget);
-		IllegalTargetException.isTrue(!Files.exists(pTarget),
+		IllegalTargetException.isTrue(!pTarget.toFile().exists(),
 				"'%s' already exists", pTarget);
 		IllegalTargetException.isTrue(Files.isWritable(pTarget.getParent()),
 				"Parent of '%s' is not writable", pTarget);
@@ -285,15 +283,15 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 		try {
 			final SVNURL inputUrl = createSVNURL(getInput());
 			final SvnTarget input = SvnTarget.fromURL(inputUrl);
-			final SvnLog log = factory.createLog();
-			log.addRange(SvnRevisionRange.create(from, to));
-			log.setSingleTarget(input);
-			log.setReceiver((__, entry) -> {
+			final SvnLog svnLog = factory.createLog();
+			svnLog.addRange(SvnRevisionRange.create(from, to));
+			svnLog.setSingleTarget(input);
+			svnLog.setReceiver((__, entry) -> {
 				if (entry.getRevision() != 0) {
 					revs.add(String.valueOf(entry.getRevision()));
 				}
 			});
-			log.run();
+			svnLog.run();
 		} catch (final SVNException e) {
 			// Avoid file not found exception which is thrown if there is not
 			// a single revision for `root` available. Return an empty
@@ -541,10 +539,10 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 					createSVNURL(getRepository()), revision);
 			final CommitImpl commit = new CommitImpl();
 
-			final SvnLog log = factory.createLog();
-			log.addRange(SvnRevisionRange.create(revision, revision));
-			log.setSingleTarget(input);
-			log.setReceiver((__, entry) -> {
+			final SvnLog svnLog = factory.createLog();
+			svnLog.addRange(SvnRevisionRange.create(revision, revision));
+			svnLog.setSingleTarget(input);
+			svnLog.setReceiver((__, entry) -> {
 				final String author = entry.getAuthor() == null
 						? "(no author)" : entry.getAuthor();
 				commit.setAuthor(author);
@@ -557,7 +555,7 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 							String.valueOf(entry.getRevision() - 1)));
 				}
 			});
-			log.run();
+			svnLog.run();
 
 			return commit;
 		} catch (final SVNException e) {

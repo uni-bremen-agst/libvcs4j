@@ -21,17 +21,17 @@ public class PMDDetectionResult {
 	/**
 	 * The separator used in CSV exports.
 	 */
-	private final static String SEPARATOR = ";";
+	private static final String SEPARATOR = ";";
 
 	/**
 	 * The new line character used in CSV exports.
 	 */
-	private final static char NEW_LINE = '\n';
+	private static final char NEW_LINE = '\n';
 
 	/**
 	 * The header of the revision column used in CSV exports.
 	 */
-	private final static String REVISION_HEADER = "id";
+	private static final String REVISION_HEADER = "id";
 
 	/**
 	 * Stores the detection results. Maps the id of a revision
