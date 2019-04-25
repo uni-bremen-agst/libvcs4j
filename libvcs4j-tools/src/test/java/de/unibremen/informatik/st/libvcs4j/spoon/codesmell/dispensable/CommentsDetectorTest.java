@@ -57,23 +57,17 @@ public class CommentsDetectorTest {
 		launcher.addInputResource(folder.getRoot().getAbsolutePath());
 		CtModel model = launcher.buildModel();
 
-		CommentsDetector cmDetector = new CommentsDetector(revision);
+		CommentsDetector cmDetector = new CommentsDetector(revision,
+				5,
+				BigDecimal.valueOf(0.4));
 		cmDetector.scan(model);
 		List<CodeSmell> codeSmells = cmDetector.getCodeSmells();
 
-		assertThat(codeSmells).hasSize(2);
+		assertThat(codeSmells).hasSize(1);
 		CodeSmell codeSmell = codeSmells.get(0);
 		assertThat(codeSmell.getSignature())
-				.isEqualTo(Optional.of("Comments()"));
-		VCSFile.Range range = codeSmell.getRanges().get(0);
-		assertThat(range.getBegin().getLine()).isEqualTo(3);
-		assertThat(range.getBegin().getColumn()).isEqualTo(5);
-		assertThat(range.getEnd().getLine()).isEqualTo(14);
-		assertThat(range.getEnd().getColumn()).isEqualTo(5);
-		codeSmell = codeSmells.get(1);
-		assertThat(codeSmell.getSignature())
 				.isEqualTo(Optional.of("Comments#method(java.lang.String)"));
-		range = codeSmell.getRanges().get(0);
+		VCSFile.Range range = codeSmell.getRanges().get(0);
 		assertThat(range.getBegin().getLine()).isEqualTo(23);
 		assertThat(range.getBegin().getColumn()).isEqualTo(5);
 		assertThat(range.getEnd().getLine()).isEqualTo(47);
