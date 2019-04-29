@@ -241,7 +241,10 @@ public class Metrics {
 				// while loop
 						type == ETokenType.WHILE ||
 				// try block
-						type == ETokenType.TRY;
+						type == ETokenType.TRY ||
+				// switch-case
+						type == ETokenType.CASE ||
+						type == ETokenType.CASE_DEFAULT;
 	}
 
 	/**
