@@ -160,7 +160,7 @@ public interface Mappable<T> {
 			final Iterator<VCSFile.Range> it = otherRanges.iterator();
 			while (it.hasNext()) {
 				final VCSFile.Range or = it.next();
-				// Do not reuse or in case of a match.
+				// Do not reuse in case of a match.
 				if (VCSFile.Range.RELATIVE_PATH_PREDICATE.test(tr, or)) {
 					it.remove();
 					break;
