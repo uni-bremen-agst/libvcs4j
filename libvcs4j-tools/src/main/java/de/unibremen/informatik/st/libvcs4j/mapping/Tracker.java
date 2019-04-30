@@ -2,14 +2,24 @@ package de.unibremen.informatik.st.libvcs4j.mapping;
 
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.Validate;
+import lombok.Data;
+import lombok.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class Tracker<T> {
+
+	/**
+	 * The logger of this class.
+	 */
+	private static final Logger log = LoggerFactory.getLogger(Tracker.class);
 
 	/**
 	 * The lifespans managed by this tracker.
@@ -26,6 +36,10 @@ public class Tracker<T> {
 	 */
 	private Map<Mappable<T>, Lifespan<T>> mappables = new IdentityHashMap<>();
 
+	public List<Lifespan<T>> getLifespans() {
+		return new ArrayList<>(lifespans);
+	}
+
 	/**
 	 * Adds the given mapping result and updates the lifespans of this tracker
 	 * accordingly.
@@ -35,103 +49,103 @@ public class Tracker<T> {
 	 * @throws NullPointerException
 	 * 		If {@code result} is {@code null}.
 	 */
-	public void add(final Mapping.Result<T> result)
-			throws NullPointerException {
-		Validate.notNull(result);
-		final Map<Mappable<T>, Lifespan<T>> localMappables = new IdentityHashMap<>();
-		final List<Mappable<T>> mappedTo = result.getWithPredecessor();
-
-		if (mappables.isEmpty()) {
-			mappedTo.forEach(to ->
-					convertToEntityAndAddToMap(to,
-							result.getOrdinal(),
-							localMappables));
-		} else {
-			mappedTo.forEach(to -> {
-						final Mappable<T> predecessor =
-								result.getPredecessor(to).get();
-						final Entity<T> last = mappables.get(predecessor).getLast();
-						final int numChanges = incrementNumChanges(predecessor,
-								to,
-								last.getNumChanges());
-						final Entity<T> successor =
-								new Entity<>(to, result.getOrdinal(), numChanges);
-						//just to be sure
-						if (last.getOrdinal() < successor.getOrdinal()) {
-							final Lifespan<T> updated =
-									mappables.get(predecessor).add(successor);
-							localMappables.put(to, updated);
-							if (!lifespans.contains(updated)) {
-								lifespans.add(updated);
-							}
-						}
-
-					});
-		}
-
-		final List<Mappable<T>> startingLifespans = result.getWithoutPredecessor();
-		startingLifespans.forEach(mappable -> convertToEntityAndAddToMap(
-				mappable,
-				result.getOrdinal(),
-				localMappables));
-		mappables = localMappables;
-	}
-
-	/**
-	 * Converts a given mappable to an {@link Entity} and adds it the given map.
-	 * A {@link Lifespan} is created aswell. This method is used as a utility
-	 * method by {@link #add(Mapping.Result)}.
-	 *
-	 * @param mappable
-	 * 		The mappable which should be converted.
-	 * @param ordinal
-	 * 		The ordinal of the entity to create. Corresponds to the value of
-	 * 		{@link Mapping.Result#getOrdinal()}.
-	 * @param map
-	 * 		The map on which the new lifespan an its corresponding
-	 * 		{@link Lifespan} should be put.
-	 */
-	private void convertToEntityAndAddToMap(final Mappable<T> mappable,
-											final int ordinal,
-											final Map<Mappable<T>, Lifespan<T>> map) {
-		final Entity<T> entity = new Entity<>(mappable, ordinal, 1);
-		final Lifespan<T> startingLifespan = new Lifespan<>(entity);
-		lifespans.add(startingLifespan);
-		map.put(mappable, startingLifespan);
-	}
-
-	/**
-	 * Increments the given last number of changes, if there is a change present.
-	 * Otherwise this method just returns {@code lastNumChanges}.
-	 *
-	 * @param predecessor
-	 * 		The predecessor mappable.
-	 * @param successor
-	 *		The successor mappable.
-	 * @param lastNumChanges
-	 * 		The number of changes, that may be incremented.
-	 * @return
-	 * 		The incremented number of changes.
-	 */
-	private int incrementNumChanges(final Mappable<T> predecessor,
-									final Mappable<T> successor,
-									final int lastNumChanges) {
-		for (final VCSFile.Range predRange : predecessor.getRanges()) {
-			for (final VCSFile.Range succRange : successor.getRanges()) {
-				try {
-					if (predRange.getBegin().getOffset()
-							== succRange.getBegin().getOffset()
-							&& predRange.getEnd().getOffset()
-							== succRange.getEnd().getOffset()
-							&& !predRange.readContent().equals(
-									succRange.readContent())) {
-						return lastNumChanges + 1;
-					}
-				} catch (IOException e) {
-					throw new IllegalStateException(e);
+	public void add(@NonNull final Mapping.Result<T> result)
+			throws NullPointerException, IOException {
+		final List<MappableAdd> toAdd = new ArrayList<>();
+		final List<MappableUpdate> toUpdate = new ArrayList<>();
+		result.getTo().forEach(to -> {
+			final Optional<Mappable<T>> pred = result.getPredecessor(to);
+			if (pred.isPresent()) {
+				final Mappable<T> from = pred.get();
+				final Lifespan<T> lifespan = mappables.get(from);
+				if (lifespan == null) {
+					log.warn("Found mappable with predecessor but without corresponding lifespan");
+					toAdd.add(new MappableAdd(to, new Lifespan<>(
+							new Entity<>(to, result.getOrdinal(), 0))));
+				} else {
+					toUpdate.add(new MappableUpdate(lifespan, from, to));
 				}
+			} else {
+				toAdd.add(new MappableAdd(to, new Lifespan<>(
+						new Entity<>(to, result.getOrdinal(), 0))));
 			}
+		});
+
+		final Map<Mappable<T>, Entity<T>> entities = new IdentityHashMap<>();
+		for (MappableUpdate mu : toUpdate) {
+			int numChanges = mu.getLifespan().getLast().getNumChanges();
+			if (contentsDiffer(mu.getFrom(), mu.getTo())) {
+				numChanges++;
+			}
+			final Entity<T> entity = new Entity<>(
+					mu.getTo(), result.getOrdinal(), numChanges);
+			entities.put(mu.getTo(), entity);
 		}
-		return lastNumChanges;
+
+		toAdd.stream().map(MappableAdd::getLifespan).forEach(lifespans::add);
+		toUpdate.forEach(mu -> mu.getLifespan().add(entities.get(mu.getTo())));
+		mappables.clear();
+		toAdd.forEach(ma -> mappables.put(ma.getMappable(), ma.getLifespan()));
+		toUpdate.forEach(mu -> mappables.put(mu.getTo(), mu.getLifespan()));
+	}
+
+	/**
+	 * Returns whether the contents of {@code from} and {@code to} differ.
+	 *
+	 * @param from
+	 * 		The predecessor of {@code to}.
+	 * @param to
+	 * 		The successor of {@code from}.
+	 * @return
+	 * 		{@code true} if the contents of {@code from} and {@code to} differ,
+	 * 		{@code false} otherwise.
+	 * @throws IOException
+	 * 		If an error occurred while reading the contents of {@code from} and
+	 * 		{@code to} (using {@link VCSFile.Range#readContent()}.
+	 */
+	boolean contentsDiffer(final Mappable<T> from, final Mappable<T> to)
+			throws IOException {
+		final List<VCSFile.Range> fromRanges = from.getRanges();
+		final List<VCSFile.Range> toRanges = to.getRanges();
+		if (fromRanges.size() != toRanges.size()) {
+			return true;
+		}
+
+		final List<String> fromContents = new ArrayList<>();
+		for (final VCSFile.Range range : fromRanges) {
+			fromContents.add(range.readContent());
+		}
+		final List<String> toContents = new ArrayList<>();
+		for (final VCSFile.Range range : toRanges) {
+			toContents.add(range.readContent());
+		}
+
+		for (String fc : fromContents) {
+			final int idx = toContents.indexOf(fc);
+			if (idx < 0) {
+				return true;
+			}
+			toContents.remove(idx);
+		}
+		Validate.validateState(toContents.isEmpty());
+		return false;
+	}
+
+	@Data
+	private class MappableAdd {
+		@NonNull
+		private final Mappable<T> mappable;
+		@NonNull
+		private final Lifespan<T> lifespan;
+	}
+
+	@Data
+	private class MappableUpdate {
+		@NonNull
+		private final Lifespan<T> lifespan;
+		@NonNull
+		private final Mappable<T> from;
+		@NonNull
+		private final Mappable<T> to;
 	}
 }
