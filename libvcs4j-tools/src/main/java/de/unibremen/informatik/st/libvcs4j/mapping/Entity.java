@@ -4,6 +4,7 @@ import de.unibremen.informatik.st.libvcs4j.Revision;
 import de.unibremen.informatik.st.libvcs4j.RevisionRange;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.Validate;
+import lombok.Data;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -182,6 +183,7 @@ public class Entity<T> {
 	 * values of this class correspond to the line, column, and offset values
 	 * of {@link VCSFile.Range}.
 	 */
+	@Data
 	public static class Location {
 
 		/**
@@ -236,76 +238,6 @@ public class Entity<T> {
 			endLine   = range.getEnd().getLine();
 			endColumn = range.getEnd().getColumn();
 			endOffset = range.getEnd().getOffset();
-		}
-
-		/**
-		 * Returns the referenced file of this location.
-		 *
-		 * @return
-		 * 		The referenced file of this location.
-		 */
-		public Path getFile() {
-			return file;
-		}
-
-		/**
-		 * Returns the begin line of this location.
-		 *
-		 * @return
-		 * 		The begin line of this location.
-		 */
-		public int getBeginLine() {
-			return beginLine;
-		}
-
-		/**
-		 * Returns the begin column of this location.
-		 *
-		 * @return
-		 * 		The begin column of this location.
-		 */
-		public int getBeginColumn() {
-			return beginColumn;
-		}
-
-		/**
-		 * Returns the begin offset of this location.
-		 *
-		 * @return
-		 * 		The begin offset of this location.
-		 */
-		public int getBeginOffset() {
-			return beginOffset;
-		}
-
-		/**
-		 * Returns the end line of this location.
-		 *
-		 * @return
-		 * 		The end line of this location.
-		 */
-		public int getEndLine() {
-			return endLine;
-		}
-
-		/**
-		 * Returns the end column of this location.
-		 *
-		 * @return
-		 * 		The end column of this location.
-		 */
-		public int getEndColumn() {
-			return endColumn;
-		}
-
-		/**
-		 * Returns the end offset of this location.
-		 *
-		 * @return
-		 * 		The end offset of this location.
-		 */
-		public int getEndOffset() {
-			return endOffset;
 		}
 	}
 }
