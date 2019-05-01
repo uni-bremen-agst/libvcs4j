@@ -36,7 +36,7 @@ public class TrackerGSONTest {
 
 	@Test
 	public void noMoveInChangedFile() throws IOException {
-		String suffix = "google/gson/protobuf/ProtoTypeAdapter.java";
+		String suffix = "ProtoTypeAdapter.java";
 
 		VCSEngine engine = VCSEngineBuilder
 				.ofGit(repository.toString())
@@ -72,7 +72,7 @@ public class TrackerGSONTest {
 
 	@Test
 	public void noMoveInUnchangedFile() throws IOException {
-		String suffix = "src/main/java/com/google/gson/JsonPrimitive.java";
+		String suffix = "JsonPrimitive.java";
 
 		VCSEngine engine = VCSEngineBuilder
 				.ofGit(repository.toString())
@@ -108,7 +108,7 @@ public class TrackerGSONTest {
 
 	@Test
 	public void moveWithoutChange() throws IOException {
-		String suffix = "google/gson/protobuf/ProtoTypeAdapter.java";
+		String suffix = "ProtoTypeAdapter.java";
 
 		VCSEngine engine = VCSEngineBuilder
 				.ofGit(repository.toString())
@@ -143,7 +143,7 @@ public class TrackerGSONTest {
 
 	@Test
 	public void moveWithChange() throws IOException {
-		String suffix = "google/gson/protobuf/ProtoTypeAdapter.java";
+		String suffix = "ProtoTypeAdapter.java";
 
 		VCSEngine engine = VCSEngineBuilder
 				.ofGit(repository.toString())
