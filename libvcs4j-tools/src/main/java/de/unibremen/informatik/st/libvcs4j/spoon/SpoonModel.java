@@ -15,6 +15,7 @@ import spoon.Launcher;
 import spoon.reflect.CtModel;
 import spoon.reflect.cu.CompilationUnit;
 import spoon.reflect.cu.SourcePosition;
+import spoon.reflect.cu.position.NoSourcePosition;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtPackage;
 import spoon.reflect.declaration.CtType;
@@ -161,6 +162,9 @@ public class SpoonModel {
 			// remove the changed classes from spoon model
 			removeChangedTypes(notCompiled);
 
+			// cleanup package tree.
+			removeEmptyPackages(model.getRootPackage());
+
 			launcher.addInputResource(createInputSource(notCompiled));
 			launcher.getModelBuilder().addCompilationUnitFilter(path ->
 					!notCompiled.contains(toCanonicalPath(path)));
@@ -298,16 +302,32 @@ public class SpoonModel {
 				.map(factory::removeFromCache)
 				.forEach(cu -> {
 					cu.getBinaryFiles().forEach(File::delete);
-					cu.getDeclaredTypes().forEach(type -> {
-						final CtPackage pkg = type.getPackage();
-						type.delete();
-						if (pkg.getTypes().isEmpty()
-								&& pkg.getPackages().isEmpty()
-								&& !pkg.isUnnamedPackage()) {
-							pkg.delete();
-						}
-					});
+					cu.getDeclaredTypes().forEach(CtElement::delete);
 				});
+	}
+
+	/**
+	 * Recursively removes all empty packages.
+	 *
+	 * @param pkg
+	 * 		The root package of the package tree to process.
+	 */
+	private void removeEmptyPackages(final CtPackage pkg) {
+		// Avoid ConcurrentModificationException.
+		final Set<CtPackage> pkgs = new HashSet<>(pkg.getPackages());
+		pkgs.forEach(this::removeEmptyPackages);
+		if (pkg.getTypes().isEmpty()
+				&& pkg.getPackages().isEmpty()
+				&& !pkg.isUnnamedPackage()) {
+			final SourcePosition pos = pkg.getPosition();
+			if (pos instanceof NoSourcePosition) {
+				// Does not contain a 'package-info.java' file.
+				pkg.delete();
+			} else if (pos.getFile() != null && !pos.getFile().exists()) {
+				// Contained a 'package-info.java' file which has been removed.
+				pkg.delete();
+			}
+		}
 	}
 
 	/**
