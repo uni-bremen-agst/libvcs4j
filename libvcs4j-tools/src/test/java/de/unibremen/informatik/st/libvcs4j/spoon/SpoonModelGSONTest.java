@@ -119,8 +119,7 @@ public class SpoonModelGSONTest {
 		assertThat(output.resolve(p4).toFile().delete()).isTrue();
 		when(r4.getRevision()).thenReturn(r1.getRevision());
 		when(r4.getFileChanges()).thenReturn(singletonList(new RemoveMock(
-				r1.getRevision(),
-				"java/com/google/gson/internal/alpha/package-info.java")));
+				r1.getRevision(), p4.toString())));
 		when(r4.getRemovedFiles()).thenCallRealMethod();
 		assertThat(model.update(r4)).isNotNull();
 		assertThat(model.getModel().orElseThrow(AssertionError::new)
