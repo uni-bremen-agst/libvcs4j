@@ -320,11 +320,11 @@ public class SpoonModel {
 				&& pkg.getPackages().isEmpty()
 				&& !pkg.isUnnamedPackage()) {
 			final SourcePosition pos = pkg.getPosition();
-			if (pos instanceof NoSourcePosition) {
-				// Does not contain a 'package-info.java' file.
-				pkg.delete();
-			} else if (pos.getFile() != null && !pos.getFile().exists()) {
-				// Contained a 'package-info.java' file which has been removed.
+			// Does not contain a 'package-info.java' file.
+			if (pos instanceof NoSourcePosition ||
+					// Contained a 'package-info.java' file which has been
+					// removed in this update step.
+					(pos.getFile() != null && !pos.getFile().exists())) {
 				pkg.delete();
 			}
 		}
