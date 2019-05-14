@@ -1019,22 +1019,27 @@ public interface VCSFile extends VCSModelElement {
 		final List<String> lines = readLinesWithEOL();
 
 		int line = 1;
-		int offs = offset;
+		int offsetInLine = offset;
 		while (line <= lines.size()) {
 			final String lineStr = lines.get(line - 1);
 			final int lineLen = lineStr.length();
-			if (lineLen <= offs) {
+			if (lineLen <= offsetInLine) {
 				line++;
-				offs -= lineLen;
+				offsetInLine -= lineLen;
 			} else {
-				final String offsStr = lineStr.substring(0, offs + 1);
-				final int column = offsStr.length() +
-						NUMBER_OF_TABS.applyAsInt(offsStr) * (tabSize - 1);
-				return offsStr.endsWith("\n") || offsStr.endsWith("\r")
-							|| offsStr.endsWith("\r\n")
-						? Optional.empty()
-						: Optional.of(new Position(
-								this, line, column, offset, tabSize));
+				String offsetStr = lineStr.substring(0, offsetInLine + 1);
+				if (offsetStr.endsWith("\n") || offsetStr.endsWith("\r")) {
+					return Optional.empty();
+				}
+				offsetStr = offsetStr.substring(0, offsetStr.length() - 1);
+				int column = 1;
+				for (char c : offsetStr.toCharArray()) {
+					column = c == '\t'
+							? ( (column-1)/tabSize + 1 ) * tabSize + 1
+							: column + 1;
+				}
+				return Optional.of(new Position(
+						this, line, column, offset, tabSize));
 			}
 		}
 		return Optional.empty();
@@ -1091,7 +1096,7 @@ public interface VCSFile extends VCSModelElement {
 				.sum();
 		for (int i = 0, c = 1; c < column; i++, c++) {
 			if (lineStr.charAt(i) == '\t') {
-				c += tabSize - 2;
+				c += tabSize - 1;
 			}
 			offset++;
 		}

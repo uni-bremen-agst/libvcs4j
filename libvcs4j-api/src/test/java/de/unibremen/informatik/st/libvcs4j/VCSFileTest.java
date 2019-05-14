@@ -15,6 +15,41 @@ import static org.mockito.Mockito.when;
 
 public class VCSFileTest {
 
+	private static class VCSFileMock implements VCSFile {
+		private final String content;
+
+		public VCSFileMock(final String content) {
+			this.content = Validate.notNull(content);
+		}
+
+		@Override
+		public Optional<Charset> guessCharset() {
+			return Optional.of(StandardCharsets.UTF_8);
+		}
+
+		@Override
+		public byte[] readAllBytes() {
+			return content.getBytes(StandardCharsets.UTF_8);
+		}
+
+		@Override
+		public String getRelativePath() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public Revision getRevision() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public VCSEngine getVCSEngine() {
+			throw new UnsupportedOperationException();
+		}
+	}
+
+
+
 	@Test
 	public void readLinesWithEOLUnixEOL() throws IOException {
 		VCSFile file = new VCSFileMock("first line\nsecond line\n");
@@ -94,23 +129,44 @@ public class VCSFileTest {
 		assertThat(file.isBinary()).isFalse();
 	}
 
-	@Test
-	public void positionOfOffset() throws IOException {
-		VCSFile file = new VCSFileMock("first line\nsecond line");
 
-		VCSFile.Position p1 = file.positionOf(4, 4)
+
+	@Test
+	public void positionOfOffsetRegularCase() throws IOException {
+		VCSFile file = new VCSFileMock("foobar");
+
+		VCSFile.Position p1 = file.positionOf(3, 4)
 				.orElseThrow(AssertionError::new);
-		assertThat(p1.getOffset()).isEqualTo(4);
+		assertThat(p1.getOffset()).isEqualTo(3);
 		assertThat(p1.getLine()).isEqualTo(1);
-		assertThat(p1.getColumn()).isEqualTo(5);
+		assertThat(p1.getColumn()).isEqualTo(4);
 		assertThat(p1.getTabSize()).isEqualTo(4);
 
-		VCSFile.Position p2 = file.positionOf(14, 4)
+		VCSFile.Position p2 = file.positionOf(5, 8)
 				.orElseThrow(AssertionError::new);
-		assertThat(p2.getOffset()).isEqualTo(14);
-		assertThat(p2.getLine()).isEqualTo(2);
-		assertThat(p2.getColumn()).isEqualTo(4);
-		assertThat(p2.getTabSize()).isEqualTo(4);
+		assertThat(p2.getOffset()).isEqualTo(5);
+		assertThat(p2.getLine()).isEqualTo(1);
+		assertThat(p2.getColumn()).isEqualTo(6);
+		assertThat(p2.getTabSize()).isEqualTo(8);
+	}
+
+	@Test
+	public void positionOfOffsetLastChar() throws IOException {
+		VCSFile file = new VCSFileMock("foobar");
+
+		VCSFile.Position p1 = file.positionOf(5, 4)
+				.orElseThrow(AssertionError::new);
+		assertThat(p1.getOffset()).isEqualTo(5);
+		assertThat(p1.getLine()).isEqualTo(1);
+		assertThat(p1.getColumn()).isEqualTo(6);
+		assertThat(p1.getTabSize()).isEqualTo(4);
+		assertThat(file.readeContent().charAt(p1.getOffset()))
+				.isEqualTo('r');
+	}
+
+	@Test
+	public void positionOfOffsetMultipleLine() throws IOException {
+		VCSFile file = new VCSFileMock("first line\nsecond line");
 
 		VCSFile.Position p3 = file.positionOf(11, 4)
 				.orElseThrow(AssertionError::new);
@@ -118,6 +174,63 @@ public class VCSFileTest {
 		assertThat(p3.getLine()).isEqualTo(2);
 		assertThat(p3.getColumn()).isEqualTo(1);
 		assertThat(p3.getTabSize()).isEqualTo(4);
+
+		VCSFile.Position p2 = file.positionOf(14, 8)
+				.orElseThrow(AssertionError::new);
+		assertThat(p2.getOffset()).isEqualTo(14);
+		assertThat(p2.getLine()).isEqualTo(2);
+		assertThat(p2.getColumn()).isEqualTo(4);
+		assertThat(p2.getTabSize()).isEqualTo(8);
+	}
+
+	@Test
+	public void positionOfOffsetWithTabPrefix() throws IOException {
+		VCSFile file = new VCSFileMock("\tabc");
+
+		VCSFile.Position p1 = file.positionOf(1, 4)
+				.orElseThrow(AssertionError::new);
+		assertThat(p1.getOffset()).isEqualTo(1);
+		assertThat(p1.getLine()).isEqualTo(1);
+		assertThat(p1.getColumn()).isEqualTo(5);
+		assertThat(p1.getTabSize()).isEqualTo(4);
+
+		VCSFile.Position p2 = file.positionOf(1, 8)
+				.orElseThrow(AssertionError::new);
+		assertThat(p2.getOffset()).isEqualTo(1);
+		assertThat(p2.getLine()).isEqualTo(1);
+		assertThat(p2.getColumn()).isEqualTo(9);
+		assertThat(p2.getTabSize()).isEqualTo(8);
+	}
+
+	@Test
+	public void positionOfOffsetWithTabInfix() throws IOException {
+		VCSFile file = new VCSFileMock("a\tbb\tc");
+
+		VCSFile.Position p1 = file.positionOf(2, 4)
+				.orElseThrow(AssertionError::new);
+		assertThat(p1.getOffset()).isEqualTo(2);
+		assertThat(p1.getLine()).isEqualTo(1);
+		assertThat(p1.getColumn()).isEqualTo(5);
+		assertThat(p1.getTabSize()).isEqualTo(4);
+
+		VCSFile.Position p2 = file.positionOf(5, 8)
+				.orElseThrow(AssertionError::new);
+		assertThat(p2.getOffset()).isEqualTo(5);
+		assertThat(p2.getLine()).isEqualTo(1);
+		assertThat(p2.getColumn()).isEqualTo(17);
+		assertThat(p2.getTabSize()).isEqualTo(8);
+	}
+
+	@Test
+	public void positionOfOffsetMultipleTabs() throws IOException {
+		VCSFile file = new VCSFileMock("abc\t\tdef");
+
+		VCSFile.Position p1 = file.positionOf(5, 4)
+				.orElseThrow(AssertionError::new);
+		assertThat(p1.getOffset()).isEqualTo(5);
+		assertThat(p1.getLine()).isEqualTo(1);
+		assertThat(p1.getColumn()).isEqualTo(9);
+		assertThat(p1.getTabSize()).isEqualTo(4);
 	}
 
 	@Test
@@ -135,6 +248,8 @@ public class VCSFileTest {
 		assertThat(file.positionOf(18, 4)).isEmpty();
 		assertThat(file.positionOf(19, 4)).isEmpty();
 	}
+
+
 
 	@Test
 	public void positionOfLineAndColumn() throws IOException {
@@ -241,38 +356,5 @@ public class VCSFileTest {
 		assertThat(position.getLine()).isEqualTo(1);
 		assertThat(position.getColumn()).isEqualTo(118);
 		assertThat(position.getTabSize()).isEqualTo(4);
-	}
-
-	private static class VCSFileMock implements VCSFile {
-		private final String content;
-
-		public VCSFileMock(final String content) {
-			this.content = Validate.notNull(content);
-		}
-
-		@Override
-		public Optional<Charset> guessCharset() {
-			return Optional.of(StandardCharsets.UTF_8);
-		}
-
-		@Override
-		public byte[] readAllBytes() {
-			return content.getBytes(StandardCharsets.UTF_8);
-		}
-
-		@Override
-		public String getRelativePath() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public Revision getRevision() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public VCSEngine getVCSEngine() {
-			throw new UnsupportedOperationException();
-		}
 	}
 }
