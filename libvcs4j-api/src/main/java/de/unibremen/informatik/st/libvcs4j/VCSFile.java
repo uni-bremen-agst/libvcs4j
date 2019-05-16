@@ -1080,27 +1080,25 @@ public interface VCSFile extends VCSModelElement {
 
 		final int lineIdx = line - 1;
 		final String lineStr = lines.get(lineIdx);
-		final int lineLen; // Length of line excluding EOL.
-		// Use scanner to remove EOL.
-		try (final Scanner scanner = new Scanner(lineStr)) {
-			lineLen = scanner.nextLine().length() +
-					NUMBER_OF_TABS.applyAsInt(lineStr) * (tabSize - 1);
-		}
-		if (column > lineLen) {
-			return Optional.empty();
-		}
-
-		int offset = lines.subList(0, lineIdx).stream()
-				.map(String::length)
-				.mapToInt(Integer::intValue)
-				.sum();
-		for (int i = 0, c = 1; c < column; i++, c++) {
-			if (lineStr.charAt(i) == '\t') {
-				c += tabSize - 1;
+		int col = 1;
+		for (int offsetInLine = 0; offsetInLine < lineStr.length();
+				offsetInLine++) {
+			final char c = lineStr.charAt(offsetInLine);
+			if (c == '\n' || c == '\r' || col > column) {
+				return Optional.empty();
+			} else if (col == column) {
+				final int offset = offsetInLine +
+						lines.subList(0, lineIdx).stream()
+								.map(String::length)
+								.mapToInt(Integer::intValue)
+								.sum();
+				return Optional.of(new Position(
+						this, line, column, offset, tabSize));
 			}
-			offset++;
+			col = c == '\t'
+					? ( (col-1)/tabSize + 1 ) * tabSize + 1
+					: col + 1;
 		}
-		return Optional.of(new Position(
-				this, line, column, offset, tabSize));
+		return Optional.empty();
 	}
 }

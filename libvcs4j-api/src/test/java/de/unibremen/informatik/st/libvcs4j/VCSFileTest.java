@@ -252,88 +252,85 @@ public class VCSFileTest {
 
 
 	@Test
-	public void positionOfLineAndColumn() throws IOException {
+	public void positionOfLineAndColumnRegularCase() throws IOException {
 		VCSFile file = new VCSFileMock("first line\nsecond line");
 
 		VCSFile.Position p1 = file.positionOf(1, 6, 4)
 				.orElseThrow(AssertionError::new);
 		assertThat(p1.getLine()).isEqualTo(1);
 		assertThat(p1.getColumn()).isEqualTo(6);
-		assertThat(p1.getTabSize()).isEqualTo(4);
 		assertThat(p1.getOffset()).isEqualTo(5);
+		assertThat(p1.getTabSize()).isEqualTo(4);
 
-		VCSFile.Position p2 = file.positionOf(2, 2, 4)
+		VCSFile.Position p2 = file.positionOf(2, 2, 8)
 				.orElseThrow(AssertionError::new);
 		assertThat(p2.getLine()).isEqualTo(2);
 		assertThat(p2.getColumn()).isEqualTo(2);
-		assertThat(p2.getTabSize()).isEqualTo(4);
 		assertThat(p2.getOffset()).isEqualTo(12);
+		assertThat(p2.getTabSize()).isEqualTo(8);
+	}
 
-		assertThat(file.positionOf(1, 11, 4)).isEmpty();
-		assertThat(file.positionOf(2, 12, 4)).isEmpty();
+	@Test
+	public void positionOfLineAndColumnOutOfColumn() throws IOException {
+		VCSFile file = new VCSFileMock("foobar\nbar");
+		assertThat(file.positionOf(1, 7, 4)).isEmpty();
+		assertThat(file.positionOf(2, 4, 4)).isEmpty();
+	}
+
+	@Test
+	public void positionOfLineAndColumnWithTabPrefix() throws IOException {
+		VCSFile file = new VCSFileMock("\tabc");
+
+		VCSFile.Position p1 = file.positionOf(1, 5, 4)
+				.orElseThrow(AssertionError::new);
+		assertThat(p1.getLine()).isEqualTo(1);
+		assertThat(p1.getColumn()).isEqualTo(5);
+		assertThat(p1.getOffset()).isEqualTo(1);
+		assertThat(p1.getTabSize()).isEqualTo(4);
+
+		VCSFile.Position p2 = file.positionOf(1, 9, 8)
+				.orElseThrow(AssertionError::new);
+		assertThat(p2.getLine()).isEqualTo(1);
+		assertThat(p2.getColumn()).isEqualTo(9);
+		assertThat(p2.getOffset()).isEqualTo(1);
+		assertThat(p2.getTabSize()).isEqualTo(8);
+	}
+
+	@Test
+	public void positionOfLineAndColumnWithTabInfix() throws IOException {
+		VCSFile file = new VCSFileMock("a\tbb\tc");
+
+		VCSFile.Position p1 = file.positionOf(1, 5, 4)
+				.orElseThrow(AssertionError::new);
+		assertThat(p1.getLine()).isEqualTo(1);
+		assertThat(p1.getColumn()).isEqualTo(5);
+		assertThat(p1.getOffset()).isEqualTo(2);
+		assertThat(p1.getTabSize()).isEqualTo(4);
+
+		VCSFile.Position p2 = file.positionOf(1, 17, 8)
+				.orElseThrow(AssertionError::new);
+		assertThat(p2.getLine()).isEqualTo(1);
+		assertThat(p2.getColumn()).isEqualTo(17);
+		assertThat(p2.getOffset()).isEqualTo(5);
+		assertThat(p2.getTabSize()).isEqualTo(8);
+	}
+
+	@Test
+	public void positionOfLineAndColumnMultipleTabs() throws IOException {
+		VCSFile file = new VCSFileMock("abc\t\tdef");
+
+		VCSFile.Position p1 = file.positionOf(1, 9, 4)
+				.orElseThrow(AssertionError::new);
+		assertThat(p1.getLine()).isEqualTo(1);
+		assertThat(p1.getColumn()).isEqualTo(9);
+		assertThat(p1.getOffset()).isEqualTo(5);
+		assertThat(p1.getTabSize()).isEqualTo(4);
 	}
 
 	@Test
 	public void positionOfLineAndColumnEmptyString() throws IOException {
 		VCSFile file = new VCSFileMock("");
 		assertThat(file.positionOf(1, 1, 4)).isEmpty();
-	}
-
-	@Test
-	public void positionOfLineAndColumnDifferentTabSizes() throws IOException {
-		VCSFile file = mock(VCSFile.class);
-		when(file.readeContent()).thenReturn(
-				"foo\tbar\tfoobar");
-		when(file.readLinesWithEOL()).thenCallRealMethod();
-
-		when(file.positionOf(1, 9, 4)).thenCallRealMethod();
-		when(file.positionOf(1, 13, 8)).thenCallRealMethod();
-		when(file.positionOf(1, 1, 1)).thenCallRealMethod();
-		when(file.positionOf(1, 2, 1)).thenCallRealMethod();
-		when(file.positionOf(1, 3, 1)).thenCallRealMethod();
-		when(file.positionOf(1, 13, 2)).thenCallRealMethod();
-
-		VCSFile.Position p1 = file.positionOf(1, 9, 4)
-				.orElseThrow(AssertionError::new);
-		assertThat(p1.getLine()).isEqualTo(1);
-		assertThat(p1.getColumn()).isEqualTo(9);
-		assertThat(p1.getTabSize()).isEqualTo(4);
-		assertThat(p1.getOffset()).isEqualTo(5);
-
-		VCSFile.Position p2 = file.positionOf(1, 13, 8)
-				.orElseThrow(AssertionError::new);
-		assertThat(p2.getLine()).isEqualTo(1);
-		assertThat(p2.getColumn()).isEqualTo(13);
-		assertThat(p2.getTabSize()).isEqualTo(8);
-		assertThat(p2.getOffset()).isEqualTo(5);
-
-		VCSFile.Position p3 = file.positionOf(1, 1, 1)
-				.orElseThrow(AssertionError::new);
-		assertThat(p3.getLine()).isEqualTo(1);
-		assertThat(p3.getColumn()).isEqualTo(1);
-		assertThat(p3.getTabSize()).isEqualTo(1);
-		assertThat(p3.getOffset()).isEqualTo(0);
-
-		VCSFile.Position p4 = file.positionOf(1, 2, 1)
-				.orElseThrow(AssertionError::new);
-		assertThat(p4.getLine()).isEqualTo(1);
-		assertThat(p4.getColumn()).isEqualTo(2);
-		assertThat(p4.getTabSize()).isEqualTo(1);
-		assertThat(p4.getOffset()).isEqualTo(1);
-
-		VCSFile.Position p5 = file.positionOf(1, 3, 1)
-				.orElseThrow(AssertionError::new);
-		assertThat(p5.getLine()).isEqualTo(1);
-		assertThat(p5.getColumn()).isEqualTo(3);
-		assertThat(p5.getTabSize()).isEqualTo(1);
-		assertThat(p5.getOffset()).isEqualTo(2);
-
-		VCSFile.Position p6 = file.positionOf(1, 13, 2)
-				.orElseThrow(AssertionError::new);
-		assertThat(p6.getLine()).isEqualTo(1);
-		assertThat(p6.getColumn()).isEqualTo(13);
-		assertThat(p6.getTabSize()).isEqualTo(2);
-		assertThat(p6.getOffset()).isEqualTo(11);
 	}
 
 	@Test
@@ -347,7 +344,21 @@ public class VCSFileTest {
 	}
 
 	@Test
-	public void positionOfLineAndColumnBugfix001() throws IOException {
+	public void positionOfLineAndColumnBugfixOffset() throws IOException {
+		VCSFile file = new VCSFileMock("ab\tcd\tef\tgh");
+
+		assertThat(file.positionOf(1, 15, 4)).isEmpty();
+
+		VCSFile.Position p1 = file.positionOf(1, 14, 4)
+				.orElseThrow(AssertionError::new);
+		assertThat(p1.getLine()).isEqualTo(1);
+		assertThat(p1.getColumn()).isEqualTo(14);
+		assertThat(p1.getOffset()).isEqualTo(10);
+		assertThat(p1.getTabSize()).isEqualTo(4);
+	}
+
+	@Test
+	public void positionOfLineAndColumnBugfixLength() throws IOException {
 		VCSFile file = new VCSFileMock(
 				"\t\t\t\t\t\tif (!method.getParameters().get(i).getType().equals(ctMethod.getParameters().get(i).getType())) {\n");
 
@@ -355,6 +366,7 @@ public class VCSFileTest {
 				.orElseThrow(AssertionError::new);
 		assertThat(position.getLine()).isEqualTo(1);
 		assertThat(position.getColumn()).isEqualTo(118);
+		assertThat(position.getOffset()).isEqualTo(99);
 		assertThat(position.getTabSize()).isEqualTo(4);
 	}
 }
