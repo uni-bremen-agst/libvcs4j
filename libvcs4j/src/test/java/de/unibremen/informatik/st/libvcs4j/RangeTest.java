@@ -120,4 +120,20 @@ public class RangeTest {
 				1251, 7, 1252, 5, 2);
 		assertThat(range.apply(change)).isEmpty();
 	}
+
+	@Test
+	public void applyFrenchRepublicanDate_2_3() throws IOException {
+		FileChange change = createFileChangeFromResource(
+				"/diff/FrenchRepublicanDate.java.2",
+				"/diff/FrenchRepublicanDate.java.3");
+
+		VCSFile.Range range = new VCSFile.Range(
+				change.getNewFile().orElseThrow(AssertionError::new),
+				487, 5203, 4);
+
+		assertThat(range.getBegin().getLine()).isEqualTo(28);
+		assertThat(range.getBegin().getColumn()).isEqualTo(3);
+		assertThat(range.getEnd().getLine()).isEqualTo(194);
+		assertThat(range.getEnd().getColumn()).isEqualTo(4);
+	}
 }
