@@ -30,7 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class SpoonModelTest {
+public class SpoonModelBuilderTest {
 
 	private static final String ORIGINAL_FILES =
 			"/incremental/original-files/";
@@ -49,7 +49,7 @@ public class SpoonModelTest {
 	/**
 	 * The test subject.
 	 */
-	private SpoonModel spoonModel;
+	private SpoonModelBuilder modelBuilder;
 
 	@Before
 	public void init() throws IOException {
@@ -73,19 +73,19 @@ public class SpoonModelTest {
 		firstRange = mock(RevisionRange.class);
 		when(firstRange.getRevision()).thenReturn(revision);
 
-		// Setup spoonModel.
-		spoonModel = new SpoonModel();
+		// Setup model builder.
+		modelBuilder = new SpoonModelBuilder();
 	}
 
 	@Test
 	public void updateD() throws IOException, BuildException {
-		byte[] original = save(spoonModel.update(firstRange));
+		byte[] original = save(modelBuilder.update(firstRange).getCtModel());
 
 		updateFile("D.java");
 		VCSFile dFile = new VCSFileMock("D.java");
 		FileChange dChange = new FileChangeMock(dFile, dFile);
 		RevisionRange second = new RevisionRangeMock(singletonList(dChange));
-		byte[] update = save(spoonModel.update(second));
+		byte[] update = save(modelBuilder.update(second).getCtModel());
 
 		CtModel originalModel = load(original);
 		CtModel updatedModel = load(update);
@@ -118,7 +118,7 @@ public class SpoonModelTest {
 	@Test
 	public void removeCAndAddD() throws IOException, BuildException {
 		deleteFile("D.java");
-		byte[] original = save(spoonModel.update(firstRange));
+		byte[] original = save(modelBuilder.update(firstRange).getCtModel());
 
 		deleteFile("C.java");
 		addFile("D.java");
@@ -127,7 +127,7 @@ public class SpoonModelTest {
 		VCSFile dFile = new VCSFileMock("D.java");
 		FileChange dChange = new FileChangeMock(null, dFile);
 		RevisionRange second = new RevisionRangeMock(asList(cChange, dChange));
-		byte[] update = save(spoonModel.update(second));
+		byte[] update = save(modelBuilder.update(second).getCtModel());
 
 		CtModel originalModel = load(original);
 		CtModel updatedModel = load(update);
@@ -158,13 +158,13 @@ public class SpoonModelTest {
 	@Test
 	public void updateTypeOfC() throws IOException, BuildException {
 		deleteFile("D.java");
-		byte[] original = save(spoonModel.update(firstRange));
+		byte[] original = save(modelBuilder.update(firstRange).getCtModel());
 
 		updateFile("C.java");
 		VCSFile cFile = new VCSFileMock("C.java");
 		FileChange cChange = new FileChangeMock(cFile, cFile);
 		RevisionRange second = new RevisionRangeMock(singletonList(cChange));
-		byte[] update = save(spoonModel.update(second));
+		byte[] update = save(modelBuilder.update(second).getCtModel());
 
 		CtModel originalModel = load(original);
 		CtModel updatedModel = load(update);
@@ -202,7 +202,7 @@ public class SpoonModelTest {
 	@Test
 	public void relocateCToD() throws IOException, BuildException {
 		deleteFile("D.java");
-		byte[] original = save(spoonModel.update(firstRange));
+		byte[] original = save(modelBuilder.update(firstRange).getCtModel());
 
 		deleteFile("C.java");
 		addFile("D.java");
@@ -211,7 +211,7 @@ public class SpoonModelTest {
 		VCSFile dFile = new VCSFileMock("D.java");
 		FileChange change = new FileChangeMock(cFile, dFile);
 		RevisionRange second = new RevisionRangeMock(singletonList(change));
-		byte[] update = save(spoonModel.update(second));
+		byte[] update = save(modelBuilder.update(second).getCtModel());
 
 		CtModel originalModel = load(original);
 		CtModel updatedModel = load(update);
@@ -242,7 +242,7 @@ public class SpoonModelTest {
 	@Test
 	public void canonicalPathD() throws IOException, BuildException {
 		deleteFile("D.java");
-		byte[] original = save(spoonModel.update(firstRange));
+		byte[] original = save(modelBuilder.update(firstRange).getCtModel());
 
 		addFile("D.java");
 		String folderName = folder.getRoot().toPath().getName(
@@ -251,7 +251,7 @@ public class SpoonModelTest {
 		VCSFile dFile = new VCSFileMock(dPath);
 		FileChange dChange = new FileChangeMock(null, dFile);
 		RevisionRange second = new RevisionRangeMock(singletonList(dChange));
-		byte[] update = save(spoonModel.update(second));
+		byte[] update = save(modelBuilder.update(second).getCtModel());
 
 		CtModel originalModel = load(original);
 		CtModel updatedModel = load(update);

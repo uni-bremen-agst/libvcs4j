@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class SpoonModelGSONTest {
+public class SpoonModelBuilderGSONTest {
 
 	@Rule
 	public TemporaryFolder folder = new TemporaryFolder();
@@ -50,10 +50,10 @@ public class SpoonModelGSONTest {
 				.withEndIdx(6)
 				.build();
 
-		SpoonModel model = new SpoonModel();
-		model.setIncremental(true);
+		SpoonModelBuilder builder = new SpoonModelBuilder();
+		builder.setIncremental(true);
 		for (RevisionRange range : engine) {
-			assertThat(model.update(range)).isNotNull();
+			assertThat(builder.update(range)).isNotNull();
 		}
 	}
 
@@ -67,8 +67,8 @@ public class SpoonModelGSONTest {
 				.withEndIdx(566)
 				.build();
 
-		SpoonModel model = new SpoonModel();
-		model.setIncremental(true);
+		SpoonModelBuilder builder = new SpoonModelBuilder();
+		builder.setIncremental(true);
 
 		// To raise the NullPointerException deterministically, we need to
 		// delete the following java files one after another. Otherwise,
@@ -79,9 +79,9 @@ public class SpoonModelGSONTest {
 				"alpha");
 
 		RevisionRange r1 = engine.next().orElseThrow(AssertionError::new);
-		assertThat(model.update(r1)).isNotNull();
-		assertThat(model.getModel().orElseThrow(AssertionError::new)
-				.getAllPackages().stream()
+		assertThat(builder.update(r1)).isNotNull();
+		assertThat(builder.getModel().orElseThrow(AssertionError::new)
+				.getCtModel().getAllPackages().stream()
 				.filter(pkg -> pkg.getQualifiedName().endsWith(
 						"com.google.gson.internal.alpha"))
 				.count()).isEqualTo(1);
@@ -93,9 +93,9 @@ public class SpoonModelGSONTest {
 		when(r2.getFileChanges()).thenReturn(singletonList(new RemoveMock(
 				r1.getRevision(), p2.toString())));
 		when(r2.getRemovedFiles()).thenCallRealMethod();
-		assertThat(model.update(r2)).isNotNull();
-		assertThat(model.getModel().orElseThrow(AssertionError::new)
-				.getAllPackages().stream()
+		assertThat(builder.update(r2)).isNotNull();
+		assertThat(builder.getModel().orElseThrow(AssertionError::new)
+				.getCtModel().getAllPackages().stream()
 				.filter(pkg -> pkg.getQualifiedName().endsWith(
 						"com.google.gson.internal.alpha"))
 				.count()).isEqualTo(1);
@@ -107,9 +107,9 @@ public class SpoonModelGSONTest {
 		when(r3.getFileChanges()).thenReturn(singletonList(new RemoveMock(
 				r1.getRevision(), p3.toString())));
 		when(r3.getRemovedFiles()).thenCallRealMethod();
-		assertThat(model.update(r3)).isNotNull();
-		assertThat(model.getModel().orElseThrow(AssertionError::new)
-				.getAllPackages().stream()
+		assertThat(builder.update(r3)).isNotNull();
+		assertThat(builder.getModel().orElseThrow(AssertionError::new)
+				.getCtModel().getAllPackages().stream()
 				.filter(pkg -> pkg.getQualifiedName().endsWith(
 						"com.google.gson.internal.alpha"))
 				.count()).isEqualTo(1);
@@ -121,9 +121,9 @@ public class SpoonModelGSONTest {
 		when(r4.getFileChanges()).thenReturn(singletonList(new RemoveMock(
 				r1.getRevision(), p4.toString())));
 		when(r4.getRemovedFiles()).thenCallRealMethod();
-		assertThat(model.update(r4)).isNotNull();
-		assertThat(model.getModel().orElseThrow(AssertionError::new)
-				.getAllPackages().stream()
+		assertThat(builder.update(r4)).isNotNull();
+		assertThat(builder.getModel().orElseThrow(AssertionError::new)
+				.getCtModel().getAllPackages().stream()
 				.filter(pkg -> pkg.getQualifiedName().endsWith(
 						"com.google.gson.internal.alpha"))
 				.count()).isZero();
