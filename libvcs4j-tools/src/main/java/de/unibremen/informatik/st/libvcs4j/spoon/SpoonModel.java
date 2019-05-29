@@ -27,7 +27,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * Wraps a {@link CtModel} and {@link RevisionRange}.
+ * Composes a {@link CtModel} and a {@link RevisionRange} into a single class
+ * that allows to map between Spoon and LibVCS4j objects.
  */
 @Value
 public class SpoonModel {

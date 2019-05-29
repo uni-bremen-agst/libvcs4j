@@ -46,8 +46,9 @@ import static java.lang.System.currentTimeMillis;
 import static spoon.SpoonModelBuilder.InputType;
 
 /**
- * Allows to build and incrementally update a {@link CtModel} (using the result
- * class {@link SpoonModel}).
+ * Allows to build and incrementally update a {@link CtModel} (which is managed
+ * by the result class {@link SpoonModel}, see {@link #getModel()} and
+ * {@link #update(RevisionRange)}).
  *
  * This class is somewhat similar to {@link spoon.IncrementalLauncher}, except
  * that it utilizes LibVCS4j's {@link RevisionRange} API to build and update a
@@ -99,13 +100,12 @@ public class SpoonModelBuilder {
 	}
 
 	/**
-	 * Builds or incrementally updates the model (see {@link #model}).
+	 * Builds (or incrementally updates) {@link #model}.
 	 *
 	 * @param range
 	 * 		The currently checked out range.
 	 * @return
-	 * 		The {@link SpoonModel} which, in turn, wraps the built or
-	 * 		incrementally updated {@link CtModel}.
+	 * 		The result class that contains {@link #model} and {@code range}.
 	 * @throws NullPointerException
 	 * 		If {@code range} is {@code null}.
 	 * @throws BuildException
