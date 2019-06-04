@@ -351,7 +351,9 @@ public class SpoonModelBuilder {
 
 		final String output = tmpDir.toString();
 		final Set<Path> result = new HashSet<>();
-		model.getCtModel().getAllTypes().parallelStream().forEach(type -> {
+		model.getCtModel().getAllTypes().parallelStream()
+				.filter(t -> t.getPosition().isValidPosition())
+				.forEach(type -> {
 			final Path canonicalPath = toCanonicalPath(
 					type.getPosition().getFile());
 			final String pkg = type.getPackage().getQualifiedName();
@@ -429,6 +431,7 @@ public class SpoonModelBuilder {
 						.filter(typeReferencesOfFiles::contains)
 						.findAny()
 						.map(CtElement::getPosition)
+						.filter(SourcePosition::isValidPosition)
 						.map(SourcePosition::getFile)
 						.map(this::toCanonicalPath)
 						.ifPresent(referencingFiles::add));
