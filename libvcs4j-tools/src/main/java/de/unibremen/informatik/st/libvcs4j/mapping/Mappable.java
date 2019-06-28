@@ -43,12 +43,11 @@ public interface Mappable<T> {
 	/**
 	 * Returns the metadata of this mappable.
 	 *
-	 * The metadata of a mappable may be used to determine whether it is
-	 * compatible with another mappable (as done by the default implementation
-	 * of {@link #isCompatibleWith(Mappable)}), or to store additional
-	 * information that are required while generating or querying a
-	 * {@link Lifespan}. The default implementation returns an empty
-	 * {@link Optional}.
+	 * The metadata of a mappable may be used to store additional information
+	 * (for example, the "type" of a mappable). Further, it may be used to
+	 * determine whether it is compatible with another mappable (as done by the
+	 * default implementation of {@link #isCompatibleWith(Mappable)}). The
+	 * default implementation returns an empty {@link Optional}.
 	 *
 	 * @return
 	 * 		The metadata of this mappable.
@@ -89,8 +88,8 @@ public interface Mappable<T> {
 	}
 
 	/**
-	 * Returns whether the signature of this mappable match with the signature
-	 * of {@code mappable}.
+	 * Returns whether the signature of this mappable matches with the
+	 * signature of {@code mappable}.
 	 *
 	 * This method is used by {@link Mapping} to determine whether two
 	 * mappables match without consideration of their positions (see
