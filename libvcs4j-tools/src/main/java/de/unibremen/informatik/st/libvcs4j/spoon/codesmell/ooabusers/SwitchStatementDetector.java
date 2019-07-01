@@ -56,7 +56,7 @@ public class SwitchStatementDetector extends CodeSmellDetector {
                     mccValues.stream()
                             .map(this::createMccMetric)
                             .collect(Collectors.toList()),
-                    createSignature(switchStatement).orElse(null));
+                    createSignature(switchStatement).orElse(null), null);
         }
 
     }

@@ -68,7 +68,7 @@ public class MethodChainDetector extends CodeSmellDetector {
 				if (midVal >= threshold) {
 					addCodeSmell(invocations.get(0),
 							Collections.singletonList(createMetric(midVal)),
-							null);
+							null, null);
 				}
 				invocations = null;
 			}

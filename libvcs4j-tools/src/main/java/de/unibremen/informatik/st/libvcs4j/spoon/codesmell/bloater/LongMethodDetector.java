@@ -58,7 +58,7 @@ public class LongMethodDetector extends CodeSmellDetector {
 				.filter(size -> size >= threshold)
 				.ifPresent(val -> addCodeSmell(executable,
 						Collections.singletonList(createMetric(val)),
-						createSignature(executable).orElse(null)));
+						createSignature(executable).orElse(null), null));
 
 	}
 

@@ -46,7 +46,8 @@ public class CodeSmell implements Mappable<String> {
 	private final Definition definition;
 
 	/**
-	 * The metrics of a code smell.
+	 * The metrics of a code smell. May contain "additional" metrics, that is,
+	 * metrics that are not part of {@link #definition}.
 	 */
 	@NonNull
 	private final List<Metric> metrics;
@@ -59,13 +60,21 @@ public class CodeSmell implements Mappable<String> {
 
 	/**
 	 * The signature of a code smell. Allows to uniquely identify a code smell
-	 * regardless of its {@link #ranges}. May be null.
+	 * regardless of its {@link #ranges}. May be {@code null}.
 	 */
 	private final String signature;
 
 	/**
-	 * Creates a new code smell with given definition, metrics, ranges, and
-	 * signature. Only {@code signature} may be {@code null}.
+	 * An optional text that describes why an element is considered a code
+	 * smell (for example, if {@link #metrics} is not viable). My be
+	 * {@code null}.
+	 */
+	private final String summary;
+
+	/**
+	 * Creates a new code smell with given definition, metrics, ranges,
+	 * signature, and summary. Only {@code signature} and {@code summary} may
+	 * be {@code null}.
 	 *
 	 * @param definition
 	 * 		The definition of the code smell to create.
@@ -75,6 +84,8 @@ public class CodeSmell implements Mappable<String> {
 	 * 		The ranges of the code smell to create.
 	 * @param signature
 	 * 		The signature of the code smell to create. May be {@code null}.
+	 * @param summary
+	 * 		The summary of the code smell to create. May be {@code null}.
 	 * @throws NullPointerException
 	 * 		If {@code definition}, {@code metrics}, or {@code ranges} is
 	 * 		{@code null}.
@@ -87,7 +98,7 @@ public class CodeSmell implements Mappable<String> {
 	public CodeSmell(@NonNull final Definition definition,
 			@NonNull final Collection<Metric> metrics,
 			@NonNull final List<VCSFile.Range> ranges,
-			final String signature)
+			final String signature, final String summary)
 			throws NullPointerException, IllegalArgumentException {
 		Validate.noNullElements(metrics);
 		Validate.noNullElements(ranges);
@@ -96,11 +107,13 @@ public class CodeSmell implements Mappable<String> {
 		this.metrics = new ArrayList<>(metrics);
 		this.ranges = new ArrayList<>(ranges);
 		this.signature = signature;
+		this.summary = summary;
 	}
 
 	/**
-	 * Creates a new code smell with given definition, ranges, and signature,
-	 * but without any metric. Only {@code signature} may be {@code null}.
+	 * Creates a new code smell with given definition, ranges, signature, and
+	 * summary, but without any metric. Only {@code signature} and
+	 * {@code summary} may be {@code null}.
 	 *
 	 * @param definition
 	 * 		The definition of the code smell to create.
@@ -108,6 +121,8 @@ public class CodeSmell implements Mappable<String> {
 	 * 		The ranges of the code smell to create.
 	 * @param signature
 	 * 		The signature of the code smell to create. May be {@code null}.
+	 * @param summary
+	 * 		The summary of the code smell to create. May be {@code null}.
 	 * @throws NullPointerException
 	 * 		If any of the given arguments is {@code null}.
 	 * @throws IllegalArgumentException
@@ -115,9 +130,9 @@ public class CodeSmell implements Mappable<String> {
 	 */
 	public CodeSmell(@NonNull final Definition definition,
 			@NonNull final List<VCSFile.Range> ranges,
-			final String signature)
+			final String signature, final String summary)
 			throws NullPointerException, IllegalArgumentException {
-		this(definition, Collections.emptyList(), ranges, signature);
+		this(definition, Collections.emptyList(), ranges, signature, summary);
 	}
 
 	/**
@@ -149,6 +164,16 @@ public class CodeSmell implements Mappable<String> {
 	 */
 	public List<VCSFile.Range> getRanges() {
 		return new ArrayList<>(ranges);
+	}
+
+	/**
+	 * Returns the summary of this code smell.
+	 *
+	 * @return
+	 * 		The summary of this code smell.
+	 */
+	public Optional<String> getSummary() {
+		return Optional.ofNullable(summary);
 	}
 
 	@Override

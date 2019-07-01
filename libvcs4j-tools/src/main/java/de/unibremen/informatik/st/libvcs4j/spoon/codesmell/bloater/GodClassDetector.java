@@ -95,7 +95,7 @@ public class GodClassDetector extends CodeSmellDetector {
 						createWMCMetric(wmcVal),
 						createATFDMetric(atfdVal),
 						createTCCMetric(tccVal)),
-					createSignature(type).orElse(null));
+					createSignature(type).orElse(null), null);
 			}
 	}
 

@@ -183,7 +183,7 @@ public class UnusedCodeDetector extends CodeSmellDetector {
 
 	private void addCodeSmell(final CtNamedElement unusedElement) {
 		addCodeSmell(unusedElement, Collections.emptyList(),
-				createSignature(unusedElement).orElse(null));
+				createSignature(unusedElement).orElse(null), null);
 	}
 
 	@Override

@@ -61,7 +61,7 @@ public class LongParameterListDetector extends CodeSmellDetector {
 		if (val >= threshold) {
 			final List<CtParameter<?>> params = executable.getParameters();
 			addCodeSmellRange(params.get(0), params.get(params.size() - 1),
-					Collections.singletonList(createMetric(val)), null);
+					Collections.singletonList(createMetric(val)), null, null);
 		}
 	}
 

@@ -16,9 +16,8 @@ import static de.unibremen.informatik.st.libvcs4j.spoon.codesmell.Thresholds.Con
 import static de.unibremen.informatik.st.libvcs4j.spoon.codesmell.Thresholds.Connective.VERUM;
 
 /**
- * Combines zero or more {@link Threshold} instances into a single statement.
- * Allows to compose statements using a tree to express more complex
- * conditions.
+ * Composes zero or more {@link Threshold} instances into a single statement (a
+ * tree like structure) which allows to express more complex conditions.
  *
  * For instance:
  *

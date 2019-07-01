@@ -60,7 +60,7 @@ public class TemporaryFieldDetector extends CodeSmellDetector {
                         .get(0) instanceof CtFieldWrite)
                 .forEach(entry -> addCodeSmell(entry.getKey(),
                         Collections.emptyList(),
-                        createSignature(entry.getKey()).orElse(null)));
+                        createSignature(entry.getKey()).orElse(null), null));
     }
 
     @Override

@@ -61,12 +61,13 @@ public abstract class CodeSmellDetector extends Scanner {
 	}
 
 	/**
-	 * Tries to add the given element, its metrics, and its signature (may be
-	 * {@code null}) as a {@link CodeSmell}. On success, the newly created code
-	 * smell is returned. On failure, an empty {@link Optional} is returned.
-	 * Adding an element may fail, for example, if the element is implicit or
-	 * has no position (see {@link CtElement#isImplicit()} and
-	 * {@link SourcePosition#NOPOSITION}).
+	 * Tries to add the given element, its metrics, its signature (may be
+	 * {@code null}), and its summary (a nullable value describing why
+	 * {@code element} is considered a code smell}) as a {@link CodeSmell} with
+	 * a single range. On success, the newly created code smell is returned. On
+	 * failure, an empty {@link Optional} is returned. Adding an element may
+	 * fail, for example, if it is implicit or has no position (see
+	 * {@link CtElement#isImplicit()} and {@link SourcePosition#NOPOSITION}).
 	 *
 	 * @param element
 	 * 		The element to add as code smell.
@@ -74,11 +75,15 @@ public abstract class CodeSmellDetector extends Scanner {
 	 * 		The metrics of {@code element}.
 	 * @param signature
 	 * 		The signature of {@code element}. May be {@code null}.
+	 * @param summary
+	 * 		The summary describing why {@code element} is considered a code
+	 * 		smell. May be {@code null}.
 	 * @return
 	 * 		The newly created code smell.
 	 */
 	protected Optional<CodeSmell> addCodeSmell(final CtElement element,
-			final List<Metric> metrics, final String signature) {
+			final List<Metric> metrics, final String signature,
+			final String summary) {
 		if (filter(element, metrics)) {
 			log.debug("Filtering out element: '{}'", element == null
 					? null : element.getShortRepresentation());
@@ -97,8 +102,8 @@ public abstract class CodeSmellDetector extends Scanner {
 			final VCSFile.Range range = new VCSFile.Range(file.get(),
 					position.getSourceStart(), position.getSourceEnd(),
 					tabSizeOf(element));
-			final CodeSmell codeSmell = new CodeSmell(getDefinition(),
-					metrics, Collections.singletonList(range), signature);
+			final CodeSmell codeSmell = new CodeSmell(getDefinition(), metrics,
+					Collections.singletonList(range), signature, summary);
 			codeSmells.add(codeSmell);
 			return Optional.of(codeSmell);
 		} catch (final IOException e) {
@@ -108,12 +113,14 @@ public abstract class CodeSmellDetector extends Scanner {
 	}
 
 	/**
-	 * Tries to add the given element range, its metrics, and its signature
-	 * (may be {@code null}) as a {@link CodeSmell}. On success, the newly
-	 * created code smell is returned. On failure, an empty {@link Optional} is
-	 * returned. Adding an element range may fail, for example, if {@code from}
-	 * or {@code to} are implicit ({@link CtElement#isImplicit()}) or have no
-	 * position ({@link SourcePosition#NOPOSITION}).
+	 * Tries to add the given element range, its metrics, its signature (may be
+	 * {@code null}), and its summary (a nullable value describing why the
+	 * element range is considered a code smell}) as a {@link CodeSmell} with a
+	 * single range. On success, the newly created code smell is returned. On
+	 * failure, an empty {@link Optional} is returned. Adding an element range
+	 * may fail, for example, if {@code from} or {@code to} are implicit or
+	 * have no position (see {@link CtElement#isImplicit()} and
+	 * {@link SourcePosition#NOPOSITION}).
 	 *
 	 * @param from
 	 * 		The from element.
@@ -123,6 +130,9 @@ public abstract class CodeSmellDetector extends Scanner {
 	 * 		The metrics of of the element range.
 	 * @param signature
 	 * 		The signature of the element range. May be {@code null}.
+	 * @param summary
+	 * 		The summary describing why the element range is considered a code
+	 * 		smell. May be {@code null}.
 	 * @return
 	 * 		The newly created code smell.
 	 * @throws IllegalArgumentException
@@ -130,7 +140,7 @@ public abstract class CodeSmellDetector extends Scanner {
 	 */
 	protected Optional<CodeSmell> addCodeSmellRange(final CtElement from,
 			final CtElement to, final List<Metric> metrics,
-			final String signature)
+			final String signature, final String summary)
 			throws IllegalArgumentException {
 		if (filter(Arrays.asList(from, to), metrics)) {
 			log.debug("Filtering out range: '{}' to '{}'",
@@ -154,8 +164,8 @@ public abstract class CodeSmellDetector extends Scanner {
 			final VCSFile.Range range = new VCSFile.Range(file.get(),
 					fromPosition.getSourceStart(), toPosition.getSourceEnd(),
 					tabSizeOf(from));
-			final CodeSmell codeSmell = new CodeSmell(getDefinition(),
-					metrics, Collections.singletonList(range), signature);
+			final CodeSmell codeSmell = new CodeSmell(getDefinition(), metrics,
+					Collections.singletonList(range), signature, summary);
 			codeSmells.add(codeSmell);
 			return Optional.of(codeSmell);
 		} catch (final IOException e) {
@@ -166,13 +176,14 @@ public abstract class CodeSmellDetector extends Scanner {
 	}
 
 	/**
-	 * Tries to add the given list of elements, their metrics, and their
-	 * signature (may be {@code null}) as a {@link CodeSmell} with multiple
-	 * ranges. On success, the newly created code smell is returned. On
-	 * failure, an empty {@link Optional} is returned. Adding a list of
-	 * elements may fail, for example, if any of its element is implicit
-	 * ({@link CtElement#isImplicit()}) or has no position
-	 * ({@link SourcePosition#NOPOSITION}).
+	 * Tries to add the given list of elements, their metrics, their signature
+	 * (may be {@code null}), and their summary (a nullable value describing
+	 * why the elements are considered a code smell}) as a {@link CodeSmell}
+	 * with multiple ranges. On success, the newly created code smell is
+	 * returned. On failure, an empty {@link Optional} is returned. Adding a
+	 * list of elements may fail, for example, if any of its values is implicit
+	 * or has no position (see {@link CtElement#isImplicit()} and
+	 * {@link SourcePosition#NOPOSITION}).
 	 *
 	 * @param elements
 	 * 		The list of elements to add as code smell.
@@ -180,12 +191,15 @@ public abstract class CodeSmellDetector extends Scanner {
 	 * 		The metrics of {@code elements}.
 	 * @param signature
 	 * 		The signature of {@code elements}. May be {@code null}.
+	 * @param summary
+	 * 		The summary describing why the elements are considered a code
+	 * 		smell. May be {@code null}.
 	 * @return
 	 * 		The newly created code smell.
 	 */
 	public Optional<CodeSmell> addCodeSmellWithMultiplePositions(
 			final List<CtElement> elements, final List<Metric> metrics,
-			final String signature) {
+			final String signature, final String summary) {
 		if (filter(elements, metrics)) {
 			log.debug("Filtering out element list: '{}'", elements == null
 					? null : elements.stream()
@@ -216,7 +230,7 @@ public abstract class CodeSmellDetector extends Scanner {
 			return Optional.empty();
 		}
 		final CodeSmell codeSmell = new CodeSmell(getDefinition(), metrics,
-				ranges, signature);
+				ranges, signature, summary);
 		codeSmells.add(codeSmell);
 		return Optional.of(codeSmell);
 	}

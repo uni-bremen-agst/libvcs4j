@@ -42,7 +42,7 @@ public class CycleDetector extends CodeSmellDetector {
 						addCodeSmellWithMultiplePositions(
 								Arrays.asList(t1, t2),
 								Collections.emptyList(),
-								null);
+								null, "Direct cycle");
 					}
 				}
 			}

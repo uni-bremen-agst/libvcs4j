@@ -51,7 +51,7 @@ public class DataClassDetector extends CodeSmellDetector {
 				&& !type.getFields().isEmpty()
 				&& !derivesFromThrowable(type)) {
 			addCodeSmell(type, Collections.emptyList(),
-					createSignature(type).orElse(null));
+					createSignature(type).orElse(null), null);
 		}
 	}
 

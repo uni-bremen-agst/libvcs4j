@@ -91,7 +91,7 @@ public class CommentsDetector extends CodeSmellDetector {
             addCodeSmell(executable,
                     Arrays.asList(createRatioMetric(ratio),
                             createLocMetric(numberOfStatements)),
-                    createSignature(executable).orElse(null));
+                    createSignature(executable).orElse(null), null);
 
         }
     }
