@@ -46,6 +46,11 @@ public class VCSFileTest {
 		public VCSEngine getVCSEngine() {
 			throw new UnsupportedOperationException();
 		}
+
+		@Override
+		public boolean isBinary() {
+			return false;
+		}
 	}
 
 
