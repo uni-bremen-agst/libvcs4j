@@ -85,11 +85,24 @@ public interface FileChange extends VCSModelElement {
 	 *
 	 * @return
 	 * 		A sequence of {@link LineChange} objects.
+	 * @throws BinaryFileException
+	 * 		If the old or the new file is binary (see
+	 * 		{@link VCSFile#isBinary()}).
 	 * @throws IOException
 	 *      If an error occurred while reading the content of the old or new
 	 *      file (see {@link VCSFile#readeContent()}).
 	 */
 	default List<LineChange> computeDiff() throws IOException {
+		final Optional<VCSFile> old = getOldFile();
+		if (old.isPresent() && old.get().isBinary()) {
+			throw new BinaryFileException(String.format(
+					"Old file (%s) is binary", old.get().getPath()));
+		}
+		final Optional<VCSFile> nev = getNewFile();
+		if (nev.isPresent() && nev.get().isBinary()) {
+			throw new BinaryFileException(String.format(
+					"New file (%s) is binary", nev.get().getPath()));
+		}
 		return getVCSEngine().computeDiff(this);
 	}
 
@@ -101,6 +114,9 @@ public interface FileChange extends VCSModelElement {
 	 *
 	 * @return
 	 * 		The delta of the changed lines.
+	 * @throws BinaryFileException
+	 * 		If the old or the new file is binary (see
+	 * 		{@link VCSFile#isBinary()}).
 	 * @throws IOException
 	 * 		If an error occurred while computing the diff (see
 	 * 		{@link #computeDiff()}).

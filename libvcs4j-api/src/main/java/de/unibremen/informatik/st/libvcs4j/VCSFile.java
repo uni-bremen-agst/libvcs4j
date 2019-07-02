@@ -786,17 +786,23 @@ public interface VCSFile extends VCSModelElement {
 	}
 
 	/**
-	 * Returns the content of this file as String. The default implementation
+	 * Returns the content of this file as a String. The default implementation
 	 * uses {@link #readAllBytes()} and {@link #guessCharset()} to create an
 	 * appropriate String. If {@link #guessCharset()} returns an empty optional
 	 * the system default charset is used as fallback.
 	 *
 	 * @return
-	 * 		The content of this file as String.
+	 * 		The content of this file as a String.
+	 * @throws BinaryFileException
+	 * 		If this file is binary (see {@link #isBinary()}).
 	 * @throws IOException
 	 * 		If an error occurred while reading the file content.
 	 */
 	default String readeContent() throws IOException {
+		if (isBinary()) {
+			throw new BinaryFileException(String.format(
+					"'%s' is a binary file", getPath()));
+		}
 		final Charset charset = guessCharset()
 				.orElse(Charset.defaultCharset());
 		return new String(readAllBytes(), charset);
@@ -808,6 +814,8 @@ public interface VCSFile extends VCSModelElement {
 	 *
 	 * @return
 	 * 		The content of this file as a list of strings excluding EOLs.
+	 * @throws BinaryFileException
+	 * 		If this file is binary (see {@link #isBinary()}).
 	 * @throws IOException
 	 * 		If an error occurred while reading the file content.
 	 */
@@ -827,6 +835,8 @@ public interface VCSFile extends VCSModelElement {
 	 *
 	 * @return
 	 * 		The content of this file as a list of strings including EOLs.
+	 * @throws BinaryFileException
+	 * 		If this file is binary (see {@link #isBinary()}).
 	 * @throws IOException
 	 * 		If an error occurred while reading the file content.
 	 */
@@ -869,10 +879,16 @@ public interface VCSFile extends VCSModelElement {
 	 *
 	 * @return
 	 * 		The line information of this file.
+	 * @throws BinaryFileException
+	 * 		If this file is binary (see {@link #isBinary()}).
 	 * @throws IOException
 	 * 		If an error occurred while reading the the information.
 	 */
 	default List<LineInfo> readLineInfo() throws IOException {
+		if (isBinary()) {
+			throw new BinaryFileException(String.format(
+					"'%s' is a binary file", getPath()));
+		}
 		return getVCSEngine().readLineInfo(this);
 	}
 
@@ -1008,6 +1024,8 @@ public interface VCSFile extends VCSModelElement {
 	 * 		The corresponding position.
 	 * @throws IllegalArgumentException
 	 * 		If {@code offset < 0} or {@code tabSize < 1}.
+	 * @throws BinaryFileException
+	 * 		If this file is binary (see {@link #isBinary()}).
 	 * @throws IOException
 	 * 		If an error occurred while reading the file content.
 	 */
@@ -1062,6 +1080,8 @@ public interface VCSFile extends VCSModelElement {
 	 * 		The corresponding position.
 	 * @throws IllegalArgumentException
 	 * 		If {@code line < 1}, {@code column < 1}, or {@code tabSize < 1}.
+	 * @throws BinaryFileException
+	 * 		If this file is binary (see {@link #isBinary()}).
 	 * @throws IOException
 	 * 		If an error occurred while reading the file content.
 	 */
