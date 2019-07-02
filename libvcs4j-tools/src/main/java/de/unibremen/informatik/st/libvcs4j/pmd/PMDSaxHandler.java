@@ -1,7 +1,7 @@
 package de.unibremen.informatik.st.libvcs4j.pmd;
 
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
-import de.unibremen.informatik.st.libvcs4j.Validate;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
@@ -11,7 +11,6 @@ import org.xml.sax.helpers.DefaultHandler;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +29,7 @@ class PMDSaxHandler extends DefaultHandler {
 	 * The tab size (see {@link VCSFile.Position#tabSize}) which is used to
 	 * create a position.
 	 */
-	private static final int TAB_SIZE = 4;
+	private static final int TAB_SIZE = 8;
 
 	/**
 	 * The logger of this class.
@@ -59,22 +58,21 @@ class PMDSaxHandler extends DefaultHandler {
 	private String path;
 
 	/**
-	 * Creates a new handler that uses the given collection of {@link VCSFile}s
-	 * to link violations in files detected by PMD to their corresponding
-	 * {@link VCSFile} instance. {@code null} values in {@code pFiles} are
-	 * filtered.
+	 * Creates a new handler which uses the given collection of
+	 * {@link VCSFile}s to link violations in files detected by PMD to their
+	 * corresponding {@link VCSFile} instance. {@code null} values in
+	 * {@code files} are filtered out.
 	 *
-	 * @param pFiles
+	 * @param files
 	 * 		The files to link violations against.
 	 * @throws NullPointerException
-	 * 		If {@code pFiles} is {@code null}.
+	 * 		If {@code files} is {@code null}.
 	 */
-	public PMDSaxHandler(final Collection<VCSFile> pFiles)
+	public PMDSaxHandler(@NonNull final Collection<VCSFile> files)
 			throws NullPointerException, IllegalArgumentException {
-		files = Collections.unmodifiableList(
-				Validate.notNull(pFiles.stream()
-						.filter(Objects::nonNull)
-						.collect(Collectors.toList())));
+		this.files = files.stream()
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
 	}
 
 	@Override

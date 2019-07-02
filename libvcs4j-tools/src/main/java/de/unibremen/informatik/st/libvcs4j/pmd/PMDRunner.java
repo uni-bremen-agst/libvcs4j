@@ -3,6 +3,7 @@ package de.unibremen.informatik.st.libvcs4j.pmd;
 import de.unibremen.informatik.st.libvcs4j.Revision;
 import de.unibremen.informatik.st.libvcs4j.VCSEngine;
 import de.unibremen.informatik.st.libvcs4j.Validate;
+import lombok.NonNull;
 import net.sourceforge.pmd.PMD;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,9 +23,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static javax.xml.stream.XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES;
-import static javax.xml.stream.XMLInputFactory.SUPPORT_DTD;
-
 /**
  * Allows to configure and run PMD on a single {@link Revision} or on all
  * revisions of a {@link VCSEngine}.
@@ -43,51 +41,58 @@ public class PMDRunner {
 
 	/**
 	 * Creates a new runner with given PMD rules. {@code null} values in
-	 * {@code pRules} are filtered. Non-Null values are trimmed with
-	 * {@link String#trim()}.
+	 * {@code rules} are filtered out. Non-Null values are trimmed with
+	 * {@link String#trim()}. If {@code rules} is empty, the ruleset
+	 * "rulesets/java/basic.xml" is used as fallback.
 	 *
-	 * @param pRules
+	 * @param rules
 	 * 		The PMD rules to apply.
 	 * @throws NullPointerException
-	 * 		If {@code pRules} is {@code null}.
+	 * 		If {@code rules} is {@code null}.
 	 */
-	public PMDRunner(final List<String> pRules) throws NullPointerException {
-		Validate.notNull(pRules);
-		rules = pRules.stream()
+	public PMDRunner(@NonNull final List<String> rules)
+			throws NullPointerException {
+		this.rules = rules.stream()
 				.filter(Objects::nonNull)
 				.map(String::trim)
 				.collect(Collectors.toList());
+		if (this.rules.isEmpty()) {
+			this.rules.add("rulesets/java/basic.xml");
+		}
 	}
 
 	/**
-	 * Creates a new runner with given PMD rules.
+	 * Creates a new runner with given PMD rules. {@code null} values in
+	 * {@code rules} are filtered out. Non-Null values are trimmed with
+	 * {@link String#trim()}. If {@code rules} is empty, the ruleset
+	 * "rulesets/java/basic.xml" is used as fallback.
 	 *
-	 * @param pRules
+	 * @param rules
 	 * 		The PMD rules to apply.
 	 * @throws NullPointerException
-	 * 		If {@code pRules} is {@code null}.
+	 * 		If {@code rules} is {@code null}.
 	 */
-	public PMDRunner(final String... pRules) throws NullPointerException {
-		this(Arrays.asList(pRules));
+	public PMDRunner(@NonNull final String... rules)
+			throws NullPointerException {
+		this(Arrays.asList(rules));
 	}
 
 	/**
 	 * Analyzes the given revision.
 	 *
-	 * @param pRevision
+	 * @param revision
 	 * 		The revision to analyze.
 	 * @return
 	 * 		The detection result.
 	 * @throws NullPointerException
-	 * 		If {@code pRevision} is {@code null}.
+	 * 		If {@code revision} is {@code null}.
 	 * @throws IOException
-	 * 		If an error occurred while analyzing {@code pRevision}.
+	 * 		If an error occurred while analyzing {@code revision}.
 	 */
-	public PMDDetectionResult run(final Revision pRevision)
+	public PMDDetectionResult run(@NonNull final Revision revision)
 			throws NullPointerException, IOException {
-		Validate.notNull(pRevision);
 		final PMDDetectionResult result = new PMDDetectionResult();
-		result.put(pRevision.getId(), detect(pRevision));
+		result.put(revision.getId(), detect(revision));
 		return result;
 	}
 
@@ -95,18 +100,17 @@ public class PMDRunner {
 	 * Analyzes the given VCS. If an error occurs while analyzing a revision,
 	 * this revisions is skipped.
 	 *
-	 * @param pEngine
+	 * @param engine
 	 * 		The VCS to analyze.
 	 * @return
 	 * 		The detection result.
 	 * @throws NullPointerException
-	 * 		If {@code pEngine} is {@code null}.
+	 * 		If {@code engine} is {@code null}.
 	 */
-	public PMDDetectionResult run(final VCSEngine pEngine)
+	public PMDDetectionResult run(@NonNull final VCSEngine engine)
 			throws NullPointerException {
-		Validate.notNull(pEngine);
 		final PMDDetectionResult result = new PMDDetectionResult();
-		pEngine.forEach(v -> {
+		engine.forEach(v -> {
 			final String rev = v.getRevision().getId();
 			try {
 				result.put(rev, detect(v.getRevision()));
@@ -119,20 +123,22 @@ public class PMDRunner {
 
 	/**
 	 * This method is used by {@link #run(Revision)} and
-	 * {@link #run(VCSEngine)} and may be overridden to extends the default
-	 * behaviour of this class.
+	 * {@link #run(VCSEngine)} to run the actual detection. It may be
+	 * overridden to extend the default behaviour of this class.
 	 *
-	 * @param pRevision
+	 * @param revision
 	 * 		The revision to analyze.
 	 * @return
 	 * 		List of detected violations.
 	 * @throws IOException
-	 * 		If an error occurred while analyzing {@code pRevision}.
+	 * 		If an error occurred while analyzing {@code revision}.
 	 */
-	protected List<PMDViolation> detect(final Revision pRevision)
+	protected List<PMDViolation> detect(final Revision revision)
 			throws IOException {
+		Validate.validateState(!rules.isEmpty());
+
 		final String[] args = {
-				pRevision.getOutput().toString(), // input
+				revision.getOutput().toString(), // input
 				"xml",                            // format
 				String.join(",", rules)           // rules
 		};
@@ -150,12 +156,10 @@ public class PMDRunner {
 
 			// Parse output
 			final SAXParserFactory factory = SAXParserFactory.newInstance();
-			factory.setFeature(IS_SUPPORTING_EXTERNAL_ENTITIES, false);
-			factory.setFeature(SUPPORT_DTD, false);
 			final SAXParser saxParser = factory.newSAXParser();
 			final InputStream bis = new ByteArrayInputStream(
 					output.getBytes(StandardCharsets.UTF_8.name()));
-			PMDSaxHandler handler = new PMDSaxHandler(pRevision.getFiles());
+			PMDSaxHandler handler = new PMDSaxHandler(revision.getFiles());
 			saxParser.parse(bis, handler);
 
 			// Result
