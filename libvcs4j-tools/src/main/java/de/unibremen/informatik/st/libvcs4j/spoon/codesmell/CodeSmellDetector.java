@@ -99,9 +99,8 @@ public abstract class CodeSmellDetector extends Scanner {
 		}
 
 		try {
-			final VCSFile.Range range = new VCSFile.Range(file.get(),
-					position.getSourceStart(), position.getSourceEnd(),
-					tabSizeOf(element));
+			final VCSFile.Range range = createRange(
+					element, element, file.get());
 			final CodeSmell codeSmell = new CodeSmell(getDefinition(), metrics,
 					Collections.singletonList(range), signature, summary);
 			codeSmells.add(codeSmell);
@@ -161,9 +160,7 @@ public abstract class CodeSmellDetector extends Scanner {
 		}
 
 		try {
-			final VCSFile.Range range = new VCSFile.Range(file.get(),
-					fromPosition.getSourceStart(), toPosition.getSourceEnd(),
-					tabSizeOf(from));
+			final VCSFile.Range range = createRange(from, to, file.get());
 			final CodeSmell codeSmell = new CodeSmell(getDefinition(), metrics,
 					Collections.singletonList(range), signature, summary);
 			codeSmells.add(codeSmell);
@@ -219,9 +216,7 @@ public abstract class CodeSmellDetector extends Scanner {
 							e.getShortRepresentation(), position.getFile());
 					return Optional.empty();
 				}
-				final VCSFile.Range range = new VCSFile.Range(file.get(),
-						position.getSourceStart(), position.getSourceEnd(),
-						tabSize);
+				final VCSFile.Range range = createRange(e, e, file.get());
 				ranges.add(range);
 			}
 		} catch (final IOException e) {
@@ -313,6 +308,23 @@ public abstract class CodeSmellDetector extends Scanner {
 	 */
 	private int tabSizeOf(@NonNull final CtElement element) {
 		return element.getFactory().getEnvironment().getTabulationSize();
+	}
+
+	private VCSFile.Range createRange(final CtElement from, final CtElement to,
+			final VCSFile file) throws IOException {
+		final int sourceStart = from.getPosition().getSourceStart();
+		final int sourceEnd = to.getPosition().getSourceEnd();
+		final VCSFile.Position begin = file
+				.positionOf(sourceStart, tabSizeOf(from))
+				.orElseThrow(() -> new IOException(String.format(
+						"Begin position (%d) of element '%s' does not exist",
+						sourceStart, from)));
+		final VCSFile.Position end = file
+				.positionOf(sourceEnd, tabSizeOf(to))
+				.orElseThrow(() -> new IOException(String.format(
+						"End position (%d) of element '%s' does not exist",
+						sourceEnd, to)));
+		return new VCSFile.Range(begin, end);
 	}
 
 	/**

@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.lang.Integer.parseInt;
@@ -24,6 +25,12 @@ import static java.lang.Integer.parseInt;
  * Handles the XML output of PMD and stores the result in {@link #violations}.
  */
 class PMDSaxHandler extends DefaultHandler {
+
+	/**
+	 * The tab size (see {@link VCSFile.Position#tabSize}) which is used to
+	 * create a position.
+	 */
+	private static final int TAB_SIZE = 4;
 
 	/**
 	 * The logger of this class.
@@ -88,27 +95,69 @@ class PMDSaxHandler extends DefaultHandler {
 			try {
 				final VCSFile file = absolutePath2File.get(path);
 				if (file == null) {
-					log.info("Skipping violation due to missing file mapping");
+					log.info("Skipping violation due to missing file mapping ({})",
+							path);
 					return;
 				}
 
-				final int bl = parseInt(attributes.getValue("beginline"));
-				final int el = parseInt(attributes.getValue("endline"));
-				final int bc = parseInt(attributes.getValue("begincolumn"));
-				final int ec = parseInt(attributes.getValue("endcolumn"));
-
 				final String rule = attributes.getValue("rule");
-				Validate.validateState(rule != null);
+				if (rule == null) {
+					log.warn("Skipping violation due to missing 'rule' attribute");
+					return;
+				}
 
 				final String ruleSet = attributes.getValue("ruleset");
-				Validate.validateState(ruleSet != null);
+				if (ruleSet == null) {
+					log.warn("Skipping violation due to missing 'ruleset' attribute");
+					return;
+				}
+
+				final String bls = attributes.getValue("beginline");
+				if (bls == null) {
+					log.info("Skipping violation due to missing 'beginline' attribute");
+					return;
+				}
+				final String els = attributes.getValue("endline");
+				if (els == null) {
+					log.info("Skipping violation due to missing 'endline' attribute");
+					return;
+				}
+				final String bcs = attributes.getValue("begincolumn");
+				if (bcs == null) {
+					log.info("Skipping violation due to missing 'begincolumn' attribute");
+					return;
+				}
+				final String ecs = attributes.getValue("endcolumn");
+				if (ecs == null) {
+					log.info("Skipping violation due to missing 'endcolumn' attribute");
+					return;
+				}
+
+				final int bl = parseInt(bls);
+				final int bc = parseInt(bcs);
+				final Optional<VCSFile.Position> begin =
+						file.positionOf(bl, bc, TAB_SIZE);
+				if (!begin.isPresent()) {
+					log.warn("Skipping violation due to not existing begin position. " +
+									"file: {}, line: {}, column: {}, tab size: {}",
+							file.getPath(), bl, bc, TAB_SIZE);
+					return;
+				}
+				final int el = parseInt(els);
+				final int ec = parseInt(ecs);
+				final Optional<VCSFile.Position> end =
+						file.positionOf(el, ec, TAB_SIZE);
+				if (!end.isPresent()) {
+					log.warn("Skipping violation due to not existing end position. " +
+									"file: {}, line: {}, column: {}, tab size: {}",
+							file.getPath(), el, ec, TAB_SIZE);
+					return;
+				}
 
 				final PMDViolation v = new PMDViolation(
-						new VCSFile.Range(file, bl, bc, el, ec, 4),
+						new VCSFile.Range(begin.get(), end.get()),
 						rule, ruleSet);
 				violations.add(v);
-			} catch (final RuntimeException e) {
-				log.warn("Skipping violation due to missing attribute", e);
 			} catch (final IOException e) {
 				log.warn("Skipping violation due to an IO error while creating its range");
 			}
