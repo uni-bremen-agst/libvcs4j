@@ -207,7 +207,6 @@ public abstract class CodeSmellDetector extends Scanner {
 
 		List<VCSFile.Range> ranges = new ArrayList<>();
 		try {
-			final int tabSize = tabSizeOf(elements.get(0));
 			for (final CtElement e : elements) {
 				final SourcePosition position = e.getPosition();
 				final Optional<VCSFile> file = findFile(position);
