@@ -43,9 +43,9 @@ class PMDSaxHandler extends DefaultHandler {
 	private final Collection<VCSFile> files;
 
 	/**
-	 * Used to map paths detected by PMD to a {@link VCSFile} instance.
+	 * Used to map paths detected by PMD to {@link VCSFile} instances.
 	 */
-	private final Map<String, VCSFile> absolutePath2File = new HashMap<>();
+	private final Map<String, VCSFile> path2File = new HashMap<>();
 
 	/**
 	 * Stores the detected violations.
@@ -78,8 +78,16 @@ class PMDSaxHandler extends DefaultHandler {
 	@Override
 	public void startDocument() throws SAXException {
 		violations.clear();
-		absolutePath2File.clear();
-		files.forEach(f -> absolutePath2File.put(f.getPath(), f));
+		path2File.clear();
+		for (VCSFile f : files) {
+			try {
+				path2File.put(f.toFile().getCanonicalPath(), f);
+			} catch (final IOException e) {
+				log.warn("Unable to get canonical path of file '{}'. " +
+						"Falling back to regular path.", f.getPath());
+				path2File.put(f.getPath(), f);
+			}
+		}
 		super.startDocument();
 	}
 
@@ -89,10 +97,14 @@ class PMDSaxHandler extends DefaultHandler {
 			final Attributes attributes) throws SAXException {
 		if (qName.equals("file")) {
 			path = attributes.getValue("name");
-		} else if (qName.equals("violation") && path != null) {
-			final VCSFile file = absolutePath2File.get(path);
+		} else if (qName.equals("violation")) {
+			if (path == null) {
+				log.warn("Skipping violation due to missing 'file' attribute");
+				return;
+			}
+			final VCSFile file = path2File.get(path);
 			if (file == null) {
-				log.info("Skipping violation due to missing file mapping ({})",
+				log.warn("Skipping violation due to missing file mapping ({})",
 						path);
 				return;
 			}
