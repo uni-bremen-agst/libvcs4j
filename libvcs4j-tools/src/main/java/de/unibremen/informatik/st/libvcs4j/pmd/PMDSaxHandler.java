@@ -90,47 +90,46 @@ class PMDSaxHandler extends DefaultHandler {
 		if (qName.equals("file")) {
 			path = attributes.getValue("name");
 		} else if (qName.equals("violation") && path != null) {
+			final VCSFile file = absolutePath2File.get(path);
+			if (file == null) {
+				log.info("Skipping violation due to missing file mapping ({})",
+						path);
+				return;
+			}
+
+			final String rule = attributes.getValue("rule");
+			if (rule == null) {
+				log.warn("Skipping violation due to missing 'rule' attribute");
+				return;
+			}
+
+			final String ruleSet = attributes.getValue("ruleset");
+			if (ruleSet == null) {
+				log.warn("Skipping violation due to missing 'ruleset' attribute");
+				return;
+			}
+
+			final String bls = attributes.getValue("beginline");
+			if (bls == null) {
+				log.warn("Skipping violation due to missing 'beginline' attribute");
+				return;
+			}
+			final String els = attributes.getValue("endline");
+			if (els == null) {
+				log.warn("Skipping violation due to missing 'endline' attribute");
+				return;
+			}
+			final String bcs = attributes.getValue("begincolumn");
+			if (bcs == null) {
+				log.warn("Skipping violation due to missing 'begincolumn' attribute");
+				return;
+			}
+			final String ecs = attributes.getValue("endcolumn");
+			if (ecs == null) {
+				log.warn("Skipping violation due to missing 'endcolumn' attribute");
+				return;
+			}
 			try {
-				final VCSFile file = absolutePath2File.get(path);
-				if (file == null) {
-					log.info("Skipping violation due to missing file mapping ({})",
-							path);
-					return;
-				}
-
-				final String rule = attributes.getValue("rule");
-				if (rule == null) {
-					log.warn("Skipping violation due to missing 'rule' attribute");
-					return;
-				}
-
-				final String ruleSet = attributes.getValue("ruleset");
-				if (ruleSet == null) {
-					log.warn("Skipping violation due to missing 'ruleset' attribute");
-					return;
-				}
-
-				final String bls = attributes.getValue("beginline");
-				if (bls == null) {
-					log.info("Skipping violation due to missing 'beginline' attribute");
-					return;
-				}
-				final String els = attributes.getValue("endline");
-				if (els == null) {
-					log.info("Skipping violation due to missing 'endline' attribute");
-					return;
-				}
-				final String bcs = attributes.getValue("begincolumn");
-				if (bcs == null) {
-					log.info("Skipping violation due to missing 'begincolumn' attribute");
-					return;
-				}
-				final String ecs = attributes.getValue("endcolumn");
-				if (ecs == null) {
-					log.info("Skipping violation due to missing 'endcolumn' attribute");
-					return;
-				}
-
 				final int bl = parseInt(bls);
 				final int bc = parseInt(bcs);
 				final Optional<VCSFile.Position> begin =
