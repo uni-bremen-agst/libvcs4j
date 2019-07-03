@@ -97,8 +97,9 @@ public class PMDRunner {
 	}
 
 	/**
-	 * Analyzes the given VCS. If an error occurs while analyzing a revision,
-	 * this revisions is skipped.
+	 * Analyzes each revision of {@code engine} (by using a for-each loop).
+	 * Revisions in which errors occur (for example, if PMD throws an
+	 * exception) are skipped.
 	 *
 	 * @param engine
 	 * 		The VCS to analyze.
@@ -139,18 +140,17 @@ public class PMDRunner {
 
 		final String[] args = {
 				revision.getOutput().toString(), // input
-				"xml",                            // format
-				String.join(",", rules)           // rules
+				"xml",                           // format
+				String.join(",", rules)          // rules
 		};
 
+		// Temporarily redirect stdout to a string.
+		final PrintStream stdout = System.out;
+		final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		final PrintStream ps = new PrintStream(bos);
+		System.setOut(ps);
 		try {
-			// Temporarily redirect stdout to a string.
-			final PrintStream stdout = System.out;
-			final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			final PrintStream ps = new PrintStream(bos);
-			System.setOut(ps);
 			PMD.run(args);
-			System.setOut(stdout);
 			// According to PMD the resulting xml is UTF-8 encoded.
 			final String output = bos.toString(StandardCharsets.UTF_8.name());
 
@@ -167,6 +167,9 @@ public class PMDRunner {
 		} catch (final UnsupportedOperationException | SAXException
 				| ParserConfigurationException e) {
 			throw new IOException(e);
+		} finally {
+			// Make sure to reset stdout.
+			System.setOut(stdout);
 		}
 	}
 }
