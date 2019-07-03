@@ -28,21 +28,6 @@ import java.util.stream.Collectors;
 public interface VCSFile extends VCSModelElement {
 
 	/**
-	 * Computes the number of tabs of a string. Using a lambda rather than a
-	 * default method ensures that the behaviour of this function can not be
-	 * changed by implementors of this interface.
-	 */
-	ToIntFunction<String> NUMBER_OF_TABS = string -> {
-		int tabs = 0;
-		for (int i = 0; i < string.length(); i++) {
-			if (string.charAt(i) == '\t') {
-				tabs++;
-			}
-		}
-		return tabs;
-	};
-
-	/**
 	 * A position within a file. As a line of text does not include new line
 	 * characters, a position can not point to new line delimiters, such as
 	 * '\n', '\r', and '\r\n'. Use {@link VCSFile#positionOf(int, int, int)} or

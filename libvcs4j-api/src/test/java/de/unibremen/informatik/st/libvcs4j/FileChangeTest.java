@@ -108,4 +108,38 @@ public class FileChangeTest {
 
 		assertThat(change.computeLineDelta()).isEqualTo(-2);
 	}
+
+	@Test
+	public void computeDiffBinaryFileOld() throws IOException {
+		VCSFile old = mock(VCSFile.class);
+		when(old.isBinary()).thenReturn(true);
+
+		VCSFile nev = mock(VCSFile.class);
+		when(nev.isBinary()).thenReturn(false);
+
+		FileChange change = mock(FileChange.class);
+		when(change.getOldFile()).thenReturn(Optional.of(old));
+		when(change.getNewFile()).thenReturn(Optional.of(nev));
+		when(change.computeDiff()).thenCallRealMethod();
+
+		assertThatExceptionOfType(BinaryFileException.class)
+				.isThrownBy(change::computeDiff);
+	}
+
+	@Test
+	public void computeDiffBinaryFileNew() throws IOException {
+		VCSFile old = mock(VCSFile.class);
+		when(old.isBinary()).thenReturn(false);
+
+		VCSFile nev = mock(VCSFile.class);
+		when(nev.isBinary()).thenReturn(true);
+
+		FileChange change = mock(FileChange.class);
+		when(change.getOldFile()).thenReturn(Optional.of(old));
+		when(change.getNewFile()).thenReturn(Optional.of(nev));
+		when(change.computeDiff()).thenCallRealMethod();
+
+		assertThatExceptionOfType(BinaryFileException.class)
+				.isThrownBy(change::computeDiff);
+	}
 }

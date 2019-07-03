@@ -3,6 +3,7 @@ package de.unibremen.informatik.st.libvcs4j;
 import org.junit.Test;
 
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -201,5 +202,42 @@ public class RangeTest {
 	public void relativePathPredicateNullWithNonNull() {
 		assertThat(VCSFile.Range.RELATIVE_PATH_PREDICATE.test(null,
 				mock(VCSFile.Range.class))).isFalse();
+	}
+
+	@Test
+	public void lengthOfOverlapping() {
+		Revision revision = mock(Revision.class);
+		when(revision.getId()).thenReturn("1");
+
+		VCSFile file = mock(VCSFile.class);
+		when(file.getRevision()).thenReturn(revision);
+		when(file.getRelativePath()).thenReturn("LengthOf.java");
+
+		VCSFile.Position range1Begin = mock(VCSFile.Position.class);
+		when(range1Begin.getFile()).thenReturn(file);
+		when(range1Begin.getOffset()).thenReturn(10);
+		VCSFile.Position range1End = mock(VCSFile.Position.class);
+		when(range1End.getFile()).thenReturn(file);
+		when(range1End.getOffset()).thenReturn(50);
+		VCSFile.Range range1 = mock(VCSFile.Range.class);
+		when(range1.getFile()).thenReturn(file);
+		when(range1.getBegin()).thenReturn(range1Begin);
+		when(range1.getEnd()).thenReturn(range1End);
+		when(range1.merge(any())).thenCallRealMethod();
+
+		VCSFile.Position range2Begin = mock(VCSFile.Position.class);
+		when(range2Begin.getFile()).thenReturn(file);
+		when(range2Begin.getOffset()).thenReturn(30);
+		VCSFile.Position range2End = mock(VCSFile.Position.class);
+		when(range2End.getFile()).thenReturn(file);
+		when(range2End.getOffset()).thenReturn(70);
+		VCSFile.Range range2 = mock(VCSFile.Range.class);
+		when(range2.getFile()).thenReturn(file);
+		when(range2.getBegin()).thenReturn(range2Begin);
+		when(range2.getEnd()).thenReturn(range2End);
+		when(range2.merge(any())).thenCallRealMethod();
+
+		int length = VCSFile.Range.lengthOf(Arrays.asList(range1, range2));
+		assertThat(length).isEqualTo(61);
 	}
 }
