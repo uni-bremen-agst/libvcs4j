@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 /**
  * Stores the commit information of a single line of a {@link VCSFile}.
  */
-public interface LineInfo {
+public interface LineInfo extends VCSModelElement {
 
 	/**
 	 * Returns the commit id of this line.
