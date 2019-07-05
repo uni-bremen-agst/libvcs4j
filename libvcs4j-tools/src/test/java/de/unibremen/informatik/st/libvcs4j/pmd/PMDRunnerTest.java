@@ -65,5 +65,8 @@ public class PMDRunnerTest {
 		PMDDetectionResult result = runner.run(vcs);
 		assertThat(result.getRevisions())
 				.containsExactlyInAnyOrder(r10, r11, r12);
+		assertThat(result.getViolationsOf(r10)).hasSize(121);
+		assertThat(result.getViolationsOf(r11)).hasSize(121);
+		assertThat(result.getViolationsOf(r12)).hasSize(121);
 	}
 }
