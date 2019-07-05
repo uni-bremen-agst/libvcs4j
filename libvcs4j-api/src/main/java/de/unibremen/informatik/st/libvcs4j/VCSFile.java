@@ -671,7 +671,9 @@ public interface VCSFile extends VCSModelElement {
 	 * @throws IOException
 	 * 		If an error occurred while reading the contents of this file.
 	 */
-	Optional<Charset> guessCharset() throws IOException;
+	default Optional<Charset> guessCharset() throws IOException {
+		return getVCSEngine().guessCharset(this);
+	}
 
 	/**
 	 * Returns the absolute path of this file as it was like when its

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
@@ -99,6 +100,16 @@ public interface VCSEngine extends Iterable<RevisionRange> {
 			IllegalArgumentException, IOException;
 
 	/**
+	 * Tries to guess the charset of {@code file}.
+	 *
+	 * @return
+	 * 		The guessed charset.
+	 * @throws IOException
+	 * 		If an error occurred while reading the contents of {@code file}.
+	 */
+	Optional<Charset> guessCharset(VCSFile file) throws IOException;
+
+	/**
 	 * Returns the currently checked out revision.
 	 *
 	 * @return
@@ -190,7 +201,7 @@ public interface VCSEngine extends Iterable<RevisionRange> {
 	void setITEngine(ITEngine itEngine);
 
 	/**
-	 * Return the engine used to extract issues from an issue tracker.
+	 * Returns the engine used to extract issues from an issue tracker.
 	 *
 	 * @return
 	 * 		The engine used to extract issues from an issue tracker.
