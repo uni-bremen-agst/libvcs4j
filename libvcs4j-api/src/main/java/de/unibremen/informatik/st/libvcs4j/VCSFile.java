@@ -819,12 +819,14 @@ public interface VCSFile extends VCSModelElement {
 	 * 		If an error occurred while reading the file contents.
 	 */
 	default boolean isBinary() throws IOException {
-		// Some detectors parse the file extension to guess the file type.
+		final byte[] bytes = readAllBytes();
+		final String fileName = toPath().getFileName().toString();
+
+		////////////// Files#probeContentType(Path)
+		// Some detectors parse the extension of a file to guess its type.
 		// Thus, use the file name as suffix for the temporarily created file.
-		final Path tmp = Files.createTempFile(null,
-				toPath().getFileName().toString());
+		final Path tmp = Files.createTempFile(null, fileName);
 		try {
-			final byte[] bytes = readAllBytes();
 			Files.write(tmp, bytes);
 			final String type = Files.probeContentType(tmp);
 			if (type != null) {
@@ -855,31 +857,71 @@ public interface VCSFile extends VCSModelElement {
 						// XML
 						type.equals("application/xml"));
 			}
-			// Apply heuristic.
-			int numASCII = 0;
-			int numNonASCII = 0;
-			for (final byte b : bytes) {
-				if (b < 0x09) { // less than \t
-					return true;
-				} else if (b == 0x09 || // \t
-						b == 0x0A ||    // \n
-						b == 0x0C ||    // \f
-						b == 0x0D) {    // \r
-					numASCII++;
-				} else if (b >= 0x20 && b <= 0x7E) { // regular char
-					numASCII++;
-				} else { // something else
-					numNonASCII++;
-				}
-			}
-			return numNonASCII != 0 &&
-					100 * numNonASCII / (numASCII + numNonASCII) > 95;
 		} finally {
-			try {
-				Files.delete(tmp);
-			} catch (final Exception e) {
-				/* ignored */
+			try { Files.delete(tmp); }
+			catch (final Exception e) { /* ignored */ }
+		}
+
+		////////////// Heuristic
+		int numASCII = 0;
+		int numNonASCII = 0;
+		for (final byte b : bytes) {
+			if (b == 0x09 ||     // \t
+					b == 0x0A || // \n
+					b == 0x0C || // \f
+					b == 0x0D) { // \r
+				numASCII++;
+			} else if (b >= 0x20 && b <= 0x7E) { // regular char
+				numASCII++;
+			} else { // something else
+				numNonASCII++;
 			}
+		}
+		final double nonASCIIRation =
+				(double)numNonASCII /
+						(numASCII + numNonASCII);
+		if (
+				// C
+				fileName.endsWith(".c") ||
+				fileName.endsWith(".h") ||
+				// C++
+				fileName.endsWith(".cc")  ||
+				fileName.endsWith(".hh")  ||
+				fileName.endsWith(".cpp") ||
+				fileName.endsWith(".hpp") ||
+				fileName.endsWith(".cxx") ||
+				fileName.endsWith(".hxx") ||
+				// CSS
+				fileName.endsWith(".css") ||
+				// C#
+				fileName.endsWith(".cs") ||
+				// Groovy
+				fileName.endsWith(".groovy") ||
+				// HTML
+				fileName.endsWith(".html") ||
+				// Java
+				fileName.endsWith(".java") ||
+				// Javascript
+				fileName.endsWith(".js") ||
+				// JSF
+				fileName.endsWith(".xhtml") ||
+				// Kotlin
+				fileName.endsWith(".kt") ||
+				// Markdown
+				fileName.endsWith(".md") ||
+				// PHP
+				fileName.endsWith(".php") ||
+				// Python
+				fileName.endsWith(".py") ||
+				// Scala
+				fileName.endsWith(".scala") ||
+				// Tex
+				fileName.endsWith(".tex") ||
+				// Typescript
+				fileName.endsWith(".ts")) {
+			return nonASCIIRation > 0.3;
+		} else {
+			return nonASCIIRation > 0.95;
 		}
 	}
 
