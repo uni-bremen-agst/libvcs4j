@@ -393,8 +393,7 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 			pChanges.getRemoved().stream()
 					.map(Paths::get)
 					.map(r -> getModelFactory().createFileChange(
-							path2File.computeIfAbsent(r, p ->
-									createFile(p, currentRevision)),
+							createFile(r, currentRevision),
 							null,
 							this))
 					.forEach(fileChanges::add);
@@ -414,8 +413,7 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 						final Path old = e.getKey();
 						final Path nev = e.getValue();
 						return getModelFactory().createFileChange(
-								path2File.computeIfAbsent(old, p ->
-										createFile(p, currentRevision)),
+								createFile(old, currentRevision),
 								path2File.computeIfAbsent(nev, p ->
 										createFile(p, rev)),
 								this);
