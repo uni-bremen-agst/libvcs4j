@@ -3,8 +3,6 @@ package de.unibremen.informatik.st.libvcs4j.github;
 import de.unibremen.informatik.st.libvcs4j.Issue;
 import de.unibremen.informatik.st.libvcs4j.Issue.Comment;
 import de.unibremen.informatik.st.libvcs4j.Validate;
-import de.unibremen.informatik.st.libvcs4j.data.CommentImpl;
-import de.unibremen.informatik.st.libvcs4j.data.IssueImpl;
 import de.unibremen.informatik.st.libvcs4j.engine.AbstractITEngine;
 import org.kohsuke.github.*;
 
@@ -80,41 +78,33 @@ public class GithubEngine extends AbstractITEngine {
 	}
 
 	private Issue createIssue(final GHIssue pGHIssue) throws IOException {
-		final IssueImpl issue = new IssueImpl();
-		issue.setITEngine(this);
-		issue.setId(String.valueOf(pGHIssue.getNumber()));
 		String author = pGHIssue.getUser().getName();
 		if (author == null) {
 			author = pGHIssue.getUser().getLogin();
 		}
-		issue.setAuthor(author);
-		issue.setTitle(pGHIssue.getTitle());
 		final LocalDateTime dateTime = pGHIssue
 				.getCreatedAt()
 				.toInstant()
 				.atZone(ZoneId.systemDefault())
 				.toLocalDateTime();
-		issue.setDateTime(dateTime);
 		final List<Comment> comments = new ArrayList<>();
 		for (final GHIssueComment c : pGHIssue.getComments()) {
 			comments.add(createComment(c));
 		}
-		issue.setComments(comments);
-		return issue;
+		return getModelFactory().createIssue(
+				String.valueOf(pGHIssue.getNumber()), author,
+				pGHIssue.getTitle(), dateTime, comments, this);
 	}
 
 	private Comment createComment(final GHIssueComment pComment)
 			throws IOException {
-		final CommentImpl comment = new CommentImpl();
-		comment.setITEngine(this);
-		comment.setAuthor(pComment.getUser().getName());
 		final LocalDateTime dateTime = pComment
 				.getCreatedAt()
 				.toInstant()
 				.atZone(ZoneId.systemDefault())
 				.toLocalDateTime();
-		comment.setDateTime(dateTime);
-		comment.setMessage(pComment.getBody());
-		return comment;
+		return getModelFactory().createComment(
+				pComment.getUser().getName(),
+				pComment.getBody(), dateTime, this);
 	}
 }
