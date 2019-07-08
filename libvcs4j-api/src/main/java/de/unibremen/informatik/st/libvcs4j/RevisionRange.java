@@ -166,22 +166,11 @@ public interface RevisionRange extends VCSModelElement {
 							matches.size());
 					if (!matches.isEmpty()) {
 						final FileChange match = matches.poll();
-						iter.set(new FileChange() {
-							@Override
-							public VCSEngine getVCSEngine() {
-								return change.getVCSEngine();
-							}
-
-							@Override
-							public Optional<VCSFile> getOldFile() {
-								return change.getOldFile();
-							}
-
-							@Override
-							public Optional<VCSFile> getNewFile() {
-								return match.getNewFile();
-							}
-						});
+						final VCSEngine engine = getVCSEngine();
+						iter.set(engine.getModelFactory().createFileChange(
+								change.getOldFile().orElse(null),
+								match.getNewFile().orElse(null),
+								engine));
 					}
 				}
 				accum.addAll(toProcess);

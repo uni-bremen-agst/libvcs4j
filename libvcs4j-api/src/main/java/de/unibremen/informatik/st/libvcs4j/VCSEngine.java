@@ -209,6 +209,24 @@ public interface VCSEngine extends Iterable<RevisionRange> {
 	Optional<ITEngine> getITEngine();
 
 	/**
+	 * Returns the factory used to create vcs model instances.
+	 *
+	 * @return
+	 * 		The factory used to create vcs model instances.
+	 */
+	VCSModelFactory getModelFactory();
+
+	/**
+	 * Sets the factory used to create vcs model instances.
+	 *
+	 * @param factory
+	 * 		The factory used to create vcs model instances.
+	 * @throws NullPointerException
+	 * 		If {@code factory} is {@code null}.
+	 */
+	void setModelFactory(VCSModelFactory factory) throws NullPointerException;
+
+	/**
 	 * Returns a {@link FilenameFilter} that is supposed to exclude VCS
 	 * specific files and directories. The default implementation creates a
 	 * filter that does not exclude any file or directory.

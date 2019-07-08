@@ -82,8 +82,13 @@ public class RevisionRangeTest {
         Commit c3 = mock(Commit.class);
         when(c3.getFileChanges()).thenReturn(singletonList(remove));
 
+        VCSModelFactory factory = new VCSModelFactory() {};
+        VCSEngine engine = mock(VCSEngine.class);
+        when(engine.getModelFactory()).thenReturn(factory);
+
         RevisionRange range1 = spy(RevisionRange.class);
         when(range1.getCommits()).thenReturn(Arrays.asList(c1, c2));
+        when(range1.getVCSEngine()).thenReturn(engine);
         assertThat(range1.getFileChanges())
                 .hasSize(1)
                 .first()
@@ -95,12 +100,15 @@ public class RevisionRangeTest {
 
         RevisionRange range2 = spy(RevisionRange.class);
         when(range2.getCommits()).thenReturn(Arrays.asList(c1, c2, c3));
+        when(range2.getVCSEngine()).thenReturn(engine);
         assertThat(range2.getFileChanges()).isEmpty();
     }
 
     @Test
     public void testRelocateRelocateRelocate() {
+		VCSModelFactory factory = new VCSModelFactory() {};
         VCSEngine vcs = mock(VCSEngine.class);
+		when(vcs.getModelFactory()).thenReturn(factory);
 
         VCSFile a = mock(VCSFile.class);
         when(a.getRelativePath()).thenReturn("a");
@@ -147,6 +155,7 @@ public class RevisionRangeTest {
 
         RevisionRange range1 = spy(RevisionRange.class);
         when(range1.getCommits()).thenReturn(Arrays.asList(c1, c2));
+        when(range1.getVCSEngine()).thenReturn(vcs);
         assertThat(range1.getFileChanges())
                 .hasSize(1)
                 .first()
@@ -163,6 +172,7 @@ public class RevisionRangeTest {
 
         RevisionRange range2 = spy(RevisionRange.class);
         when(range2.getCommits()).thenReturn(Arrays.asList(c1, c2, c3));
+        when(range2.getVCSEngine()).thenReturn(vcs);
         assertThat(range2.getFileChanges())
                 .hasSize(1)
                 .first()

@@ -1,0 +1,493 @@
+package de.unibremen.informatik.st.libvcs4j;
+
+import java.io.IOException;
+import java.lang.ref.SoftReference;
+import java.nio.charset.Charset;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+
+/**
+ * This factory is responsible for instantiating model elements implementing
+ * the {@link VCSModelElement} interface. The default methods provide a sane
+ * default implementation.
+ */
+public interface VCSModelFactory {
+
+	/**
+	 * Creates a flat copy of {@code list}. Returns an empty list if
+	 * {@code list} is {@code null}. {@code null} values are filtered out.
+	 *
+	 * @param list
+	 * 		The list to copy.
+	 * @param <T>
+	 *     	The type of the values of {@code list}.
+	 * @return
+	 * 		The copied list.
+	 */
+	default <T> List<T> createCopy(final List<T> list) {
+		return list == null
+				? new ArrayList<>() : list.stream()
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Creates a new {@link Commit}. List arguments are flat copied. If any of
+	 * the given lists is {@code null}, an empty list is used as fallback.
+	 * {@code null} values are filtered out.
+	 *
+	 * @param id
+	 * 		The id of the commit to create.
+	 * @param author
+	 * 		The author of the commit to create.
+	 * @param message
+	 * 		The message of the commit to create.
+	 * @param dateTime
+	 * 		The datetime of the commit to create.
+	 * @param parentIds
+	 * 		The parent ids of the commit to create.
+	 * @param fileChanges
+	 * 		The file changes of the commit to create.
+	 * @param issues
+	 * 		The issues of the commit to create.
+	 * @param engine
+	 * 		The engine of the commit to create.
+	 * @return
+	 * 		The created {@link Commit} instance.
+	 * @throws NullPointerException
+	 * 		If {@code id}, {@code author}, {@code message}, {@code dateTime},
+	 * 		or {@code engine} is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If {@code id} is empty.
+	 */
+	default Commit createCommit(final String id, final String author,
+			final String message, final LocalDateTime dateTime,
+			final List<String> parentIds, final List<FileChange> fileChanges,
+			final List<Issue> issues, final VCSEngine engine)
+			throws NullPointerException, IllegalArgumentException {
+		Validate.notEmpty(id);
+		Validate.notNull(author);
+		Validate.notNull(message);
+		Validate.notNull(dateTime);
+		Validate.notNull(engine);
+		final List<String> _parentIds = createCopy(parentIds);
+		final List<FileChange> _fileChanges = createCopy(fileChanges);
+		final List<Issue> _issues = createCopy(issues);
+		return new Commit() {
+			@Override
+			public String getId() {
+				return id;
+			}
+
+			@Override
+			public String getAuthor() {
+				return author;
+			}
+
+			@Override
+			public String getMessage() {
+				return message;
+			}
+
+			@Override
+			public LocalDateTime getDateTime() {
+				return dateTime;
+			}
+
+			@Override
+			public List<String> getParentIds() {
+				return new ArrayList<>(_parentIds);
+			}
+
+			@Override
+			public List<FileChange> getFileChanges() {
+				return new ArrayList<>(_fileChanges);
+			}
+
+			@Override
+			public List<Issue> getIssues() {
+				return new ArrayList<>(_issues);
+			}
+
+			@Override
+			public VCSEngine getVCSEngine() {
+				return engine;
+			}
+		};
+	}
+
+	/**
+	 * Creates a new {@link FileChange}.
+	 *
+	 * @param oldFile
+	 * 		The old file of the file change to create.
+	 * @param newFile
+	 * 		The new file of the file change to create.
+	 * @param engine
+	 * 		The engine of the file change to create.
+	 * @return
+	 * 		The created {@link FileChange} instance.
+	 * @throws NullPointerException
+	 * 		If {@code engine} is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If {@code oldFile} as well as {newFile} is {@code null}.
+	 */
+	default FileChange createFileChange(final VCSFile oldFile,
+			final VCSFile newFile, final VCSEngine engine)
+			throws NullPointerException, IllegalArgumentException {
+		Validate.isFalse(oldFile == null && newFile == null,
+				"At least one of the given files must not be null");
+		Validate.notNull(engine);
+		return new FileChange() {
+			@Override
+			public Optional<VCSFile> getOldFile() {
+				return Optional.ofNullable(oldFile);
+			}
+
+			@Override
+			public Optional<VCSFile> getNewFile() {
+				return Optional.ofNullable(newFile);
+			}
+
+			@Override
+			public VCSEngine getVCSEngine() {
+				return engine;
+			}
+		};
+	}
+
+	/**
+	 * Creates a new {@link LineChange}.
+	 *
+	 * @param type
+	 * 		The type of the line change to create.
+	 * @param line
+	 * 		The line number of the line change to create.
+	 * @param content
+	 * 		The content of the line change to create.
+	 * @param file
+	 * 		The file of the line change to create.
+	 * @param engine
+	 * 		The engine of the line change to create.
+	 * @return
+	 * 		The created {@link LineChange} instance.
+	 * @throws NullPointerException
+	 * 		If any of the given arguments is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If {@code line < 1}.
+	 */
+	default LineChange createLineChange(final LineChange.Type type,
+			final int line, final String content, final VCSFile file,
+			final VCSEngine engine) throws NullPointerException,
+			IllegalArgumentException {
+		Validate.notNull(type);
+		Validate.isPositive(line, "Line (%d) < 1", line);
+		Validate.notNull(content);
+		Validate.notNull(file);
+		Validate.notNull(engine);
+		return new LineChange() {
+			@Override
+			public Type getType() {
+				return type;
+			}
+
+			@Override
+			public int getLine() {
+				return line;
+			}
+
+			@Override
+			public String getContent() {
+				return content;
+			}
+
+			@Override
+			public VCSFile getFile() {
+				return file;
+			}
+
+			@Override
+			public VCSEngine getVCSEngine() {
+				return engine;
+			}
+		};
+	}
+
+	/**
+	 * Creates a new {@link LineInfo}.
+	 *
+	 * @param id
+	 * 		The id of the line info to create.
+	 * @param author
+	 * 		The author of the line info to create.
+	 * @param message
+	 * 		The message of the line info to create.
+	 * @param dateTime
+	 * 		The datetime of the line info to create.
+	 * @param line
+	 * 		The line number of the line info to create.
+	 * @param content
+	 * 		The content of the line info to create.
+	 * @param file
+	 * 		The file of the line info to create.
+	 * @param engine
+	 * 		The engine of the line info to create.
+	 * @return
+	 * 		The created {@link LineInfo} instance.
+	 * @throws NullPointerException
+	 * 		If any of the given arguments is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If {@code line < 1}.
+	 */
+	default LineInfo createLineInfo(final String id, final String author,
+			final String message, final LocalDateTime dateTime, final int line,
+			final String content, final VCSFile file, final VCSEngine engine)
+			throws NullPointerException, IllegalArgumentException {
+		Validate.notEmpty(id);
+		Validate.notNull(author);
+		Validate.notNull(message);
+		Validate.notNull(dateTime);
+		Validate.isPositive(line, "Line (%d) < 1");
+		Validate.notNull(content);
+		Validate.notNull(file);
+		Validate.notNull(engine);
+		return new LineInfo() {
+			@Override
+			public String getId() {
+				return id;
+			}
+
+			@Override
+			public String getAuthor() {
+				return author;
+			}
+
+			@Override
+			public String getMessage() {
+				return message;
+			}
+
+			@Override
+			public LocalDateTime getDateTime() {
+				return dateTime;
+			}
+
+			@Override
+			public int getLine() {
+				return line;
+			}
+
+			@Override
+			public String getContent() {
+				return content;
+			}
+
+			@Override
+			public VCSFile getFile() {
+				return file;
+			}
+
+			@Override
+			public VCSEngine getVCSEngine() {
+				return engine;
+			}
+		};
+	}
+
+	/**
+	 * Creates a new {@link Revision}. List arguments are flat copied. If any
+	 * of the given lists is {@code null}, an empty list is used as fallback.
+	 * {@code null} values are filtered out.
+	 *
+	 * @param id
+	 * 		The id of the revision to create.
+	 * @param files
+	 * 		The files (relative paths) of the revision to create.
+	 * @param engine
+	 * 		The engine of the revision to create.
+	 * @return
+	 * 		The created {@link Revision} instance.
+	 * @throws NullPointerException
+	 * 		If {@code id} or {@code engine} is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If {@code id} is empty.
+	 */
+	default Revision createRevision(final String id, final List<String> files,
+			final VCSEngine engine) throws NullPointerException,
+			IllegalArgumentException {
+		Validate.notEmpty(id);
+		Validate.notNull(engine);
+		final List<VCSFile> _files = new ArrayList<>();
+		final Revision revision = new Revision() {
+			@Override
+			public String getId() {
+				return id;
+			}
+
+			@Override
+			public List<VCSFile> getFiles() {
+				return new ArrayList<>(_files);
+			}
+
+			@Override
+			public VCSEngine getVCSEngine() {
+				return engine;
+			}
+		};
+		createCopy(files).stream()
+				.map(f -> createVCSFile(f, revision, engine))
+				.forEach(_files::add);
+		return revision;
+	}
+
+	/**
+	 * Creates a new {@link RevisionRange}. List arguments are flat copied. If
+	 * any of the given lists is {@code null}, an empty list is used as
+	 * fallback. {@code null} values are filtered out.
+	 *
+	 * @param ordinal
+	 * 		The ordinal of the revision range to create.
+	 * @param revision
+	 * 		The revision of the revision range to create.
+	 * @param predecessorRevision
+	 * 		The predecessor revision of the revision range to create.
+	 * @param commits
+	 * 		The commits of the revision range to create.
+	 * @param engine
+	 * 		The engine of the revision range to create.
+	 * @return
+	 * 		The created {@link RevisionRange} instance.
+	 * @throws NullPointerException
+	 * 		If {@code revision} or {@code engine} is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If {@code ordinal < 1} or if {@code commits} is empty.
+	 */
+	default RevisionRange createRevisionRange(final int ordinal,
+			final Revision revision, final Revision predecessorRevision,
+			final List<Commit> commits, final VCSEngine engine)
+			throws NullPointerException, IllegalArgumentException {
+		Validate.isPositive(ordinal, "Ordinal (%d) < 1");
+		Validate.notNull(revision);
+		Validate.notNull(engine);
+		final List<Commit> _commits = createCopy(commits);
+		Validate.notEmpty(_commits, "There must be at least one commit");
+		return new RevisionRange() {
+			@Override
+			public int getOrdinal() {
+				return ordinal;
+			}
+
+			@Override
+			public Revision getRevision() {
+				return revision;
+			}
+
+			@Override
+			public Optional<Revision> getPredecessorRevision() {
+				return Optional.ofNullable(predecessorRevision);
+			}
+
+			@Override
+			public List<Commit> getCommits() {
+				return new ArrayList<>(_commits);
+			}
+
+			@Override
+			public VCSEngine getVCSEngine() {
+				return engine;
+			}
+		};
+	}
+
+	/**
+	 * Creates a new {@link VCSFile}.
+	 *
+	 * @param relativePath
+	 * 		The relative path of the file to create.
+	 * @param revision
+	 * 		The revision of the file to create.
+	 * @param engine
+	 * 		The engine of the file to create.
+	 * @return
+	 * 		The created {@link VCSFile} instance.
+	 * @throws NullPointerException
+	 * 		If any of the given arguments is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If {@code relativePath} is empty.
+	 */
+	default VCSFile createVCSFile(final String relativePath,
+			final Revision revision, final VCSEngine engine)
+			throws NullPointerException, IllegalArgumentException {
+		Validate.notEmpty(relativePath);
+		Validate.notNull(revision);
+		Validate.notNull(engine);
+		return new VCSFile() {
+
+			/**
+			 * Caches the contents of this file (see {@link #readAllBytes()}).
+			 * Use a {@link SoftReference} to avoid an {@link OutOfMemoryError}
+			 * due to hundrets of thousands of cached file contents.
+			 */
+			private SoftReference<byte[]> contentsCache =
+					new SoftReference<>(null);
+
+			/**
+			 * Caches the charset of this file (see {@link #guessCharset()}).
+			 */
+			private AtomicReference<Charset> charsetCache = null;
+
+			/**
+			 * Caches the information whether this file is binary.
+			 */
+			private AtomicBoolean binary = null;
+
+			@Override
+			public String getRelativePath() {
+				return relativePath;
+			}
+
+			@Override
+			public Revision getRevision() {
+				return revision;
+			}
+
+			@Override
+			public VCSEngine getVCSEngine() {
+				return engine;
+			}
+
+			@Override
+			public byte[] readAllBytes() throws IOException {
+				byte[] bytes = contentsCache.get();
+				if (bytes == null) {
+					bytes = VCSFile.super.readAllBytes();
+					contentsCache = new SoftReference<>(bytes);
+				}
+				return bytes;
+			}
+
+			@Override
+			public Optional<Charset> guessCharset() throws IOException {
+				if (charsetCache == null) {
+					charsetCache = new AtomicReference<>(
+							VCSFile.super.guessCharset().orElse(null));
+				}
+				return Optional.ofNullable(charsetCache.get());
+			}
+
+			@Override
+			public boolean isBinary() throws IOException {
+				if (binary == null) {
+					binary = new AtomicBoolean(VCSFile.super.isBinary());
+				}
+				return binary.get();
+			}
+		};
+	}
+}
