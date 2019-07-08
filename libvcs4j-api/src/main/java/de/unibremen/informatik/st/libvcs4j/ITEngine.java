@@ -42,6 +42,24 @@ public interface ITEngine {
 	Optional<Issue> getIssueById(String id) throws IOException;
 
 	/**
+	 * Returns the factory used to create issue tracker model instances.
+	 *
+	 * @return
+	 * 		The factory used to create issue tracker model instances.
+	 */
+	ItModelFactory getModelFactory();
+
+	/**
+	 * Sets the factory used to create issue tracker model instances.
+	 *
+	 * @param factory
+	 * 		The factory used to create issue tracker model instances.
+	 * @throws NullPointerException
+	 * 		If {@code factory} is {@code null}.
+	 */
+	void setModelFactory(ItModelFactory factory);
+
+	/**
 	 * Returns all issues referenced by the given commit. This method does not
 	 * fail if {@code commit} is {@code null} and does not return the same
 	 * issue (according to {@link Issue#getId()}) twice.
