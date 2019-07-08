@@ -1,6 +1,8 @@
 package de.unibremen.informatik.st.libvcs4j.engine;
 
 import bmsi.util.Diff;
+import com.ibm.icu.text.CharsetDetector;
+import com.ibm.icu.text.CharsetMatch;
 import de.unibremen.informatik.st.libvcs4j.Commit;
 import de.unibremen.informatik.st.libvcs4j.FileChange;
 import de.unibremen.informatik.st.libvcs4j.ITEngine;
@@ -10,6 +12,7 @@ import de.unibremen.informatik.st.libvcs4j.Revision;
 import de.unibremen.informatik.st.libvcs4j.RevisionRange;
 import de.unibremen.informatik.st.libvcs4j.VCSEngine;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
+import de.unibremen.informatik.st.libvcs4j.VCSModelFactory;
 import de.unibremen.informatik.st.libvcs4j.Validate;
 import de.unibremen.informatik.st.libvcs4j.data.FileChangeImpl;
 import de.unibremen.informatik.st.libvcs4j.data.VCSFileImpl;
@@ -18,11 +21,13 @@ import de.unibremen.informatik.st.libvcs4j.data.LineChangeImpl;
 import de.unibremen.informatik.st.libvcs4j.data.RevisionImpl;
 import de.unibremen.informatik.st.libvcs4j.data.RevisionRangeImpl;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalReturnException;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -58,6 +63,9 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 
 	/* External engines. */
 	private ITEngine itEngine = null;
+
+	/* Factories. */
+	private VCSModelFactory modelFactory = new VCSModelFactory() {};
 
 	/* Internal state of this engine. */
 	private int ordinal = 1;
@@ -245,6 +253,34 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 	@Override
 	public Optional<ITEngine> getITEngine() {
 		return Optional.ofNullable(itEngine);
+	}
+
+	@Override
+	public Optional<Charset> guessCharset(final VCSFile file)
+			throws IOException {
+		final CharsetDetector detector = new CharsetDetector();
+		detector.setText(file.readAllBytes());
+		final CharsetMatch match = detector.detect();
+		Charset charset;
+		try {
+			charset = Optional.ofNullable(match)
+					.map(m -> Charset.forName(m.getName()))
+					.orElse(null);
+		} catch (final Exception e) {
+			charset = null;
+		}
+		return Optional.ofNullable(charset);
+	}
+
+	@Override
+	public VCSModelFactory getModelFactory() {
+		return modelFactory;
+	}
+
+	@Override
+	public void setModelFactory(@NonNull VCSModelFactory factory)
+			throws NullPointerException {
+		modelFactory = factory;
 	}
 
 	/**
