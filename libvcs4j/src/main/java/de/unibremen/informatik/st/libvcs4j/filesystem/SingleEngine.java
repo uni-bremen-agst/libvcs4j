@@ -4,7 +4,6 @@ import de.unibremen.informatik.st.libvcs4j.LineInfo;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.Validate;
 import de.unibremen.informatik.st.libvcs4j.data.CommitImpl;
-import de.unibremen.informatik.st.libvcs4j.data.LineInfoImpl;
 import de.unibremen.informatik.st.libvcs4j.engine.AbstractVSCEngine;
 import de.unibremen.informatik.st.libvcs4j.engine.Changes;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalRepositoryException;
@@ -127,14 +126,10 @@ public class SingleEngine extends AbstractVSCEngine {
 			final LocalDateTime dt = LocalDateTime.ofInstant(
 					Files.getLastModifiedTime(pFile.toPath()).toInstant(),
 					ZoneId.systemDefault());
-			final LineInfo info = new LineInfoImpl(
-					DEFAULT_REVISION,
-					DEFAULT_AUTHOR,
-					DEFAULT_MESSAGE,
-					dt,
-					i + 1,
-					lines.get(i).replaceAll("\r\n$|\n$", ""),
-					pFile);
+			final LineInfo info = getModelFactory().createLineInfo(
+					DEFAULT_REVISION, DEFAULT_AUTHOR, DEFAULT_MESSAGE, dt,
+					i + 1, lines.get(i).replaceAll("\r\n$|\n$", ""), pFile,
+					this);
 			lineInfo.add(info);
 		}
 		return lineInfo;

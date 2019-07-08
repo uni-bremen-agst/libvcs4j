@@ -14,7 +14,6 @@ import com.aragost.javahg.commands.flags.LogCommandFlags;
 import com.aragost.javahg.commands.flags.StatusCommandFlags;
 import com.aragost.javahg.commands.flags.UpdateCommandFlags;
 import de.unibremen.informatik.st.libvcs4j.*;
-import de.unibremen.informatik.st.libvcs4j.data.LineInfoImpl;
 import de.unibremen.informatik.st.libvcs4j.engine.AbstractIntervalVCSEngine;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalIntervalException;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalRepositoryException;
@@ -382,7 +381,7 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 				final LocalDateTime dt = LocalDateTime.ofInstant(
 						al.getChangeset().getTimestamp().getDate().toInstant(),
 						ZoneId.systemDefault());
-				final LineInfo li = new LineInfoImpl(
+				final LineInfo li = getModelFactory().createLineInfo(
 						al.getChangeset().getNode(),
 						al.getChangeset().getUser()
 								.replaceAll(" <.*@.*>$", ""),
@@ -393,7 +392,7 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 						// it uses the system encoding to decode the line.
 						// al.getLine(),
 						lines.get(i).replaceAll("\r\n$|\n$", ""),
-						pFile);
+						pFile, this);
 				lineInfo.add(li);
 			}
 			return lineInfo;

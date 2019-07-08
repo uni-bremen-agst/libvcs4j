@@ -5,7 +5,6 @@ import de.unibremen.informatik.st.libvcs4j.VCSEngine;
 import de.unibremen.informatik.st.libvcs4j.VCSEngineBuilder;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.Validate;
-import de.unibremen.informatik.st.libvcs4j.data.LineInfoImpl;
 import de.unibremen.informatik.st.libvcs4j.engine.AbstractIntervalVCSEngine;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalRevisionException;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalTargetException;
@@ -520,20 +519,20 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 				final LocalDateTime dt = LocalDateTime.ofInstant(
 						pi.getWhen().toInstant(),
 						pi.getTimeZone().toZoneId());
-				final LineInfo li = new LineInfoImpl(
+				final LineInfo li = getModelFactory().createLineInfo(
 						rc.getName(), pi.getName(),
 						rc.getFullMessage().replaceAll("\r\n$|\n$", ""),
-						dt, i + 1, lines.get(i), pFile);
+						dt, i + 1, lines.get(i), pFile, this);
 				lineInfo.add(li);
 			}
 			/* Handle EOL fails by duplicating the last blame result. */
 			if (blameNumLines > 0) { // Consider empty files.
 				for (int i = blameNumLines; i < lines.size(); i++) {
 					final LineInfo prev = lineInfo.get(i - 1);
-					final LineInfo next = new LineInfoImpl(
+					final LineInfo next = getModelFactory().createLineInfo(
 							prev.getId(), prev.getAuthor(), prev.getMessage(),
-							prev.getDateTime(), prev.getLine(),
-							lines.get(i), prev.getFile());
+							prev.getDateTime(), prev.getLine(),  lines.get(i),
+							prev.getFile(), this);
 					lineInfo.add(next);
 				}
 			}

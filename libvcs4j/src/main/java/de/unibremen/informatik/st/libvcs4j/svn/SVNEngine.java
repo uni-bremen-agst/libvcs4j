@@ -6,7 +6,6 @@ import de.unibremen.informatik.st.libvcs4j.VCSEngineBuilder;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.Validate;
 import de.unibremen.informatik.st.libvcs4j.data.CommitImpl;
-import de.unibremen.informatik.st.libvcs4j.data.LineInfoImpl;
 import de.unibremen.informatik.st.libvcs4j.engine.AbstractIntervalVCSEngine;
 import de.unibremen.informatik.st.libvcs4j.engine.Changes;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalIntervalException;
@@ -334,13 +333,13 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 				final String pMergedAuthor, final String pMergedPath,
 				final int pLineNumber) throws SVNException {
 			try {
-				final LineInfo li = new LineInfoImpl(
+				final LineInfo li = getModelFactory().createLineInfo(
 						revision, pAuthor,
 						createCommitImpl(revision).getMessage(),
 						LocalDateTime.ofInstant(
 								pDate.toInstant(),
 								ZoneId.systemDefault()),
-						pLineNumber + 1, pLine, file);
+						pLineNumber + 1, pLine, file, SVNEngine.this);
 				lineInfoList.add(li);
 			} catch (final IOException e) {
 				throw new UncheckedIOException(e);
