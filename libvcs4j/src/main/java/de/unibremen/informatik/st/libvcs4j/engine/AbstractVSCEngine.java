@@ -17,7 +17,6 @@ import de.unibremen.informatik.st.libvcs4j.Validate;
 import de.unibremen.informatik.st.libvcs4j.data.FileChangeImpl;
 import de.unibremen.informatik.st.libvcs4j.data.VCSFileImpl;
 import de.unibremen.informatik.st.libvcs4j.data.CommitImpl;
-import de.unibremen.informatik.st.libvcs4j.data.LineChangeImpl;
 import de.unibremen.informatik.st.libvcs4j.data.RevisionImpl;
 import de.unibremen.informatik.st.libvcs4j.data.RevisionRangeImpl;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalReturnException;
@@ -222,21 +221,25 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 		while (change != null) {
 			final Diff.change c = change;
 			for (int i = 0; i < change.deleted; i++) {
-				final LineChangeImpl lineChange = new LineChangeImpl();
-				lineChange.setType(LineChange.Type.DELETE);
-				lineChange.setLine(c.line0 + i + 1);
-				lineChange.setContent(old[lineChange.getLine() - 1]);
-				lineChange.setFile(oldFile.orElseThrow(() ->
-						new IllegalStateException("Missing old file.")));
+				final int line = c.line0 + i + 1;
+				final LineChange lineChange =
+						getModelFactory().createLineChange(
+								LineChange.Type.DELETE, line, old[line - 1],
+								oldFile.orElseThrow(() ->
+										new IllegalStateException(
+												"Missing old file.")),
+								this);
 				lineChanges.add(lineChange);
 			}
 			for (int i = 0; i < change.inserted; i++) {
-				final LineChangeImpl lineChange = new LineChangeImpl();
-				lineChange.setType(LineChange.Type.INSERT);
-				lineChange.setLine(c.line1 + i + 1);
-				lineChange.setContent(nev[lineChange.getLine() - 1]);
-				lineChange.setFile(nevFile.orElseThrow(() ->
-						new IllegalStateException("Missing new file.")));
+				final int line = c.line1 + i + 1;
+				final LineChange lineChange =
+						getModelFactory().createLineChange(
+								LineChange.Type.INSERT, line, nev[line - 1],
+								nevFile.orElseThrow(() ->
+										new IllegalStateException(
+												"Missing new file.")),
+								this);
 				lineChanges.add(lineChange);
 			}
 			change = change.link;
