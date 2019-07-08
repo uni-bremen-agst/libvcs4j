@@ -1,6 +1,5 @@
 package de.unibremen.informatik.st.libvcs4j;
 
-import de.unibremen.informatik.st.libvcs4j.data.FileChangeImpl;
 import de.unibremen.informatik.st.libvcs4j.data.VCSFileImpl;
 import de.unibremen.informatik.st.libvcs4j.engine.AbstractVSCEngine;
 import org.junit.Test;
@@ -42,11 +41,7 @@ public class RangeTest {
 		file2.setRelativePath(newFile);
 		file2.setRevision(revision2);
 
-		FileChangeImpl change = new FileChangeImpl();
-		change.setOldFile(file1);
-		change.setNewFile(file2);
-		change.setVCSEngine(engine);
-		return change;
+		return new VCSModelFactory(){}.createFileChange(file1, file2, engine);
 	}
 
 	@Test

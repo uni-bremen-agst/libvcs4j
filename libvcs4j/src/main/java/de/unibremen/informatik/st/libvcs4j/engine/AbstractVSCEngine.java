@@ -14,7 +14,6 @@ import de.unibremen.informatik.st.libvcs4j.VCSEngine;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.VCSModelFactory;
 import de.unibremen.informatik.st.libvcs4j.Validate;
-import de.unibremen.informatik.st.libvcs4j.data.FileChangeImpl;
 import de.unibremen.informatik.st.libvcs4j.data.VCSFileImpl;
 import de.unibremen.informatik.st.libvcs4j.data.CommitImpl;
 import de.unibremen.informatik.st.libvcs4j.data.RevisionImpl;
@@ -383,36 +382,29 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 		final List<FileChange> fileChanges = new ArrayList<>();
 		pChanges.getAdded().stream()
 				.map(Paths::get)
-				.map(a -> {
-					final FileChangeImpl fc = new FileChangeImpl();
-					fc.setVCSEngine(this);
-					fc.setNewFile(path2File.computeIfAbsent(
-							a, p -> createFile(p, rev)));
-					return fc;
-				})
+				.map(a -> getModelFactory().createFileChange(
+						null,
+						path2File.computeIfAbsent(a, p ->
+								createFile(p, rev)),
+						this))
 				.forEach(fileChanges::add);
 		if (revisionIdx > 0) {
 			Validate.validateState(currentRevision != null);
 			pChanges.getRemoved().stream()
 					.map(Paths::get)
-					.map(r -> {
-						final FileChangeImpl fc = new FileChangeImpl();
-						fc.setVCSEngine(this);
-						fc.setOldFile(path2File.computeIfAbsent(
-								r, p -> createFile(p, currentRevision)));
-						return fc;
-					})
+					.map(r -> getModelFactory().createFileChange(
+							path2File.computeIfAbsent(r, p ->
+									createFile(p, currentRevision)),
+							null,
+							this))
 					.forEach(fileChanges::add);
 			pChanges.getModified().stream()
 					.map(Paths::get)
-					.map(m -> {
-						final FileChangeImpl fc = new FileChangeImpl();
-						fc.setVCSEngine(this);
-						fc.setOldFile(createFile(m, currentRevision));
-						fc.setNewFile(path2File.computeIfAbsent(
-								m, p -> createFile(p, rev)));
-						return fc;
-					})
+					.map(m -> getModelFactory().createFileChange(
+							createFile(m, currentRevision),
+							path2File.computeIfAbsent(m, p ->
+									createFile(p, rev)),
+							this))
 					.forEach(fileChanges::add);
 			pChanges.getRelocated().stream()
 					.map(e -> new AbstractMap.SimpleEntry<>(
@@ -421,13 +413,12 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 					.map(e -> {
 						final Path old = e.getKey();
 						final Path nev = e.getValue();
-						final FileChangeImpl fc = new FileChangeImpl();
-						fc.setVCSEngine(this);
-						fc.setOldFile(path2File.computeIfAbsent(
-								old, p -> createFile(p, currentRevision)));
-						fc.setNewFile(path2File.computeIfAbsent(
-								nev, p -> createFile(p, rev)));
-						return fc;
+						return getModelFactory().createFileChange(
+								path2File.computeIfAbsent(old, p ->
+										createFile(p, currentRevision)),
+								path2File.computeIfAbsent(nev, p ->
+										createFile(p, rev)),
+								this);
 					})
 					.forEach(fileChanges::add);
 		}
