@@ -17,7 +17,6 @@ import de.unibremen.informatik.st.libvcs4j.Validate;
 import de.unibremen.informatik.st.libvcs4j.data.VCSFileImpl;
 import de.unibremen.informatik.st.libvcs4j.data.CommitImpl;
 import de.unibremen.informatik.st.libvcs4j.data.RevisionImpl;
-import de.unibremen.informatik.st.libvcs4j.data.RevisionRangeImpl;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalReturnException;
 import lombok.NonNull;
 import org.slf4j.Logger;
@@ -371,12 +370,6 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 	private RevisionRange createRevisionRange(final Changes pChanges)
 			throws IOException {
 		final Revision rev = createRevision();
-		final RevisionRangeImpl range = new RevisionRangeImpl();
-		range.setVCSEngine(this);
-		range.setOrdinal(ordinal++);
-		range.setRevision(rev);
-		range.setPredecessorRevision(currentRevision);
-
 		final Map<Path, VCSFile> path2File = new HashMap<>();
 		rev.getFiles().forEach(f -> path2File.put(f.toPath(), f));
 		final List<FileChange> fileChanges = new ArrayList<>();
@@ -422,8 +415,8 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 		}
 
 		final Commit commit = createCommit(fileChanges);
-		range.setCommits(Collections.singletonList(commit));
-		return range;
+		return getModelFactory().createRevisionRange(ordinal++, rev,
+				currentRevision, Collections.singletonList(commit), this);
 	}
 
 	private Commit createCommit(final List<FileChange> pFileChanges)
