@@ -418,13 +418,11 @@ public interface VCSModelFactory {
 	 * 		The created {@link VCSFile} instance.
 	 * @throws NullPointerException
 	 * 		If any of the given arguments is {@code null}.
-	 * @throws IllegalArgumentException
-	 * 		If {@code relativePath} is empty.
 	 */
 	default VCSFile createVCSFile(final String relativePath,
 			final Revision revision, final VCSEngine engine)
 			throws NullPointerException, IllegalArgumentException {
-		Validate.notEmpty(relativePath);
+		Validate.notNull(relativePath);
 		Validate.notNull(revision);
 		Validate.notNull(engine);
 		return new VCSFile() {
