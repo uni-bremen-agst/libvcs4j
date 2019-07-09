@@ -18,6 +18,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Allows to represent a collection of {@link VCSFile} instances as a file
@@ -329,13 +330,13 @@ public class FSTree<V> {
 	 *
 	 * @return
 	 * 		The value of this file or the aggregated values of all
-	 * 		(recursively) sub files. If a file has no value or a directory
-	 * 		contains only files without a value, an empty {@link Optional} is
-	 * 		returned.
+	 * 		(recursively) sub files. If this file has no value (or this
+	 * 		directory contains only files without a value), an empty
+	 * 		{@link Optional} is returned.
 	 */
 	public Optional<V> getValue() {
 		final List<V> values = new ArrayList<>();
-		final Visitor<V> visitor = new Visitor<V>() {
+		final Visitor<V> visitor = new Visitor<>() {
 			@Override
 			protected void visitFile(final FSTree<V> pTree) {
 				if (pTree.value != null) {
@@ -350,7 +351,7 @@ public class FSTree<V> {
 		} else if (values.size() == 1) {
 			return Optional.ofNullable(values.get(0));
 		} else {
-			return values.stream().reduce(aggregator::apply);
+			return values.stream().reduce(aggregator);
 		}
 	}
 
@@ -365,6 +366,76 @@ public class FSTree<V> {
 		return nodes == null
 				? Collections.emptyList()
 				: new ArrayList<>(nodes);
+	}
+
+	/**
+	 * Returns the sub directories of this tree if this tree is a directory. If
+	 * this tree is a file, an empty List is returned.
+	 *
+	 * @return
+	 * 		The sub directories of this tree.
+	 */
+	public List<FSTree<V>> getDirectories() {
+		return getNodes().stream()
+				.filter(FSTree::isDirectory)
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Returns all (recursively) sub directories of this tree if this tree is a
+	 * directory. If this tree is a file, an empty list is returned.
+	 *
+	 * @return
+	 * 		All (recursively) sub directories of this tree.
+	 */
+	public List<FSTree<V>> getAllDirectories() {
+		final List<FSTree<V>> directories = new ArrayList<>();
+		final Visitor<V> visitor = new Visitor<>() {
+			@Override
+			protected void visitDirectory(final FSTree<V> pDirectory) {
+				if (pDirectory != FSTree.this) {
+					directories.add(pDirectory);
+				}
+				super.visitDirectory(pDirectory);
+			}
+		};
+		visitor.visit(this);
+		return directories;
+	}
+
+	/**
+	 * Returns the sub files of this tree if this tree is a directory. If this
+	 * tree is a file, an empty list is returned.
+	 *
+	 * @return
+	 * 		The sub files of this tree.
+	 */
+	public List<FSTree<V>> getFiles() {
+		return getNodes().stream()
+				.filter(FSTree::isFile)
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Returns all (recursively) sub files of this tree if this tree is a
+	 * directory. If this tree is a file, an empty list is returned.
+	 *
+	 * @return
+	 * 		Al (recursively) sub files of this tree.
+	 */
+	public List<FSTree<V>> getAllFiles() {
+		final List<FSTree<V>> files = new ArrayList<>();
+		final Visitor<V> visitor = new Visitor<>() {
+			@Override
+			protected void visitFile(FSTree<V> pFile) {
+				if (pFile != FSTree.this) {
+					files.add(pFile);
+				}
+				super.visitFile(pFile);
+			}
+		};
+		visitor.visit(this);
+		return files;
 	}
 
 	/**
