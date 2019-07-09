@@ -14,7 +14,6 @@ import de.unibremen.informatik.st.libvcs4j.VCSEngine;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.VCSModelFactory;
 import de.unibremen.informatik.st.libvcs4j.Validate;
-import de.unibremen.informatik.st.libvcs4j.data.VCSFileImpl;
 import de.unibremen.informatik.st.libvcs4j.data.CommitImpl;
 import de.unibremen.informatik.st.libvcs4j.data.RevisionImpl;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalReturnException;
@@ -336,13 +335,8 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 			throw new IllegalArgumentException(String.format(
 					"'%s' is not a file located in '%s'", pPath, output));
 		}
-		final Path relPath = output.relativize(pPath);
-
-		final VCSFileImpl file = new VCSFileImpl();
-		file.setVCSEngine(this);
-		file.setRelativePath(relPath.toString());
-		file.setRevision(pRevision);
-		return file;
+		final String relPath = output.relativize(pPath).toString();
+		return getModelFactory().createVCSFile(relPath, pRevision, this);
 	}
 
 	private Revision createRevision() throws IOException {

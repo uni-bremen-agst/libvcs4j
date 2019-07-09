@@ -1,10 +1,15 @@
 package de.unibremen.informatik.st.libvcs4j;
 
-import de.unibremen.informatik.st.libvcs4j.data.VCSFileImpl;
 import de.unibremen.informatik.st.libvcs4j.engine.AbstractVSCEngine;
+import lombok.NonNull;
+import lombok.Value;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.apache.commons.io.IOUtils.toByteArray;
@@ -14,34 +19,53 @@ import static org.mockito.Mockito.when;
 
 public class RangeTest {
 
+	@Value
+	private static final class VCSFileMock implements VCSFile {
+		@NonNull
+		private final String relativePath;
+		@NonNull
+		private final Revision revision;
+		@NonNull
+		private final VCSEngine VCSEngine;
+		@NonNull
+		private final byte[] bytes;
+		@NonNull
+		private final Charset charset;
+
+		@Override
+		public byte[] readAllBytes() {
+			return bytes;
+		}
+
+		@Override
+		public Optional<Charset> guessCharset() {
+			return Optional.of(charset);
+		}
+	}
+
+	private final VCSModelFactory modelFactory = new VCSModelFactory() {};
+
 	private FileChange createFileChangeFromResource(String oldFile,
 			String newFile) throws IOException {
 		VCSEngine engine = mock(AbstractVSCEngine.class);
+		when(engine.getModelFactory()).thenReturn(modelFactory);
 		when(engine.computeDiff(any())).thenCallRealMethod();
 		Revision revision1 = mock(Revision.class);
 		when(revision1.getId()).thenReturn("1");
+		when(revision1.getOutput()).thenReturn(Paths.get("/tmp"));
 		Revision revision2 = mock(Revision.class);
 		when(revision2.getId()).thenReturn("2");
+		when(revision2.getOutput()).thenReturn(Paths.get("/tmp"));
 
-		VCSFileImpl file1 = new VCSFileImpl() {
-			@Override
-			public byte[] readAllBytes() throws IOException {
-				return toByteArray(getClass().getResourceAsStream(oldFile));
-			}
-		};
-		file1.setRelativePath(oldFile);
-		file1.setRevision(revision1);
+		VCSFile file1 = new VCSFileMock(oldFile, revision1, engine,
+				toByteArray(getClass().getResourceAsStream(oldFile)),
+				StandardCharsets.UTF_8);
 
-		VCSFileImpl file2 = new VCSFileImpl(){
-			@Override
-			public byte[] readAllBytes() throws IOException {
-				return toByteArray(getClass().getResourceAsStream(newFile));
-			}
-		};
-		file2.setRelativePath(newFile);
-		file2.setRevision(revision2);
+		VCSFile file2 = new VCSFileMock(newFile, revision2, engine,
+				toByteArray(getClass().getResourceAsStream(newFile)),
+				StandardCharsets.UTF_8);
 
-		return new VCSModelFactory(){}.createFileChange(file1, file2, engine);
+		return modelFactory.createFileChange(file1, file2, engine);
 	}
 
 	@Test
@@ -50,9 +74,15 @@ public class RangeTest {
 				"/diff/DefaultTypeAdapters.java.1",
 				"/diff/DefaultTypeAdapters.java.2");
 
-		VCSFile.Range range = new VCSFile.Range(
-				change.getOldFile().orElseThrow(AssertionError::new),
-				400, 7, 400, 32, 2);
+		VCSFile.Position begin = change.getOldFile()
+				.orElseThrow(AssertionError::new)
+				.positionOf(400, 7, 2)
+				.orElseThrow(AssertionError::new);
+		VCSFile.Position end = change.getOldFile()
+				.orElseThrow(AssertionError::new)
+				.positionOf(400, 32, 2)
+				.orElseThrow(AssertionError::new);
+		VCSFile.Range range = new VCSFile.Range(begin, end);
 		VCSFile.Range updated = range.apply(change)
 				.orElseThrow(AssertionError::new);
 
@@ -70,9 +100,15 @@ public class RangeTest {
 				"/diff/DefaultTypeAdapters.java.47",
 				"/diff/DefaultTypeAdapters.java.48");
 
-		VCSFile.Range range = new VCSFile.Range(
-				change.getOldFile().orElseThrow(AssertionError::new),
-				463, 14, 463, 32, 2);
+		VCSFile.Position begin = change.getOldFile()
+				.orElseThrow(AssertionError::new)
+				.positionOf(463, 14, 2)
+				.orElseThrow(AssertionError::new);
+		VCSFile.Position end = change.getOldFile()
+				.orElseThrow(AssertionError::new)
+				.positionOf(463, 32, 2)
+				.orElseThrow(AssertionError::new);
+		VCSFile.Range range = new VCSFile.Range(begin, end);
 		VCSFile.Range updated = range.apply(change)
 				.orElseThrow(AssertionError::new);
 
@@ -90,9 +126,15 @@ public class RangeTest {
 				"/diff/PrimitiveTest.java.88",
 				"/diff/PrimitiveTest.java.89");
 
-		VCSFile.Range range = new VCSFile.Range(
-				change.getOldFile().orElseThrow(AssertionError::new),
-				400, 7, 401, 5, 2);
+		VCSFile.Position begin = change.getOldFile()
+				.orElseThrow(AssertionError::new)
+				.positionOf(400, 7, 2)
+				.orElseThrow(AssertionError::new);
+		VCSFile.Position end = change.getOldFile()
+				.orElseThrow(AssertionError::new)
+				.positionOf(401, 5, 2)
+				.orElseThrow(AssertionError::new);
+		VCSFile.Range range = new VCSFile.Range(begin, end);
 		VCSFile.Range updated = range.apply(change)
 				.orElseThrow(AssertionError::new);
 
@@ -110,9 +152,15 @@ public class RangeTest {
 				"/diff/JsonReaderTest.java.973",
 				"/diff/JsonReaderTest.java.974");
 
-		VCSFile.Range range = new VCSFile.Range(
-				change.getOldFile().orElseThrow(AssertionError::new),
-				1251, 7, 1252, 5, 2);
+		VCSFile.Position begin = change.getOldFile()
+				.orElseThrow(AssertionError::new)
+				.positionOf(1251, 7, 2)
+				.orElseThrow(AssertionError::new);
+		VCSFile.Position end = change.getOldFile()
+				.orElseThrow(AssertionError::new)
+				.positionOf(1252, 5, 2)
+				.orElseThrow(AssertionError::new);
+		VCSFile.Range range = new VCSFile.Range(begin, end);
 		assertThat(range.apply(change)).isEmpty();
 	}
 }
