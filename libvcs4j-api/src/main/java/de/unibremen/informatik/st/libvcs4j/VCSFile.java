@@ -384,6 +384,13 @@ public interface VCSFile extends VCSModelElement {
 			Validate.notNull(file);
 			return file.positionOf(getLine(), getColumn(), getTabSize());
 		}
+
+		@Override
+		public String toString() {
+			return String.format("Position(file=%s, line=%d, column=%d, " +
+					"offset=%d, tabSize=%d)", getFile().toString(), getLine(),
+					getColumn(), getOffset(), getTabSize());
+		}
 	}
 
 	/**
@@ -641,6 +648,12 @@ public interface VCSFile extends VCSModelElement {
 			return newBegin.isPresent() && newEnd.isPresent()
 					? Optional.of(new Range(newBegin.get(), newEnd.get()))
 					: Optional.empty();
+		}
+
+		@Override
+		public String toString() {
+			return String.format("Range(begin=%s, end=%s)",
+					getBegin().toString(), getEnd().toString());
 		}
 	}
 

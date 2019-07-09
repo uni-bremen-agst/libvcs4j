@@ -5,6 +5,7 @@ import java.lang.ref.SoftReference;
 import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -119,6 +120,16 @@ public interface VCSModelFactory {
 			public VCSEngine getVCSEngine() {
 				return engine;
 			}
+
+			@Override
+			public String toString() {
+				return String.format("Commit(id=%s, author=%s, message=%s, " +
+								"dateTime=%s, parentIds=%s, fileChanges=%d, " +
+								"issues=%d)", getId(), getAuthor(),
+						getMessage(), getDateTime().toString(),
+						Arrays.deepToString(getParentIds().toArray()),
+						getFileChanges().size(), getIssues().size());
+			}
 		};
 	}
 
@@ -158,6 +169,13 @@ public interface VCSModelFactory {
 			@Override
 			public VCSEngine getVCSEngine() {
 				return engine;
+			}
+
+			@Override
+			public String toString() {
+				return String.format("FileChange(oldFile=%s, newFile=%s)",
+						getOldFile().map(VCSFile::toString).orElse(null),
+						getNewFile().map(VCSFile::toString).orElse(null));
 			}
 		};
 	}
@@ -215,6 +233,13 @@ public interface VCSModelFactory {
 			@Override
 			public VCSEngine getVCSEngine() {
 				return engine;
+			}
+
+			@Override
+			public String toString() {
+				return String.format("LineChange(type=%s, line=%d, " +
+								"content=%s, file=%s)", getType().toString(),
+						getLine(), getContent(), getFile().toString());
 			}
 		};
 	}
@@ -297,6 +322,15 @@ public interface VCSModelFactory {
 			public VCSEngine getVCSEngine() {
 				return engine;
 			}
+
+			@Override
+			public String toString() {
+				return String.format("LineInfo(id=%s, author=%s, " +
+						"message=%s, dateTime=%s, line=%d, content=%s, " +
+						"file=%s)", getId(), getAuthor(), getMessage(),
+						getDateTime().toString(), getLine(), getContent(),
+						getFile().toString());
+			}
 		};
 	}
 
@@ -338,6 +372,12 @@ public interface VCSModelFactory {
 			@Override
 			public VCSEngine getVCSEngine() {
 				return engine;
+			}
+
+			@Override
+			public String toString() {
+				return String.format("Revision(id=%s, output=%s, files=%d)",
+						getId(), getOutput().toString(), getFiles().size());
 			}
 		};
 		createCopy(files).stream()
@@ -401,6 +441,16 @@ public interface VCSModelFactory {
 			@Override
 			public VCSEngine getVCSEngine() {
 				return engine;
+			}
+
+			@Override
+			public String toString() {
+				return String.format("RevisionRange(ordinal=%d, " +
+						"revision=%s, predecessorRevision=%s, commits=%d, " +
+						"first=%b)", getOrdinal(), getRevision().getId(),
+						getPredecessorRevision().map(Revision::getId)
+								.orElse(null),
+						getCommits().size(), isFirst());
 			}
 		};
 	}
@@ -485,6 +535,12 @@ public interface VCSModelFactory {
 					binary = new AtomicBoolean(VCSFile.super.isBinary());
 				}
 				return binary.get();
+			}
+
+			@Override
+			public String toString() {
+				return String.format("VCSFile(relativePath=%s, revision=%s)",
+						getRelativePath(), getRevision().getId());
 			}
 		};
 	}

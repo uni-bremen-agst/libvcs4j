@@ -74,6 +74,13 @@ public interface ItModelFactory {
 			public ITEngine getITEngine() {
 				return engine;
 			}
+
+			@Override
+			public String toString() {
+				return String.format("Comment(author=%s, message=%s, " +
+						"dateTime=%s)", getAuthor(), getMessage(),
+						getDateTime().toString());
+			}
 		};
 	}
 
@@ -139,6 +146,14 @@ public interface ItModelFactory {
 			@Override
 			public ITEngine getITEngine() {
 				return engine;
+			}
+
+			@Override
+			public String toString() {
+				return String.format("Issue(id=%s, author=%s, title=%s, " +
+						"dateTime=%s, comments=%d)", getId(), getAuthor(),
+						getTitle(), getDateTime().toString(),
+						getComments().size());
 			}
 		};
 	}
