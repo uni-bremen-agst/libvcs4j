@@ -1,11 +1,13 @@
 package de.unibremen.informatik.st.libvcs4j.svn;
 
+import de.unibremen.informatik.st.libvcs4j.Commit;
+import de.unibremen.informatik.st.libvcs4j.FileChange;
+import de.unibremen.informatik.st.libvcs4j.Issue;
 import de.unibremen.informatik.st.libvcs4j.LineInfo;
 import de.unibremen.informatik.st.libvcs4j.VCSEngine;
 import de.unibremen.informatik.st.libvcs4j.VCSEngineBuilder;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.Validate;
-import de.unibremen.informatik.st.libvcs4j.data.CommitImpl;
 import de.unibremen.informatik.st.libvcs4j.engine.AbstractIntervalVCSEngine;
 import de.unibremen.informatik.st.libvcs4j.engine.Changes;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalIntervalException;
@@ -335,9 +337,9 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 			try {
 				final LineInfo li = getModelFactory().createLineInfo(
 						revision, pAuthor,
-						createCommitImpl(revision).getMessage(),
-						LocalDateTime.ofInstant(
-								pDate.toInstant(),
+						createCommitImpl(revision, Collections.emptyList(),
+								Collections.emptyList()).getMessage(),
+						LocalDateTime.ofInstant(pDate.toInstant(),
 								ZoneId.systemDefault()),
 						pLineNumber + 1, pLine, file, SVNEngine.this);
 				lineInfoList.add(li);
@@ -528,35 +530,39 @@ public class SVNEngine extends AbstractIntervalVCSEngine {
 	}
 
 	@Override
-	protected CommitImpl createCommitImpl(final String pRevision)
-			throws IOException {
+	protected Commit createCommitImpl(final String pRevision,
+			final List<FileChange> pFileChanges, final List<Issue> pIssues)
+			throws IllegalArgumentException, IOException {
 		final SvnOperationFactory factory = new SvnOperationFactory();
 
 		try {
 			final SVNRevision revision = createSVNRevision(pRevision);
 			final SvnTarget input = SvnTarget.fromURL(
 					createSVNURL(getRepository()), revision);
-			final CommitImpl commit = new CommitImpl();
 
+			final List<Commit> commits = new ArrayList<>();
 			final SvnLog svnLog = factory.createLog();
 			svnLog.addRange(SvnRevisionRange.create(revision, revision));
 			svnLog.setSingleTarget(input);
 			svnLog.setReceiver((__, entry) -> {
 				final String author = entry.getAuthor() == null
 						? "(no author)" : entry.getAuthor();
-				commit.setAuthor(author);
-				commit.setMessage(entry.getMessage());
-				commit.setDateTime(LocalDateTime.ofInstant(
+				final LocalDateTime dt = LocalDateTime.ofInstant(
 						entry.getDate().toInstant(),
-						ZoneId.systemDefault()));
+						ZoneId.systemDefault());
+				final List<String> parentIds = new ArrayList<>();
 				if (entry.getRevision() > 1) {
-					commit.setParentIds(Collections.singletonList(
-							String.valueOf(entry.getRevision() - 1)));
+					parentIds.add(String.valueOf(entry.getRevision() - 1));
 				}
+				commits.add(getModelFactory().createCommit(pRevision, author,
+						entry.getMessage(), dt, parentIds, pFileChanges,
+						pIssues, this));
 			});
 			svnLog.run();
-
-			return commit;
+			Validate.isTrue(commits.size() == 1,
+					"Unable to create commit for revision '%s'",
+					pRevision);
+			return commits.get(0);
 		} catch (final SVNException e) {
 			throw new IOException(e);
 		} finally {

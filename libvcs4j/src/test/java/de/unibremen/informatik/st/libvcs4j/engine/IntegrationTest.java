@@ -1,10 +1,12 @@
 package de.unibremen.informatik.st.libvcs4j.engine;
 
+import de.unibremen.informatik.st.libvcs4j.Commit;
+import de.unibremen.informatik.st.libvcs4j.FileChange;
+import de.unibremen.informatik.st.libvcs4j.Issue;
 import de.unibremen.informatik.st.libvcs4j.LineInfo;
 import de.unibremen.informatik.st.libvcs4j.RevisionRange;
 import de.unibremen.informatik.st.libvcs4j.VCSEngine;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
-import de.unibremen.informatik.st.libvcs4j.data.CommitImpl;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -220,19 +222,17 @@ public class IntegrationTest {
 		}
 
 		@Override
-		protected List<LineInfo> readLineInfoImpl(VCSFile file)
-				throws IOException {
+		protected List<LineInfo> readLineInfoImpl(VCSFile file) {
 			return Collections.emptyList();
 		}
 
 		@Override
-		protected CommitImpl createCommitImpl(String s) {
-			final CommitImpl commit = new CommitImpl();
-			commit.setId(s);
-			commit.setAuthor("test author");
-			commit.setDateTime(LocalDateTime.of(2000, 1, 2, 3, 4));
-			commit.setMessage("test message");
-			return commit;
+		protected Commit createCommitImpl(final String pRevision,
+				final List<FileChange> pFileChanges, final List<Issue> pIssues)
+				throws IllegalArgumentException {
+			return getModelFactory().createCommit(pRevision, "test author",
+					"test message", LocalDateTime.of(2000, 1, 2, 3, 4),
+					Collections.emptyList(), pFileChanges, pIssues, this);
 		}
 
 		@Override

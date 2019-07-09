@@ -1,5 +1,8 @@
 package de.unibremen.informatik.st.libvcs4j.git;
 
+import de.unibremen.informatik.st.libvcs4j.Commit;
+import de.unibremen.informatik.st.libvcs4j.FileChange;
+import de.unibremen.informatik.st.libvcs4j.Issue;
 import de.unibremen.informatik.st.libvcs4j.LineInfo;
 import de.unibremen.informatik.st.libvcs4j.VCSEngine;
 import de.unibremen.informatik.st.libvcs4j.VCSEngineBuilder;
@@ -8,7 +11,6 @@ import de.unibremen.informatik.st.libvcs4j.Validate;
 import de.unibremen.informatik.st.libvcs4j.engine.AbstractIntervalVCSEngine;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalRevisionException;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalTargetException;
-import de.unibremen.informatik.st.libvcs4j.data.CommitImpl;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalIntervalException;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalRepositoryException;
 import de.unibremen.informatik.st.libvcs4j.engine.Changes;
@@ -543,7 +545,8 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 	}
 
 	@Override
-	protected CommitImpl createCommitImpl(final String pRevision)
+	protected Commit createCommitImpl(final String pRevision,
+			final List<FileChange> pFileChanges, final List<Issue> pIssues)
 			throws IllegalArgumentException, IOException {
 		final AnyObjectId rev = createId(pRevision);
 		final List<RevCommit> commits = new ArrayList<>();
@@ -574,12 +577,10 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 				rc.getAuthorIdent().getWhen().toInstant(),
 				rc.getAuthorIdent().getTimeZone().toZoneId());
 
-		final CommitImpl commit = new CommitImpl();
-		commit.setAuthor(rc.getAuthorIdent().getName());
-		commit.setMessage(rc.getFullMessage().replaceAll("\r\n$|\n$", ""));
-		commit.setDateTime(dt);
-		commit.setParentIds(parentIds);
-		return commit;
+		return getModelFactory().createCommit(pRevision,
+				rc.getAuthorIdent().getName(),
+				rc.getFullMessage().replaceAll("\r\n$|\n$", ""),
+				dt, parentIds, pFileChanges, pIssues, this);
 	}
 
 	@Override

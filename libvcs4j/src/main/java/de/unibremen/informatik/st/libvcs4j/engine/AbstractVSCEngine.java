@@ -6,6 +6,7 @@ import com.ibm.icu.text.CharsetMatch;
 import de.unibremen.informatik.st.libvcs4j.Commit;
 import de.unibremen.informatik.st.libvcs4j.FileChange;
 import de.unibremen.informatik.st.libvcs4j.ITEngine;
+import de.unibremen.informatik.st.libvcs4j.Issue;
 import de.unibremen.informatik.st.libvcs4j.LineChange;
 import de.unibremen.informatik.st.libvcs4j.LineInfo;
 import de.unibremen.informatik.st.libvcs4j.Revision;
@@ -14,8 +15,6 @@ import de.unibremen.informatik.st.libvcs4j.VCSEngine;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.VCSModelFactory;
 import de.unibremen.informatik.st.libvcs4j.Validate;
-import de.unibremen.informatik.st.libvcs4j.data.CommitImpl;
-import de.unibremen.informatik.st.libvcs4j.data.RevisionImpl;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalReturnException;
 import lombok.NonNull;
 import org.slf4j.Logger;
@@ -340,14 +339,12 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 	}
 
 	private Revision createRevision() throws IOException {
-		final RevisionImpl rev = new RevisionImpl();
-		rev.setVCSEngine(this);
-		final List<VCSFile> files = listFilesInOutput().stream()
-				.map(f -> createFile(f, rev))
+		final Path output = getOutput();
+		final List<String> files = listFilesInOutput().stream()
+				.map(output::relativize)
+				.map(Path::toString)
 				.collect(Collectors.toList());
-		rev.setId(revision);
-		rev.setFiles(files);
-		return rev;
+		return getModelFactory().createRevision(revision, files, this);
 	}
 
 	private void init() throws IOException {
@@ -415,19 +412,15 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 
 	private Commit createCommit(final List<FileChange> pFileChanges)
 			throws IOException {
-		final CommitImpl commit = createCommitImpl(revision);
-		commit.setVCSEngine(this);
-		IllegalReturnException.notNull(commit);
-		IllegalReturnException.notNull(commit.getAuthor());
-		IllegalReturnException.notNull(commit.getMessage());
-		IllegalReturnException.notNull(commit.getDateTime());
-		IllegalReturnException.noNullElements(commit.getParentIds());
-		commit.setId(revision);
-		commit.setFileChanges(pFileChanges);
-		if (itEngine != null) {
-			commit.setIssues(itEngine.getIssuesFor(commit));
-		}
-		return commit;
+		final Commit commit = createCommitImpl(revision, pFileChanges,
+				Collections.emptyList());
+		return itEngine != null
+				? getModelFactory().createCommit(
+						commit.getId(), commit.getAuthor(),
+						commit.getMessage(), commit.getDateTime(),
+						commit.getParentIds(), commit.getFileChanges(),
+						itEngine.getIssuesFor(commit), commit.getVCSEngine())
+				: commit;
 	}
 
 	private String getPreviousRevision() {
@@ -556,17 +549,22 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 			throws IllegalArgumentException, IOException;
 
 	/**
-	 * Creates a commit storing the engine specific values. This method is used
-	 * by {@link #createCommit(List)}.
+	 * Creates a commit, storing the engine specific values. This method is
+	 * used by {@link #createCommit(List)}.
 	 *
 	 * @param revision
 	 * 		The corresponding revision value.
+	 * @param fileChanges
+	 * 		The corresponding file changes.
+	 * @param issues
+	 * 		The corresponding issues.
 	 * @return
-	 * 		A {@link CommitImpl} storing the engine specific values.
+	 * 		A new {@link Commit} instance.
 	 * @throws IOException
 	 * 		If an error occurred while parsing a commit.
 	 */
-	protected abstract CommitImpl createCommitImpl(String revision)
+	protected abstract Commit createCommitImpl(String revision,
+			List<FileChange> fileChanges, List<Issue> issues)
 			throws IOException;
 
 	/**

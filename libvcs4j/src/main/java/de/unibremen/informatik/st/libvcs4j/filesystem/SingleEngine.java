@@ -1,9 +1,11 @@
 package de.unibremen.informatik.st.libvcs4j.filesystem;
 
+import de.unibremen.informatik.st.libvcs4j.Commit;
+import de.unibremen.informatik.st.libvcs4j.FileChange;
+import de.unibremen.informatik.st.libvcs4j.Issue;
 import de.unibremen.informatik.st.libvcs4j.LineInfo;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.Validate;
-import de.unibremen.informatik.st.libvcs4j.data.CommitImpl;
 import de.unibremen.informatik.st.libvcs4j.engine.AbstractVSCEngine;
 import de.unibremen.informatik.st.libvcs4j.engine.Changes;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalRepositoryException;
@@ -136,16 +138,14 @@ public class SingleEngine extends AbstractVSCEngine {
 	}
 
 	@Override
-	protected CommitImpl createCommitImpl(final String pRevision)
-			throws IOException {
-		final CommitImpl commit = new CommitImpl();
-		commit.setId(DEFAULT_REVISION);
-		commit.setAuthor(DEFAULT_AUTHOR);
-		commit.setMessage(DEFAULT_MESSAGE);
+	protected Commit createCommitImpl(final String pRevision,
+			final List<FileChange> pFileChanges, final List<Issue> pIssues)
+			throws IllegalArgumentException, IOException {
 		final LocalDateTime datetime = LocalDateTime.ofInstant(
 				Files.getLastModifiedTime(getTarget()).toInstant(),
 				ZoneId.systemDefault());
-		commit.setDateTime(datetime);
-		return commit;
+		return getModelFactory().createCommit(DEFAULT_REVISION, DEFAULT_AUTHOR,
+				DEFAULT_MESSAGE, datetime, Collections.emptyList(),
+				pFileChanges, pIssues, this);
 	}
 }

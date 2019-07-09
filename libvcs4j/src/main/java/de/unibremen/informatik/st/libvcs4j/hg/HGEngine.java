@@ -13,13 +13,19 @@ import com.aragost.javahg.commands.flags.CatCommandFlags;
 import com.aragost.javahg.commands.flags.LogCommandFlags;
 import com.aragost.javahg.commands.flags.StatusCommandFlags;
 import com.aragost.javahg.commands.flags.UpdateCommandFlags;
-import de.unibremen.informatik.st.libvcs4j.*;
+import de.unibremen.informatik.st.libvcs4j.Commit;
+import de.unibremen.informatik.st.libvcs4j.FileChange;
+import de.unibremen.informatik.st.libvcs4j.Issue;
+import de.unibremen.informatik.st.libvcs4j.LineInfo;
+import de.unibremen.informatik.st.libvcs4j.VCSEngine;
+import de.unibremen.informatik.st.libvcs4j.VCSEngineBuilder;
+import de.unibremen.informatik.st.libvcs4j.VCSFile;
+import de.unibremen.informatik.st.libvcs4j.Validate;
 import de.unibremen.informatik.st.libvcs4j.engine.AbstractIntervalVCSEngine;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalIntervalException;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalRepositoryException;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalRevisionException;
 import de.unibremen.informatik.st.libvcs4j.exception.IllegalTargetException;
-import de.unibremen.informatik.st.libvcs4j.data.CommitImpl;
 import de.unibremen.informatik.st.libvcs4j.engine.Changes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -402,8 +408,9 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 	}
 
 	@Override
-	protected CommitImpl createCommitImpl(final String pRevision)
-			throws IOException {
+	protected Commit createCommitImpl(final String pRevision,
+			final List<FileChange> pFileChanges, final List<Issue> pIssues)
+			throws IllegalArgumentException, IOException {
 		Validate.validateState(repository != null);
 
 		final List<Changeset> changes;
@@ -418,21 +425,19 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 				1, changes.size());
 		final Changeset changeset = changes.get(0);
 
-		final CommitImpl commit = new CommitImpl();
-		commit.setAuthor(changeset.getUser().replaceAll(" <.*@.*>$", ""));
-		commit.setMessage(changeset.getMessage());
+		final LocalDateTime dateTime = LocalDateTime.ofInstant(
+				changeset.getTimestamp().getDate().toInstant(),
+				ZoneId.systemDefault());
 		final List<String> parents = new ArrayList<>();
 		Stream.of(changeset.getParent1(), changeset.getParent2())
 				.filter(Objects::nonNull)
 				.map(Changeset::getRevision)
 				.map(String::valueOf)
 				.forEach(parents::add);
-		commit.setParentIds(parents);
-		final LocalDateTime dateTime = LocalDateTime.ofInstant(
-				changeset.getTimestamp().getDate().toInstant(),
-				ZoneId.systemDefault());
-		commit.setDateTime(dateTime);
-		return commit;
+		return getModelFactory().createCommit(pRevision,
+				changeset.getUser().replaceAll(" <.*@.*>$", ""),
+				changeset.getMessage(), dateTime, parents, pFileChanges,
+				pIssues, this);
 	}
 
 	@Override
