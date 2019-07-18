@@ -73,6 +73,17 @@ public class SpoonModelBuilder {
 	private boolean incremental = true;
 
 	/**
+	 * Enables or disables auto imports (see
+	 * {@link spoon.compiler.Environment#setAutoImports(boolean)}). Note that
+	 * changing this value while incrementally updating a model (see
+	 * {@link #incremental}) may cause unexpected behaviour. The default value
+	 * is {@code true}.
+	 */
+	@Getter
+	@Setter
+	private boolean autoImports = true;
+
+	/**
 	 * The model of the last call of {@link #update(RevisionRange)}.
 	 */
 	private SpoonModel model = null;
@@ -182,6 +193,7 @@ public class SpoonModelBuilder {
 		}
 
 		launcher.getEnvironment().setNoClasspath(true);
+		launcher.getEnvironment().setAutoImports(autoImports);
 		launcher.setBinaryOutputDirectory(tmpDir.toString());
 		try {
 			launcher.getModelBuilder().compile(InputType.FILES);
