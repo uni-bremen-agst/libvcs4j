@@ -336,7 +336,7 @@ public class FSTree<V> {
 	 */
 	public Optional<V> getValue() {
 		final List<V> values = new ArrayList<>();
-		final Visitor<V> visitor = new Visitor<>() {
+		final Visitor<V> visitor = new Visitor<V>() {
 			@Override
 			protected void visitFile(final FSTree<V> pTree) {
 				if (pTree.value != null) {
