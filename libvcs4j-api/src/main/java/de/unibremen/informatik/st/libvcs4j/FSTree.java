@@ -390,7 +390,7 @@ public class FSTree<V> {
 	 */
 	public List<FSTree<V>> getAllDirectories() {
 		final List<FSTree<V>> directories = new ArrayList<>();
-		final Visitor<V> visitor = new Visitor<>() {
+		final Visitor<V> visitor = new Visitor<V>() {
 			@Override
 			protected void visitDirectory(final FSTree<V> pDirectory) {
 				if (pDirectory != FSTree.this) {
@@ -425,7 +425,7 @@ public class FSTree<V> {
 	 */
 	public List<FSTree<V>> getAllFiles() {
 		final List<FSTree<V>> files = new ArrayList<>();
-		final Visitor<V> visitor = new Visitor<>() {
+		final Visitor<V> visitor = new Visitor<V>() {
 			@Override
 			protected void visitFile(FSTree<V> pFile) {
 				if (pFile != FSTree.this) {
