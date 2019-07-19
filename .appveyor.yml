@@ -3,5 +3,8 @@ install:
 # See https://github.com/appveyor/ci/issues/1745
     - ps: Set-Content -Path "gradle.properties" -Value "org.gradle.daemon=false"
 
+environment:
+    JAVA_HOME: C:\Progra~1\Java\jdk11
+
 build_script:
     - gradlew.bat build
