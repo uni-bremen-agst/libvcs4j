@@ -8,11 +8,8 @@ LibVCS4j is a Java programming library for repository mining with a common API f
 |                | Package       | Javadoc       | Description | License |
 | -------------- | ------------- | ------------- | ----------- | ------- |
 | API            | [![Maven Central](https://img.shields.io/maven-central/v/de.uni-bremen.informatik.st/libvcs4j-api.svg)](https://maven-badges.herokuapp.com/maven-central/de.uni-bremen.informatik.st/libvcs4j-api) | [![Javadocs](https://www.javadoc.io/badge/de.uni-bremen.informatik.st/libvcs4j-api.svg)](https://www.javadoc.io/doc/de.uni-bremen.informatik.st/libvcs4j-api) | Defines the common data model. | MIT |
-| Implementation | [![Maven Central](https://img.shields.io/maven-central/v/de.uni-bremen.informatik.st/libvcs4j.svg)](https://maven-badges.herokuapp.com/maven-central/de.uni-bremen.informatik.st/libvcs4j) | [![Javadocs](https://www.javadoc.io/badge/de.uni-bremen.informatik.st/libvcs4j.svg)](https://www.javadoc.io/doc/de.uni-bremen.informatik.st/libvcs4j) | Provides the implemenation of the API. | GNU GPLv3 |
-| *Modules*      | <hr/>         | <hr/>         | <hr/>       | <hr/>   |
-| D3             | [![Maven Central](https://img.shields.io/maven-central/v/de.uni-bremen.informatik.st/libvcs4j-d3.svg)](https://maven-badges.herokuapp.com/maven-central/de.uni-bremen.informatik.st/libvcs4j-d3) | [![Javadocs](https://www.javadoc.io/badge/de.uni-bremen.informatik.st/libvcs4j-d3.svg)](https://www.javadoc.io/doc/de.uni-bremen.informatik.st/libvcs4j-d3) | Visualize your results with [D3](https://d3js.org). | MIT |
-| Metrics        | [![Maven Central](https://img.shields.io/maven-central/v/de.uni-bremen.informatik.st/libvcs4j-metrics.svg)](https://maven-badges.herokuapp.com/maven-central/de.uni-bremen.informatik.st/libvcs4j-metrics) | [![Javadocs](https://www.javadoc.io/badge/de.uni-bremen.informatik.st/libvcs4j-metrics.svg)](https://www.javadoc.io/doc/de.uni-bremen.informatik.st/libvcs4j-metrics) | Allows to gather different metrics. | MIT |
-| PMD            | [![Maven Central](https://img.shields.io/maven-central/v/de.uni-bremen.informatik.st/libvcs4j-pmd.svg)](https://maven-badges.herokuapp.com/maven-central/de.uni-bremen.informatik.st/libvcs4j-pmd) | [![Javadocs](https://www.javadoc.io/badge/de.uni-bremen.informatik.st/libvcs4j-pmd.svg)](https://www.javadoc.io/doc/de.uni-bremen.informatik.st/libvcs4j-pmd) | Run [PMD](https://pmd.github.io) on every revision of a VCS. | MIT |
+| Implementation | [![Maven Central](https://img.shields.io/maven-central/v/de.uni-bremen.informatik.st/libvcs4j.svg)](https://maven-badges.herokuapp.com/maven-central/de.uni-bremen.informatik.st/libvcs4j) | [![Javadocs](https://www.javadoc.io/badge/de.uni-bremen.informatik.st/libvcs4j.svg)](https://www.javadoc.io/doc/de.uni-bremen.informatik.st/libvcs4j) | Implemenations the API. | GNU GPLv3 |
+| Tools | [![Maven Central](https://img.shields.io/maven-central/v/de.uni-bremen.informatik.st/libvcs4j-tools.svg)](https://maven-badges.herokuapp.com/maven-central/de.uni-bremen.informatik.st/libvcs4j-tools) | [![Javadocs](https://www.javadoc.io/badge/de.uni-bremen.informatik.st/libvcs4j-tools.svg)](https://www.javadoc.io/doc/de.uni-bremen.informatik.st/libvcs4j-tools) | Additional tools. | GNU LGPLv3 |
 
 ### Quickstart
 
@@ -59,7 +56,7 @@ for (RevisionRange range : vcs) {
 }
 ```
 
-While processing a repository, LibVCS4j not only generates different metadata such as file change information, but also allows to access the files of the currently checked out revision:
+While processing a repository, LibVCS4j not only generates metadata such as file change information, but also allows to access the files of the currently checked out revision:
 
 ```java
 VCSEngine vcs = ...
