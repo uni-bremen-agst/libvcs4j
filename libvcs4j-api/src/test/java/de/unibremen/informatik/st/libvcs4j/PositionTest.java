@@ -71,6 +71,7 @@ public class PositionTest {
 		assertThat(newPosition.getLine()).isEqualTo(3);
 		assertThat(newPosition.getColumn()).isEqualTo(8);
 		assertThat(newPosition.getOffset()).isEqualTo(27);
+		assertThat(newPosition.getLineOffset()).isEqualTo(7);
 		assertThat(newPosition.getTabSize()).isEqualTo(4);
 	}
 
@@ -93,6 +94,7 @@ public class PositionTest {
 		assertThat(next.getColumn()).isEqualTo(1);
 		assertThat(next.getTabSize()).isEqualTo(3);
 		assertThat(next.getOffset()).isEqualTo(4);
+		assertThat(next.getLineOffset()).isEqualTo(0);
 	}
 
 	@Test
@@ -114,6 +116,7 @@ public class PositionTest {
 		assertThat(previous.getColumn()).isEqualTo(1);
 		assertThat(previous.getTabSize()).isEqualTo(3);
 		assertThat(previous.getOffset()).isEqualTo(0);
+		assertThat(previous.getLineOffset()).isEqualTo(0);
 	}
 
 	@Test
@@ -134,6 +137,7 @@ public class PositionTest {
 		assertThat(beginOfLine.getColumn()).isEqualTo(1);
 		assertThat(beginOfLine.getTabSize()).isEqualTo(8);
 		assertThat(beginOfLine.getOffset()).isEqualTo(0);
+		assertThat(beginOfLine.getLineOffset()).isEqualTo(0);
 	}
 
 	@Test
@@ -154,6 +158,7 @@ public class PositionTest {
 		assertThat(endOfLine.getColumn()).isEqualTo(21);
 		assertThat(endOfLine.getTabSize()).isEqualTo(7);
 		assertThat(endOfLine.getOffset()).isEqualTo(20);
+		assertThat(endOfLine.getLineOffset()).isEqualTo(20);
 	}
 
 	@Test
@@ -193,12 +198,13 @@ public class PositionTest {
 		VCSFile file = mock(VCSFile.class);
 		when(file.getRelativePath()).thenReturn("File.java");
 		when(file.readLinesWithEOL()).thenReturn(
-				Arrays.asList("come\n", "content"));
+				Arrays.asList("some\n", "content"));
 
 		VCSFile.Position position = mock(VCSFile.Position.class);
 		when(position.getLine()).thenReturn(2);
 		when(position.getColumn()).thenReturn(4);
 		when(position.getOffset()).thenReturn(8);
+		when(position.getLineOffset()).thenReturn(3);
 		when(position.getTabSize()).thenReturn(2);
 		when(position.mapTo(file)).thenCallRealMethod();
 
@@ -211,6 +217,7 @@ public class PositionTest {
 		assertThat(mapped.getLine()).isEqualTo(position.getLine());
 		assertThat(mapped.getColumn()).isEqualTo(position.getColumn());
 		assertThat(mapped.getOffset()).isEqualTo(position.getOffset());
+		assertThat(mapped.getLineOffset()).isEqualTo(position.getLineOffset());
 		assertThat(mapped.getTabSize()).isEqualTo(position.getTabSize());
 	}
 
@@ -269,5 +276,22 @@ public class PositionTest {
 	public void relativePathPredicateNullWithNonNull() {
 		assertThat(VCSFile.Position.RELATIVE_PATH_PREDICATE.test(null,
 				mock(VCSFile.Position.class))).isFalse();
+	}
+
+	@Test
+	public void createPositionFromOffset() throws IOException {
+		List<String> linesEOL = Arrays.asList("foo\n", "\tbar");
+
+		VCSFile file = mock(VCSFile.class);
+		when(file.readLinesWithEOL()).thenReturn(linesEOL);
+		when(file.positionOf(6, 4)).thenCallRealMethod();
+
+		VCSFile.Position position = file.positionOf(6, 4)
+				.orElseThrow(AssertionError::new);
+		assertThat(position.getLine()).isEqualTo(2);
+		assertThat(position.getColumn()).isEqualTo(6);
+		assertThat(position.getOffset()).isEqualTo(6);
+		assertThat(position.getLineOffset()).isEqualTo(2);
+		assertThat(position.getTabSize()).isEqualTo(4);
 	}
 }

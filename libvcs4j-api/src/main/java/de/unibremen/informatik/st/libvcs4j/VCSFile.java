@@ -70,9 +70,15 @@ public interface VCSFile extends VCSModelElement {
 		private final int column;
 
 		/**
-		 * The number of characters to move to reach a position {@code >= 0}.
+		 * Alternative position information for {@link #line} and
+		 * {@link #column} {@code >= 0}).
 		 */
 		private final int offset;
+
+		/**
+		 * Alternative position information for {@link #column} {@code >= 0}.
+		 */
+		private final int lineOffset;
 
 		/**
 		 * The number of characters acquired by a tab (\t) {@code >= 1}.
@@ -101,12 +107,14 @@ public interface VCSFile extends VCSModelElement {
 		 * 		or {@code pTabSize < 1}.
 		 */
 		private Position(final VCSFile pFile, final int pLine,
-				final int pColumn, final int pOffset, final int pTabSize)
-				throws NullPointerException, IllegalArgumentException {
+				final int pColumn, final int pOffset, final int pLineOffset,
+				final int pTabSize) throws NullPointerException,
+				IllegalArgumentException {
 			file = Validate.notNull(pFile);
 			line = Validate.isPositive(pLine, "line < 1");
 			column = Validate.isPositive(pColumn, "column < 1");
 			offset = Validate.notNegative(pOffset, "offset < 0");
+			lineOffset = Validate.notNegative(pLineOffset, "line offset < 0");
 			tabSize = Validate.isPositive(pTabSize, "tab size < 1");
 		}
 
@@ -148,6 +156,16 @@ public interface VCSFile extends VCSModelElement {
 		 */
 		public int getOffset() {
 			return offset;
+		}
+
+		/**
+		 * Returns the line offset of this position {@code >= 0}.
+		 *
+		 * @return
+		 * 		The line offset of this position {@code >= 0}.
+		 */
+		public int getLineOffset() {
+			return lineOffset;
 		}
 
 		/**
@@ -388,8 +406,9 @@ public interface VCSFile extends VCSModelElement {
 		@Override
 		public String toString() {
 			return String.format("Position(file=%s, line=%d, column=%d, " +
-					"offset=%d, tabSize=%d)", getFile().toString(), getLine(),
-					getColumn(), getOffset(), getTabSize());
+					"offset=%d, lineOffset=%d, tabSize=%d)",
+					getFile().toString(), getLine(), getColumn(), getOffset(),
+					getLineOffset(), getTabSize());
 		}
 	}
 
@@ -1025,8 +1044,8 @@ public interface VCSFile extends VCSModelElement {
 							? ( (column-1)/tabSize + 1 ) * tabSize + 1
 							: column + 1;
 				}
-				return Optional.of(new Position(
-						this, line, column, offset, tabSize));
+				return Optional.of(new Position(this, line, column, offset,
+						offsetInLine, tabSize));
 			}
 		}
 		return Optional.empty();
@@ -1081,8 +1100,8 @@ public interface VCSFile extends VCSModelElement {
 								.map(String::length)
 								.mapToInt(Integer::intValue)
 								.sum();
-				return Optional.of(new Position(
-						this, line, column, offset, tabSize));
+				return Optional.of(new Position(this, line, column, offset,
+						offsetInLine, tabSize));
 			}
 			col = c == '\t'
 					? ( (col-1)/tabSize + 1 ) * tabSize + 1
