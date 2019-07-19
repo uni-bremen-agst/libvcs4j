@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'de.uni-bremen.informatik.st'
-version = '1.6.0'
+version = '1.7.0'
 
 lombok {
 	version = "1.18.6"
@@ -21,13 +21,13 @@ configurations {
 }
 
 dependencies {
-	compile project(':libvcs4j-api')
-	compile 'fr.inria.gforge.spoon:spoon-core:7.3.0'
+	compile 'de.uni-bremen.informatik.st:libvcs4j-api:1.7.0'
+	compile 'fr.inria.gforge.spoon:spoon-core:7.4.0'
 	compile 'net.sourceforge.pmd:pmd:5.0.0'
 	compile 'org.slf4j:slf4j-api:1.7.22'
 	extraLibs project(':conqat')
 	testCompile project(':testutils')
-	testCompile project(':libvcs4j')
+	testCompile 'de.uni-bremen.informatik.st:libvcs4j:1.7.0'
 	configurations.compile.extendsFrom(configurations.extraLibs)
 }
 
