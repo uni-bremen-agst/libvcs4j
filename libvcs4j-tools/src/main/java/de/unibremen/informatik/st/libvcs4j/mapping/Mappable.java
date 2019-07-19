@@ -94,8 +94,8 @@ public interface Mappable<T> {
 	 * This method is used by {@link Mapping} to determine whether two
 	 * mappables match without consideration of their positions (see
 	 * {@link #rangesMatchWith(Mappable)}). The default implementation checks
-	 * the signature of this and the given mappable using
-	 * {@link String#equals(Object)}. If this or the given mappable has no
+	 * whether the signature of this and the given mappable are equal according
+	 * to {@link String#equals(Object)}. If this or the given mappable has no
 	 * signature, that is, an empty {@link Optional} is returned by
 	 * {@link #getSignature()}, the default implementation returns
 	 * {@code false}. Subclasses may override this method and implement a
