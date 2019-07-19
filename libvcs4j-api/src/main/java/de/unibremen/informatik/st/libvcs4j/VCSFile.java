@@ -403,6 +403,18 @@ public interface VCSFile extends VCSModelElement {
 			return file.positionOf(getLine(), getColumn(), getTabSize());
 		}
 
+		/**
+		 * Reads the character this position points to.
+		 *
+		 * @return
+		 * 		The character this position points to.
+		 * @throws IOException
+		 * 		If an error occurred while reading the file content.
+		 */
+		public char readChar() throws IOException {
+			return file.readeContent().charAt(offset);
+		}
+
 		@Override
 		public String toString() {
 			return String.format("Position(file=%s, line=%d, column=%d, " +

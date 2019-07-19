@@ -294,4 +294,18 @@ public class PositionTest {
 		assertThat(position.getLineOffset()).isEqualTo(2);
 		assertThat(position.getTabSize()).isEqualTo(4);
 	}
+
+	@Test
+	public void readChar() throws IOException {
+		String content = "31415";
+		VCSFile file = mock(VCSFile.class);
+		when(file.readAllBytes()).thenReturn(content.getBytes());
+		when(file.readeContent()).thenCallRealMethod();
+		when(file.readLinesWithEOL()).thenCallRealMethod();
+		when(file.positionOf(2, 4)).thenCallRealMethod();
+
+		VCSFile.Position position = file.positionOf(2, 4)
+				.orElseThrow(AssertionError::new);
+		assertThat(position.readChar()).isEqualTo('4');
+	}
 }
