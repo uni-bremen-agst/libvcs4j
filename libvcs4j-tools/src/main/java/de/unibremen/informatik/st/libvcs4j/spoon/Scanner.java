@@ -44,6 +44,13 @@ public class Scanner extends CtScanner {
 	private boolean initialized = false;
 
 	/**
+	 * Creates a scanner with a new cache.
+	 */
+	public Scanner() {
+		cache = new Cache();
+	}
+
+	/**
 	 * Creates a scanner with given cache.
 	 *
 	 * @param cache
@@ -53,13 +60,6 @@ public class Scanner extends CtScanner {
 	 */
 	public Scanner(@NonNull final Cache cache) throws NullPointerException {
 		this.cache = cache;
-	}
-
-	/**
-	 * Creates a scanner with a new cache.
-	 */
-	public Scanner() {
-		cache = new Cache();
 	}
 
 	////////////////////////// Traversing utilities. //////////////////////////
@@ -116,7 +116,9 @@ public class Scanner extends CtScanner {
 				.filter(ref -> !ref.isConstructor()
 						/* SPOON: fixes null pointer */
 						&& ref.getDeclaringType() != null)
-				.map(CtReference::getDeclaration)
+				.map(ref -> getCache().getOrResolve(ref))
+				.filter(Optional::isPresent)
+				.map(Optional::get)
 				.filter(decl -> decl instanceof CtMethod)
 				.map(decl -> (CtMethod) decl);
 	}

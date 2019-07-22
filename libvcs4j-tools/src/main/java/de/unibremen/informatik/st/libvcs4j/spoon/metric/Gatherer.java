@@ -1,6 +1,7 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.metric;
 
 import de.unibremen.informatik.st.libvcs4j.Validate;
+import de.unibremen.informatik.st.libvcs4j.spoon.Cache;
 import de.unibremen.informatik.st.libvcs4j.spoon.Scanner;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.Metric;
 import lombok.NonNull;
@@ -35,6 +36,24 @@ public abstract class Gatherer<T extends Number> extends Scanner {
 	 * Maps an element to its metric.
 	 */
 	private final Map<CtElement, T> metrics = new IdentityHashMap<>();
+
+	/**
+	 * Creates a gatherer with a new cache (see {@link Scanner#cache}).
+	 */
+	public Gatherer() {
+	}
+
+	/**
+	 * Creates a gatherer with given cache (see {@link Scanner#cache}).
+	 *
+	 * @param cache
+	 * 		The cache that is used to speedup lookups.
+	 * @throws NullPointerException
+	 * 		If {@code cache} is {@code null}.
+	 */
+	public Gatherer(@NonNull final Cache cache) throws NullPointerException {
+		super(cache);
+	}
 
 	@Override
 	public void visitRoot(final CtElement element) {
@@ -177,7 +196,7 @@ public abstract class Gatherer<T extends Number> extends Scanner {
 			@NonNull final Consumer<E> superCall,
 			@NonNull final Consumer<E> callBack,
 			@NonNull final BinaryOperator<T> propagation,
-			@NonNull final T initValue) {
+			@NonNull final T initValue) throws NullPointerException {
 		visitNode(element, __ -> {
 			superCall.accept(element);
 			callBack.accept(element);

@@ -1,11 +1,34 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.metric;
 
 import de.unibremen.informatik.st.libvcs4j.Validate;
+import de.unibremen.informatik.st.libvcs4j.spoon.Cache;
+import lombok.NonNull;
 
 /**
  * A metric gatherer of type {@link Integer}.
  */
 public abstract class IntGatherer extends Gatherer<Integer> {
+
+	/**
+	 * Creates a gatherer with a new cache (see
+	 * {@link de.unibremen.informatik.st.libvcs4j.spoon.Scanner#cache}).
+	 */
+	public IntGatherer() {
+	}
+
+	/**
+	 * Creates a gatherer with given cache (see
+	 * {@link de.unibremen.informatik.st.libvcs4j.spoon.Scanner#cache}).
+	 *
+	 * @param cache
+	 * 		The cache that is used to speedup lookups.
+	 * @throws NullPointerException
+	 * 		If {@code cache} is {@code null}.
+	 */
+	public IntGatherer(final @NonNull Cache cache)
+			throws NullPointerException {
+		super(cache);
+	}
 
 	@Override
 	protected Integer sum(final Integer a, final Integer b)
