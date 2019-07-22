@@ -1,5 +1,7 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.codesmell.bloater;
 
+import de.unibremen.informatik.st.libvcs4j.RevisionRange;
+import de.unibremen.informatik.st.libvcs4j.spoon.Environment;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmell;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.RevisionMock;
 import org.junit.Rule;
@@ -13,6 +15,8 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class LongMethodDetectorTest {
 
@@ -25,11 +29,16 @@ public class LongMethodDetectorTest {
 		revision.addFile(Paths.get("long_method",
 				"LongMethodWithComments.java"));
 
+		RevisionRange revisionRange = mock(RevisionRange.class);
+		when(revisionRange.getRevision()).thenReturn(revision);
+
 		Launcher launcher = new Launcher();
 		launcher.addInputResource(folder.getRoot().getAbsolutePath());
 		CtModel model = launcher.buildModel();
 
-		LongMethodDetector lmDetector = new LongMethodDetector(revision, 4);
+		Environment environment = new Environment(model, revisionRange);
+
+		LongMethodDetector lmDetector = new LongMethodDetector(environment, 4);
 		lmDetector.scan(model);
 
 		List<CodeSmell> codeSmells = lmDetector.getCodeSmells();

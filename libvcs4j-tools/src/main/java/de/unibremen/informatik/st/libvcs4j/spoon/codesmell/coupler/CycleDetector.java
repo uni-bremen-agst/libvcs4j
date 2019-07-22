@@ -1,6 +1,6 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.codesmell.coupler;
 
-import de.unibremen.informatik.st.libvcs4j.Revision;
+import de.unibremen.informatik.st.libvcs4j.spoon.Environment;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmell;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmellDetector;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.Thresholds;
@@ -22,8 +22,8 @@ public class CycleDetector extends CodeSmellDetector {
 
 	private final Map<CtType, Set<CtType>> dependencies = new HashMap<>();
 
-	public CycleDetector(@NonNull Revision revision) {
-		super(revision);
+	public CycleDetector(@NonNull Environment environment) {
+		super(environment);
 	}
 
 	@Override

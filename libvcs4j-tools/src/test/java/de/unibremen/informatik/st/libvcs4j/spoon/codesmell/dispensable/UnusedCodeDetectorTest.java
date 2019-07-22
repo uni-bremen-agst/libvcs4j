@@ -1,6 +1,8 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.codesmell.dispensable;
 
+import de.unibremen.informatik.st.libvcs4j.RevisionRange;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
+import de.unibremen.informatik.st.libvcs4j.spoon.Environment;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmell;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.RevisionMock;
 import org.junit.Rule;
@@ -14,6 +16,8 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class UnusedCodeDetectorTest {
 
@@ -25,11 +29,16 @@ public class UnusedCodeDetectorTest {
 		RevisionMock revision = new RevisionMock(folder);
 		revision.addFile(Paths.get("unused", "PrivateOnly.java"));
 
+		RevisionRange revisionRange = mock(RevisionRange.class);
+		when(revisionRange.getRevision()).thenReturn(revision);
+
 		Launcher launcher = new Launcher();
 		launcher.addInputResource(folder.getRoot().getAbsolutePath());
 		CtModel model = launcher.buildModel();
 
-		UnusedCodeDetector dcDetector = new UnusedCodeDetector(revision);
+		Environment environment = new Environment(model, revisionRange);
+
+		UnusedCodeDetector dcDetector = new UnusedCodeDetector(environment);
 		dcDetector.scan(model);
 		List<CodeSmell> codeSmells = dcDetector.getCodeSmells();
 		codeSmells.sort((c1, c2) -> VCSFile.Range.BEGIN_COMPARATOR.compare(

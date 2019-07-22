@@ -1,5 +1,7 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.codesmell.coupler;
 
+import de.unibremen.informatik.st.libvcs4j.RevisionRange;
+import de.unibremen.informatik.st.libvcs4j.spoon.Environment;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmell;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.RevisionMock;
 import org.junit.Rule;
@@ -12,6 +14,8 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class CycleDetectorTest {
 
@@ -23,11 +27,16 @@ public class CycleDetectorTest {
         RevisionMock revision = new RevisionMock(folder);
         revision.addFile(Paths.get("cycle", "Cycle.java"));
 
+        RevisionRange revisionRange = mock(RevisionRange.class);
+        when(revisionRange.getRevision()).thenReturn(revision);
+
         Launcher launcher = new Launcher();
         launcher.addInputResource(folder.getRoot().getAbsolutePath());
         CtModel model = launcher.buildModel();
 
-        CycleDetector cycleDetector = new CycleDetector(revision);
+        Environment environment = new Environment(model, revisionRange);
+
+        CycleDetector cycleDetector = new CycleDetector(environment);
         cycleDetector.scan(model);
         List<CodeSmell> codeSmells = cycleDetector.getCodeSmells();
 

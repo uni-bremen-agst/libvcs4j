@@ -1,7 +1,7 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.codesmell.bloater;
 
-import de.unibremen.informatik.st.libvcs4j.Revision;
 import de.unibremen.informatik.st.libvcs4j.Validate;
+import de.unibremen.informatik.st.libvcs4j.spoon.Environment;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmell;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmellDetector;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.Metric;
@@ -23,16 +23,16 @@ public class LongMethodDetector extends CodeSmellDetector {
 
 	private final int threshold;
 
-	public LongMethodDetector(@NonNull Revision revision,
+	public LongMethodDetector(@NonNull Environment environment,
 			final int threshold) throws NullPointerException,
 			IllegalArgumentException {
-		super(revision);
+		super(environment);
 		this.threshold = Validate.notNegative(threshold);
 	}
 
-	public LongMethodDetector(@NonNull Revision revision)
+	public LongMethodDetector(@NonNull Environment environment)
 			throws NullPointerException, IllegalArgumentException {
-		this(revision, DEFAULT_THRESHOLD);
+		this(environment, DEFAULT_THRESHOLD);
 	}
 
 	@Override

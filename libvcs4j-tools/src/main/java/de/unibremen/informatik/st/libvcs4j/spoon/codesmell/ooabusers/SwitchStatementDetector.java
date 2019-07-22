@@ -1,7 +1,7 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.codesmell.ooabusers;
 
-import de.unibremen.informatik.st.libvcs4j.Revision;
 import de.unibremen.informatik.st.libvcs4j.Validate;
+import de.unibremen.informatik.st.libvcs4j.spoon.Environment;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.Metric;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmellDetector;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmell;
@@ -24,16 +24,16 @@ public class SwitchStatementDetector extends CodeSmellDetector {
 
     private final MCC mcc = new MCC();
 
-    public SwitchStatementDetector(@NonNull final Revision revision,
-                                   final int mccThreshold)
-            throws NullPointerException, IllegalArgumentException {
-        super(revision);
+    public SwitchStatementDetector(@NonNull final Environment environment,
+            final int mccThreshold) throws NullPointerException,
+            IllegalArgumentException {
+        super(environment);
         this.mccThreshold = Validate.notNegative(mccThreshold);
     }
 
-    public SwitchStatementDetector(@NonNull final Revision revision)
+    public SwitchStatementDetector(@NonNull final Environment environment)
             throws NullPointerException, IllegalArgumentException{
-        this(revision, DEFAULT_MCC_THRESHOLD);
+        this(environment, DEFAULT_MCC_THRESHOLD);
     }
 
     @Override

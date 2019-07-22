@@ -1,8 +1,8 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.codesmell.ooabusers;
 
-import de.unibremen.informatik.st.libvcs4j.Revision;
-import de.unibremen.informatik.st.libvcs4j.VCSEngine;
+import de.unibremen.informatik.st.libvcs4j.RevisionRange;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
+import de.unibremen.informatik.st.libvcs4j.spoon.Environment;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmell;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.RevisionMock;
 import org.junit.Rule;
@@ -12,16 +12,13 @@ import spoon.Launcher;
 import spoon.reflect.CtModel;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class SwitchStatementDetectorTest {
-
-    private static final String FILES_DIR = "/switch-statement/";
 
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
@@ -31,12 +28,17 @@ public class SwitchStatementDetectorTest {
         RevisionMock revision = new RevisionMock(folder);
         revision.addFile(Paths.get("switch-statement", "A.java"));
 
+        RevisionRange revisionRange = mock(RevisionRange.class);
+        when(revisionRange.getRevision()).thenReturn(revision);
+
         Launcher launcher = new Launcher();
         launcher.addInputResource(folder.getRoot().getAbsolutePath());
         CtModel model = launcher.buildModel();
 
+        Environment environment = new Environment(model, revisionRange);
+
         SwitchStatementDetector switchStatementDetector =
-                new SwitchStatementDetector(revision);
+                new SwitchStatementDetector(environment);
         switchStatementDetector.scan(model);
         assertThat(switchStatementDetector.getCodeSmells()).isNotEmpty();
         CodeSmell codeSmell = switchStatementDetector.getCodeSmells().get(0);
@@ -45,46 +47,5 @@ public class SwitchStatementDetectorTest {
         assertThat(range.getBegin().getColumn()).isEqualTo(9);
         assertThat(range.getEnd().getLine()).isEqualTo(21);
         assertThat(range.getEnd().getColumn()).isEqualTo(9);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-
-    private class VCSFileMock implements VCSFile {
-
-        private final String file;
-
-        VCSFileMock(String file) {
-            this.file = file;
-        }
-
-        @Override
-        public String getRelativePath() {
-            return file;
-        }
-
-        @Override
-        public String getPath() {
-            return folder.getRoot().toPath().resolve(file).toString();
-        }
-
-        @Override
-        public Optional<Charset> guessCharset() throws IOException {
-            return Optional.empty();
-        }
-
-        @Override
-        public byte[] readAllBytes() throws IOException {
-            return Files.readAllBytes(Paths.get(this.getPath()));
-        }
-
-        @Override
-        public Revision getRevision() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public VCSEngine getVCSEngine() {
-            throw new UnsupportedOperationException();
-        }
     }
 }

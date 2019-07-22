@@ -1,8 +1,8 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.codesmell;
 
-import de.unibremen.informatik.st.libvcs4j.Revision;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.Validate;
+import de.unibremen.informatik.st.libvcs4j.spoon.Environment;
 import de.unibremen.informatik.st.libvcs4j.spoon.Scanner;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -37,7 +37,7 @@ public abstract class CodeSmellDetector extends Scanner {
 			LoggerFactory.getLogger(CodeSmellDetector.class);
 
 	@NonNull
-	private final Revision revision;
+	private final Environment environment;
 
 	@NonNull
 	private final List<CodeSmell> codeSmells = new ArrayList<>();
@@ -285,7 +285,7 @@ public abstract class CodeSmellDetector extends Scanner {
 					}
 				})
 				// Compare with canonicalized vcs files.
-				.map(p -> revision.getFiles().stream()
+				.map(p -> environment.getRevision().getFiles().stream()
 						.filter(f -> {
 							try {
 								return f.toFile().getCanonicalFile().equals(p);

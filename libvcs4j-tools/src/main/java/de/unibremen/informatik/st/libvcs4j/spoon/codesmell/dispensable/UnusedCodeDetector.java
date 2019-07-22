@@ -1,6 +1,6 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.codesmell.dispensable;
 
-import de.unibremen.informatik.st.libvcs4j.Revision;
+import de.unibremen.informatik.st.libvcs4j.spoon.Environment;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmell;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmellDetector;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.Thresholds;
@@ -61,17 +61,17 @@ public class UnusedCodeDetector extends CodeSmellDetector {
 	 */
 	private boolean inAbstractMethod;
 
-	public UnusedCodeDetector(@NonNull final  Revision revision,
+	public UnusedCodeDetector(@NonNull final Environment environment,
 			final boolean strictParameterMode, final boolean privateMode)
 			throws NullPointerException {
-		super(revision);
+		super(environment);
 		this.strictParameterMode = strictParameterMode;
 		this.privateMode = privateMode;
 	}
 
-	public UnusedCodeDetector(@NonNull final Revision revision)
+	public UnusedCodeDetector(@NonNull final Environment environment)
 			throws NullPointerException {
-		this(revision, true, true);
+		this(environment, true, true);
 	}
 
 	@Override

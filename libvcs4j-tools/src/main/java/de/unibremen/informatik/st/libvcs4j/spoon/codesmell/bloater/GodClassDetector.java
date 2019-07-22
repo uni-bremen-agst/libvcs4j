@@ -1,7 +1,7 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.codesmell.bloater;
 
-import de.unibremen.informatik.st.libvcs4j.Revision;
 import de.unibremen.informatik.st.libvcs4j.Validate;
+import de.unibremen.informatik.st.libvcs4j.spoon.Environment;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmell;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmellDetector;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.Metric;
@@ -38,11 +38,11 @@ public class GodClassDetector extends CodeSmellDetector {
 	private final ATFD atfd = new ATFD();
 	private final TCC tcc = new TCC();
 
-	public GodClassDetector(@NonNull final Revision revision,
+	public GodClassDetector(@NonNull final Environment environment,
 			final int noaThreshold, final int wmcThreshold,
 			final int atfdThreshold, final BigDecimal tccThreshold)
 			throws NullPointerException, IllegalArgumentException {
-		super(revision);
+		super(environment);
 		this.noaThreshold = Validate.notNegative(noaThreshold);
 		this.wmcThreshold = Validate.notNegative(wmcThreshold);
 		this.atfdThreshold = Validate.notNegative(atfdThreshold);
@@ -50,9 +50,9 @@ public class GodClassDetector extends CodeSmellDetector {
 		this.tccThreshold = tccThreshold;
 	}
 
-	public GodClassDetector(@NonNull final Revision revision)
+	public GodClassDetector(@NonNull final Environment environment)
 			throws NullPointerException, IllegalArgumentException {
-		this(revision, DEFAULT_NOA_THRESHOLD, DEFAULT_WMC_THRESHOLD,
+		this(environment, DEFAULT_NOA_THRESHOLD, DEFAULT_WMC_THRESHOLD,
 				DEFAULT_ATFD_THRESHOLD, DEFAULT_TCC_THRESHOLD);
 	}
 

@@ -1,6 +1,6 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.codesmell.ooabusers;
 
-import de.unibremen.informatik.st.libvcs4j.Revision;
+import de.unibremen.informatik.st.libvcs4j.spoon.Environment;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmell;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmellDetector;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.Thresholds;
@@ -30,8 +30,8 @@ public class TemporaryFieldDetector extends CodeSmellDetector {
 
     private Map<CtExecutable, Set<CtField>> fieldAccesses = new HashMap<>();
 
-    public TemporaryFieldDetector(@NonNull final Revision revision) {
-        super(revision);
+    public TemporaryFieldDetector(@NonNull final Environment environment) {
+        super(environment);
     }
 
     @Override

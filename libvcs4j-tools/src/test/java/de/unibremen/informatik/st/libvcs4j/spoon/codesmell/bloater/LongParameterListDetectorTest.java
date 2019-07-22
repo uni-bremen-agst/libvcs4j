@@ -1,5 +1,7 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.codesmell.bloater;
 
+import de.unibremen.informatik.st.libvcs4j.RevisionRange;
+import de.unibremen.informatik.st.libvcs4j.spoon.Environment;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmell;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.RevisionMock;
 import org.junit.Rule;
@@ -13,6 +15,8 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class LongParameterListDetectorTest {
 
@@ -24,12 +28,17 @@ public class LongParameterListDetectorTest {
 		RevisionMock revision = new RevisionMock(folder);
 		revision.addFile(Paths.get("lpl", "LongParameterList.java"));
 
+		RevisionRange revisionRange = mock(RevisionRange.class);
+		when(revisionRange.getRevision()).thenReturn(revision);
+
 		Launcher launcher = new Launcher();
 		launcher.addInputResource(folder.getRoot().getAbsolutePath());
 		CtModel model = launcher.buildModel();
 
+		Environment environment = new Environment(model, revisionRange);
+
 		LongParameterListDetector lplDetector =
-				new LongParameterListDetector(revision, 2);
+				new LongParameterListDetector(environment, 2);
 		lplDetector.scan(model);
 
 		List<CodeSmell> codeSmells = lplDetector.getCodeSmells();

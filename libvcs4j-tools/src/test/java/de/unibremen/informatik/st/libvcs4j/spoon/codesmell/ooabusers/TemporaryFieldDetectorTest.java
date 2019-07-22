@@ -1,8 +1,8 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.codesmell.ooabusers;
 
-import de.unibremen.informatik.st.libvcs4j.Revision;
-import de.unibremen.informatik.st.libvcs4j.VCSEngine;
+import de.unibremen.informatik.st.libvcs4j.RevisionRange;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
+import de.unibremen.informatik.st.libvcs4j.spoon.Environment;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmell;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.RevisionMock;
 import org.junit.Rule;
@@ -12,16 +12,14 @@ import spoon.Launcher;
 import spoon.reflect.CtModel;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class TemporaryFieldDetectorTest {
-
-    private static final String FILES_DIR = "/temporary-field/";
 
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
@@ -31,12 +29,17 @@ public class TemporaryFieldDetectorTest {
         RevisionMock revision = new RevisionMock(folder);
         revision.addFile(Paths.get("temporary-field", "A.java"));
 
+        RevisionRange revisionRange = mock(RevisionRange.class);
+        when(revisionRange.getRevision()).thenReturn(revision);
+
         Launcher launcher = new Launcher();
         launcher.addInputResource(folder.getRoot().getAbsolutePath());
         CtModel model = launcher.buildModel();
 
+        Environment environment = new Environment(model, revisionRange);
+
         TemporaryFieldDetector temporaryFieldDetector =
-                new TemporaryFieldDetector(revision);
+                new TemporaryFieldDetector(environment);
         temporaryFieldDetector.scan(model);
         assertThat(temporaryFieldDetector.getCodeSmells()).hasSize(2);
         CodeSmell codeSmell = temporaryFieldDetector.getCodeSmells().get(0);
@@ -53,46 +56,5 @@ public class TemporaryFieldDetectorTest {
         assertThat(range.getBegin().getColumn()).isEqualTo(5);
         assertThat(range.getEnd().getLine()).isEqualTo(4);
         assertThat(range.getEnd().getColumn()).isEqualTo(24);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-
-    private class VCSFileMock implements VCSFile {
-
-        private final String file;
-
-        VCSFileMock(String file) {
-            this.file = file;
-        }
-
-        @Override
-        public String getRelativePath() {
-            return file;
-        }
-
-        @Override
-        public String getPath() {
-            return folder.getRoot().toPath().resolve(file).toString();
-        }
-
-        @Override
-        public Optional<Charset> guessCharset() throws IOException {
-            return Optional.empty();
-        }
-
-        @Override
-        public byte[] readAllBytes() throws IOException {
-            return Files.readAllBytes(Paths.get(this.getPath()));
-        }
-
-        @Override
-        public Revision getRevision() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public VCSEngine getVCSEngine() {
-            throw new UnsupportedOperationException();
-        }
     }
 }

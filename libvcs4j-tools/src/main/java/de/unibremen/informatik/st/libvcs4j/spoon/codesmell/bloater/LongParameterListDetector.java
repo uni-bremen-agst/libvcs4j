@@ -1,7 +1,7 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.codesmell.bloater;
 
-import de.unibremen.informatik.st.libvcs4j.Revision;
 import de.unibremen.informatik.st.libvcs4j.Validate;
+import de.unibremen.informatik.st.libvcs4j.spoon.Environment;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmell;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmellDetector;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.Metric;
@@ -26,15 +26,15 @@ public class LongParameterListDetector extends CodeSmellDetector {
 
 	private final NOP nop = new NOP();
 
-	public LongParameterListDetector(@NonNull final Revision revision,
+	public LongParameterListDetector(@NonNull final Environment environment,
 			final int threshold) throws NullPointerException,
 			IllegalArgumentException {
-		super(revision);
+		super(environment);
 		this.threshold = Validate.notNegative(threshold);
 	}
 
-	public LongParameterListDetector(Revision revision) {
-		this(revision, DEFAULT_THRESHOLD);
+	public LongParameterListDetector(Environment environment) {
+		this(environment, DEFAULT_THRESHOLD);
 	}
 
 	@Override

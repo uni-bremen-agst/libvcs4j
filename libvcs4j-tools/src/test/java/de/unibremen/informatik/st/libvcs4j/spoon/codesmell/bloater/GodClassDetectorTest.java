@@ -1,5 +1,7 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.codesmell.bloater;
 
+import de.unibremen.informatik.st.libvcs4j.RevisionRange;
+import de.unibremen.informatik.st.libvcs4j.spoon.Environment;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmell;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.RevisionMock;
 import org.junit.Rule;
@@ -14,6 +16,8 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class GodClassDetectorTest {
 
@@ -25,11 +29,16 @@ public class GodClassDetectorTest {
 		RevisionMock revision = new RevisionMock(folder);
 		revision.addFile(Paths.get("godclass", "GodClass.java"));
 
+		RevisionRange revisionRange = mock(RevisionRange.class);
+		when(revisionRange.getRevision()).thenReturn(revision);
+
 		Launcher launcher = new Launcher();
 		launcher.addInputResource(folder.getRoot().getAbsolutePath());
 		CtModel model = launcher.buildModel();
 
-		GodClassDetector gcDetector = new GodClassDetector(revision,
+		Environment environment = new Environment(model, revisionRange);
+
+		GodClassDetector gcDetector = new GodClassDetector(environment,
 				5, 15, 5, new BigDecimal("0.6"));
 		gcDetector.scan(model);
 		List<CodeSmell> codeSmells = gcDetector.getCodeSmells();

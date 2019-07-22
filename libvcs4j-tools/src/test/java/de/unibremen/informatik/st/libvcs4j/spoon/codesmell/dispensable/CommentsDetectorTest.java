@@ -1,6 +1,8 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.codesmell.dispensable;
 
+import de.unibremen.informatik.st.libvcs4j.RevisionRange;
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
+import de.unibremen.informatik.st.libvcs4j.spoon.Environment;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmell;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.RevisionMock;
 import org.junit.Rule;
@@ -16,6 +18,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class CommentsDetectorTest {
 
@@ -27,12 +31,17 @@ public class CommentsDetectorTest {
 		RevisionMock revision = new RevisionMock(folder);
 		revision.addFile(Paths.get("comments", "Comment.java"));
 
+		RevisionRange revisionRange = mock(RevisionRange.class);
+		when(revisionRange.getRevision()).thenReturn(revision);
+
 		Launcher launcher = new Launcher();
 		launcher.addInputResource(folder.getRoot().getAbsolutePath());
 		CtModel model = launcher.buildModel();
 
+		Environment environment = new Environment(model, revisionRange);
+
 		CommentsDetector cmDetector = new CommentsDetector(
-				revision, 2, BigDecimal.valueOf(0.4));
+				environment, 2, BigDecimal.valueOf(0.4));
 		cmDetector.scan(model);
 		List<CodeSmell> codeSmells = cmDetector.getCodeSmells();
 
@@ -53,11 +62,16 @@ public class CommentsDetectorTest {
 		RevisionMock revision = new RevisionMock(folder);
 		revision.addFile(Paths.get("comments", "Comments.java"));
 
+		RevisionRange revisionRange = mock(RevisionRange.class);
+		when(revisionRange.getRevision()).thenReturn(revision);
+
 		Launcher launcher = new Launcher();
 		launcher.addInputResource(folder.getRoot().getAbsolutePath());
 		CtModel model = launcher.buildModel();
 
-		CommentsDetector cmDetector = new CommentsDetector(revision,
+		Environment environment = new Environment(model, revisionRange);
+
+		CommentsDetector cmDetector = new CommentsDetector(environment,
 				5,
 				BigDecimal.valueOf(0.4));
 		cmDetector.scan(model);

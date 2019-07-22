@@ -39,6 +39,16 @@ public class Environment {
 	private final RevisionRange revisionRange;
 
 	/**
+	 * Shortcut for {@code getRevisionRange().getRevision()}.
+	 *
+	 * @return
+	 * 		The revision returned by {@code getRevisionRange().getRevision()}.
+	 */
+	public Revision getRevision() {
+		return revisionRange.getRevision();
+	}
+
+	/**
 	 * Returns all files referenced by {@code file}.
 	 *
 	 * @param file

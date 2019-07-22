@@ -1,7 +1,7 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.codesmell.dispensable;
 
-import de.unibremen.informatik.st.libvcs4j.Revision;
 import de.unibremen.informatik.st.libvcs4j.Validate;
+import de.unibremen.informatik.st.libvcs4j.spoon.Environment;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.Metric;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmellDetector;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmell;
@@ -28,19 +28,19 @@ public class CommentsDetector extends CodeSmellDetector {
     private BigDecimal ratioThreshold;
     private int locThreshold;
 
-    public CommentsDetector(@NonNull final Revision revision,
+    public CommentsDetector(@NonNull final Environment environment,
                             final int locThreshold,
                             final BigDecimal ratioThreshold)
             throws NullPointerException, IllegalArgumentException {
-        super(revision);
+        super(environment);
         this.locThreshold = Validate.notNegative(locThreshold);
         Validate.isTrue(ratioThreshold.compareTo(BigDecimal.ZERO) >= 0);
         this.ratioThreshold = ratioThreshold;
     }
 
-    public CommentsDetector(@NonNull final Revision revision)
+    public CommentsDetector(@NonNull final Environment environment)
             throws NullPointerException, IllegalArgumentException{
-        this(revision, DEFAULT_LOC_THRESHOLD, DEFAULT_RATIO_THRESHOLD);
+        this(environment, DEFAULT_LOC_THRESHOLD, DEFAULT_RATIO_THRESHOLD);
     }
 
     @Override

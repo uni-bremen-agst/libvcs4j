@@ -1,5 +1,7 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.codesmell.coupler;
 
+import de.unibremen.informatik.st.libvcs4j.RevisionRange;
+import de.unibremen.informatik.st.libvcs4j.spoon.Environment;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmell;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.RevisionMock;
 import org.junit.Rule;
@@ -13,6 +15,8 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class MethodChainDetectorTest {
 
@@ -24,11 +28,17 @@ public class MethodChainDetectorTest {
 		RevisionMock revision = new RevisionMock(folder);
 		revision.addFile(Paths.get("method_chain", "MethodChainClass.java"));
 
+		RevisionRange revisionRange = mock(RevisionRange.class);
+		when(revisionRange.getRevision()).thenReturn(revision);
+
 		Launcher launcher = new Launcher();
 		launcher.addInputResource(folder.getRoot().getAbsolutePath());
 		CtModel model = launcher.buildModel();
 
-		MethodChainDetector mcDetector = new MethodChainDetector(revision, 4);
+		Environment environment = new Environment(model, revisionRange);
+
+		MethodChainDetector mcDetector = new MethodChainDetector(environment,
+				4);
 		mcDetector.scan(model);
 		List<CodeSmell> codeSmells = mcDetector.getCodeSmells();
 

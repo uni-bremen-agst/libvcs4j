@@ -1,6 +1,6 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.codesmell.dispensable;
 
-import de.unibremen.informatik.st.libvcs4j.Revision;
+import de.unibremen.informatik.st.libvcs4j.spoon.Environment;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmell;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmellDetector;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.Thresholds;
@@ -20,8 +20,8 @@ import java.util.Optional;
 
 public class DataClassDetector extends CodeSmellDetector {
 
-	public DataClassDetector(@NonNull final Revision revision) {
-		super(revision);
+	public DataClassDetector(@NonNull final Environment environment) {
+		super(environment);
 	}
 
 	private Deque<Boolean> isDataClass = new ArrayDeque<>();

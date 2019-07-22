@@ -1,7 +1,7 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.codesmell.coupler;
 
-import de.unibremen.informatik.st.libvcs4j.Revision;
 import de.unibremen.informatik.st.libvcs4j.Validate;
+import de.unibremen.informatik.st.libvcs4j.spoon.Environment;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmell;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.CodeSmellDetector;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.Metric;
@@ -32,15 +32,15 @@ public class MethodChainDetector extends CodeSmellDetector {
 
 	private List<CtInvocation> invocations = null;
 
-	public MethodChainDetector(@NonNull final Revision revision,
+	public MethodChainDetector(@NonNull final Environment environment,
 			final int threshold) throws NullPointerException,
 			IllegalArgumentException {
-		super(revision);
+		super(environment);
 		this.threshold = Validate.notNegative(threshold);
 	}
 
-	public MethodChainDetector(@NonNull final Revision revision) {
-		this(revision, DEFAULT_THRESHOLD);
+	public MethodChainDetector(@NonNull final Environment environment) {
+		this(environment, DEFAULT_THRESHOLD);
 	}
 
 	@Override
