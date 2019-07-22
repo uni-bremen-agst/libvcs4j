@@ -53,13 +53,13 @@ import static spoon.SpoonModelBuilder.InputType;
  * utilizes LibVCS4j's {@link RevisionRange} API to build and update a
  * {@link CtModel}.
  */
-public class SpoonModelBuilder {
+public class EnvironmentBuilder {
 
 	/**
 	 * The logger of this class.
 	 */
 	private static final Logger log =
-			LoggerFactory.getLogger(SpoonModelBuilder.class);
+			LoggerFactory.getLogger(EnvironmentBuilder.class);
 
 	/**
 	 * Indicates whether {@link #update(RevisionRange)} updates the

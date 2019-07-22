@@ -15,7 +15,7 @@ import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SpoonModelBuilderBladeTest {
+public class EnvironmentBuilderBladeTest {
 
 	@Rule
 	public TemporaryFolder folder = new TemporaryFolder();
@@ -41,7 +41,7 @@ public class SpoonModelBuilderBladeTest {
 				.withEndIdx(204)
 				.build();
 
-		SpoonModelBuilder builder = new SpoonModelBuilder();
+		EnvironmentBuilder builder = new EnvironmentBuilder();
 		builder.setIncremental(true);
 		for (RevisionRange range : engine) {
 			assertThat(builder.update(range).getCtModel()).isNotNull();

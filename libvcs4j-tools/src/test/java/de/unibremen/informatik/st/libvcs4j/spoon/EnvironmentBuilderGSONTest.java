@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class SpoonModelBuilderGSONTest {
+public class EnvironmentBuilderGSONTest {
 
 	@Rule
 	public TemporaryFolder folder = new TemporaryFolder();
@@ -50,7 +50,7 @@ public class SpoonModelBuilderGSONTest {
 				.withEndIdx(6)
 				.build();
 
-		SpoonModelBuilder builder = new SpoonModelBuilder();
+		EnvironmentBuilder builder = new EnvironmentBuilder();
 		builder.setIncremental(true);
 		for (RevisionRange range : engine) {
 			assertThat(builder.update(range)).isNotNull();
@@ -67,7 +67,7 @@ public class SpoonModelBuilderGSONTest {
 				.withEndIdx(566)
 				.build();
 
-		SpoonModelBuilder builder = new SpoonModelBuilder();
+		EnvironmentBuilder builder = new EnvironmentBuilder();
 		builder.setIncremental(true);
 
 		// To raise the NullPointerException deterministically, we need to
