@@ -14,13 +14,13 @@ import java.util.Optional;
 import java.util.function.Function;
 
 /**
- * This class servers as a threadsafe cache to speedup scanners that have to
- * resolve a large number of references, such as {@link CtTypeReference},
- * {@link CtFieldReference}, and {@link CtExecutableReference}. Resolving
- * references is synchronized. Thus, a single instance of this class may be
+ * This class servers as a threadsafe cache to speedup scanners (see
+ * {@link Scanner}) that have to, for example, resolve a large number of
+ * references (such as {@link CtTypeReference}, {@link CtFieldReference}, and
+ * {@link CtExecutableReference}). A single instance of this class may be
  * shared between several scanners.
  */
-public class ReferenceCache {
+public class Cache {
 
 	/**
 	 * Qualified name ({@link CtTypeReference#getQualifiedName()}) ->

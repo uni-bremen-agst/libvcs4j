@@ -4,7 +4,6 @@ import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.Validate;
 import de.unibremen.informatik.st.libvcs4j.spoon.Environment;
 import de.unibremen.informatik.st.libvcs4j.spoon.Scanner;
-import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,17 +29,36 @@ import java.util.stream.Collectors;
 
 import static spoon.reflect.cu.SourcePosition.NOPOSITION;
 
-@AllArgsConstructor
 public abstract class CodeSmellDetector extends Scanner {
 
+	/**
+	 * The logger of this class.
+	 */
 	private static final Logger log =
 			LoggerFactory.getLogger(CodeSmellDetector.class);
 
 	@NonNull
 	private final Environment environment;
 
+	/**
+	 * Stores the detected code smells.
+	 */
 	@NonNull
 	private final List<CodeSmell> codeSmells = new ArrayList<>();
+
+	/**
+	 * Creates a new detector with given environment.
+	 *
+	 * @param environment
+	 * 		The environment to use.
+	 * @throws NullPointerException
+	 * 		If {@code environment} is {@code null}.
+	 */
+	public CodeSmellDetector(@NonNull final Environment environment)
+			throws NullPointerException {
+		super(Validate.notNull(environment.getCache()));
+		this.environment = environment;
+	}
 
 	/**
 	 * Returns the definition of this detector.

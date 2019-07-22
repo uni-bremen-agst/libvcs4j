@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
  */
 @Value
 public class Environment {
-	private final ReferenceCache cache = new ReferenceCache();
+	private final Cache cache = new Cache();
 	@NonNull
 	private final CtModel ctModel;
 	@NonNull

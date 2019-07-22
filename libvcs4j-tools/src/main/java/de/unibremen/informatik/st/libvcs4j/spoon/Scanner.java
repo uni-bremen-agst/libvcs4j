@@ -1,6 +1,8 @@
 package de.unibremen.informatik.st.libvcs4j.spoon;
 
 import de.unibremen.informatik.st.libvcs4j.Validate;
+import lombok.Getter;
+import lombok.NonNull;
 import spoon.reflect.CtModel;
 import spoon.reflect.code.CtAssignment;
 import spoon.reflect.code.CtBlock;
@@ -30,10 +32,35 @@ public class Scanner extends CtScanner {
 	private static final String GETTER_SETTER_REGEX = "get.*|set.*|is.*";
 
 	/**
+	 * The cache that is used to speedup lookups.
+	 */
+	@Getter
+	private final Cache cache;
+
+	/**
 	 * Is used to determine whether {@link #visitRoot(CtElement)} has already
 	 * been called.
 	 */
 	private boolean initialized = false;
+
+	/**
+	 * Creates a scanner with given cache.
+	 *
+	 * @param cache
+	 * 		The cache that is used to speedup lookups.
+	 * @throws NullPointerException
+	 * 		If {@code cache} is {@code null}.
+	 */
+	public Scanner(@NonNull final Cache cache) throws NullPointerException {
+		this.cache = cache;
+	}
+
+	/**
+	 * Creates a scanner with a new cache.
+	 */
+	public Scanner() {
+		cache = new Cache();
+	}
 
 	////////////////////////// Traversing utilities. //////////////////////////
 
