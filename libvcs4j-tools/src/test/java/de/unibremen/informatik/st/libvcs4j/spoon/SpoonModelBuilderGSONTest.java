@@ -80,7 +80,7 @@ public class SpoonModelBuilderGSONTest {
 
 		RevisionRange r1 = engine.next().orElseThrow(AssertionError::new);
 		assertThat(builder.update(r1)).isNotNull();
-		assertThat(builder.getModel().orElseThrow(AssertionError::new)
+		assertThat(builder.getEnvironment().orElseThrow(AssertionError::new)
 				.getCtModel().getAllPackages().stream()
 				.filter(pkg -> pkg.getQualifiedName().endsWith(
 						"com.google.gson.internal.alpha"))
@@ -94,7 +94,7 @@ public class SpoonModelBuilderGSONTest {
 				r1.getRevision(), p2.toString())));
 		when(r2.getRemovedFiles()).thenCallRealMethod();
 		assertThat(builder.update(r2)).isNotNull();
-		assertThat(builder.getModel().orElseThrow(AssertionError::new)
+		assertThat(builder.getEnvironment().orElseThrow(AssertionError::new)
 				.getCtModel().getAllPackages().stream()
 				.filter(pkg -> pkg.getQualifiedName().endsWith(
 						"com.google.gson.internal.alpha"))
@@ -108,7 +108,7 @@ public class SpoonModelBuilderGSONTest {
 				r1.getRevision(), p3.toString())));
 		when(r3.getRemovedFiles()).thenCallRealMethod();
 		assertThat(builder.update(r3)).isNotNull();
-		assertThat(builder.getModel().orElseThrow(AssertionError::new)
+		assertThat(builder.getEnvironment().orElseThrow(AssertionError::new)
 				.getCtModel().getAllPackages().stream()
 				.filter(pkg -> pkg.getQualifiedName().endsWith(
 						"com.google.gson.internal.alpha"))
@@ -122,7 +122,7 @@ public class SpoonModelBuilderGSONTest {
 				r1.getRevision(), p4.toString())));
 		when(r4.getRemovedFiles()).thenCallRealMethod();
 		assertThat(builder.update(r4)).isNotNull();
-		assertThat(builder.getModel().orElseThrow(AssertionError::new)
+		assertThat(builder.getEnvironment().orElseThrow(AssertionError::new)
 				.getCtModel().getAllPackages().stream()
 				.filter(pkg -> pkg.getQualifiedName().endsWith(
 						"com.google.gson.internal.alpha"))

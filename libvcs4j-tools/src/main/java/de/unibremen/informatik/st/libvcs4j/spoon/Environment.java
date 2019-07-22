@@ -31,7 +31,8 @@ import java.util.stream.Collectors;
  * that allows to map between Spoon and LibVCS4j objects.
  */
 @Value
-public class SpoonModel {
+public class Environment {
+	private final ReferenceCache cache = new ReferenceCache();
 	@NonNull
 	private final CtModel ctModel;
 	@NonNull

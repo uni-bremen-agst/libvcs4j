@@ -46,14 +46,12 @@ import static java.lang.System.currentTimeMillis;
 import static spoon.SpoonModelBuilder.InputType;
 
 /**
- * Allows to build and incrementally update a {@link CtModel} (which is managed
- * by the result class {@link SpoonModel}, see {@link #getModel()} and
- * {@link #update(RevisionRange)}).
- *
- * This class is somewhat similar to {@link spoon.IncrementalLauncher}, except
- * that it utilizes LibVCS4j's {@link RevisionRange} API to build and update a
- * model. Incremental updates can be enabled and disabled with
- * {@link #setIncremental(boolean)}.
+ * Allows to build and incrementally update a Spoon {@link CtModel}. The
+ * resulting model is managed by an instance of {@link Environment} (see
+ * {@link #getEnvironment()} and {@link #update(RevisionRange)}). This class is
+ * somewhat similar to {@link spoon.IncrementalLauncher}, except that it
+ * utilizes LibVCS4j's {@link RevisionRange} API to build and update a
+ * {@link CtModel}.
  */
 public class SpoonModelBuilder {
 
@@ -64,8 +62,9 @@ public class SpoonModelBuilder {
 			LoggerFactory.getLogger(SpoonModelBuilder.class);
 
 	/**
-	 * Indicates whether {@link #update(RevisionRange)} updates {@link #model}
-	 * incrementally or if a model is build from scratch. The default value is
+	 * Indicates whether {@link #update(RevisionRange)} updates the
+	 * {@link CtModel} of {@link #environment} incrementally or if a
+	 * {@link CtModel} is build from scratch. The default value is
 	 * {@code true}.
 	 */
 	@Getter
@@ -75,7 +74,7 @@ public class SpoonModelBuilder {
 	/**
 	 * Enables or disables auto imports (see
 	 * {@link spoon.compiler.Environment#setAutoImports(boolean)}). Note that
-	 * changing this value while incrementally updating a model (see
+	 * changing this value while incrementally updating a {@link CtModel} (see
 	 * {@link #incremental}) may cause unexpected behaviour. The default value
 	 * is {@code true}.
 	 */
@@ -84,9 +83,9 @@ public class SpoonModelBuilder {
 	private boolean autoImports = true;
 
 	/**
-	 * The model of the last call of {@link #update(RevisionRange)}.
+	 * The environment of the last call of {@link #update(RevisionRange)}.
 	 */
-	private SpoonModel model = null;
+	private Environment environment = null;
 
 	/**
 	 * Path to the directory which stores the compiled .class files of the last
@@ -101,28 +100,31 @@ public class SpoonModelBuilder {
 	private final Set<Path> notCompiled = new HashSet<>();
 
 	/**
-	 * Returns the last built {@link SpoonModel}.
+	 * Returns the {@link Environment} of the last call of
+	 * {@link #update(RevisionRange)}.
 	 *
 	 * @return
-	 * 		The last built {@link SpoonModel}.
+	 * 		The {@link Environment} of the last call of
+	 * 		{@link #update(RevisionRange)}.
 	 */
-	public Optional<SpoonModel> getModel() {
-		return Optional.ofNullable(model);
+	public Optional<Environment> getEnvironment() {
+		return Optional.ofNullable(environment);
 	}
 
 	/**
-	 * Builds (or incrementally updates) {@link #model}.
+	 * Builds (or incrementally updates) the {@link CtModel} of
+	 * {@link #environment}.
 	 *
 	 * @param range
 	 * 		The currently checked out range.
 	 * @return
-	 * 		The result class that contains {@link #model} and {@code range}.
+	 * 		The resulting {@link Environment}.
 	 * @throws NullPointerException
 	 * 		If {@code range} is {@code null}.
 	 * @throws BuildException
 	 * 		If an error occurred while building the model.
 	 */
-	public SpoonModel update(@NonNull final RevisionRange range)
+	public Environment update(@NonNull final RevisionRange range)
 			throws BuildException {
 		final long current = currentTimeMillis();
 		if (tmpDir == null) {
@@ -130,8 +132,9 @@ public class SpoonModelBuilder {
 		}
 
 		final Launcher launcher;
-		if (model != null && incremental) {
-			final CtPackage rootPackage = model.getCtModel().getRootPackage();
+		if (environment != null && incremental) {
+			final CtPackage rootPackage =
+					environment.getCtModel().getRootPackage();
 			final Factory factory = rootPackage.getFactory();
 			launcher = new Launcher(factory);
 			launcher.getModelBuilder().setSourceClasspath(tmpDir.toString());
@@ -183,7 +186,7 @@ public class SpoonModelBuilder {
 			launcher.getModelBuilder().addCompilationUnitFilter(path ->
 					!notCompiled.contains(toCanonicalPath(path)));
 			launcher.getModelBuilder().compile(InputType.FILES);
-			model.getCtModel().setBuildModelIsFinished(false);
+			environment.getCtModel().setBuildModelIsFinished(false);
 		} else {
 			launcher = new Launcher();
 			// Add the checked out directory here, so we do not have to add
@@ -197,12 +200,12 @@ public class SpoonModelBuilder {
 		launcher.setBinaryOutputDirectory(tmpDir.toString());
 		try {
 			launcher.getModelBuilder().compile(InputType.FILES);
-			model = new SpoonModel(launcher.buildModel(), range);
+			environment = new Environment(launcher.buildModel(), range);
 			log.info("Model built in {} milliseconds",
 					currentTimeMillis() - current);
-			return model;
+			return environment;
 		} catch (final Exception e) {
-			model = null;
+			environment = null;
 			notCompiled.clear();
 			log.info("Unable to build model", e);
 			throw new BuildException(e);
@@ -290,21 +293,21 @@ public class SpoonModelBuilder {
 	}
 
 	/**
-	 * Removes all {@link CtType} objects from {@link #model#getModel()} that
-	 * belong to one of the files of {@code paths}. These files have changed,
-	 * so they need to be removed. The corresponding binary files are deleted
-	 * as well.
+	 * Removes all {@link CtType} objects from the {@link CtModel} of
+	 * {@link #environment} that belong to one of the files listed in
+	 * {@code paths}. These files have changed, so they need to be removed. The
+	 * corresponding binary files are deleted as well.
 	 *
 	 * @param paths
 	 * 		The changed source files.
 	 */
 	private void removeChangedTypes(final Collection<Path> paths) {
-		Validate.validateState(model != null);
+		Validate.validateState(environment != null);
 
 		final List<Path> files = paths.stream()
 				.map(this::toCanonicalPath)
 				.collect(Collectors.toList());
-		final CompilationUnitFactory factory = model
+		final CompilationUnitFactory factory = environment
 				.getCtModel()
 				.getRootPackage()
 				.getFactory()
@@ -358,12 +361,12 @@ public class SpoonModelBuilder {
 	 * 		{@link #update(RevisionRange)}.
 	 */
 	private Set<Path> findPreviouslyNotCompiledSources() {
-		Validate.validateState(model != null);
+		Validate.validateState(environment != null);
 		Validate.validateState(tmpDir != null);
 
 		final String output = tmpDir.toString();
 		final Set<Path> result = new HashSet<>();
-		model.getCtModel().getAllTypes().parallelStream()
+		environment.getCtModel().getAllTypes().parallelStream()
 				.filter(t -> t.getPosition().isValidPosition())
 				.forEach(type -> {
 			final Path canonicalPath = toCanonicalPath(
@@ -417,9 +420,9 @@ public class SpoonModelBuilder {
 	 * 		{@code pFiles}.
 	 */
 	private Set<Path> findReferencingFiles(final List<Path> pFiles) {
-		Validate.validateState(model != null);
+		Validate.validateState(environment != null);
 
-		final Map<String, CompilationUnit> unitMap = model
+		final Map<String, CompilationUnit> unitMap = environment
 				.getCtModel()
 				.getRootPackage()
 				.getFactory()
@@ -438,7 +441,7 @@ public class SpoonModelBuilder {
 						.collect(Collectors.toList());
 
 		final Set<Path> referencingFiles = new HashSet<>();
-		model.getCtModel().getAllTypes().forEach(type ->
+		environment.getCtModel().getAllTypes().forEach(type ->
 				type.getReferencedTypes().parallelStream()
 						.filter(typeReferencesOfFiles::contains)
 						.findAny()
