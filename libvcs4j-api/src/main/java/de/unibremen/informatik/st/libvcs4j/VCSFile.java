@@ -383,15 +383,15 @@ public interface VCSFile extends VCSModelElement {
 		}
 
 		/**
-		 * Returns a position with same line, column, offset, and tab size, but
-		 * located in {@code file}. Returns an empty optional, if this position
-		 * does not exist in {@code file}.
+		 * Returns a position with same line, column, offset, line offset, and
+		 * tab size, but located in {@code file}. Returns an empty optional, if
+		 * this position does not exist in {@code file}.
 		 *
 		 * @param file
 		 * 		The file to map this position to.
 		 * @return
-		 * 		A position with same line, column, offset, and tab size, but
-		 * 		located in {@code file}.
+		 * 		A position with same line, column, offset, line offset, and tab
+		 * 		size, but located in {@code file}.
 		 * @throws NullPointerException
 		 * 		If {@code file} is {@code null}.
 		 * @throws IOException
