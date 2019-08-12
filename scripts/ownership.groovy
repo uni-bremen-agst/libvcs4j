@@ -1,5 +1,5 @@
 @Grapes([
-		@Grab(group='de.uni-bremen.informatik.st', module='libvcs4j', version='1.4.0'),
+		@Grab(group='de.uni-bremen.informatik.st', module='libvcs4j', version='1.7.0'),
 		@Grab(group='org.slf4j', module='slf4j-simple', version='1.7.25')
 ])
 
