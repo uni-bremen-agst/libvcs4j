@@ -30,7 +30,6 @@ public class ConstructorTest {
 	public void regularFileRepository() throws IOException {
 		Path file = Files.createTempFile(null, null);
 		file.toFile().deleteOnExit();
-		thrown.expect(IllegalRepositoryException.class);
 		createEngine("file://" + file.toString());
 	}
 }
