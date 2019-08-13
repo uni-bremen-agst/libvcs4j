@@ -35,8 +35,8 @@ public class GodClassDetector extends CodeSmellDetector {
 
 	private final NOA noa = new NOA();
 	private final WMC wmc = new WMC();
-	private final ATFD atfd = new ATFD();
-	private final TCC tcc = new TCC();
+	private final ATFD atfd = new ATFD(getCache());
+	private final TCC tcc = new TCC(getCache());
 
 	public GodClassDetector(@NonNull final Environment environment,
 			final int noaThreshold, final int wmcThreshold,

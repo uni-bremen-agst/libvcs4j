@@ -4,6 +4,7 @@ import de.unibremen.informatik.st.libvcs4j.Validate;
 import de.unibremen.informatik.st.libvcs4j.spoon.Cache;
 import de.unibremen.informatik.st.libvcs4j.spoon.Scanner;
 import de.unibremen.informatik.st.libvcs4j.spoon.codesmell.Metric;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
@@ -25,6 +26,7 @@ import java.util.function.Consumer;
  * @param <T>
  *     The type of the gathered metric value, e. g. {@link Integer}.
  */
+@NoArgsConstructor
 public abstract class Gatherer<T extends Number> extends Scanner {
 
 	/**
@@ -36,12 +38,6 @@ public abstract class Gatherer<T extends Number> extends Scanner {
 	 * Maps an element to its metric.
 	 */
 	private final Map<CtElement, T> metrics = new IdentityHashMap<>();
-
-	/**
-	 * Creates a gatherer with a new cache (see {@link Scanner#cache}).
-	 */
-	public Gatherer() {
-	}
 
 	/**
 	 * Creates a gatherer with given cache (see {@link Scanner#cache}).

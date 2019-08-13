@@ -89,26 +89,34 @@ public class UnusedCodeDetector extends CodeSmellDetector {
 
 		types.keySet().removeAll(referencedElements);
 		types.values().stream()
-				.map(CtTypeReference::getDeclaration)
+				.map(t -> getCache().getOrResolve(t))
+				.filter(Optional::isPresent)
+				.map(Optional::get)
 				.forEach(this::addCodeSmell);
 
 		executables.keySet().removeAll(referencedElements);
 		executables.values().stream()
 				.filter(e -> !overridesReferencedMethod(e))
-				.map(CtExecutableReference::getDeclaration)
+				.map(e -> getCache().getOrResolve(e))
+				.filter(Optional::isPresent)
+				.map(Optional::get)
 				.forEach(this::addCodeSmell);
 
 		fields.keySet().removeAll(referencedElements);
 		fields.values().stream()
-				.map(CtFieldReference::getDeclaration)
+				.map(f -> getCache().getOrResolve(f))
+				.filter(Optional::isPresent)
+				.map(Optional::get)
 				.forEach(this::addCodeSmell);
 	}
 
 	private boolean overridesReferencedMethod(
 			final CtExecutableReference reference) {
-		// declaration must be non-null since `executables` contains
-		// only methods of visited classes
-		final CtType type = reference.getDeclaringType().getDeclaration();
+		// Declaration must be non-null because `executables` contains only
+		// methods of visited classes.
+		final CtType type = getCache()
+				.getOrResolve(reference.getDeclaringType())
+				.orElseThrow(IllegalStateException::new);
 		final CtTypeReference superClass = getSuperClassIncludingObject(type);
 		return overridesReferencedMethod(reference, superClass)
 				|| type.getSuperInterfaces().stream().anyMatch(i ->
@@ -118,7 +126,7 @@ public class UnusedCodeDetector extends CodeSmellDetector {
 	private boolean overridesReferencedMethod(
 			final CtExecutableReference<?> executableReference,
 			final CtTypeReference typeReference) {
-		// end of recursion
+		// End of recursion.
 		if (typeReference == null) {
 			return false;
 		}
@@ -127,33 +135,33 @@ public class UnusedCodeDetector extends CodeSmellDetector {
 				typeReference.getQualifiedName().startsWith("java") ||
 						typeReference.getQualifiedName().startsWith("javax");
 
-		// load declaration, java classes must be loaded with
-		// `getTypeDeclaration`
-		CtType<?> type = typeReference.getDeclaration();
-		if (type == null && isJavaClass) {
+		// Java classes must be loaded with `getTypeDeclaration`.
+		Optional<CtType> type = getCache().getOrResolve(typeReference);
+		if (type.isEmpty() && isJavaClass) {
 			try {
-				type = typeReference.getTypeDeclaration();
+				type = Optional.ofNullable(typeReference.getTypeDeclaration());
 			} catch (final SpoonClassNotFoundException e) {
 				// there nothing more we can do here
 			}
 		}
 
-		// we are leaving known classpath, consider methods
-		// annotated with @Override to be referenced elsewhere
-		if (type == null) {
-			return executableReference.getDeclaration()
-					.getAnnotation(overrideAnnotation) != null;
+		// We are leaving known classpath. Consider methods annotated with
+		// @Override to be referenced elsewhere.
+		if (type.isEmpty()) {
+			return getCache().getOrResolve(executableReference)
+					.map(e -> e.getAnnotation(overrideAnnotation))
+					.isPresent();
 		}
 
-		// search for a matching method
+		// Search for a matching method.
 		final boolean match = isJavaClass
-				// methods defined by java classes and interfaces must not be
+				// Methods defined by Java classes and interfaces must not be
 				// referenced...
-				? type.getMethods().stream()
+				? ((CtType<?>)type.get()).getMethods().stream()
 				.map(CtMethod::getReference)
 				.anyMatch(executableReference::isOverriding)
-				// ... unlike methods defined by non-java classes
-				: type.getMethods().stream()
+				// ... unlike methods defined by non-Java classes.
+				: ((CtType<?>)type.get()).getMethods().stream()
 				.map(CtMethod::getReference)
 				.anyMatch(r -> executableReference.isOverriding(r) &&
 						referencedElements.contains(r.getSignature()));
@@ -161,15 +169,16 @@ public class UnusedCodeDetector extends CodeSmellDetector {
 			return true;
 		}
 
-		// we reached the top of the class hierarchy, stop searching
+		// We reached the top of the class hierarchy. Stop searching.
 		if (typeReference == object) {
 			return false;
 		}
 
-		// start recursion
-		final CtTypeReference superClass = getSuperClassIncludingObject(type);
+		// Start recursion.
+		final CtTypeReference superClass =
+				getSuperClassIncludingObject(type.get());
 		return overridesReferencedMethod(executableReference, superClass)
-				|| type.getSuperInterfaces().stream().anyMatch(i ->
+				|| type.get().getSuperInterfaces().stream().anyMatch(i ->
 				overridesReferencedMethod(executableReference, i));
 	}
 

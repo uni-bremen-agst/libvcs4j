@@ -2,19 +2,14 @@ package de.unibremen.informatik.st.libvcs4j.spoon.metric;
 
 import de.unibremen.informatik.st.libvcs4j.Validate;
 import de.unibremen.informatik.st.libvcs4j.spoon.Cache;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 /**
  * A metric gatherer of type {@link Integer}.
  */
+@NoArgsConstructor
 public abstract class IntGatherer extends Gatherer<Integer> {
-
-	/**
-	 * Creates a gatherer with a new cache (see
-	 * {@link de.unibremen.informatik.st.libvcs4j.spoon.Scanner#cache}).
-	 */
-	public IntGatherer() {
-	}
 
 	/**
 	 * Creates a gatherer with given cache (see

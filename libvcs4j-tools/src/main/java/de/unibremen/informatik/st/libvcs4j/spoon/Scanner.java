@@ -3,6 +3,7 @@ package de.unibremen.informatik.st.libvcs4j.spoon;
 import de.unibremen.informatik.st.libvcs4j.Validate;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import spoon.reflect.CtModel;
 import spoon.reflect.code.CtAssignment;
 import spoon.reflect.code.CtBlock;
@@ -14,7 +15,6 @@ import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtNamedElement;
 import spoon.reflect.reference.CtExecutableReference;
-import spoon.reflect.reference.CtReference;
 import spoon.reflect.visitor.CtScanner;
 
 import java.util.Optional;
@@ -24,6 +24,7 @@ import java.util.Optional;
  * and all its subclasses, are NOT threadsafe! That is, one should NOT call
  * {@link #scan(CtElement)} on the same object from multiple threads.
  */
+@RequiredArgsConstructor
 public class Scanner extends CtScanner {
 
 	/**
@@ -35,6 +36,7 @@ public class Scanner extends CtScanner {
 	 * The cache that is used to speedup lookups.
 	 */
 	@Getter
+	@NonNull
 	private final Cache cache;
 
 	/**
@@ -48,18 +50,6 @@ public class Scanner extends CtScanner {
 	 */
 	public Scanner() {
 		cache = new Cache();
-	}
-
-	/**
-	 * Creates a scanner with given cache.
-	 *
-	 * @param cache
-	 * 		The cache that is used to speedup lookups.
-	 * @throws NullPointerException
-	 * 		If {@code cache} is {@code null}.
-	 */
-	public Scanner(@NonNull final Cache cache) throws NullPointerException {
-		this.cache = cache;
 	}
 
 	////////////////////////// Traversing utilities. //////////////////////////

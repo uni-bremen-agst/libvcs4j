@@ -1,5 +1,8 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.metric;
 
+import de.unibremen.informatik.st.libvcs4j.spoon.Cache;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import spoon.reflect.code.CtFieldAccess;
 import spoon.reflect.code.CtFieldRead;
 import spoon.reflect.code.CtFieldWrite;
@@ -10,20 +13,34 @@ import spoon.reflect.declaration.CtField;
 import spoon.reflect.declaration.CtInterface;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtType;
-import spoon.reflect.reference.CtFieldReference;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * This scanner gathers the 'Access to Foreign Data' metric for {@link CtEnum},
  * {@link CtClass}, and {@link CtInterface} elements.
  */
+@NoArgsConstructor
 public class ATFD extends IntGatherer {
 
 	/**
 	 * The initial metric value.
 	 */
 	public static final int INITIAL_VALUE = 0;
+
+	/**
+	 * Creates a ATFD gatherer with given cache (see
+	 * {@link de.unibremen.informatik.st.libvcs4j.spoon.Scanner#cache}).
+	 *
+	 * @param cache
+	 * 		The cache that is used to speedup lookups.
+	 * @throws NullPointerException
+	 * 		If {@code cache} is {@code null}.
+	 */
+	public ATFD(@NonNull Cache cache) throws NullPointerException {
+		super(cache);
+	}
 
 	@Override
 	public String name() {
@@ -82,8 +99,9 @@ public class ATFD extends IntGatherer {
 	private void visitCtFieldAccess(final CtFieldAccess fieldAccess) {
 		final Optional<CtField> field = Optional.of(fieldAccess)
 				.map(CtFieldAccess::getVariable)
-				.map(CtFieldReference::getDeclaration);
-		if (!field.isPresent() || // An field that is not part of the
+				.map(r -> getCache().getOrResolve(r))
+				.flatMap(Function.identity());
+		if (!field.isPresent() || // A field that is not part of the
 				                  // classpath => foreign access.
 				!isInScopeOf(field.get(),
 						fieldAccess.getParent(CtType.class))) {

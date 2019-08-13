@@ -2,6 +2,7 @@ package de.unibremen.informatik.st.libvcs4j.spoon.metric;
 
 import de.unibremen.informatik.st.libvcs4j.Validate;
 import de.unibremen.informatik.st.libvcs4j.spoon.Cache;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 import java.math.BigDecimal;
@@ -9,14 +10,8 @@ import java.math.BigDecimal;
 /**
  * A metric gatherer of type {@link BigDecimal}.
  */
+@NoArgsConstructor
 public abstract class DecimalGatherer extends Gatherer<BigDecimal> {
-
-	/**
-	 * Creates a gatherer with a new cache (see
-	 * {@link de.unibremen.informatik.st.libvcs4j.spoon.Scanner#cache}).
-	 */
-	public DecimalGatherer() {
-	}
 
 	/**
 	 * Creates a gatherer with given cache (see

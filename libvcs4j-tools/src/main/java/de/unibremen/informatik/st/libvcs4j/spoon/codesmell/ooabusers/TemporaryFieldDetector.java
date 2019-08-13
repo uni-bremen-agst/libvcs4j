@@ -14,17 +14,17 @@ import spoon.reflect.declaration.CtField;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtConstructor;
 import spoon.reflect.declaration.CtModifiable;
-import spoon.reflect.reference.CtFieldReference;
 import spoon.reflect.visitor.filter.FieldAccessFilter;
 import spoon.reflect.visitor.filter.TypeFilter;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Collections;
-import java.util.Collection;
-import java.util.ArrayList;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 public class TemporaryFieldDetector extends CodeSmellDetector {
 
@@ -76,14 +76,17 @@ public class TemporaryFieldDetector extends CodeSmellDetector {
     }
 
     private void visitCtExecutable(final CtExecutable executable,
-                                   final CtType declaringType) {
+            final CtType declaringType) {
         executable.getElements(new TypeFilter<>(CtFieldAccess.class))
                 .stream()
                 .map(CtFieldAccess::getVariable)
-                .filter(ref -> ref.getDeclaration() != null)
-                .map(CtFieldReference::getDeclaration)
-                .filter(field -> field.getDeclaringType() != null)
-                .filter(field -> field.getDeclaringType().equals(declaringType))
+                .map(field -> getCache().getOrResolve(field))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .filter(field -> {
+                    final CtType declType = field.getDeclaringType();
+                    return declType != null && declType.equals(declaringType);
+                })
                 .filter(CtModifiable::isPrivate)
                 .filter(field -> !field.isStatic())
                 .forEach(field -> fieldAccesses.computeIfAbsent(

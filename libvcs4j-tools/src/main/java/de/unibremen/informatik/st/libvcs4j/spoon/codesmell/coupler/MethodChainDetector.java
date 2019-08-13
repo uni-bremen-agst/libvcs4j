@@ -11,7 +11,6 @@ import lombok.NonNull;
 import spoon.reflect.code.CtInvocation;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtTypedElement;
-import spoon.reflect.reference.CtTypeReference;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,10 +56,10 @@ public class MethodChainDetector extends CodeSmellDetector {
 						.filter(Objects::nonNull)
 						.map(CtTypedElement::getType)
 						.filter(Objects::nonNull)
-						.map(CtTypeReference::getDeclaration)
-						.map(d -> d == null ?
+						.map(t -> getCache().getOrResolve(t))
+						.map(d -> d.isEmpty() ?
 								QUALIFIED_NAME_OF_UNKNOWN_DECLARATION :
-								d.getQualifiedName())
+								d.get().getQualifiedName())
 						.collect(Collectors.toList());
 
 				final Set<String> distinctTargets = new HashSet<>(targets);

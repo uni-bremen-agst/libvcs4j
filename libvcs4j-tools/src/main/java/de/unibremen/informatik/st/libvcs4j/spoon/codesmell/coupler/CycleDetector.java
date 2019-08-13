@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 public class CycleDetector extends CodeSmellDetector {
 
@@ -55,7 +56,8 @@ public class CycleDetector extends CodeSmellDetector {
 				.ofNullable(field.getDeclaringType());
 		final Optional<CtType> to = Optional
 				.ofNullable(field.getType())
-				.map(CtTypeReference::getDeclaration);
+				.map(t -> getCache().getOrResolve(t))
+				.flatMap(Function.identity());
 		if (from.isPresent() && to.isPresent()) {
 			dependencies.computeIfAbsent(from.get(), f -> {
 				final Set<CtType> set = new HashSet<>();

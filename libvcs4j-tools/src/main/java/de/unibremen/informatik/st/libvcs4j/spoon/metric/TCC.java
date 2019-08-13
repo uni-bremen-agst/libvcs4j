@@ -1,6 +1,9 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.metric;
 
 import de.unibremen.informatik.st.libvcs4j.Validate;
+import de.unibremen.informatik.st.libvcs4j.spoon.Cache;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import spoon.reflect.code.CtFieldAccess;
 import spoon.reflect.code.CtFieldRead;
 import spoon.reflect.code.CtFieldWrite;
@@ -13,7 +16,6 @@ import spoon.reflect.declaration.CtInterface;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtModifiable;
 import spoon.reflect.declaration.CtType;
-import spoon.reflect.reference.CtFieldReference;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -23,11 +25,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  * This scanner gathers the 'Tight Class Cohesion' metric for {@link CtClass},
  * {@link CtInterface}, and {@link CtEnum} elements.
  */
+@NoArgsConstructor
 public class TCC extends DecimalGatherer {
 
 	/**
@@ -39,8 +43,21 @@ public class TCC extends DecimalGatherer {
 	 * Maps a type `t` to its methods, which in turn are mapped to the fields
 	 * they are accessing, which in turn are in scope of `t`.
 	 */
-	private Map<CtType, Map<CtMethod, Set<CtField>>>
+	private final Map<CtType, Map<CtMethod, Set<CtField>>>
 			typeInfo = new IdentityHashMap<>();
+
+	/**
+	 * Creates a TCC gatherer with given cache (see
+	 * {@link de.unibremen.informatik.st.libvcs4j.spoon.Scanner#cache}).
+	 *
+	 * @param cache
+	 * 		The cache that is used to speedup lookups.
+	 * @throws NullPointerException
+	 * 		If {@code cache} is {@code null}.
+	 */
+	public TCC(final @NonNull Cache cache) throws NullPointerException {
+		super(cache);
+	}
 
 	@Override
 	public void visitRoot(final CtElement element) {
@@ -141,9 +158,8 @@ public class TCC extends DecimalGatherer {
 	private void visitCtFieldAccess(final CtFieldAccess fieldAccess) {
 		final CtType type = fieldAccess.getParent(CtType.class);
 		if (type != null && typeInfo.containsKey(type)) {
-			final Optional<CtField> field = Optional
-					.ofNullable(fieldAccess.getVariable())
-					.map(CtFieldReference::getDeclaration)
+			final Optional<CtField> field = getCache()
+					.getOrResolve(fieldAccess.getVariable())
 					.filter(f -> isInScopeOf(f, type));
 			final Optional<CtMethod> method = field
 					.map(f -> fieldAccess.getParent(CtMethod.class))
@@ -163,7 +179,8 @@ public class TCC extends DecimalGatherer {
 				.filter(Optional::isPresent)
 				.map(Optional::get)
 				.map(CtFieldAccess::getVariable)
-				.map(CtFieldReference::getDeclaration)
+				.map(ref -> getCache().getOrResolve(ref))
+				.flatMap(Function.identity())
 				.ifPresent(field -> {
 					final CtType type = invocation.getParent(CtType.class);
 					final CtMethod met = invocation.getParent(CtMethod.class);
