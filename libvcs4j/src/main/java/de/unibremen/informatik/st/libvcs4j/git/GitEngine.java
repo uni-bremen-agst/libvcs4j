@@ -204,8 +204,6 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 			final File file = new File(repository);
 			IllegalRepositoryException.isTrue(file.exists(),
 					"'%s' does not exist", pRepository);
-			IllegalRepositoryException.isTrue(file.isDirectory(),
-					"'%s' is not a directory", pRepository);
 			IllegalRepositoryException.isTrue(file.canRead(),
 					"'%s' is not readable", pRepository);
 		}

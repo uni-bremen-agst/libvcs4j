@@ -565,7 +565,7 @@ public class VCSEngineBuilder {
 				path = Optional.of(Paths.get(repository));
 			} catch (final InvalidPathException ignored) { /* ignored */ }
 			final String repo = path
-					.filter(p -> p.toFile().isDirectory())
+					.filter(p -> p.toFile().exists())
 					.map(r -> "file://" + r)
 					.orElse(repository);
 			if (engine == Engine.SVN) {
