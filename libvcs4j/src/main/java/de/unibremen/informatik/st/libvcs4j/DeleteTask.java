@@ -54,6 +54,7 @@ public class DeleteTask extends Thread {
 					public FileVisitResult visitFile(
 							final Path pFile, final BasicFileAttributes pAttrs)
 							throws IOException {
+						pFile.toFile().setWritable(true);
 						Files.delete(pFile);
 						return FileVisitResult.CONTINUE;
 					}
