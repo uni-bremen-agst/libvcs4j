@@ -6,8 +6,8 @@ import java.util.Collection;
  * Multimap is a google guava inspired map-like collection type that allows to
  * associate a key with multiple values instead of just one.
  *
- * @param <K>
- * @param <V>
+ * @param <K> the type of the keys.
+ * @param <V> the type of the values.
  * @author Ruben Smidt
  */
 public interface Multimap<K, V> {

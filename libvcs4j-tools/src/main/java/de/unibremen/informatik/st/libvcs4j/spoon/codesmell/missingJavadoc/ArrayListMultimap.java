@@ -8,8 +8,8 @@ import java.util.stream.Stream;
  * ArrayListMultimap is a google guava inspired multimap implementation that utilizes
  * {@link ArrayList} to store the values for a given key.
  *
- * @param <K> the type of the key.
- * @param <V> the type of the value.
+ * @param <K> the type of the keys.
+ * @param <V> the type of the values.
  * @author Ruben Smidt
  */
 public class ArrayListMultimap<K, V> implements Multimap<K, V> {

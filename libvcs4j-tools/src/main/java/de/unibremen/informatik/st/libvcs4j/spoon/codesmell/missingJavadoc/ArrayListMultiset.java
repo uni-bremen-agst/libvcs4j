@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 /**
  * ArrayListMultiset implements {@link Multiset} by utilizing a {@link java.util.ArrayList}.
  *
- * @param <V> the type of the value.
+ * @param <V> the type of the values.
  * @author Ruben Smidt
  */
 public class ArrayListMultiset<V> implements Multiset<V> {
