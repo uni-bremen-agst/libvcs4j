@@ -20,5 +20,5 @@
  * @since
  * @serial to short serial tag
  * @param codesmell for unallowed tag.
- *return null;/
+ */
  package spoon.tooShortTagsPackage;
