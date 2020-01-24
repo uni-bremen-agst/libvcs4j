@@ -4056,7 +4056,6 @@ public class JavadocDetectorTest {
         javadocDetector.withParam(10);
         javadocDetector.withException(10);
         javadocDetector.scan(model);
-        ;
         assertEquals(21, javadocDetector.getCodeSmells().size());
         Multimap smellMap = mappedCodeSmell(javadocDetector.getCodeSmells());
 

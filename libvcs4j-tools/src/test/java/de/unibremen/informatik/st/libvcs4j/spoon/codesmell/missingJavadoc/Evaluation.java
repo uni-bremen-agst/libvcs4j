@@ -96,7 +96,7 @@ public class Evaluation {
                     setTags(javadocDetector);
                     javadocDetector.scan(model);
                     JavadocEvaluator evaluator = new JavadocEvaluator();
-                    evaluator.begin(
+                    JavadocEvaluator.begin(
                             javadocDetector,
                             model,
                             splittedLine[0].substring(splittedLine[0].lastIndexOf("/") + 1)
@@ -157,7 +157,7 @@ public class Evaluation {
                     setTags(javadocDetector);
                     javadocDetector.scan(model);
                     JavadocEvaluator evaluator = new JavadocEvaluator();
-                    evaluator.beginQ1(javadocDetector, model,
+                    JavadocEvaluator.beginQ1(javadocDetector, model,
                             splittedLine[0].substring(splittedLine[0].lastIndexOf("/") + 1), range.getOrdinal()
                     );
                 }
@@ -197,7 +197,7 @@ public class Evaluation {
                 javadocDetector.scan(model);
 
                 JavadocEvaluator evaluator = new JavadocEvaluator();
-                evaluator.beginQ1(javadocDetector, model,
+                JavadocEvaluator.beginQ1(javadocDetector, model,
                         "jgit", range.getOrdinal()
                 );
             } catch (Exception e) {
@@ -234,7 +234,7 @@ public class Evaluation {
             setTags(javadocDetector);
             javadocDetector.scan(model);
             JavadocEvaluator evaluator = new JavadocEvaluator();
-            evaluator.begin(javadocDetector, model, "Agrona");
+            JavadocEvaluator.begin(javadocDetector, model, "Agrona");
         }
     }
 }

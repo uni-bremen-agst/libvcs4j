@@ -866,7 +866,7 @@ public class JavadocEvaluator {
             for (String value : inversSmellTypeWithClass.get(key)) {
                 countedSmellTypes.put(value, countedSmellTypes.get(value) + 1);
             }
-            System.out.println("");
+            System.out.println();
             System.out.println("Es wurden " + inversSmellTypeWithClass.keys()
                     .count(key) + " Code Smells in " + key + " gefunden.");
             countedSmellTypes.entrySet().stream().sorted(reverseOrder(Map.Entry.comparingByValue())).forEach(entry -> {
@@ -1071,7 +1071,7 @@ public class JavadocEvaluator {
                     inversSmellTypeWithClass.put(value, key);
                 }
             }
-            System.out.println("");
+            System.out.println();
             System.out.println("Der Code Smell Typ \"" + key + "\" wurde " + smellTypeWithClass.keys()
                     .count(key) + "-Mal in den Javadocables gefunden.");
             smellOccurrences.entrySet().stream().sorted(reverseOrder(Map.Entry.comparingByValue())).forEach(entry -> {
@@ -1133,7 +1133,7 @@ public class JavadocEvaluator {
         System.out.println("Dahingegen sind " + smellFree.size() + " Javadocables frei von Code Smells (" + df.format((double) smellFree
                 .size() / modelMap.size() * 100) + "%).");
         sbQ3.append(modelMap.size() + ";" + smellInfected.size() + ";" + smellFree.size() + ";");
-        System.out.println("");
+        System.out.println();
         System.out.println("Insgesamt wurden " + countValuesCorrespondence(
                 modelMap,
                 "CtMethod"
@@ -1162,7 +1162,7 @@ public class JavadocEvaluator {
                 smellInfected,
                 "CtMethod"
         ) + ";" + countValuesCorrespondence(smellFree, "CtMethod") + ";");
-        System.out.println("");
+        System.out.println();
         System.out.println("Insgesamt wurden " + countValuesCorrespondence(
                 modelMap,
                 "CtConstructor"
@@ -1194,7 +1194,7 @@ public class JavadocEvaluator {
                 smellFree,
                 "CtConstructor"
         ) + ";");
-        System.out.println("");
+        System.out.println();
         System.out.println("Insgesamt wurden " + countValuesCorrespondence(
                 modelMap,
                 "CtField"
@@ -1223,7 +1223,7 @@ public class JavadocEvaluator {
                 smellInfected,
                 "CtField"
         ) + ";" + countValuesCorrespondence(smellFree, "CtField") + ";");
-        System.out.println("");
+        System.out.println();
         System.out.println("Insgesamt wurden " + countValuesCorrespondence(
                 modelMap,
                 "CtClass"
@@ -1252,7 +1252,7 @@ public class JavadocEvaluator {
                 smellInfected,
                 "CtClass"
         ) + ";" + countValuesCorrespondence(smellFree, "CtClass") + ";");
-        System.out.println("");
+        System.out.println();
         System.out.println("Insgesamt wurden " + countValuesCorrespondence(
                 modelMap,
                 "CtEnum"
@@ -1281,7 +1281,7 @@ public class JavadocEvaluator {
                 smellInfected,
                 "CtEnum"
         ) + ";" + countValuesCorrespondence(smellFree, "CtEnum") + ";");
-        System.out.println("");
+        System.out.println();
         System.out.println("Insgesamt wurden " + countValuesCorrespondence(
                 modelMap,
                 "CtInterface"
@@ -1310,7 +1310,7 @@ public class JavadocEvaluator {
                 smellInfected,
                 "CtInterface"
         ) + ";" + countValuesCorrespondence(smellFree, "CtInterface") + ";");
-        System.out.println("");
+        System.out.println();
         System.out.println("Insgesamt wurden " + countValuesCorrespondence(
                 modelMap,
                 "CtAnnotationType"
@@ -1339,7 +1339,7 @@ public class JavadocEvaluator {
                 smellInfected,
                 "CtAnnotationType"
         ) + ";" + countValuesCorrespondence(smellFree, "CtAnnotationType") + ";");
-        System.out.println("");
+        System.out.println();
         System.out.println("Insgesamt wurden " + countValuesCorrespondence(
                 modelMap,
                 "CtPackage"

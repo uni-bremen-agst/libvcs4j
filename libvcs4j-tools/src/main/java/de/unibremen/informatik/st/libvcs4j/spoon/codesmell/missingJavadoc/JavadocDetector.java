@@ -1108,7 +1108,7 @@ public class JavadocDetector extends CodeSmellDetector {
         }
         if (readByWord) {
             text = text.replace("-", " ");
-            String words[] = text.split("\\s+");
+            String[] words = text.split("\\s+");
             for (String word : words) {
                 if (word.matches(".*[a-zA-Z0-9].*")) {
                     count++;
