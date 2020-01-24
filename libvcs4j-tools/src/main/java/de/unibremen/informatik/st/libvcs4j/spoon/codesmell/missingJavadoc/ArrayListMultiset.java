@@ -1,9 +1,6 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.codesmell.missingJavadoc;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Spliterator;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -102,5 +99,18 @@ public class ArrayListMultiset<V> implements Multiset<V> {
     @Override
     public int count(final V value) {
         return (int) values.stream().filter(v -> v.equals(value)).count();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ArrayListMultiset<?> that = (ArrayListMultiset<?>) o;
+        return Objects.equals(values, that.values);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(values);
     }
 }

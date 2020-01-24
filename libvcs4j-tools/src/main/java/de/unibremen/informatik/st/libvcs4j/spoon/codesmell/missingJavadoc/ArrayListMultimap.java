@@ -1,9 +1,6 @@
 package de.unibremen.informatik.st.libvcs4j.spoon.codesmell.missingJavadoc;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -79,5 +76,18 @@ public class ArrayListMultimap<K, V> implements Multimap<K, V> {
 
     private Stream<K> toKeys(Map.Entry<K, ArrayList<V>> entry) {
         return entry.getValue().stream().map(e -> entry.getKey());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ArrayListMultimap<?, ?> that = (ArrayListMultimap<?, ?>) o;
+        return Objects.equals(map, that.map);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(map);
     }
 }
