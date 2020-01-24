@@ -6,10 +6,16 @@ import java.util.List;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 
-public class ListMultiset<V> implements Multiset<V> {
+/**
+ * ArrayListMultiset implements {@link Multiset} by utilizing a {@link java.util.ArrayList}.
+ *
+ * @param <V> the type of the value.
+ * @author Ruben Smidt
+ */
+public class ArrayListMultiset<V> implements Multiset<V> {
     private List<V> values;
 
-    public ListMultiset(final List<V> values) {
+    public ArrayListMultiset(final List<V> values) {
         this.values = values;
     }
 
@@ -88,6 +94,11 @@ public class ListMultiset<V> implements Multiset<V> {
         return values.spliterator();
     }
 
+    /**
+     * Returns the count of a specific value in the set.
+     *
+     * @param value the value which occurrences have to be counted.
+     */
     @Override
     public int count(final V value) {
         return (int) values.stream().filter(v -> v.equals(value)).count();
