@@ -39,9 +39,7 @@ public class ArrayListMultimap<K, V> implements Multimap<K, V> {
      */
     @Override
     public boolean put(final K key, final V value) {
-        var coll = map.computeIfAbsent(key, k -> new ArrayList<>());
-
-        return coll.add(value);
+        return map.computeIfAbsent(key, k -> new ArrayList<>()).add(value);
     }
 
     /**
