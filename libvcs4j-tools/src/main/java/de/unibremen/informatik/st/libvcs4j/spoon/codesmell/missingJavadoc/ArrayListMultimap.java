@@ -86,6 +86,6 @@ public class ArrayListMultimap<K, V> implements Multimap<K, V> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(map);
+        return map.hashCode();
     }
 }
