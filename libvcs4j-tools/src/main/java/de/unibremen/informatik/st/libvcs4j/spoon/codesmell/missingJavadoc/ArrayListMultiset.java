@@ -111,6 +111,6 @@ public class ArrayListMultiset<V> implements Multiset<V> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(values);
+        return values.hashCode();
     }
 }
