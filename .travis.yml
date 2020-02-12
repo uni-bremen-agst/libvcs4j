@@ -3,7 +3,6 @@ language: java
 matrix:
     include:
         - os: linux
-          jdk: openjdk11
         - os: osx
           osx_image: xcode10.1
 
