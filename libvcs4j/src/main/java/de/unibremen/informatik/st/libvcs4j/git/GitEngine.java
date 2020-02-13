@@ -414,16 +414,35 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 		// order: [HEAD, HEAD^1, ..., initial]
 
 		final List<String> revs = new ArrayList<>();
+		// Next commit to be included in the list
+		RevCommit nextCommit = null;
 		try {
 			final LogCommand logCmd = openRepository().log();
-			addRootPath(logCmd)
-					.call()
-					.forEach(rv -> {
-						final Date date = rv.getAuthorIdent().getWhen();
-						if (!date.before(since) && !date.after(until)) {
-							revs.add(rv.getName());
-						}
-					});
+			Iterable<RevCommit> commits = addRootPath(logCmd).call();
+
+			for (RevCommit rv : commits) {
+				if (nextCommit != null && nextCommit != rv) {
+					// Immediately skip commits not to be included
+					continue;
+				}
+
+				final Date date = rv.getAuthorIdent().getWhen();
+				if (date.before(since) || date.after(until)) {
+					continue;
+				}
+
+				// Select the next commit to be included. If a commit
+				// has multiple parents, select one of them to avoid
+				// mixing commits from different paths.
+				int parentCount = rv.getParentCount();
+				if (parentCount != 0) {
+					nextCommit = rv.getParent(0);
+				} else {
+					nextCommit = null;
+				}
+
+				revs.add(rv.getName());
+			}
 		} catch (NoHeadException e) {
 			return Collections.emptyList();
 		} catch (final GitAPIException e) {
