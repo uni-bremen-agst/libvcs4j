@@ -51,7 +51,6 @@ public class EnvironmentBuilderGSONTest {
 				.build();
 
 		EnvironmentBuilder builder = new EnvironmentBuilder();
-		builder.setIncremental(true);
 		for (RevisionRange range : engine) {
 			assertThat(builder.update(range)).isNotNull();
 		}
@@ -68,7 +67,6 @@ public class EnvironmentBuilderGSONTest {
 				.build();
 
 		EnvironmentBuilder builder = new EnvironmentBuilder();
-		builder.setIncremental(true);
 
 		// To raise the NullPointerException deterministically, we need to
 		// delete the following java files one after another. Otherwise,

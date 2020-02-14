@@ -42,7 +42,6 @@ public class EnvironmentBuilderBladeTest {
 				.build();
 
 		EnvironmentBuilder builder = new EnvironmentBuilder();
-		builder.setIncremental(true);
 		for (RevisionRange range : engine) {
 			assertThat(builder.update(range).getCtModel()).isNotNull();
 		}
