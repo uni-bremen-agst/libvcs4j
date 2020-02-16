@@ -1,5 +1,7 @@
 package de.unibremen.informatik.st.libvcs4j.git;
 
+import com.google.common.collect.Iterators;
+import com.google.common.collect.PeekingIterator;
 import de.unibremen.informatik.st.libvcs4j.Commit;
 import de.unibremen.informatik.st.libvcs4j.FileChange;
 import de.unibremen.informatik.st.libvcs4j.Issue;
@@ -44,13 +46,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -410,75 +407,101 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 		final Date since = toDate(pSince);
 		final Date until = toDate(pUntil);
 
-		// Keep in mind that 'git log' returns commits in the following
-		// order: [HEAD, HEAD^1, ..., initial]
+		// Keep in mind that:
+		// - 'git log' returns commits in the following order: [HEAD, HEAD^1, ..., initial], i.e.
+		//   the commits are traversed from newest to oldest
+		// - the start predicate become true for the newest commit to include, and the end predicate
+		//   must become true for the oldest commit to include
+		Predicate<RevCommit> startPredicate = commit -> (commit.getAuthorIdent().getWhen().compareTo(until) <= 0);
+		Predicate<RevCommit> endPredicate = commit -> (commit.getAuthorIdent().getWhen().compareTo(since) <= 0);
 
-		final List<String> revs = new ArrayList<>();
-		// Next commit to be included in the list
-		RevCommit nextCommit = null;
-		try {
-			final LogCommand logCmd = openRepository().log();
-			Iterable<RevCommit> commits = addRootPath(logCmd).call();
+		// Prepare the log command
+		final LogCommand logCmd = openRepository().log();
+		addRootPath(logCmd);
 
-			for (RevCommit rv : commits) {
-				if (nextCommit != null && nextCommit != rv) {
-					// Immediately skip commits not to be included
-					continue;
-				}
-
-				final Date date = rv.getAuthorIdent().getWhen();
-				if (date.before(since) || date.after(until)) {
-					continue;
-				}
-
-				// Select the next commit to be included. If a commit
-				// has multiple parents, select one of them to avoid
-				// mixing commits from different paths.
-				int parentCount = rv.getParentCount();
-				if (parentCount != 0) {
-					nextCommit = rv.getParent(0);
-				} else {
-					nextCommit = null;
-				}
-
-				revs.add(rv.getName());
-			}
-		} catch (NoHeadException e) {
-			return Collections.emptyList();
-		} catch (final GitAPIException e) {
-			throw new IOException(e);
-		}
-		Collections.reverse(revs);
-		return revs;
+		return this.enumerateRevisions(logCmd, startPredicate, endPredicate);
 	}
 
 	@Override
 	protected List<String> listRevisionsImpl(final String pFrom,
 			final String pTo) throws IOException {
-		final boolean fromIsEmpty = pFrom.isEmpty();
 
-		// Keep in mind that 'git log' returns commits in the following
-		// order: [HEAD, HEAD^1, ..., initial]
+		// Keep in mind that:
+		// - 'git log' returns commits in the following order: [HEAD, HEAD^1, ..., initial], i.e.
+		//   the commits are traversed from newest to oldest
+		// - the start predicate become true for the newest commit to include, and the end predicate
+		//   must become true for the oldest commit to include
+		Predicate<RevCommit> startPredicate;
+		Predicate<RevCommit> endPredicate;
 
-		final List<String> revs = new ArrayList<>();
+		// If no start commit is given, assume HEAD (i.e. the first commit
+		// that is encountered)
+		if (pTo.isEmpty()) {
+			startPredicate = commit -> true;
+		} else {
+			startPredicate = commit -> (commit.getName().startsWith(pTo));
+		}
+
+		// If no end commit is given, assume the initial commit
+		if (pFrom.isEmpty()) {
+			endPredicate = commit -> false;
+		} else {
+			endPredicate = commit -> (commit.getName().startsWith(pFrom));
+		}
+
+		// Prepare the log command
+		final LogCommand logCmd = openRepository().log();
+		addRootPath(logCmd);
+
+		return this.enumerateRevisions(logCmd, startPredicate, endPredicate);
+	}
+
+	private List<String> enumerateRevisions(LogCommand logCommand, Predicate<RevCommit> startPredicate, Predicate<RevCommit> endPredicate) throws IOException {
+		List<String> revs = new ArrayList<>();
+
 		try {
-			final LogCommand logCmd = openRepository().log();
-			addRootPath(logCmd);
+			PeekingIterator<RevCommit> revisions = Iterators.peekingIterator(logCommand.call().iterator());
 
-			// The following code does not fail if `pFrom` > `pTo`, but the
-			// resulting list will be empty.
+			// Iterate over the commits until the start predicate is satisfied
+			while (revisions.hasNext()) {
+				// Only advance the iteration if the next commit does NOT satisfy the
+				// start predicate. Thus, the iterator is positioned at the first
+				// commit to include for the following loop.
+				RevCommit rv = revisions.peek();
 
-			// If `pTo` is empty, we assume HEAD.
-			boolean include = pTo.isEmpty();
-			for (final RevCommit rv : logCmd.call()) {
-				if (!include && rv.getName().startsWith(pTo)) {
-					include = true;
-				}
-				if (include) {
-					revs.add(rv.getName());
-				}
-				if (!fromIsEmpty && rv.getName().startsWith(pFrom)) {
+				if (startPredicate.test(rv)) {
 					break;
+				} else {
+					// Advance the iteration
+					revisions.next();
+				}
+			}
+
+			// Add commits until the end predicate is satisfied or no commits remain. In this loop,
+			// we emulate the "--first-parent" behavior from "git log" to avoid mixing commits
+			// from concurrent branches. This guarantees that two consecutive commits in the result list
+			// are in a parent-child relation.
+			RevCommit nextRevision = null;
+			while (revisions.hasNext()) {
+				RevCommit rv = revisions.next();
+
+				if (nextRevision != null && rv != nextRevision) {
+					// Immediately skip "unexpected" commits
+					continue;
+				}
+
+				// Add the current commit to the result list
+				revs.add(rv.getName());
+
+				if (endPredicate.test(rv)) {
+					break;
+				}
+
+				if (rv.getParentCount() > 0) {
+					// Always choose the first parent as the next commit to include
+					nextRevision = rv.getParent(0);
+				} else {
+					nextRevision = null;
 				}
 			}
 		} catch (NoHeadException e) {
@@ -486,6 +509,7 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 		} catch (final GitAPIException e) {
 			throw new IOException(e);
 		}
+
 		Collections.reverse(revs);
 		return revs;
 	}
