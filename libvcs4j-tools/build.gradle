@@ -23,7 +23,8 @@ configurations {
 dependencies {
 	compile 'de.uni-bremen.informatik.st:libvcs4j-api:1.7.0'
 	compile 'fr.inria.gforge.spoon:spoon-core:8.0.0'
-	compile 'net.sourceforge.pmd:pmd:5.0.0'
+	compile 'net.sourceforge.pmd:pmd-core:6.21.0'
+	compile 'net.sourceforge.pmd:pmd-java:6.21.0'
 	compile 'org.slf4j:slf4j-api:1.7.22'
 	extraLibs project(':conqat')
 	testCompile project(':testutils')

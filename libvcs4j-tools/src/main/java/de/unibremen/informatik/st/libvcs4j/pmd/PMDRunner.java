@@ -1,12 +1,10 @@
 package de.unibremen.informatik.st.libvcs4j.pmd;
 
 import de.unibremen.informatik.st.libvcs4j.Revision;
-import de.unibremen.informatik.st.libvcs4j.VCSEngine;
 import de.unibremen.informatik.st.libvcs4j.Validate;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.pmd.PMD;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -18,21 +16,31 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * Allows to configure and run PMD on a single {@link Revision} or on all
- * revisions of a {@link VCSEngine}.
+ * Allows to configure and run PMD on {@link Revision} instances.
  */
+@Slf4j
 public class PMDRunner {
 
 	/**
-	 * The logger of this class.
+	 * List of default categories.
 	 */
-	private static final Logger log = LoggerFactory.getLogger(PMDRunner.class);
+	private static final List<String> DEFAULT_CATEGORIES = List.of(
+			"category/java/design.xml/GodClass",
+			"category/java/design.xml/ExcessiveClassLength",
+			"category/java/design.xml/ExcessiveMethodLength",
+			"category/java/design.xml/ExcessiveParameterList",
+			"category/java/bestpractices.xml/UnusedFormalParameter",
+			"category/java/bestpractices.xml/UnusedLocalVariable",
+			"category/java/bestpractices.xml/UnusedPrivateField",
+			"category/java/bestpractices.xml/UnusedPrivateMethod");
 
 	/**
 	 * The PMD rules to apply.
@@ -57,7 +65,7 @@ public class PMDRunner {
 				.map(String::trim)
 				.collect(Collectors.toList());
 		if (this.rules.isEmpty()) {
-			this.rules.add("rulesets/java/basic.xml");
+			this.rules.addAll(DEFAULT_CATEGORIES);
 		}
 	}
 
@@ -89,59 +97,24 @@ public class PMDRunner {
 	 * @throws IOException
 	 * 		If an error occurred while analyzing {@code revision}.
 	 */
-	public PMDDetectionResult run(@NonNull final Revision revision)
-			throws NullPointerException, IOException {
-		final PMDDetectionResult result = new PMDDetectionResult();
-		result.put(revision.getId(), detect(revision));
-		return result;
-	}
-
-	/**
-	 * Analyzes each revision of {@code engine} (by using a for-each loop).
-	 * Revisions in which errors occur (for example, if PMD throws an
-	 * exception) are skipped.
-	 *
-	 * @param engine
-	 * 		The VCS to analyze.
-	 * @return
-	 * 		The detection result.
-	 * @throws NullPointerException
-	 * 		If {@code engine} is {@code null}.
-	 */
-	public PMDDetectionResult run(@NonNull final VCSEngine engine)
-			throws NullPointerException {
-		final PMDDetectionResult result = new PMDDetectionResult();
-		engine.forEach(v -> {
-			final String rev = v.getRevision().getId();
-			try {
-				result.put(rev, detect(v.getRevision()));
-			} catch (final IOException e) {
-				log.info(String.format("Skipping revision '%s'", rev), e);
-			}
-		});
-		return result;
-	}
-
-	/**
-	 * This method is used by {@link #run(Revision)} and
-	 * {@link #run(VCSEngine)} to run the actual detection. It may be
-	 * overridden to extend the default behaviour of this class.
-	 *
-	 * @param revision
-	 * 		The revision to analyze.
-	 * @return
-	 * 		List of detected violations.
-	 * @throws IOException
-	 * 		If an error occurred while analyzing {@code revision}.
-	 */
-	protected List<PMDViolation> detect(final Revision revision)
+	protected PMDDetectionResult analyze(@NonNull final Revision revision)
 			throws IOException {
 		Validate.validateState(!rules.isEmpty());
 
+		final Path cache = Files.createTempFile("libvcs4j-pmd", null);
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+			log.info("Deleting PMD cache file '{}'", cache);
+			try {
+				Files.delete(cache);
+			} catch (IOException e) {
+				log.warn("Error while deleting PMD cache", e);
+			}
+		}));
 		final String[] args = {
-				revision.getOutput().toString(), // input
-				"xml",                           // format
-				String.join(",", rules)          // rules
+				"-d", revision.getOutput().toString(), // input
+				"-f", "xml",                           // format
+				"-R", String.join(",", rules),         // rules
+				"-cache", cache.toString()
 		};
 
 		// Temporarily redirect stdout to a string.
@@ -163,7 +136,7 @@ public class PMDRunner {
 			saxParser.parse(bis, handler);
 
 			// Result
-			return handler.getViolations();
+			return new PMDDetectionResult(handler.getViolations());
 		} catch (final UnsupportedOperationException | SAXException
 				| ParserConfigurationException e) {
 			throw new IOException(e);
