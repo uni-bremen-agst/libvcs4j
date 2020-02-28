@@ -69,6 +69,7 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 	private int revisionIdx = -1;
 	private String revision = null;
 	private Revision currentRevision = null;
+	private boolean outputDirIsMissing = false;
 
 	public AbstractVSCEngine(
 	        final String pRepository, final String pRoot, final Path pTarget)
@@ -102,6 +103,11 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 	public final Optional<RevisionRange> next() throws IOException {
 		init();
 
+		if (outputDirIsMissing) {
+			log.info("Deleting output directory");
+			Files.delete(getOutput());
+		}
+
 		revisionIdx++;
 		Validate.validateState(revisionIdx >= 0, // just to be sure
 				"Attribute `revisionIdx` must not be negative");
@@ -117,6 +123,12 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 				revisions.size());
 		checkoutImpl(revisions.get(revisionIdx));
 		revision = revisions.get(revisionIdx);
+
+		outputDirIsMissing = !getOutput().toFile().exists();
+		if (outputDirIsMissing) {
+			log.info("Creating output directory");
+			Validate.validateState(getOutput().toFile().mkdir());
+		}
 
 		final Changes changes;
 		// the first revision can only have additions
