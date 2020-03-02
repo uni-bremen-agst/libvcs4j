@@ -54,11 +54,17 @@ public class CPDDetectionResult {
      * 		All violations detected in {@code file}.
      */
     public List<CPDViolation> violationsOf(final VCSFile file) {
-        return file == null
-                ? new ArrayList<>()
-                : violations.stream()
-                .filter(v -> v.getRange().getFile().getRelativePath()
-                        .equals(file.getRelativePath()))
-                .collect(Collectors.toList());
+        if(file == null){return new ArrayList<>();}
+        List<CPDViolation> violationsOfFile = new ArrayList<CPDViolation>();
+        for(CPDViolation v : violations){
+            List<VCSFile.Range> ranges = v.getRanges();
+            for(VCSFile.Range range : ranges){
+                if(range.getFile().getRelativePath() == file.getRelativePath()){
+                    violationsOfFile.add(v);
+                    break;
+                }
+            }
+        }
+        return violationsOfFile;
     }
 }
