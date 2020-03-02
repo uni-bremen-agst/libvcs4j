@@ -143,7 +143,7 @@ public class RangeTest {
 		assertThat(updated.getEnd().getLine()).isEqualTo(394);
 		assertThat(updated.getEnd().getColumn()).isEqualTo(5);
 		assertThat(updated.readContent()).isEqualTo(
-				"catch (JsonParseException expected) {      \n    }");
+				"catch (JsonParseException expected) {      \r\n    }");
 	}
 
 	@Test
