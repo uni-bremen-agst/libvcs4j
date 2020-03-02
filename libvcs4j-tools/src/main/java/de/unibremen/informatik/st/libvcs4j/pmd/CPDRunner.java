@@ -1,7 +1,6 @@
 package de.unibremen.informatik.st.libvcs4j.pmd;
 
 import de.unibremen.informatik.st.libvcs4j.Revision;
-import de.unibremen.informatik.st.libvcs4j.Validate;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -16,34 +15,13 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * Allows to configure and run PMD on {@link Revision} instances.
  */
 @Slf4j
 public class CPDRunner {
-
-    /**
-     * List of default rules.
-     */
-    private static final List<String> DEFAULT_RULES = List.of(
-            "category/java/design.xml/GodClass",
-            "category/java/design.xml/ExcessiveClassLength",
-            "category/java/design.xml/ExcessiveMethodLength",
-            "category/java/design.xml/ExcessiveParameterList",
-            "category/java/bestpractices.xml/UnusedFormalParameter",
-            "category/java/bestpractices.xml/UnusedLocalVariable",
-            "category/java/bestpractices.xml/UnusedPrivateField",
-            "category/java/bestpractices.xml/UnusedPrivateMethod");
-
-    /**
-     * PMD rules to apply.
-     */
-    private final List<String> rules;
 
     /**
      * PMD cache file (incremental analysis). Is set lazily.
@@ -58,41 +36,9 @@ public class CPDRunner {
     private int minimumTokens = 100;
 
     /**
-     * Creates a new runner with given PMD rules. {@code null} values in
-     * {@code rules} are filtered out. Non-Null values are trimmed with
-     * {@link String#trim()}. If {@code rules} is empty, the rules listed in
-     * {@link #DEFAULT_RULES} are used.
-     *
-     * @param rules
-     * 		The PMD rules to apply.
-     * @throws NullPointerException
-     * 		If {@code rules} is {@code null}.
+     * Creates a new CPD runner.
      */
-    public CPDRunner(@NonNull final List<String> rules)
-            throws NullPointerException {
-        this.rules = rules.stream()
-                .filter(Objects::nonNull)
-                .map(String::trim)
-                .collect(Collectors.toList());
-        if (this.rules.isEmpty()) {
-            this.rules.addAll(DEFAULT_RULES);
-        }
-    }
-
-    /**
-     * Creates a new runner with given PMD rules. {@code null} values in
-     * {@code rules} are filtered out. Non-Null values are trimmed with
-     * {@link String#trim()}. If {@code rules} is empty, the ruleset
-     * "rulesets/java/basic.xml" is used as fallback.
-     *
-     * @param rules
-     * 		The PMD rules to apply.
-     * @throws NullPointerException
-     * 		If {@code rules} is {@code null}.
-     */
-    public CPDRunner(@NonNull final String... rules)
-            throws NullPointerException {
-        this(Arrays.asList(rules));
+    public CPDRunner(){
     }
 
     /**
@@ -109,7 +55,6 @@ public class CPDRunner {
      */
     protected CPDDetectionResult analyze(@NonNull final Revision revision)
             throws IOException {
-        Validate.validateState(!rules.isEmpty());
 
         final List<String> args = new ArrayList<>();
         // language
