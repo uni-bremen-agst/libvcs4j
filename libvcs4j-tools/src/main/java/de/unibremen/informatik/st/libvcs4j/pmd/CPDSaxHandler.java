@@ -65,7 +65,7 @@ class CPDSaxHandler extends DefaultHandler {
     /**
      * List of files that share the duplication.
      */
-    private List<VCSFile.Range> ranges;
+    private List<VCSFile.Range> ranges = new ArrayList<>();
 
     /**
      * Creates a new handler which uses the given collection of
@@ -107,7 +107,15 @@ class CPDSaxHandler extends DefaultHandler {
             final Attributes attributes) throws SAXException {
         if (qName.equals("duplication")) {
             lines = attributes.getValue("lines");
+            if (lines == null) {
+                log.warn("Skipping violation due to missing 'lines' attribute");
+                return;
+            }
             tokens = attributes.getValue("tokens");
+            if (tokens == null) {
+                log.warn("Skipping violation due to missing 'tokens' attribute");
+                return;
+            }
         } else if (qName.equals("file")) {
             final String path = attributes.getValue("path");
             if (path == null) {
@@ -177,9 +185,14 @@ class CPDSaxHandler extends DefaultHandler {
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
         if(qName == "duplication"){
+            if(ranges.size() < 2){
+                log.warn("Skipping violation because there is too few ranges");
+                ranges = new ArrayList<>(); //Initialize ranges for new duplication.
+                return;
+            }
             final CPDViolation v = new CPDViolation (ranges, parseInt(lines), parseInt(tokens));
             violations.add(v);
-            ranges = new ArrayList<VCSFile.Range>(); //Initialize ranges for new duplication.
+            ranges = new ArrayList<>(); //Initialize ranges for new duplication.
         }
     }
 
