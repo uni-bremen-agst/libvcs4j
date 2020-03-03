@@ -408,18 +408,20 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 		final Date until = toDate(pUntil);
 
 		// Keep in mind that:
-		// - 'git log' returns commits in the following order: [HEAD, HEAD^1, ..., initial], i.e.
-		//   the commits are traversed from newest to oldest
-		// - the start predicate become true for the newest commit to include, and the end predicate
-		//   must become true for the oldest commit to include
-		Predicate<RevCommit> startPredicate = commit -> (commit.getAuthorIdent().getWhen().compareTo(until) <= 0);
-		Predicate<RevCommit> endPredicate = commit -> (commit.getAuthorIdent().getWhen().compareTo(since) <= 0);
+		// - 'git log' returns commits in the following order:
+		//     [HEAD, HEAD^1, ..., initial]
+		// , i.e. the commits are traversed from newest to oldest.
+		// - The start predicate become true for the newest commit to include,
+		// and the end predicate must become true for the oldest commit to
+		// include.
+		final Predicate<RevCommit> startPredicate = commit ->
+				(commit.getAuthorIdent().getWhen().compareTo(until) <= 0);
+		final Predicate<RevCommit> endPredicate = commit ->
+				(commit.getAuthorIdent().getWhen().compareTo(since) <= 0);
 
-		// Prepare the log command
 		final LogCommand logCmd = openRepository().log();
 		addRootPath(logCmd);
-
-		return this.enumerateRevisions(logCmd, startPredicate, endPredicate);
+		return enumerateRevisions(logCmd, startPredicate, endPredicate);
 	}
 
 	@Override
@@ -427,48 +429,99 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 			final String pTo) throws IOException {
 
 		// Keep in mind that:
-		// - 'git log' returns commits in the following order: [HEAD, HEAD^1, ..., initial], i.e.
-		//   the commits are traversed from newest to oldest
-		// - the start predicate become true for the newest commit to include, and the end predicate
-		//   must become true for the oldest commit to include
-		Predicate<RevCommit> startPredicate;
-		Predicate<RevCommit> endPredicate;
+		// - 'git log' returns commits in the following order:
+		//     [HEAD, HEAD^1, ..., initial]
+		// , i.e. the commits are traversed from newest to oldest.
+		// - The start predicate become true for the newest commit to include,
+		// and the end predicate must become true for the oldest commit to
+		// include.
 
 		// If no start commit is given, assume HEAD (i.e. the first commit
-		// that is encountered)
-		if (pTo.isEmpty()) {
-			startPredicate = commit -> true;
-		} else {
-			startPredicate = commit -> (commit.getName().startsWith(pTo));
-		}
+		// that is encountered).
+		final Predicate<RevCommit> startPredicate = pTo.isEmpty()
+				? commit -> true
+				: commit -> (commit.getName().startsWith(pTo));
+		// If no end commit is given, assume the initial commit.
+		final Predicate<RevCommit> endPredicate = pFrom.isEmpty()
+				? commit -> false
+				: commit -> (commit.getName().startsWith(pFrom));
 
-		// If no end commit is given, assume the initial commit
-		if (pFrom.isEmpty()) {
-			endPredicate = commit -> false;
-		} else {
-			endPredicate = commit -> (commit.getName().startsWith(pFrom));
-		}
-
-		// Prepare the log command
 		final LogCommand logCmd = openRepository().log();
 		addRootPath(logCmd);
+		final List<String> revs = enumerateRevisions(
+				logCmd, startPredicate, endPredicate);
 
-		return this.enumerateRevisions(logCmd, startPredicate, endPredicate);
+		if (pFrom.isEmpty() || pTo.isEmpty()) {
+			return revs;
+		}
+
+		// Check if there is a linear sequence between `pFrom` and `pTo`.
+		String fromRev = null;
+		String toRev = null;
+		for (final String rv : revs) {
+			if (rv.startsWith(pFrom)) {
+				fromRev = rv;
+			}
+			if (rv.startsWith(pTo)) {
+				toRev = rv;
+			}
+		}
+		if (toRev != null && fromRev == null) { // no linear sequence
+			log.info("There is no linear sequence from '{}' to '{}'",
+					pFrom, pTo);
+			log.info("Falling back to direct processing");
+			revs.clear();
+			addRevisionTo(revs, pFrom);
+			if (revs.isEmpty()) {
+				log.info("`From` revision '{}' does not exist", pFrom);
+				log.info("Processing `to` revision '{}' only", pTo);
+			}
+			revs.add(toRev);
+		}
+		if (toRev == null) { // implies fromRev == null
+			Validate.validateState(fromRev == null);
+			Validate.validateState(revs.isEmpty());
+			log.info("`To` revision '{}' does not exist", pTo);
+			log.info("Processing `from` revision '{}' only", pFrom);
+			addRevisionTo(revs, pFrom);
+			if (revs.isEmpty()) {
+				log.info("`From` revision '{}' does not exist as well", pFrom);
+			}
+		}
+		return revs;
 	}
 
-	private List<String> enumerateRevisions(LogCommand logCommand, Predicate<RevCommit> startPredicate, Predicate<RevCommit> endPredicate) throws IOException {
-		List<String> revs = new ArrayList<>();
+	private void addRevisionTo(final List<String> revisions,
+			final String revision) throws IOException {
+		try {
+			final LogCommand log = openRepository().log();
+			addRootPath(log);
+			log.call().forEach(rev -> {
+				final String revName = rev.getName();
+				if (revName.startsWith(revision)) {
+					revisions.add(revName);
+				}
+			});
+		} catch (final GitAPIException e) {
+			throw new IOException(e);
+		}
+	}
+
+	private List<String> enumerateRevisions(final LogCommand logCommand,
+			final Predicate<RevCommit> startPredicate,
+			final Predicate<RevCommit> endPredicate) throws IOException {
+		final List<String> revs = new ArrayList<>();
 
 		try {
-			PeekingIterator<RevCommit> revisions = Iterators.peekingIterator(logCommand.call().iterator());
+			final PeekingIterator<RevCommit> revisions =
+					Iterators.peekingIterator(logCommand.call().iterator());
 
 			// Iterate over the commits until the start predicate is satisfied
 			while (revisions.hasNext()) {
 				// Only advance the iteration if the next commit does NOT satisfy the
 				// start predicate. Thus, the iterator is positioned at the first
 				// commit to include for the following loop.
-				RevCommit rv = revisions.peek();
-
+				final RevCommit rv = revisions.peek();
 				if (startPredicate.test(rv)) {
 					break;
 				} else {
