@@ -516,11 +516,12 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 			final PeekingIterator<RevCommit> revisions =
 					Iterators.peekingIterator(logCommand.call().iterator());
 
-			// Iterate over the commits until the start predicate is satisfied
+			// Iterate over the commits until the start predicate is satisfied.
 			while (revisions.hasNext()) {
-				// Only advance the iteration if the next commit does NOT satisfy the
-				// start predicate. Thus, the iterator is positioned at the first
-				// commit to include for the following loop.
+				// Only advance the iteration if the next commit does NOT
+				// satisfy the start predicate. Thus, the iterator is
+				// positioned at the first commit to include for the following
+				// loop.
 				final RevCommit rv = revisions.peek();
 				if (startPredicate.test(rv)) {
 					break;
@@ -530,20 +531,21 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 				}
 			}
 
-			// Add commits until the end predicate is satisfied or no commits remain. In this loop,
-			// we emulate the "--first-parent" behavior from "git log" to avoid mixing commits
-			// from concurrent branches. This guarantees that two consecutive commits in the result list
+			// Add commits until the end predicate is satisfied or no commits
+			// remain. In this loop, we emulate the "--first-parent" behavior
+			// from "git log" to avoid mixing commits from concurrent branches.
+			// This guarantees that two consecutive commits in the result list
 			// are in a parent-child relation.
 			RevCommit nextRevision = null;
 			while (revisions.hasNext()) {
 				RevCommit rv = revisions.next();
 
 				if (nextRevision != null && rv != nextRevision) {
-					// Immediately skip "unexpected" commits
+					// Immediately skip "unexpected" commits.
 					continue;
 				}
 
-				// Add the current commit to the result list
+				// Add the current commit to the result list.
 				revs.add(rv.getName());
 
 				if (endPredicate.test(rv)) {
@@ -551,7 +553,8 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 				}
 
 				if (rv.getParentCount() > 0) {
-					// Always choose the first parent as the next commit to include
+					// Always choose the first parent as the next commit to
+					// include.
 					nextRevision = rv.getParent(0);
 				} else {
 					nextRevision = null;
