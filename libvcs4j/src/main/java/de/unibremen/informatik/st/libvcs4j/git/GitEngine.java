@@ -419,9 +419,7 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 		final Predicate<RevCommit> endPredicate = commit ->
 				(commit.getAuthorIdent().getWhen().compareTo(since) <= 0);
 
-		final LogCommand logCmd = openRepository().log();
-		addRootPath(logCmd);
-		return enumerateRevisions(logCmd, startPredicate, endPredicate);
+		return enumerateRevisions(startPredicate, endPredicate);
 	}
 
 	@Override
@@ -446,47 +444,32 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 				? commit -> false
 				: commit -> (commit.getName().startsWith(pFrom));
 
-		final LogCommand logCmd = openRepository().log();
-		addRootPath(logCmd);
 		final List<String> revs = enumerateRevisions(
-				logCmd, startPredicate, endPredicate);
+				startPredicate, endPredicate);
 
 		if (pFrom.isEmpty() || pTo.isEmpty()) {
 			return revs;
 		}
 
 		// Check if there is a linear sequence between `pFrom` and `pTo`.
-		String fromRev = null;
-		String toRev = null;
-		for (final String rv : revs) {
-			if (rv.startsWith(pFrom)) {
-				fromRev = rv;
-			}
-			if (rv.startsWith(pTo)) {
-				toRev = rv;
-			}
-		}
-		if (toRev != null && fromRev == null) { // no linear sequence
+		final Optional<String> fromRev = revs.stream()
+				.filter(r -> r.startsWith(pFrom))
+				.findAny();
+		final Optional<String> toRev = revs.stream()
+				.filter(r -> r.startsWith(pTo))
+				.findAny();
+		if (toRev.isPresent() && fromRev.isEmpty()) { // no linear sequence
 			log.info("There is no linear sequence from '{}' to '{}'",
 					pFrom, pTo);
-			log.info("Falling back to direct processing");
+			log.info("Falling back to direct linkage");
 			revs.clear();
 			addRevisionTo(revs, pFrom);
-			if (revs.isEmpty()) {
-				log.info("`From` revision '{}' does not exist", pFrom);
-				log.info("Processing `to` revision '{}' only", pTo);
-			}
-			revs.add(toRev);
+			revs.add(toRev.get());
 		}
-		if (toRev == null) { // implies fromRev == null
-			Validate.validateState(fromRev == null);
+		if (toRev.isEmpty()) { // implies fromRev.isEmpty()
+			Validate.validateState(fromRev.isEmpty());
 			Validate.validateState(revs.isEmpty());
-			log.info("`To` revision '{}' does not exist", pTo);
-			log.info("Processing `from` revision '{}' only", pFrom);
 			addRevisionTo(revs, pFrom);
-			if (revs.isEmpty()) {
-				log.info("`From` revision '{}' does not exist as well", pFrom);
-			}
 		}
 		return revs;
 	}
@@ -507,12 +490,14 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 		}
 	}
 
-	private List<String> enumerateRevisions(final LogCommand logCommand,
+	private List<String> enumerateRevisions(
 			final Predicate<RevCommit> startPredicate,
 			final Predicate<RevCommit> endPredicate) throws IOException {
 		final List<String> revs = new ArrayList<>();
 
 		try {
+			final LogCommand logCommand = openRepository().log();
+			addRootPath(logCommand);
 			final PeekingIterator<RevCommit> revisions =
 					Iterators.peekingIterator(logCommand.call().iterator());
 
