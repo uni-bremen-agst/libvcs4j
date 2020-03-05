@@ -112,7 +112,7 @@ public class PMDRunner {
 	 * @throws IOException
 	 * 		If an error occurred while analyzing {@code revision}.
 	 */
-	protected PMDDetectionResult analyze(@NonNull final Revision revision)
+	public PMDDetectionResult analyze(@NonNull final Revision revision)
 			throws IOException {
 		Validate.validateState(!rules.isEmpty());
 
