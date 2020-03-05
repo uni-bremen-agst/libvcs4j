@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,6 +50,17 @@ public class PMDRunnerTest {
 
 		PMDRunner pmdRunner = new PMDRunner();
 		PMDDetectionResult result = pmdRunner.analyze(revision);
+		assertThat(result).isNotNull();
+	}
+
+	@Test
+	public void CPDTest() throws IOException {
+		RevisionMock revision = new RevisionMock(folder);
+		revision.addFile(Paths.get("cpdtest","Test1.java"));
+		revision.addFile(Paths.get("cpdtest","Test2.java"));
+
+		CPDRunner cpdRunner = new CPDRunner();
+		CPDDetectionResult result = cpdRunner.analyze(revision);
 		assertThat(result).isNotNull();
 	}
 }
