@@ -140,10 +140,14 @@ public class PMDRunner {
 		// rules
 		args.add("-R");
 		args.add(String.join(",", rules));
+		// cache
 		if (incremental) {
 			args.add("-cache");
 			args.add(cacheFile.toString());
 		}
+		// threads
+		args.add("-t");
+		args.add(String.valueOf(Runtime.getRuntime().availableProcessors()));
 
 		// Temporarily redirect stdout to a string.
 		final PrintStream stdout = System.out;
