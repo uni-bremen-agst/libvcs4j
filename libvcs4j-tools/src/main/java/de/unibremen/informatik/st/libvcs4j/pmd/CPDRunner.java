@@ -72,6 +72,9 @@ public class CPDRunner {
         // encoding
         args.add("--encoding");
         args.add("utf-8");
+        // just write the report and send exit code 0
+        args.add("--failOnViolation");
+        args.add("false");
 
         // Temporarily redirect stdout to a string.
         final PrintStream stdout = System.out;
@@ -79,6 +82,7 @@ public class CPDRunner {
         final PrintStream ps = new PrintStream(bos);
         System.setOut(ps);
         try {
+            System.setProperty("net.sourceforge.pmd.cli.noExit","true");
             CPD.main(args.toArray(String[]::new));
             // According to PMD the resulting xml is UTF-8 encoded.
             final String output = bos.toString(StandardCharsets.UTF_8.name());
