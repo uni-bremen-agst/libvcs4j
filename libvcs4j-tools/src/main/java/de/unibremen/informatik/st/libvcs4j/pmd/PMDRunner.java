@@ -112,7 +112,7 @@ public class PMDRunner {
 	 * @throws IOException
 	 * 		If an error occurred while analyzing {@code revision}.
 	 */
-	public PMDDetectionResult analyze(@NonNull final Revision revision)
+	protected PMDDetectionResult analyze(@NonNull final Revision revision)
 			throws IOException {
 		Validate.validateState(!rules.isEmpty());
 
@@ -140,10 +140,14 @@ public class PMDRunner {
 		// rules
 		args.add("-R");
 		args.add(String.join(",", rules));
+		// cache
 		if (incremental) {
 			args.add("-cache");
 			args.add(cacheFile.toString());
 		}
+		// threads
+		args.add("-t");
+		args.add(String.valueOf(Runtime.getRuntime().availableProcessors()));
 
 		// Temporarily redirect stdout to a string.
 		final PrintStream stdout = System.out;
