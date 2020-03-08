@@ -18,27 +18,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Allows to configure and run PMD on {@link Revision} instances.
+ * Allows to configure and run CPD on {@link Revision} instances.
  */
 @Slf4j
 public class CPDRunner {
 
     /**
-     * PMD cache file (incremental analysis). Is set lazily.
-     */
-    private Path cacheFile = null;
-
-    /**
      * Minimum Tokens that have to match for duplicate to be reported
      */
     @Getter
-    @Setter
-    private int minimumTokens = 100;
+    private int minimumTokens;
 
     /**
      * Creates a new CPD runner.
      */
-    public CPDRunner(){
+    public CPDRunner(final int pMinimumTokens){
+        minimumTokens = pMinimumTokens;
     }
 
     /**
@@ -72,9 +67,9 @@ public class CPDRunner {
         // encoding
         args.add("--encoding");
         args.add("utf-8");
-        // just write the report and send exit code 0
-        args.add("--failOnViolation");
-        args.add("false");
+        // Skip files that can't be tokenized instead of throwing Exceptions
+        args.add("--skip-lexical-errors");
+        args.add("true");
 
         // Temporarily redirect stdout to a string.
         final PrintStream stdout = System.out;

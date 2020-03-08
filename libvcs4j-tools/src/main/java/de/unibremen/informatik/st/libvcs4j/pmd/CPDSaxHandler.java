@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 import static java.lang.Integer.parseInt;
 
 /**
- * Handles the XML output of PMD and stores the result in {@link #violations}.
+ * Handles the XML output of CPD and stores the result in {@link #violations}.
  */
 class CPDSaxHandler extends DefaultHandler {
 
@@ -43,14 +43,14 @@ class CPDSaxHandler extends DefaultHandler {
     private final Collection<VCSFile> files;
 
     /**
-     * Used to map paths detected by PMD to {@link VCSFile} instances.
+     * Used to map paths detected by CPD to {@link VCSFile} instances.
      */
     private final Map<String, VCSFile> path2File = new HashMap<>();
 
     /**
      * Stores the detected violations.
      */
-    private final List<CPDViolation> violations = new ArrayList<>();
+    private final List<CPDDuplication> violations = new ArrayList<>();
 
     /**
      * The amount of lines that are duplicated.
@@ -190,7 +190,7 @@ class CPDSaxHandler extends DefaultHandler {
                 ranges = new ArrayList<>(); //Initialize ranges for new duplication.
                 return;
             }
-            final CPDViolation v = new CPDViolation (ranges, parseInt(lines), parseInt(tokens));
+            final CPDDuplication v = new CPDDuplication (ranges, parseInt(lines), parseInt(tokens));
             violations.add(v);
             ranges = new ArrayList<>(); //Initialize ranges for new duplication.
         }
@@ -202,7 +202,7 @@ class CPDSaxHandler extends DefaultHandler {
      * @return
      * 		A copy of the detected violations.
      */
-    public List<CPDViolation> getViolations() {
+    public List<CPDDuplication> getViolations() {
         return new ArrayList<>(violations);
     }
 }

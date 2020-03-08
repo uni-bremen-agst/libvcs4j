@@ -16,7 +16,7 @@ public class CPDDetectionResult {
     /**
      * The detected violations.
      */
-    private final List<CPDViolation> violations;
+    private final List<CPDDuplication> violations;
 
     /**
      * Creates a new instance with given violations.
@@ -27,7 +27,7 @@ public class CPDDetectionResult {
      * @throws NullPointerException
      * 		If {@code violations} is {@code null}.
      */
-    public CPDDetectionResult(@NonNull List<CPDViolation> violations) {
+    public CPDDetectionResult(@NonNull List<CPDDuplication> violations) {
         this.violations = violations.stream()
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
@@ -39,7 +39,7 @@ public class CPDDetectionResult {
      * @return
      * 		A copy of the internal list.
      */
-    public List<CPDViolation> getViolations() {
+    public List<CPDDuplication> getViolations() {
         return new ArrayList<>(violations);
     }
 
@@ -53,10 +53,10 @@ public class CPDDetectionResult {
      * @return
      * 		All violations detected in {@code file}.
      */
-    public List<CPDViolation> violationsOf(final VCSFile file) {
+    public List<CPDDuplication> violationsOf(final VCSFile file) {
         if(file == null){return new ArrayList<>();}
-        List<CPDViolation> violationsOfFile = new ArrayList<CPDViolation>();
-        for(CPDViolation v : violations){
+        List<CPDDuplication> violationsOfFile = new ArrayList<CPDDuplication>();
+        for(CPDDuplication v : violations){
             List<VCSFile.Range> ranges = v.getRanges();
             for(VCSFile.Range range : ranges){
                 if(range.getFile().getRelativePath() == file.getRelativePath()){

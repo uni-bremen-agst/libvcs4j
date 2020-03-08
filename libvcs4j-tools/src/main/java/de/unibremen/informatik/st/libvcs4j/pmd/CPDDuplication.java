@@ -5,6 +5,7 @@ import de.unibremen.informatik.st.libvcs4j.mapping.Mappable;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,7 +13,7 @@ import java.util.Optional;
  * A readonly representation of a violation detected by CPD.
  */
 @Value
-public final class CPDViolation implements Mappable<String> {
+public final class CPDDuplication implements Mappable<String> {
 
     /**
      * The ranges of this violation.
@@ -34,7 +35,7 @@ public final class CPDViolation implements Mappable<String> {
 
     @Override
     public List<VCSFile.Range> getRanges() {
-        return ranges;
+        return new ArrayList<>(ranges);
     }
 
     @Override
