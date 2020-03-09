@@ -4,27 +4,55 @@ import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.Validate;
 import lombok.Data;
 import lombok.NonNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 public class Tracker<T> {
 
 	/**
-	 * The logger of this class.
+	 * Name of file containing the lifespan info (stored in
+	 * {@link #directory}).
 	 */
-	private static final Logger log = LoggerFactory.getLogger(Tracker.class);
+	private static final String LIFESPAN_INFO_FILE = "lifespan_info.csv";
+
+	/**
+	 * Charset of lifespan info file.
+	 */
+	public static final Charset CHARSET = StandardCharsets.UTF_8;
+
+	/**
+	 * Delimiter of lifespan info file.
+	 */
+	public static final String DELIMITER = ";";
+
+	/**
+	 * The output directory containing all output files.
+	 */
+	private final Path directory;
+
+	/**
+	 * The converter that is used to convert the metadata of a mappable (see
+	 * {@link Mappable#getMetadata()}) to a string.
+	 */
+	private final MetadataConverter<T> converter;
 
 	/**
 	 * The lifespans managed by this tracker.
 	 */
-	private List<Lifespan<T>> lifespans = new ArrayList<>();
+	private final List<Lifespan<T>> lifespans = new ArrayList<>();
 
 	/**
 	 * Maps the "to" mappables (see {@link Mapping.Result#getTo()}) of the last
@@ -32,25 +60,72 @@ public class Tracker<T> {
 	 * to so that the next call of this method is able to add the successors of
 	 * these mappables to their corresponding lifespans. In order to avoid
 	 * issue due to inappropriate implementations of {@link Object#hashCode()}
-	 * and {@link Object#equals(Object)} an {@link IdentityHashMap} is used.
+	 * and {@link Object#equals(Object)}, an {@link IdentityHashMap} is used.
 	 */
-	private Map<Mappable<T>, Lifespan<T>> mappables = new IdentityHashMap<>();
+	private final Map<Mappable<T>, Lifespan<T>> mappables =
+			new IdentityHashMap<>();
 
+	/**
+	 * Indicates whether the mapping result passed to
+	 * {@link #add(Mapping.Result)} is the first one.
+	 */
+	private boolean first = true;
+
+	/**
+	 * The id of the next lifespan created.
+	 */
+	private int nextLifespanId = 1;
+
+	/**
+	 * Creates a new tracker with given output directory and converter.
+	 *
+	 * @param directory
+	 * 		The output directory of the created tracker.
+	 * @param converter
+	 * 		The metadata converter to use.
+	 * @throws NullPointerException
+	 * 		If any of the given arguments is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If the parent of {@code directory} is not writable.
+	 * @throws IOException
+	 * 		If an error occurred while creating {@code directory}.
+	 */
+	public Tracker(@NonNull final Path directory,
+			@NonNull final MetadataConverter<T> converter) throws
+			NullPointerException, IllegalArgumentException, IOException {
+		if (directory.getParent() != null) {
+			Validate.isTrue(Files.isWritable(directory.getParent()));
+		}
+		log.info("Creating directory structure {}", directory);
+		Files.createDirectories(directory);
+		this.directory = directory;
+		this.converter = converter;
+	}
+
+	/**
+	 * Returns a flat copy of the lifespans of this tracker.
+	 *
+	 * @return
+	 * 		A flat copy of the lifespans of this tracker.
+	 */
 	public List<Lifespan<T>> getLifespans() {
 		return new ArrayList<>(lifespans);
 	}
 
 	/**
-	 * Adds the given mapping result and updates the lifespans of this tracker
-	 * accordingly.
+	 * Adds the given mapping results to this tracker.
 	 *
 	 * @param result
-	 * 		The mapping result to add.
+	 * 		The mapping result to process.
 	 * @throws NullPointerException
 	 * 		If {@code result} is {@code null}.
+	 * @throws UncheckedIOException
+	 * 		If an error occurred while writing results to disk. If this
+	 * 		exception is thrown, the state of a tracker is invalid.
 	 */
 	public void add(@NonNull final Mapping.Result<T> result)
-			throws NullPointerException, IOException {
+			throws NullPointerException, UncheckedIOException {
+		// Identify affected lifespans.
 		final List<MappableAdd> toAdd = new ArrayList<>();
 		final List<MappableUpdate> toUpdate = new ArrayList<>();
 		result.getTo().forEach(to -> {
@@ -61,32 +136,63 @@ public class Tracker<T> {
 				if (lifespan == null) {
 					log.warn("Found mappable with predecessor but without corresponding lifespan");
 					toAdd.add(new MappableAdd(to, new Lifespan<>(
-							new Entity<>(to, result.getOrdinal(), 0))));
+							directory.resolve(nextLifespanId++ + ".csv"))));
 				} else {
 					toUpdate.add(new MappableUpdate(lifespan, from, to));
 				}
 			} else {
 				toAdd.add(new MappableAdd(to, new Lifespan<>(
-						new Entity<>(to, result.getOrdinal(), 0))));
+						directory.resolve(nextLifespanId++ + ".csv"))));
 			}
 		});
-
-		final Map<Mappable<T>, Entity<T>> entities = new IdentityHashMap<>();
-		for (MappableUpdate mu : toUpdate) {
-			int numChanges = mu.getLifespan().getLast().getNumChanges();
-			if (contentsDiffer(mu.getFrom(), mu.getTo())) {
-				numChanges++;
+		// Create and update corresponding lifespans.
+		try {
+			for (final MappableAdd add : toAdd) {
+				final Lifespan.Entity<T> entity = new Entity(
+						add.getMappable(), result.getOrdinal(), false);
+				add.getLifespan().add(entity);
 			}
-			final Entity<T> entity = new Entity<>(
-					mu.getTo(), result.getOrdinal(), numChanges);
-			entities.put(mu.getTo(), entity);
+			for (final MappableUpdate update : toUpdate) {
+				final boolean changed = contentsDiffer(
+						update.getFrom(), update.getTo());
+				final Lifespan.Entity<T> entity = new Entity(
+						update.getTo(), result.getOrdinal(), changed);
+				update.getLifespan().add(entity);
+			}
+		} catch (final IOException e) {
+			throw new UncheckedIOException(e);
 		}
-
-		toAdd.stream().map(MappableAdd::getLifespan).forEach(lifespans::add);
-		toUpdate.forEach(mu -> mu.getLifespan().add(entities.get(mu.getTo())));
+		// Update `lifespans` and `mappables`.
+		toAdd.forEach(ma -> lifespans.add(ma.getLifespan()));
 		mappables.clear();
 		toAdd.forEach(ma -> mappables.put(ma.getMappable(), ma.getLifespan()));
 		toUpdate.forEach(mu -> mappables.put(mu.getTo(), mu.getLifespan()));
+		// Write lifespan info file.
+		try {
+			if (first) {
+				final String header = String.join(DELIMITER, "ordinal",
+						"total", "active", "updated", "added") + "\n";
+				Files.write(directory.resolve(LIFESPAN_INFO_FILE),
+						header.getBytes(CHARSET),
+						StandardOpenOption.CREATE,
+						StandardOpenOption.TRUNCATE_EXISTING);
+			}
+			final String row = String.join(DELIMITER,
+					String.valueOf(result.getOrdinal()),
+					String.valueOf(lifespans.size()),
+					String.valueOf(mappables.size()),
+					String.valueOf(toUpdate.size()),
+					String.valueOf(toAdd.size())) + "\n";
+			Files.write(directory.resolve(LIFESPAN_INFO_FILE),
+					row.getBytes(CHARSET),
+					StandardOpenOption.APPEND);
+			first = false;
+		} catch (final IOException e) {
+			throw new UncheckedIOException(e);
+		}
+		log.info("Tracking {} lifespans (active: {}, updated: {}, added: {})",
+				lifespans.size(), mappables.size(), toUpdate.size(),
+				toAdd.size());
 	}
 
 	/**
@@ -103,8 +209,8 @@ public class Tracker<T> {
 	 * 		If an error occurred while reading the contents of {@code from} and
 	 * 		{@code to} (using {@link VCSFile.Range#readContent()}.
 	 */
-	boolean contentsDiffer(final Mappable<T> from, final Mappable<T> to)
-			throws IOException {
+	private boolean contentsDiffer(final Mappable<T> from,
+			final Mappable<T> to) throws IOException {
 		final List<VCSFile.Range> fromRanges = from.getRanges();
 		final List<VCSFile.Range> toRanges = to.getRanges();
 		if (fromRanges.size() != toRanges.size()) {
@@ -131,6 +237,25 @@ public class Tracker<T> {
 		return false;
 	}
 
+	/**
+	 * Converts the metadata of a mappable to a string.
+	 *
+	 * @param <T>
+	 * 		The type of the metadata.
+	 */
+	public interface MetadataConverter<T> {
+
+		/**
+		 * Converts {@code metadata} to a string.
+		 *
+		 * @param metadata
+		 * 		The metadata to convert.
+		 * @return
+		 * 		The string representation of {@code metadata}.
+		 */
+		String toString(T metadata);
+	}
+
 	@Data
 	private class MappableAdd {
 		@NonNull
@@ -147,5 +272,17 @@ public class Tracker<T> {
 		private final Mappable<T> from;
 		@NonNull
 		private final Mappable<T> to;
+	}
+
+	private class Entity extends Lifespan.Entity<T> {
+
+		private Entity(Mappable<T> mappable, int ordinal, boolean changed) {
+			super(mappable, ordinal, changed);
+		}
+
+		@Override
+		Optional<String> getMetadataAsString() {
+			return getMappable().getMetadata().map(converter::toString);
+		}
 	}
 }

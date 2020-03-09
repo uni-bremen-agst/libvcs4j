@@ -11,9 +11,11 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Objects;
 
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,6 +24,8 @@ public class TrackerGSONTest {
 
 	@Rule
 	public TemporaryFolder folder = new TemporaryFolder();
+	@Rule
+	public TemporaryFolder trackerDir = new TemporaryFolder();
 	private Path repository;
 	private Path target;
 
@@ -46,7 +50,9 @@ public class TrackerGSONTest {
 				.build();
 
 		Mapping<String> mapping = new Mapping<>();
-		Tracker<String> tracker = new Tracker<>();
+		Tracker<String> tracker = new Tracker<>(
+				Paths.get(trackerDir.getRoot().getAbsolutePath()),
+				Objects::toString);
 
 		RevisionRange fromRange = engine.next()
 				.orElseThrow(AssertionError::new);
@@ -65,9 +71,8 @@ public class TrackerGSONTest {
 		tracker.add(mapping.map(singletonList(toMappables), toRange));
 
 		assertThat(tracker.getLifespans()).hasSize(1);
-		assertThat(tracker.getLifespans().get(0).getEntities()).hasSize(2);
-		assertThat(tracker.getLifespans().get(0).getEntities().get(1)
-				.getNumChanges()).isEqualTo(0);
+		assertThat(numEntries(tracker.getLifespans().get(0))).isEqualTo(2);
+		assertThat(lastEntryChanged(tracker.getLifespans().get(0))).isFalse();
 	}
 
 	@Test
@@ -82,7 +87,9 @@ public class TrackerGSONTest {
 				.build();
 
 		Mapping<String> mapping = new Mapping<>();
-		Tracker<String> tracker = new Tracker<>();
+		Tracker<String> tracker = new Tracker<>(
+				Paths.get(trackerDir.getRoot().getAbsolutePath()),
+				Objects::toString);
 
 		RevisionRange fromRange = engine.next()
 				.orElseThrow(AssertionError::new);
@@ -101,9 +108,8 @@ public class TrackerGSONTest {
 		tracker.add(mapping.map(singletonList(toMappables), toRange));
 
 		assertThat(tracker.getLifespans()).hasSize(1);
-		assertThat(tracker.getLifespans().get(0).getEntities()).hasSize(2);
-		assertThat(tracker.getLifespans().get(0).getEntities().get(1)
-				.getNumChanges()).isEqualTo(0);
+		assertThat(numEntries(tracker.getLifespans().get(0))).isEqualTo(2);
+		assertThat(lastEntryChanged(tracker.getLifespans().get(0))).isFalse();
 	}
 
 	@Test
@@ -118,7 +124,9 @@ public class TrackerGSONTest {
 				.build();
 
 		Mapping<String> mapping = new Mapping<>();
-		Tracker<String> tracker = new Tracker<>();
+		Tracker<String> tracker = new Tracker<>(
+				Paths.get(trackerDir.getRoot().getAbsolutePath()),
+				Objects::toString);
 
 		RevisionRange fromRange = engine.next()
 				.orElseThrow(AssertionError::new);
@@ -137,8 +145,8 @@ public class TrackerGSONTest {
 		tracker.add(mapping.map(singletonList(toMappables), toRange));
 
 		assertThat(tracker.getLifespans()).hasSize(2);
-		assertThat(tracker.getLifespans().get(0).getEntities()).hasSize(1);
-		assertThat(tracker.getLifespans().get(1).getEntities()).hasSize(1);
+		assertThat(numEntries(tracker.getLifespans().get(0))).isEqualTo(1);
+		assertThat(numEntries(tracker.getLifespans().get(1))).isEqualTo(1);
 	}
 
 	@Test
@@ -153,7 +161,9 @@ public class TrackerGSONTest {
 				.build();
 
 		Mapping<String> mapping = new Mapping<>();
-		Tracker<String> tracker = new Tracker<>();
+		Tracker<String> tracker = new Tracker<>(
+				Paths.get(trackerDir.getRoot().getAbsolutePath()),
+				Objects::toString);
 
 		RevisionRange fromRange = engine.next()
 				.orElseThrow(AssertionError::new);
@@ -172,15 +182,27 @@ public class TrackerGSONTest {
 		tracker.add(mapping.map(singletonList(toMappables), toRange));
 
 		assertThat(tracker.getLifespans()).hasSize(1);
-		assertThat(tracker.getLifespans().get(0).getEntities()).hasSize(2);
-		assertThat(tracker.getLifespans().get(0).getLast().getNumChanges())
-				.isEqualTo(1);
+		assertThat(numEntries(tracker.getLifespans().get(0))).isEqualTo(2);
+		assertThat(lastEntryChanged(tracker.getLifespans().get(0))).isTrue();
+	}
+
+	private int numEntries(final Lifespan lifespan) throws IOException {
+		return Files.readAllLines(lifespan.getCsv(), Lifespan.CHARSET)
+				.size() - 1;
+	}
+
+	private boolean lastEntryChanged(final Lifespan lifespan)
+			throws IOException {
+		List<String> lines = Files.readAllLines(
+				lifespan.getCsv(), Lifespan.CHARSET);
+		return lines.get(lines.size() - 1).split(Lifespan.DELIMITER)[2]
+				.equals("\"1\"");
 	}
 
 	private class MappableMock implements Mappable<String> {
 		private final VCSFile.Range range;
 
-		public MappableMock(VCSFile file, int beginLine, int beginColumn,
+		MappableMock(VCSFile file, int beginLine, int beginColumn,
 				int endLine, int endColumn) throws IOException {
 			range = new VCSFile.Range(
 					file.positionOf(beginLine, beginColumn, 4)

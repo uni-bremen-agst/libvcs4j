@@ -1,100 +1,172 @@
 package de.unibremen.informatik.st.libvcs4j.mapping;
 
+import de.unibremen.informatik.st.libvcs4j.Revision;
+import de.unibremen.informatik.st.libvcs4j.RevisionRange;
+import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.Validate;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
+import java.util.Optional;
 
 /**
- * Stores a sequence of mapped entities.
+ * Stores a sequence of {@link Entity} instances in a CSV file.
  *
  * @param <T>
- *     The type of the metadata of an {@link Entity}.
+ * 		The type of the metadata of the mappable referenced by an entity (see
+ * 		{@code entity.getMappable().getMetadata()}).
  */
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class Lifespan<T> {
 
 	/**
-	 * Stores the entities of a lifespan.
+	 * Charset of output csv.
 	 */
-	private final List<Entity<T>> entities = new ArrayList<>();
+	public static final Charset CHARSET = StandardCharsets.UTF_8;
 
 	/**
-	 * Creates a new lifespan containing a single entity.
-	 *
-	 * @param first
-	 * 		The first entity of the lifespan to create.
-	 * @throws NullPointerException
-	 * 		If {@code first} is {@code null}.
-	 * @throws IllegalArgumentException
-	 * 		If the ordinal of {@code entity} is less than {@code 1}, or if the
-	 * 		number of changes of {@code entity} is negative.
+	 * Delimiter of output csv.
 	 */
-	public Lifespan(final Entity<T> first) throws NullPointerException,
-			IllegalArgumentException {
-		Validate.notNull(first);
-		Validate.isPositive(first.getOrdinal());
-		Validate.notNegative(first.getNumChanges());
-		entities.add(first);
-	}
+	public static final String DELIMITER = ";";
+
+	/**
+	 * Path to the CSV file containing the results.
+	 */
+	@Getter
+	@NonNull
+	private final Path csv;
+
+	/**
+	 * Indicates whether the entity passed to {@link #add(Entity)} is the
+	 * first one.
+	 */
+	private boolean first = true;
 
 	/**
 	 * Adds the given entity to this lifespan.
 	 *
 	 * @param entity
 	 * 		The entity to add.
-	 * @return
-	 * 		This lifespan.
 	 * @throws NullPointerException
 	 * 		If {@code entity} is {@code null}.
+	 * @throws IOException
+	 * 		If an error occurred while writing {@code entity} to {@link #csv}.
+	 */
+	void add(@NonNull final Entity<T> entity) throws NullPointerException,
+			IOException {
+		if (first) {
+			final String header = String.join(DELIMITER, "ordinal", "revision",
+					"changed", "metadata", "locations") + "\n";
+			Files.write(csv, header.getBytes(CHARSET),
+					StandardOpenOption.CREATE,
+					StandardOpenOption.TRUNCATE_EXISTING);
+		}
+		Validate.validateState(Files.exists(csv));
+		final String changed = entity.isChanged() ? "1" : "0";
+		final Mappable<T> mappable = entity.getMappable();
+		final Revision revision = mappable.getRanges().get(0)
+				.getFile().getRevision();
+		final String row = String.join(DELIMITER,
+				"\"" + entity.getOrdinal() + "\"",
+				"\"" + revision.getId() + "\"",
+				"\"" + changed + "\"",
+				"\"" + entity.getMetadataAsString().orElse("") + "\"",
+				"\"" + toJSONString(mappable.getRanges()) + "\"") + "\n";
+		Files.write(csv, row.getBytes(CHARSET),
+				StandardOpenOption.APPEND);
+		first = false;
+	}
+
+	/**
+	 * Creates a JSON String from the given list of ranges.
+	 *
+	 * @param ranges
+	 * 		The ranges to serialize. Must contain at least one range.
+	 * @return
+	 * 		The serialized string.
+	 * @throws NullPointerException
+	 * 		If {@code ranges} is {@code null}.
 	 * @throws IllegalArgumentException
-	 * 		If the ordinal of {@code entity} is less than the ordinal of the
-	 * 		last entity (see {@link #getLast()}), or if the number of changes
-	 * 		of {@code entity} is less than the number of changes of the last
-	 * 		entity.
+	 * 		If {@code ranges} is {@code empty}.
 	 */
-	public Lifespan<T> add(final Entity<T> entity) throws NullPointerException,
-			IllegalArgumentException {
-		Validate.notNull(entity);
-		final Entity<T> last = getLast();
-		Validate.isGreaterThanOrEquals(
-				entity.getOrdinal(), last.getOrdinal(),
-				"Unexpected ordinal. Expected: >= %d, Actual: %d",
-				last.getOrdinal(), entity.getOrdinal());
-		Validate.isGreaterThanOrEquals(
-				entity.getNumChanges(), last.getNumChanges(),
-				"Unexpected number of changes. Expected: >= %d, Actual: %d",
-				last.getNumChanges(), entity.getNumChanges());
-		entities.add(entity);
-		return this;
+	private String toJSONString(@NonNull final List<VCSFile.Range> ranges)
+			throws NullPointerException, IllegalArgumentException {
+		Validate.notEmpty(ranges, "At least one range must be given");
+		final StringBuilder builder = new StringBuilder();
+		builder.append("{\"locations\":[");
+		ranges.forEach(range -> {
+			builder.append("{\"file\":");
+			builder.append("\"")
+					.append(range.getFile().getRelativePath())
+					.append("\"");
+			builder.append(",\"beginLine\":");
+			builder.append(range.getBegin().getLine());
+			builder.append(",\"endLine\":");
+			builder.append(range.getEnd().getLine());
+			builder.append(",\"beginColumn\":");
+			builder.append(range.getBegin().getColumn());
+			builder.append(",\"beginTabSize\":");
+			builder.append(range.getBegin().getTabSize());
+			builder.append(",\"endColumn\":");
+			builder.append(range.getEnd().getColumn());
+			builder.append(",\"endTabSize\":");
+			builder.append(range.getEnd().getTabSize());
+			builder.append(",\"beginOffset\":");
+			builder.append(range.getBegin().getOffset());
+			builder.append(",\"endOffset\":");
+			builder.append(range.getEnd().getOffset());
+			builder.append("},");
+		});
+		builder.setLength(builder.length() - 1);
+		builder.append("]}");
+		return builder.toString();
 	}
 
 	/**
-	 * Returns a flat copy of the entities of this lifespan.
+	 * Wraps a {@link Mappable} and provides additional data.
 	 *
-	 * @return
-	 * 		A flat copy of the entities of this lifespan.
+	 * @param <T>
+	 * 		The type of the metadata of the wrapped {@link Mappable} (see
+	 * 		{@link Mappable#getMetadata()}).
 	 */
-	public List<Entity<T>> getEntities() {
-		return new ArrayList<>(entities);
-	}
+	@RequiredArgsConstructor
+	static abstract class Entity<T> {
 
-	/**
-	 * Returns the first entity of this lifespan.
-	 *
-	 * @return
-	 * 		The first entity of this lifespan.
-	 */
-	public Entity<T> getFirst() {
-		return entities.get(0);
-	}
+		/**
+		 * The wrapped mappable.
+		 */
+		@Getter
+		private final Mappable<T> mappable;
 
-	/**
-	 * Returns the last entity of this lifespan.
-	 *
-	 * @return
-	 * 		The last entity of this lifespan.
-	 */
-	public Entity<T> getLast() {
-		return entities.get(entities.size() - 1);
+		/**
+		 * The ordinal of a mappable. Corresponds to the value of
+		 * {@link RevisionRange#getOrdinal()}.
+		 */
+		@Getter
+		private final int ordinal;
+
+		/**
+		 * Indicates whether the contents of an entity changed (with respect to
+		 * its predecessor).
+		 */
+		@Getter
+		private final boolean changed;
+
+		/**
+		 * Returns the metadata of {@link #mappable} as string.
+		 *
+		 * @return
+		 * 		The string representation of the metadata of {@link #mappable}.
+		 */
+		abstract Optional<String> getMetadataAsString();
 	}
 }
