@@ -216,11 +216,11 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 
 		final Optional<VCSFile> oldFile = fileChange.getOldFile();
 		final String[] old = oldFile.isPresent()
-				? oldFile.get().readeContent().split(LINE_SEPARATOR)
+				? oldFile.get().readContent().split(LINE_SEPARATOR)
 				: new String[0];
 		final Optional<VCSFile> nevFile = fileChange.getNewFile();
 		final String[] nev = nevFile.isPresent()
-				? nevFile.get().readeContent().split(LINE_SEPARATOR)
+				? nevFile.get().readContent().split(LINE_SEPARATOR)
 				: new String[0];
 
 		final Diff diff = new Diff(old, nev);

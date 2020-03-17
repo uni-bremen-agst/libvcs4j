@@ -15,7 +15,7 @@ public class SizeTest {
 	@Test
 	public void testHelloWorld() throws IOException {
 		VCSFile file = mock(VCSFile.class);
-		when(file.readeContent()).thenReturn(
+		when(file.readContent()).thenReturn(
 				"public class Main {\n" +
 				"    public static void main(String[] args) {\n" +
 				"        System.out.println(\"Hello, World!\");\n" +
@@ -41,7 +41,7 @@ public class SizeTest {
 	@Test
 	public void testHelloWorldWithComments() throws IOException {
 		VCSFile file = mock(VCSFile.class);
-		when(file.readeContent()).thenReturn(
+		when(file.readContent()).thenReturn(
 				"/* This is a simple Java program.\n" +
 				"   FileName : \"HelloWorld.java\". */\n" +
 				"class HelloWorld\n" +
@@ -73,7 +73,7 @@ public class SizeTest {
 	@Test
 	public void testCommentsInSameLine() throws IOException {
 		VCSFile file = mock(VCSFile.class);
-		when(file.readeContent()).thenReturn(
+		when(file.readContent()).thenReturn(
 				"/* first comment*/ /* second comment */ // third comment");
 
 		Metrics metrics = spy(Metrics.class);

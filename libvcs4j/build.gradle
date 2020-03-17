@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'de.uni-bremen.informatik.st'
-version = '1.7.0'
+version = '1.8.0'
 
 lombok {
 	version = "1.18.12"
@@ -21,7 +21,8 @@ configurations {
 }
 
 dependencies {
-	compile 'de.uni-bremen.informatik.st:libvcs4j-api:1.7.0'
+	//compile 'de.uni-bremen.informatik.st:libvcs4j-api:1.7.0'
+	compile project(':libvcs4j-api')
 
 	// add local jars from 'libs' directory
 	extraLibs fileTree(dir: 'libs', include: '*.jar')
