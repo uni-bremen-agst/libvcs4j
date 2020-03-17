@@ -20,13 +20,9 @@ import java.util.Optional;
 
 /**
  * Stores a sequence of {@link Entity} instances in a CSV file.
- *
- * @param <T>
- * 		The type of the metadata of the mappable referenced by an entity (see
- * 		{@code entity.getMappable().getMetadata()}).
  */
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
-public class Lifespan<T> {
+public class Lifespan {
 
 	/**
 	 * Charset of output csv.
@@ -61,7 +57,7 @@ public class Lifespan<T> {
 	 * @throws IOException
 	 * 		If an error occurred while writing {@code entity} to {@link #csv}.
 	 */
-	void add(@NonNull final Entity<T> entity) throws NullPointerException,
+	void add(@NonNull final Entity entity) throws NullPointerException,
 			IOException {
 		if (first) {
 			final String header = String.join(DELIMITER, "ordinal", "revision",
@@ -72,7 +68,7 @@ public class Lifespan<T> {
 		}
 		Validate.validateState(Files.exists(csv));
 		final String changed = entity.isChanged() ? "1" : "0";
-		final Mappable<T> mappable = entity.getMappable();
+		final Mappable<?> mappable = entity.getMappable();
 		final Revision revision = mappable.getRanges().get(0)
 				.getFile().getRevision();
 		final String row = String.join(DELIMITER,
@@ -133,19 +129,15 @@ public class Lifespan<T> {
 
 	/**
 	 * Wraps a {@link Mappable} and provides additional data.
-	 *
-	 * @param <T>
-	 * 		The type of the metadata of the wrapped {@link Mappable} (see
-	 * 		{@link Mappable#getMetadata()}).
 	 */
 	@RequiredArgsConstructor
-	static abstract class Entity<T> {
+	static abstract class Entity {
 
 		/**
 		 * The wrapped mappable.
 		 */
 		@Getter
-		private final Mappable<T> mappable;
+		private final Mappable<?> mappable;
 
 		/**
 		 * The ordinal of a mappable. Corresponds to the value of

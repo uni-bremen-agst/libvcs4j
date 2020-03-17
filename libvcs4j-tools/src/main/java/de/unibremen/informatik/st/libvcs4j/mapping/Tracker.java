@@ -19,6 +19,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Allows to automatically track mappables (by processing the results of
+ * {@link Mapping.Result}) and writes the results into an output directory
+ * ({@link #directory}). A sequence of mapped mappables is managed by an
+ * instance of the {@link Lifespan} class, which in turn stores the results in
+ * a CSV file ({@link Lifespan#csv}).
+ *
+ * @param <T>
+ *     The type of the metadata of the tracked mappables.
+ */
 @Slf4j
 public class Tracker<T> {
 
@@ -52,7 +62,7 @@ public class Tracker<T> {
 	/**
 	 * The lifespans managed by this tracker.
 	 */
-	private final List<Lifespan<T>> lifespans = new ArrayList<>();
+	private final List<Lifespan> lifespans = new ArrayList<>();
 
 	/**
 	 * Maps the "to" mappables (see {@link Mapping.Result#getTo()}) of the last
@@ -62,7 +72,7 @@ public class Tracker<T> {
 	 * issue due to inappropriate implementations of {@link Object#hashCode()}
 	 * and {@link Object#equals(Object)}, an {@link IdentityHashMap} is used.
 	 */
-	private final Map<Mappable<T>, Lifespan<T>> mappables =
+	private final Map<Mappable<T>, Lifespan> mappables =
 			new IdentityHashMap<>();
 
 	/**
@@ -108,7 +118,7 @@ public class Tracker<T> {
 	 * @return
 	 * 		A flat copy of the lifespans of this tracker.
 	 */
-	public List<Lifespan<T>> getLifespans() {
+	public List<Lifespan> getLifespans() {
 		return new ArrayList<>(lifespans);
 	}
 
@@ -132,30 +142,30 @@ public class Tracker<T> {
 			final Optional<Mappable<T>> pred = result.getPredecessor(to);
 			if (pred.isPresent()) {
 				final Mappable<T> from = pred.get();
-				final Lifespan<T> lifespan = mappables.get(from);
+				final Lifespan lifespan = mappables.get(from);
 				if (lifespan == null) {
 					log.warn("Found mappable with predecessor but without corresponding lifespan");
-					toAdd.add(new MappableAdd(to, new Lifespan<>(
+					toAdd.add(new MappableAdd(to, new Lifespan(
 							directory.resolve(nextLifespanId++ + ".csv"))));
 				} else {
 					toUpdate.add(new MappableUpdate(lifespan, from, to));
 				}
 			} else {
-				toAdd.add(new MappableAdd(to, new Lifespan<>(
+				toAdd.add(new MappableAdd(to, new Lifespan(
 						directory.resolve(nextLifespanId++ + ".csv"))));
 			}
 		});
 		// Create and update corresponding lifespans.
 		try {
 			for (final MappableAdd add : toAdd) {
-				final Lifespan.Entity<T> entity = new Entity(
+				final Lifespan.Entity entity = new Entity(
 						add.getMappable(), result.getOrdinal(), false);
 				add.getLifespan().add(entity);
 			}
 			for (final MappableUpdate update : toUpdate) {
 				final boolean changed = contentsDiffer(
 						update.getFrom(), update.getTo());
-				final Lifespan.Entity<T> entity = new Entity(
+				final Lifespan.Entity entity = new Entity(
 						update.getTo(), result.getOrdinal(), changed);
 				update.getLifespan().add(entity);
 			}
@@ -261,28 +271,32 @@ public class Tracker<T> {
 		@NonNull
 		private final Mappable<T> mappable;
 		@NonNull
-		private final Lifespan<T> lifespan;
+		private final Lifespan lifespan;
 	}
 
 	@Data
 	private class MappableUpdate {
 		@NonNull
-		private final Lifespan<T> lifespan;
+		private final Lifespan lifespan;
 		@NonNull
 		private final Mappable<T> from;
 		@NonNull
 		private final Mappable<T> to;
 	}
 
-	private class Entity extends Lifespan.Entity<T> {
+	private class Entity extends Lifespan.Entity {
 
-		private Entity(Mappable<T> mappable, int ordinal, boolean changed) {
+		private Entity(Mappable mappable, int ordinal, boolean changed) {
 			super(mappable, ordinal, changed);
 		}
 
 		@Override
 		Optional<String> getMetadataAsString() {
-			return getMappable().getMetadata().map(converter::toString);
+			//noinspection unchecked
+			return getMappable()
+					.getMetadata()
+					.map(m -> (T)m)
+					.map(converter::toString);
 		}
 	}
 }
