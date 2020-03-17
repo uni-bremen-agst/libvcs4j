@@ -185,7 +185,7 @@ public interface VCSEngine extends Iterable<RevisionRange> {
 	 * 		If {@code fileChange} is {@code null}.
 	 * @throws IOException
 	 * 		If an error occurred while reading the content of the old or new
-	 * 		file (see {@link VCSFile#readeContent()}).
+	 * 		file (see {@link VCSFile#readContent()}).
 	 */
 	List<LineChange> computeDiff(FileChange fileChange) throws
 			NullPointerException, IOException;

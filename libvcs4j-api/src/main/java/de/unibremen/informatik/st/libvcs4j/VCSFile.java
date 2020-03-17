@@ -412,7 +412,7 @@ public interface VCSFile extends VCSModelElement {
 		 * 		If an error occurred while reading the file content.
 		 */
 		public char readChar() throws IOException {
-			return file.readeContent().charAt(offset);
+			return file.readContent().charAt(offset);
 		}
 
 		@Override
@@ -578,7 +578,7 @@ public interface VCSFile extends VCSModelElement {
 		 * 		If an error occurred while reading the file content.
 		 */
 		public String readContent() throws IOException {
-			return getFile().readeContent().substring(
+			return getFile().readContent().substring(
 					getBegin().getOffset(), getEnd().getOffset() + 1);
 		}
 
@@ -756,7 +756,7 @@ public interface VCSFile extends VCSModelElement {
 	 * @throws IOException
 	 * 		If an error occurred while reading the file content.
 	 */
-	default String readeContent() throws IOException {
+	default String readContent() throws IOException {
 		if (isBinary()) {
 			throw new BinaryFileException(String.format(
 					"'%s' is a binary file", getPath()));
@@ -779,7 +779,7 @@ public interface VCSFile extends VCSModelElement {
 	 */
 	default List<String> readLines() throws IOException {
 		final List<String> lines = new ArrayList<>();
-		try (final Scanner scanner = new Scanner(readeContent())) {
+		try (final Scanner scanner = new Scanner(readContent())) {
 			while (scanner.hasNextLine()) {
 				lines.add(scanner.nextLine());
 			}
@@ -799,7 +799,7 @@ public interface VCSFile extends VCSModelElement {
 	 * 		If an error occurred while reading the file content.
 	 */
 	default List<String> readLinesWithEOL() throws IOException {
-		final StringReader reader = new StringReader(readeContent());
+		final StringReader reader = new StringReader(readContent());
 		final List<String> lines = new ArrayList<>();
 		final StringBuilder builder = new StringBuilder();
 		int code;

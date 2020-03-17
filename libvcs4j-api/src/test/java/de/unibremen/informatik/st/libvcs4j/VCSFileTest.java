@@ -165,7 +165,7 @@ public class VCSFileTest {
 		assertThat(p1.getLine()).isEqualTo(1);
 		assertThat(p1.getColumn()).isEqualTo(6);
 		assertThat(p1.getTabSize()).isEqualTo(4);
-		assertThat(file.readeContent().charAt(p1.getOffset()))
+		assertThat(file.readContent().charAt(p1.getOffset()))
 				.isEqualTo('r');
 	}
 

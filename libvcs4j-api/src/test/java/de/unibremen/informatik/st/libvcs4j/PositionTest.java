@@ -300,7 +300,7 @@ public class PositionTest {
 		String content = "31415";
 		VCSFile file = mock(VCSFile.class);
 		when(file.readAllBytes()).thenReturn(content.getBytes());
-		when(file.readeContent()).thenCallRealMethod();
+		when(file.readContent()).thenCallRealMethod();
 		when(file.readLinesWithEOL()).thenCallRealMethod();
 		when(file.positionOf(2, 4)).thenCallRealMethod();
 

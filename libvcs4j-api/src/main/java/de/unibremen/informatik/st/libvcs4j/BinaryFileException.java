@@ -3,7 +3,7 @@ package de.unibremen.informatik.st.libvcs4j;
 import java.io.IOException;
 
 /**
- * Is thrown by {@link VCSFile#readeContent()} if the corresponding file is
+ * Is thrown by {@link VCSFile#readContent()} if the corresponding file is
  * binary (see {@link VCSFile#isBinary()}).
  */
 public class BinaryFileException extends IOException {

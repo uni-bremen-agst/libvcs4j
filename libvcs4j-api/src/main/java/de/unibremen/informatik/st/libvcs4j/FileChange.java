@@ -90,7 +90,7 @@ public interface FileChange extends VCSModelElement {
 	 * 		{@link VCSFile#isBinary()}).
 	 * @throws IOException
 	 *      If an error occurred while reading the content of the old or new
-	 *      file (see {@link VCSFile#readeContent()}).
+	 *      file (see {@link VCSFile#readContent()}).
 	 */
 	default List<LineChange> computeDiff() throws IOException {
 		final Optional<VCSFile> old = getOldFile();
