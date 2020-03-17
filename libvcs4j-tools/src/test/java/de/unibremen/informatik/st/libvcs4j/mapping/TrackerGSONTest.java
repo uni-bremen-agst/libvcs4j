@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -214,6 +215,11 @@ public class TrackerGSONTest {
 		@Override
 		public List<VCSFile.Range> getRanges() {
 			return singletonList(range);
+		}
+
+		@Override
+		public Optional<String> getMetadata() {
+			return Optional.of("mock");
 		}
 	}
 }
