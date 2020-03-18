@@ -2,23 +2,14 @@ package de.unibremen.informatik.st.libvcs4j.spoon.codesmell;
 
 import de.unibremen.informatik.st.libvcs4j.VCSFile;
 import de.unibremen.informatik.st.libvcs4j.Validate;
+import de.unibremen.informatik.st.libvcs4j.spoon.ElementExtractor;
 import de.unibremen.informatik.st.libvcs4j.spoon.Environment;
-import de.unibremen.informatik.st.libvcs4j.spoon.Scanner;
 import lombok.NonNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import spoon.reflect.cu.SourcePosition;
-import spoon.reflect.declaration.CtConstructor;
 import spoon.reflect.declaration.CtElement;
-import spoon.reflect.declaration.CtExecutable;
-import spoon.reflect.declaration.CtField;
-import spoon.reflect.declaration.CtMethod;
-import spoon.reflect.declaration.CtPackage;
-import spoon.reflect.declaration.CtType;
-import spoon.reflect.declaration.CtTypeInformation;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,16 +20,8 @@ import java.util.stream.Collectors;
 
 import static spoon.reflect.cu.SourcePosition.NOPOSITION;
 
-public abstract class CodeSmellDetector extends Scanner {
-
-	/**
-	 * The logger of this class.
-	 */
-	private static final Logger log =
-			LoggerFactory.getLogger(CodeSmellDetector.class);
-
-	@NonNull
-	private final Environment environment;
+@Slf4j
+public abstract class CodeSmellDetector extends ElementExtractor {
 
 	/**
 	 * Stores the detected code smells.
@@ -56,8 +39,7 @@ public abstract class CodeSmellDetector extends Scanner {
 	 */
 	public CodeSmellDetector(@NonNull final Environment environment)
 			throws NullPointerException {
-		super(Validate.notNull(environment.getCache()));
-		this.environment = environment;
+		super(environment);
 	}
 
 	/**
@@ -108,19 +90,18 @@ public abstract class CodeSmellDetector extends Scanner {
 			return Optional.empty();
 		}
 
-		final SourcePosition position = element.getPosition();
-		final Optional<VCSFile> file = findFile(position);
-		if (!file.isPresent()) {
-			log.warn("Skipping element with unknown file: '{}' in '{}'",
-					element.getShortRepresentation(), position.getFile());
-			return Optional.empty();
-		}
-
+		// `element` must have a valid position.
 		try {
-			final VCSFile.Range range = createRange(
-					element, element, file.get());
+			final Optional<VCSFile.Range> range = createRange(element);
+			if (range.isEmpty()) {
+				log.warn("Skipping element with unknown file: '{}' in '{}'",
+						element.getShortRepresentation(),
+						element.getPosition().getFile());
+				return Optional.empty();
+			}
 			final CodeSmell codeSmell = new CodeSmell(getDefinition(), metrics,
-					Collections.singletonList(range), signature, summary);
+					Collections.singletonList(range.get()), signature,
+					summary);
 			codeSmells.add(codeSmell);
 			return Optional.of(codeSmell);
 		} catch (final IOException e) {
@@ -166,21 +147,23 @@ public abstract class CodeSmellDetector extends Scanner {
 			return Optional.empty();
 		}
 
+		// `from` and `to` must have a valid position.
 		final SourcePosition fromPosition = from.getPosition();
 		final SourcePosition toPosition = to.getPosition();
 		Validate.isTrue(fromPosition.getFile().equals(toPosition.getFile()));
-		final Optional<VCSFile> file = findFile(fromPosition);
-		if (!file.isPresent()) {
-			log.warn("Skipping element range with unknown file: '{}' to '{}' in '{}'",
-					from.getShortRepresentation(), to.getShortRepresentation(),
-					fromPosition.getFile());
-			return Optional.empty();
-		}
 
 		try {
-			final VCSFile.Range range = createRange(from, to, file.get());
+			final Optional<VCSFile.Range> range = createRange(from, to);
+			if (range.isEmpty()) {
+				log.warn("Skipping element range with unknown file: '{}' to '{}' in '{}'",
+						from.getShortRepresentation(),
+						to.getShortRepresentation(),
+						fromPosition.getFile());
+				return Optional.empty();
+			}
 			final CodeSmell codeSmell = new CodeSmell(getDefinition(), metrics,
-					Collections.singletonList(range), signature, summary);
+					Collections.singletonList(range.get()), signature,
+					summary);
 			codeSmells.add(codeSmell);
 			return Optional.of(codeSmell);
 		} catch (final IOException e) {
@@ -212,7 +195,7 @@ public abstract class CodeSmellDetector extends Scanner {
 	 * @return
 	 * 		The newly created code smell.
 	 */
-	public Optional<CodeSmell> addCodeSmellWithMultiplePositions(
+	protected Optional<CodeSmell> addCodeSmellWithMultiplePositions(
 			final List<CtElement> elements, final List<Metric> metrics,
 			final String signature, final String summary) {
 		if (filter(elements, metrics)) {
@@ -223,21 +206,21 @@ public abstract class CodeSmellDetector extends Scanner {
 			return Optional.empty();
 		}
 
+		// All elements in `elements` must have a valid position.
 		List<VCSFile.Range> ranges = new ArrayList<>();
 		try {
 			for (final CtElement e : elements) {
-				final SourcePosition position = e.getPosition();
-				final Optional<VCSFile> file = findFile(position);
-				if (!file.isPresent()) {
+				final Optional<VCSFile.Range> range = createRange(e);
+				if (range.isEmpty()) {
 					log.warn("Skipping element list due to an element with unknown file: '{}' in '{}'",
-							e.getShortRepresentation(), position.getFile());
+							e.getShortRepresentation(),
+							e.getPosition().getFile());
 					return Optional.empty();
 				}
-				final VCSFile.Range range = createRange(e, e, file.get());
-				ranges.add(range);
+				ranges.add(range.get());
 			}
 		} catch (final IOException e) {
-			log.warn("Skipping element list due to unexpected an IOException",
+			log.warn("Skipping element list due to unexpected IOException",
 					e);
 			return Optional.empty();
 		}
@@ -247,101 +230,15 @@ public abstract class CodeSmellDetector extends Scanner {
 		return Optional.of(codeSmell);
 	}
 
-	/**
-	 * Tries to create a signature for {@code element}.
-	 *
-	 * @param element
-	 * 		The element for which the signature is requested.
-	 * @return
-	 * 		The signature of {@code element}.
-	 */
-	public Optional<String> createSignature(final CtElement element) {
-		try {
-			if (element instanceof CtPackage) {
-				final CtPackage pkg = (CtPackage) element;
-				return Optional.of(pkg.getQualifiedName());
-			} else if (element instanceof CtTypeInformation) {
-				final CtTypeInformation info = (CtTypeInformation) element;
-				return Optional.of(info.getQualifiedName());
-			} else if (element instanceof CtConstructor) {
-				final CtConstructor constructor = (CtConstructor) element;
-				return Optional.of(constructor.getSignature());
-			} else if (element instanceof CtExecutable) {
-				final CtExecutable exe = (CtExecutable) element;
-				return createSignature(exe.getParent(CtType.class))
-						.map(s -> s + CtMethod.EXECUTABLE_SEPARATOR)
-						.map(s -> s + exe.getSignature());
-			} else if (element instanceof CtField) {
-				final CtField field = (CtField) element;
-				return createSignature(field.getDeclaringType())
-						.map(s -> s + CtField.FIELD_SEPARATOR)
-						.map(s -> s + field.getSimpleName());
-			}
-			return Optional.empty();
-		} catch (final NullPointerException e) {
-			return Optional.empty();
-		}
-	}
-
-	/**
-	 * Maps a Spoon position ({@link SourcePosition}) to the {@link VCSFile}
-	 * that contains this position.
-	 *
-	 * @param position
-	 * 		The spoon position to map.
-	 * @return
-	 * 		The {@link VCSFile} that contains {@code position}.
-	 */
-	private Optional<VCSFile> findFile(final SourcePosition position) {
-		return Optional.ofNullable(position)
-				// Make position canonical.
-				.map(p -> {
-					try {
-						return p.getFile().getCanonicalFile();
-					} catch (final IOException e) {
-						throw new UncheckedIOException(e);
-					}
-				})
-				// Compare with canonicalized vcs files.
-				.map(p -> environment.getRevision().getFiles().stream()
-						.filter(f -> {
-							try {
-								return f.toFile().getCanonicalFile().equals(p);
-							} catch (final IOException e) {
-								throw new UncheckedIOException(e);
-							}
-						})
-						.findFirst())
-				.map(f -> f.orElse(null));
-	}
-
-	/**
-	 * Returns the tab size of the file containing {@code element}.
-	 *
-	 * @param element
-	 * 		The element for which the tab size is requested.
-	 * @return
-	 * 		The tab size of the file containing {@code element}.
-	 */
-	private int tabSizeOf(@NonNull final CtElement element) {
-		return element.getFactory().getEnvironment().getTabulationSize();
-	}
-
-	private VCSFile.Range createRange(final CtElement from, final CtElement to,
-			final VCSFile file) throws IOException {
-		final int sourceStart = from.getPosition().getSourceStart();
-		final int sourceEnd = to.getPosition().getSourceEnd();
-		final VCSFile.Position begin = file
-				.positionOf(sourceStart, tabSizeOf(from))
-				.orElseThrow(() -> new IOException(String.format(
-						"Begin position (%d) of element '%s' does not exist",
-						sourceStart, from)));
-		final VCSFile.Position end = file
-				.positionOf(sourceEnd, tabSizeOf(to))
-				.orElseThrow(() -> new IOException(String.format(
-						"End position (%d) of element '%s' does not exist",
-						sourceEnd, to)));
-		return new VCSFile.Range(begin, end);
+	private Optional<VCSFile.Range> createRange(final CtElement from,
+			final CtElement to) throws IOException {
+		final Optional<VCSFile.Range> begin = createRange(from);
+		final Optional<VCSFile.Range> end = createRange(to);
+		return begin.isEmpty() || end.isEmpty()
+				? Optional.empty()
+				: Optional.of(new VCSFile.Range(
+						begin.get().getBegin(),
+						end.get().getEnd()));
 	}
 
 	/**
