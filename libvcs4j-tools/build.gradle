@@ -29,7 +29,8 @@ dependencies {
 	compile 'org.slf4j:slf4j-api:1.7.22'
 	extraLibs project(':conqat')
 	testCompile project(':testutils')
-	testCompile 'de.uni-bremen.informatik.st:libvcs4j:1.7.0'
+	//testCompile 'de.uni-bremen.informatik.st:libvcs4j:1.7.0'
+	testCompile project(':libvcs4j')
 	configurations.compile.extendsFrom(configurations.extraLibs)
 }
 
