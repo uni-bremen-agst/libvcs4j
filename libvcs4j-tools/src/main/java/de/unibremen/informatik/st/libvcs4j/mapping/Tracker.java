@@ -95,17 +95,12 @@ public class Tracker<T> {
 	 * 		The metadata converter to use.
 	 * @throws NullPointerException
 	 * 		If any of the given arguments is {@code null}.
-	 * @throws IllegalArgumentException
-	 * 		If the parent of {@code directory} is not writable.
 	 * @throws IOException
 	 * 		If an error occurred while creating {@code directory}.
 	 */
 	public Tracker(@NonNull final Path directory,
 			@NonNull final MetadataConverter<T> converter) throws
 			NullPointerException, IllegalArgumentException, IOException {
-		if (directory.getParent() != null) {
-			Validate.isTrue(Files.isWritable(directory.getParent()));
-		}
 		log.info("Creating directory structure {}", directory);
 		Files.createDirectories(directory);
 		this.directory = directory;
