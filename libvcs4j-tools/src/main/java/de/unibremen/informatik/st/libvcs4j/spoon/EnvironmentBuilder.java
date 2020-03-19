@@ -72,7 +72,7 @@ public class EnvironmentBuilder {
 			throws BuildException {
 		final Revision revision = range.getRevision();
 		log.info("Building Spoon model for revision {}", revision.getId());
-		log.info("Enable auto import: {}", autoImports);
+		log.info("Enable auto imports: {}", autoImports);
 		log.info("Enable comments: {}", comments);
 		final long current = currentTimeMillis();
 		final Launcher launcher = new Launcher();
