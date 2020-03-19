@@ -31,6 +31,15 @@ public class EnvironmentBuilder {
 	private boolean autoImports = true;
 
 	/**
+	 * Enables or disables the processing of comments (see
+	 * {@link spoon.compiler.Environment#setCommentEnabled(boolean)}. The
+	 * default value is {@code true}.
+	 */
+	@Getter
+	@Setter
+	private boolean comments = true;
+
+	/**
 	 * The environment of the last call of {@link #update(RevisionRange)}.
 	 */
 	private Environment environment = null;
@@ -48,8 +57,7 @@ public class EnvironmentBuilder {
 	}
 
 	/**
-	 * Builds (or incrementally updates) the {@link CtModel} of
-	 * {@link #environment}.
+	 * Updates the model of {@link #environment}.
 	 *
 	 * @param range
 	 * 		The currently checked out range.
@@ -64,11 +72,14 @@ public class EnvironmentBuilder {
 			throws BuildException {
 		final Revision revision = range.getRevision();
 		log.info("Building Spoon model for revision {}", revision.getId());
+		log.info("Enable auto import: {}", autoImports);
+		log.info("Enable comments: {}", comments);
 		final long current = currentTimeMillis();
 		final Launcher launcher = new Launcher();
 		launcher.addInputResource(revision.getOutput().toString());
 		launcher.getEnvironment().setNoClasspath(true);
 		launcher.getEnvironment().setAutoImports(autoImports);
+		launcher.getEnvironment().setCommentEnabled(comments);
 		try {
 			environment = new Environment(launcher.buildModel(), range);
 			log.info("Model built in {} milliseconds",
