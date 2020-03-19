@@ -102,7 +102,7 @@ public abstract class CodeSmellDetector extends ElementExtractor {
 			final CodeSmell codeSmell = new CodeSmell(getDefinition(), metrics,
 					Collections.singletonList(range.get()), signature,
 					summary);
-			codeSmells.add(codeSmell);
+			codeSmells.add(map(codeSmell, Collections.singletonList(element)));
 			return Optional.of(codeSmell);
 		} catch (final IOException e) {
 			log.warn("Skipping element due to an unexpected IOException", e);
@@ -164,7 +164,7 @@ public abstract class CodeSmellDetector extends ElementExtractor {
 			final CodeSmell codeSmell = new CodeSmell(getDefinition(), metrics,
 					Collections.singletonList(range.get()), signature,
 					summary);
-			codeSmells.add(codeSmell);
+			codeSmells.add(map(codeSmell, Arrays.asList(from, to)));
 			return Optional.of(codeSmell);
 		} catch (final IOException e) {
 			log.warn("Skipping element range due to an unexpected IOException",
@@ -226,8 +226,26 @@ public abstract class CodeSmellDetector extends ElementExtractor {
 		}
 		final CodeSmell codeSmell = new CodeSmell(getDefinition(), metrics,
 				ranges, signature, summary);
-		codeSmells.add(codeSmell);
+		codeSmells.add(map(codeSmell, elements));
 		return Optional.of(codeSmell);
+	}
+
+	/**
+	 * Allows subclasses to map (i.e. modify) a code smell before being added
+	 * to {@link #codeSmells}. The default implementation simply returns the
+	 * given code smell.
+	 *
+	 * @param codeSmell
+	 * 		The code smell to map.
+	 * @param elements
+	 * 		The elements from which {@code codeSmell} was created. Contains at
+	 * 		least one element.
+	 * @return
+	 * 		The mapped code smell.
+	 */
+	protected CodeSmell map(final @NonNull CodeSmell codeSmell,
+			final @NonNull List<CtElement> elements) {
+		return codeSmell;
 	}
 
 	private Optional<VCSFile.Range> createRange(final CtElement from,
