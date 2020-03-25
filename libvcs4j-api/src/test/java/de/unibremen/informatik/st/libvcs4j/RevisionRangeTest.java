@@ -189,6 +189,62 @@ public class RevisionRangeTest {
     }
 
     @Test
+    public void testAddAdd() {
+        VCSModelFactory factory = new VCSModelFactory() {};
+        VCSEngine vcs = mock(VCSEngine.class);
+        when(vcs.getModelFactory()).thenReturn(factory);
+
+        Revision rev1 = mock(Revision.class);
+        when(rev1.getId()).thenReturn("1");
+        VCSFile a = mock(VCSFile.class);
+        when(a.getRelativePath()).thenReturn("a");
+        when(a.toRelativePath()).thenReturn(Paths.get("a"));
+        when(a.getRevision()).thenReturn(rev1);
+
+        Revision rev2 = mock(Revision.class);
+        when(rev2.getId()).thenReturn("2");
+        VCSFile b = mock(VCSFile.class);
+        when(b.getRelativePath()).thenReturn("b");
+        when(b.toRelativePath()).thenReturn(Paths.get("b"));
+        when(b.getRevision()).thenReturn(rev2);
+
+        FileChange ch1 = mock(FileChange.class);
+        when(ch1.getVCSEngine()).thenReturn(vcs);
+        when(ch1.getNewFile()).thenReturn(Optional.of(a));
+        when(ch1.getType()).thenCallRealMethod();
+
+        FileChange ch2 = mock(FileChange.class);
+        when(ch2.getVCSEngine()).thenReturn(vcs);
+        when(ch2.getNewFile()).thenReturn(Optional.of(b));
+        when(ch2.getType()).thenCallRealMethod();
+
+        Commit c1 = mock(Commit.class);
+        when(c1.getFileChanges()).thenReturn(singletonList(ch1));
+
+        Commit c2 = mock(Commit.class);
+        when(c2.getFileChanges()).thenReturn(singletonList(ch2));
+
+        RevisionRange range = spy(RevisionRange.class);
+        when(range.getCommits()).thenReturn(Arrays.asList(c1, c2));
+        when(range.getVCSEngine()).thenReturn(vcs);
+        when(range.getPredecessorRevision()).thenReturn(Optional.empty());
+        when(range.getRevision()).thenReturn(rev2);
+        assertThat(range.getFileChanges()).hasSize(2);
+
+        assertThat(range.getFileChanges().get(0).getType())
+                .isEqualTo(FileChange.Type.ADD);
+        assertThat(range.getFileChanges().get(0)
+                .getNewFile().orElseThrow(AssertionError::new)
+                .getRevision().getId()).isEqualTo("2");
+
+        assertThat(range.getFileChanges().get(1).getType())
+                .isEqualTo(FileChange.Type.ADD);
+        assertThat(range.getFileChanges().get(1)
+                .getNewFile().orElseThrow(AssertionError::new)
+                .getRevision().getId()).isEqualTo("2");
+    }
+
+    @Test
     public void testUnrelated() {
         VCSFile a = mock(VCSFile.class);
         when(a.getRelativePath()).thenReturn("a");
