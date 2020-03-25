@@ -375,4 +375,32 @@ public interface RevisionRange extends VCSModelElement {
 			action.accept(this);
 		}
 	}
+
+	/**
+	 * Merges the given revision range and returns a new one, representing the
+	 * state transition from {@code predecessor.getPredecessorRevision} to
+	 * {@code this.getRevision()}. The commits of {@code predecessor} and
+	 * {@code this} are combined such that the commits of {@code this} are
+	 * applied onto the commits of {@code predecessor}.
+	 *
+	 * @param predecessor
+	 * 		The predecessor range to merge.
+	 * @return
+	 * 		A new revision range representing the state transition from
+	 * 		{@code predecessor.getPredecessorRevision} to
+	 * 		{@code this.getRevision()}.
+	 * @throws NullPointerException
+	 * 		If {@code predecessor} is {@code null}.
+	 */
+	default RevisionRange merge(final RevisionRange predecessor)
+			throws NullPointerException {
+		Validate.notNull(predecessor);
+		final VCSEngine engine = getVCSEngine();
+		final List<Commit> commits = predecessor.getCommits();
+		commits.addAll(getCommits());
+		return engine.getModelFactory().createRevisionRange(getOrdinal(),
+				getRevision(),
+				predecessor.getPredecessorRevision().orElse(null), commits,
+				getVCSEngine());
+	}
 }
