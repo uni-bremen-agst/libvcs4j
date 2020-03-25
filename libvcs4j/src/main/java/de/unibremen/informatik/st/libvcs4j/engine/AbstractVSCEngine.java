@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * An abstract base implementation of {@link VCSEngine}. This class assumes
@@ -106,10 +107,10 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 
 		if (tmpOutputDir != null) {
 			log.info("Deleting temporary output directory");
-			Files.walk(tmpOutputDir)
-					.sorted(Comparator.reverseOrder())
-					.map(Path::toFile)
-					.forEach(f -> Validate.validateState(f.delete()));
+			try (Stream<Path> walk = Files.walk(tmpOutputDir)) {
+				walk.sorted(Comparator.reverseOrder()).map(Path::toFile)
+						.forEach(f -> Validate.validateState(f.delete()));
+			}
 			tmpOutputDir = null;
 		}
 
