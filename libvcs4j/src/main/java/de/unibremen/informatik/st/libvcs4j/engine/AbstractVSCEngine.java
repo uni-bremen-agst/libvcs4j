@@ -31,6 +31,7 @@ import java.time.ZoneId;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -69,7 +70,7 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 	private int revisionIdx = -1;
 	private String revision = null;
 	private Revision currentRevision = null;
-	private boolean outputDirIsMissing = false;
+	private Path tmpOutputDir = null;
 
 	public AbstractVSCEngine(
 	        final String pRepository, final String pRoot, final Path pTarget)
@@ -103,9 +104,13 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 	public final Optional<RevisionRange> next() throws IOException {
 		init();
 
-		if (outputDirIsMissing) {
-			log.info("Deleting output directory");
-			Files.delete(getOutput());
+		if (tmpOutputDir != null) {
+			log.info("Deleting temporary output directory");
+			Files.walk(tmpOutputDir)
+					.sorted(Comparator.reverseOrder())
+					.map(Path::toFile)
+					.forEach(f -> Validate.validateState(f.delete()));
+			tmpOutputDir = null;
 		}
 
 		revisionIdx++;
@@ -124,10 +129,20 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 		checkoutImpl(revisions.get(revisionIdx));
 		revision = revisions.get(revisionIdx);
 
-		outputDirIsMissing = !getOutput().toFile().exists();
-		if (outputDirIsMissing) {
-			log.info("Creating output directory");
-			Validate.validateState(getOutput().toFile().mkdir());
+		if (!getOutput().toFile().exists()) {
+			Validate.notEquals(getTarget(), getOutput());
+			log.info("Creating missing output directory");
+			Path closestParent = getOutput().getParent();
+			while (!closestParent.toFile().exists()) {
+				closestParent = closestParent.getParent();
+			}
+			Validate.validateState(closestParent.startsWith(getTarget()));
+			log.info("Closest existing parent: {}", closestParent);
+			final Path dirsToCreate = closestParent.relativize(getOutput());
+			log.info("Directory structure to create: {}", dirsToCreate);
+			tmpOutputDir = closestParent.resolve(dirsToCreate.getName(0));
+			log.info("Directory to delete in next call: {}", tmpOutputDir);
+			Files.createDirectories(getOutput());
 		}
 
 		final Changes changes;
