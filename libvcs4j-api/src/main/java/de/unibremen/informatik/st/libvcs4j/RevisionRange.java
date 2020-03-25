@@ -175,6 +175,43 @@ public interface RevisionRange extends VCSModelElement {
 				}
 				accum.addAll(toProcess);
 			}
+			// Postprocessing: Replace accumulated file changes such that the
+			// revisions of the referenced files match with the predecessor and
+			// successor revision of this range.
+			final Revision predRev = getPredecessorRevision().orElse(null);
+			final Revision rev = getRevision();
+			final VCSEngine engine = getVCSEngine();
+			final VCSModelFactory factory = engine.getModelFactory();
+			final ListIterator<FileChange> it = accum.listIterator();
+			while (it.hasNext()) {
+				final FileChange change = it.next();
+				final VCSFile newOldFile = change.getOldFile()
+						.map(file -> {
+							Validate.validateState(predRev != null);
+							final String relPath = file.getRelativePath();
+							final boolean revMatch = file.getRevision()
+									.getId().equals(predRev.getId());
+							return revMatch
+									? file
+									: factory.createVCSFile(
+											relPath, predRev, engine);
+						})
+						.orElse(null);
+				final VCSFile newNewFile = change.getNewFile()
+						.map(file -> {
+							final String relPath = file.getRelativePath();
+							final boolean revMatch = file.getRevision()
+									.getId().equals(rev.getId());
+							return revMatch
+									? file
+									: factory.createVCSFile(
+											relPath, rev, engine);
+						})
+						.orElse(null);
+				final FileChange newChange = factory.createFileChange(
+						newOldFile, newNewFile, engine);
+				it.set(newChange);
+			}
 			return accum;
 		}
 	}
