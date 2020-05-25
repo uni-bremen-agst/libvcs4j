@@ -45,7 +45,7 @@ public class Metrics {
 		}
 
 		final ELanguage lang = maybeLang.get();
-		final String content = pFile.readContent();
+		final String content = pFile.readeContent();
 		final IScanner scanner = ScannerFactory
 				.newLenientScanner(lang, content, "");
 
@@ -132,7 +132,7 @@ public class Metrics {
 		}
 
 		final ELanguage lang = maybeLang.get();
-		final String content = pFile.readContent();
+		final String content = pFile.readeContent();
 		final IScanner scanner = ScannerFactory
 				.newLenientScanner(lang, content, "");
 
