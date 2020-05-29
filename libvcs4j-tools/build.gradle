@@ -27,6 +27,7 @@ dependencies {
 	compile 'net.sourceforge.pmd:pmd-core:6.21.0'
 	compile 'net.sourceforge.pmd:pmd-java:6.21.0'
 	compile 'org.slf4j:slf4j-api:1.7.22'
+	compile 'org.buildobjects:jproc:2.3.0'
 	extraLibs project(':conqat')
 	testCompile project(':testutils')
 	//testCompile 'de.uni-bremen.informatik.st:libvcs4j:1.7.0'

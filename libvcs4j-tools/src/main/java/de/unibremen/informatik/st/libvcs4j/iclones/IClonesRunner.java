@@ -7,7 +7,6 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.xml.sax.SAXException;
 import org.buildobjects.process.ProcBuilder;
-import org.buildobjects.process.ProcResult;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -19,6 +18,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.nio.file.Files;
 import java.nio.file.Path;
+//import java.net.URL;
+//import java.net.URLClassLoader;
+//import java.lang.reflect.Method;
+//import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Allows to configure and run CPD on {@link Revision} instances.
@@ -91,29 +95,7 @@ public class IClonesRunner {
 
         try {
 
-
-            ProcResult result = new ProcBuilder("java")
-                    .withArgs("-jar",IClonesFilePath + "/jar/iclones.jar",
-                            "-informat",
-                            "single",
-                            "-minclone",
-                            String.valueOf(minimumTokens),
-                            "-minblock",
-                            String.valueOf(minimumBlock),
-                            "-input",
-                            revision.getOutput().toString(),
-                            "-outformat",
-                            "xml",
-                            "-output",
-                            IClonesOutputFile.toString())
-                    .withNoTimeout()
-                    .ignoreExitStatus()
-                    .run();
-
-            System.out.println(result.getExecutionTime());
-
-            /**
-            Process proc = Runtime.exec(new String[]{"java",
+            ProcessBuilder pb = new ProcessBuilder("java",
                     "-jar",
                     IClonesFilePath+"/jar/iclones.jar",
                     "-informat",
@@ -127,17 +109,40 @@ public class IClonesRunner {
                     "-outformat",
                     "xml",
                     "-output",
-                    IClonesOutputFile.toString()});
+                    IClonesOutputFile.toString());
 
-            proc.waitFor();
-            **/
+            Process proc = pb.start();
+            proc.waitFor(200000, TimeUnit.valueOf("MILLISECONDS"));
 
+            /**
+            File file = new File(IClonesFilePath + "/jar/iclones.jar"); // forward slashes with java.io.File works
+            URL[] urls = { file.toURI().toURL() };
+            URLClassLoader loader = new URLClassLoader(urls);
+            Class<?> cls = loader.loadClass("de.uni_bremen.st.iclones.IClones"); // replace the complete class name with the actual main class
+            Method main = cls.getDeclaredMethod("main", String[].class); // get the main method using reflection
+            String[] args = {"-informat",
+                    "single",
+                    "-minclone",
+                    String.valueOf(minimumTokens),
+                    "-minblock",
+                    String.valueOf(minimumBlock),
+                    "-input",
+                    revision.getOutput().toString(),
+                    "-outformat",
+                    "xml",
+                    "-output",
+                    IClonesOutputFile.toString()};
+            Object mainObj = main.invoke(null, new Object[] {args}); // static methods are invoked with null as first argument
+
+             **/
+            proc.destroyForcibly();
             // Parse output
             final SAXParserFactory factory = SAXParserFactory.newInstance();
             final SAXParser saxParser = factory.newSAXParser();
             final InputStream bis = new ByteArrayInputStream(Files.readAllBytes(IClonesOutputFile));
             IClonesSaxHandler handler = new IClonesSaxHandler(revision.getFiles());
             saxParser.parse(bis, handler);
+
 
             // Result
             return new IClonesDetectionResult(handler.getViolations());

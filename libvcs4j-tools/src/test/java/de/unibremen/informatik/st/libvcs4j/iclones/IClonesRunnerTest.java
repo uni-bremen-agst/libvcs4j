@@ -9,6 +9,8 @@ import org.junit.rules.TemporaryFolder;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.lang.reflect.InvocationTargetException;
+
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,7 +20,7 @@ public class IClonesRunnerTest {
     public TemporaryFolder folder = new TemporaryFolder();
 
     @Test
-    public void CPDTest() throws IOException, InterruptedException {
+    public void CPDTest() throws IOException, InterruptedException, InvocationTargetException {
         RevisionMock revision = new RevisionMock(folder);
         revision.addFile(Paths.get("cpdtest","Test1.java"));
         revision.addFile(Paths.get("cpdtest","Test2.java"));
