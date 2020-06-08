@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 import static java.lang.Integer.parseInt;
 
 /**
- * Handles the XML output of CPD and stores the result in {@link #violations}.
+ * Handles the XML output of IClones and stores the result in {@link #violations}.
  */
 class IClonesSaxHandler extends DefaultHandler {
 
@@ -39,12 +39,17 @@ class IClonesSaxHandler extends DefaultHandler {
             LoggerFactory.getLogger(IClonesSaxHandler.class);
 
     /**
+     * Basepath IClones uses
+     */
+    private String BasePath;
+
+    /**
      * The files to process.
      */
     private final Collection<VCSFile> files;
 
     /**
-     * Used to map paths detected by CPD to {@link VCSFile} instances.
+     * Used to map paths detected by IClones to {@link VCSFile} instances.
      */
     private final Map<String, VCSFile> path2File = new HashMap<>();
 
@@ -62,12 +67,6 @@ class IClonesSaxHandler extends DefaultHandler {
      * The amount of tokens that are duplicated.
      */
     private List<String> tokens;
-
-    /**
-     * Bool to determine if XML is completely written
-     */
-    @Getter
-    private boolean complete = false;
 
     /**
      * List of files that share the duplication.
@@ -113,11 +112,14 @@ class IClonesSaxHandler extends DefaultHandler {
     public void startElement(
             final String uri, final String localName, final String qName,
             final Attributes attributes) throws SAXException {
-        if (qName.equals("cloneclass")) {
+        if(qName.equals("version")){
+            BasePath = attributes.getValue("basepath");
+            BasePath = BasePath.replace('/','\\');
+        }else if (qName.equals("cloneclass")) {
             lines = new ArrayList<String>();
             tokens = new ArrayList<String>();
         } else if (qName.equals("fragment")) {
-            final String path = attributes.getValue("fileid");
+            final String path = BasePath + attributes.getValue("fileid");
             if (path == null) {
                 log.warn("Skipping violation due to missing 'path' attribute");
                 return;
@@ -153,23 +155,23 @@ class IClonesSaxHandler extends DefaultHandler {
                 }
                 final int el = parseInt(els);
                 final Optional<VCSFile.Position> end =
-                        Optional.of(file.positionOf(el, 1, TAB_SIZE).get().endOfLine());
+                        file.positionOf(el, 1, TAB_SIZE);
                 if (!end.isPresent()) {
                     log.warn("Skipping violation due to not existing end position. " +
                                     "file: {}, line: {}, column: {}, tab size: {}",
                             file.getPath(), el, 1, TAB_SIZE);
                     return;
                 }
+                VCSFile.Position endPosition = end.get();
+                VCSFile.Position endOfEndLine = endPosition.endOfLine();
 
-                VCSFile.Range r = new VCSFile.Range(begin.get(), end.get());
+                VCSFile.Range r = new VCSFile.Range(begin.get(), endOfEndLine);
                 ranges.add(r);
                 lines.add(String.valueOf((el-bl)+1));
 
-            } catch (final IOException e) {
+            } catch (final IOException | IllegalStateException e) {
                 log.warn("Skipping violation due to an IO error while creating its range");
             }
-        } else if (qName == "File"){
-            return;
         }
 
         super.startElement(uri, localName, qName, attributes);
@@ -186,8 +188,6 @@ class IClonesSaxHandler extends DefaultHandler {
             final IClonesDuplication v = new IClonesDuplication (ranges, lines, tokens);
             violations.add(v);
             ranges = new ArrayList<>(); //Initialize ranges for new duplication.
-        } else if (qName == "cloneresults"){
-            complete = true;
         }
     }
 

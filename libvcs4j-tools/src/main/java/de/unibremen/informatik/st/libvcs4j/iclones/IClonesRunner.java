@@ -76,6 +76,11 @@ public class IClonesRunner {
     }
 
     /**
+     * ICLones Thread
+     */
+    private Thread ICThread;
+
+    /**
      * Analyzes the given revision.
      *
      * @param revision
@@ -94,55 +99,24 @@ public class IClonesRunner {
                 .toAbsolutePath();
 
         try {
+            ICThread = new IClonesThread(IClonesFilePath,
+                                        revision.getOutput().toString(),
+                                        IClonesOutputFile.toString(),
+                                        minimumTokens,
+                                        minimumBlock);
 
-            ProcessBuilder pb = new ProcessBuilder("java",
-                    "-jar",
-                    IClonesFilePath+"/jar/iclones.jar",
-                    "-informat",
-                    "single",
-                    "-minclone",
-                    String.valueOf(minimumTokens),
-                    "-minblock",
-                    String.valueOf(minimumBlock),
-                    "-input",
-                    revision.getOutput().toString(),
-                    "-outformat",
-                    "xml",
-                    "-output",
-                    IClonesOutputFile.toString());
 
-            Process proc = pb.start();
-            proc.waitFor(200000, TimeUnit.valueOf("MILLISECONDS"));
+            ICThread.start();
 
-            /**
-            File file = new File(IClonesFilePath + "/jar/iclones.jar"); // forward slashes with java.io.File works
-            URL[] urls = { file.toURI().toURL() };
-            URLClassLoader loader = new URLClassLoader(urls);
-            Class<?> cls = loader.loadClass("de.uni_bremen.st.iclones.IClones"); // replace the complete class name with the actual main class
-            Method main = cls.getDeclaredMethod("main", String[].class); // get the main method using reflection
-            String[] args = {"-informat",
-                    "single",
-                    "-minclone",
-                    String.valueOf(minimumTokens),
-                    "-minblock",
-                    String.valueOf(minimumBlock),
-                    "-input",
-                    revision.getOutput().toString(),
-                    "-outformat",
-                    "xml",
-                    "-output",
-                    IClonesOutputFile.toString()};
-            Object mainObj = main.invoke(null, new Object[] {args}); // static methods are invoked with null as first argument
-
-             **/
-            proc.destroyForcibly();
-            // Parse output
+            // Prepare to parse output, but wait for Thread before actually doing anything
             final SAXParserFactory factory = SAXParserFactory.newInstance();
             final SAXParser saxParser = factory.newSAXParser();
-            final InputStream bis = new ByteArrayInputStream(Files.readAllBytes(IClonesOutputFile));
             IClonesSaxHandler handler = new IClonesSaxHandler(revision.getFiles());
-            saxParser.parse(bis, handler);
 
+            ICThread.join();
+
+            final InputStream bis = new ByteArrayInputStream(Files.readAllBytes(IClonesOutputFile));
+            saxParser.parse(bis, handler);
 
             // Result
             return new IClonesDetectionResult(handler.getViolations());
