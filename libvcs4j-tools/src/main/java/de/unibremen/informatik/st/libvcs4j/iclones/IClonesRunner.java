@@ -31,6 +31,11 @@ import java.util.concurrent.TimeUnit;
 public class IClonesRunner {
 
     /**
+     * Boolean that represent wether an IClones Jar has been found or not.
+     */
+    private boolean IClonesJarFound;
+
+    /**
      * Path to IClones JAR
      */
     private static String IClonesFilePath;
@@ -42,9 +47,10 @@ public class IClonesRunner {
         IClonesFilePath = System.getenv("ICLONES");
         if(IClonesFilePath != null) {
             try {
-                String fileTestOutput = ProcBuilder.run("java", "-jar", IClonesFilePath + "/jar/iclones.jar");
+                String fileTestOutput = ProcBuilder.run("java", "-jar", IClonesFilePath);
+                IClonesJarFound = true;
             } catch (Exception e) {
-                //throw new FileNotFoundException("Could not find iclones.jar, please make sure that you have the ICLONES System Environment Variable set correctly.");
+                IClonesJarFound = false;
             }
 
         }
@@ -70,7 +76,10 @@ public class IClonesRunner {
     /**
      * Creates a new CPD runner.
      */
-    public IClonesRunner(final int pMinimumTokens, final int pMinimumBlock){
+    public IClonesRunner(final int pMinimumTokens, final int pMinimumBlock) throws FileNotFoundException{
+        if(!IClonesJarFound){
+            throw new FileNotFoundException("Could not find iclones.jar, please make sure that you have the ICLONES System Environment Variable set correctly.");
+        }
         minimumTokens = pMinimumTokens;
         minimumBlock = pMinimumBlock;
     }

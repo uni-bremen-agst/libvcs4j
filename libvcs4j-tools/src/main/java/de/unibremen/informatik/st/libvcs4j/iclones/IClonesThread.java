@@ -50,7 +50,7 @@ public class IClonesThread extends Thread {
         try{
             ProcessBuilder pb = new ProcessBuilder("java",
                     "-jar",
-                    IClonesFilePath+"/jar/iclones.jar",
+                    IClonesFilePath,
                     "-informat",
                     "single",
                     "-minclone",
