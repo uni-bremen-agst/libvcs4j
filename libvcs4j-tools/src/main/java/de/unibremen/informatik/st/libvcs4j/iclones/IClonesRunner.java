@@ -33,7 +33,7 @@ public class IClonesRunner {
     /**
      * Boolean that represent wether an IClones Jar has been found or not.
      */
-    private boolean IClonesJarFound;
+    private static boolean IClonesJarFound;
 
     /**
      * Path to IClones JAR
