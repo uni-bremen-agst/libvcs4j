@@ -20,7 +20,7 @@ public class IClonesRunnerTest {
     public TemporaryFolder folder = new TemporaryFolder();
 
     @Test
-    public void CPDTest() throws IOException, InterruptedException, InvocationTargetException {
+    public void IClonesTest() throws IOException, InterruptedException, InvocationTargetException {
         RevisionMock revision = new RevisionMock(folder);
         revision.addFile(Paths.get("cpdtest","Test1.java"));
         revision.addFile(Paths.get("cpdtest","Test2.java"));
