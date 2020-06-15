@@ -14,15 +14,8 @@ import javax.xml.parsers.SAXParserFactory;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.nio.file.Files;
 import java.nio.file.Path;
-//import java.net.URL;
-//import java.net.URLClassLoader;
-//import java.lang.reflect.Method;
-//import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Allows to configure and run CPD on {@link Revision} instances.
