@@ -35,7 +35,7 @@ class CPDSaxHandler extends DefaultHandler {
      * The logger of this class.
      */
     private static final Logger log =
-            LoggerFactory.getLogger(PMDSaxHandler.class);
+            LoggerFactory.getLogger(CPDSaxHandler.class);
 
     /**
      * The files to process.
@@ -89,6 +89,7 @@ class CPDSaxHandler extends DefaultHandler {
     public void startDocument() throws SAXException {
         violations.clear();
         path2File.clear();
+        ranges.clear();
         for (VCSFile f : files) {
             try {
                 path2File.put(f.toFile().getCanonicalPath(), f);
