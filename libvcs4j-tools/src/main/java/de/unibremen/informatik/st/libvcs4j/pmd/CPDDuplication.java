@@ -40,6 +40,6 @@ public final class CPDDuplication implements Mappable<String> {
 
     @Override
     public Optional<String> getMetadata() {
-        return Optional.of("clone");
+        return Optional.of("cpd-clone");
     }
 }
