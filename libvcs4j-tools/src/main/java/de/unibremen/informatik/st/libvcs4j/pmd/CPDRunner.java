@@ -69,6 +69,11 @@ public class CPDRunner {
         args.add("utf-8");
         // Skip files that can't be tokenized instead of throwing Exceptions
         args.add("--skip-lexical-errors");
+        // Ignore Identifiers, Literals and Annotations to detect Type 2 Clones
+        args.add("--ignore-identifiers");
+        args.add("--ignore-literals");
+        args.add("--ignore-annotations");
+
 
         // Temporarily redirect stdout to a string.
         final PrintStream stdout = System.out;
