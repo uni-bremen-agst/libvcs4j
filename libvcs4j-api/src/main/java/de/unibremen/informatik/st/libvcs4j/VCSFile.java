@@ -377,8 +377,14 @@ public interface VCSFile extends VCSModelElement {
 		public Position endOfLine() throws IOException {
 			final List<String> lines = getFile().readLines();
 			Validate.validateState(lines.size() >= getLine());
-			final int lastColumn = lines.get(getLine() - 1).length();
-			return getFile().positionOf(getLine(), lastColumn, getTabSize())
+			final String currentLine = lines.get(getLine()-1);
+			int column = 1;
+			for(char c : currentLine.toCharArray()){
+				column = c == '\t'
+						? ( (column-1)/getTabSize() + 1 ) * getTabSize() + 1
+						: column + 1;
+			}
+			return getFile().positionOf(getLine(), column, getTabSize())
 					.orElseThrow(IllegalStateException::new);
 		}
 
