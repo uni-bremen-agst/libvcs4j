@@ -9,6 +9,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -114,7 +116,7 @@ class IClonesSaxHandler extends DefaultHandler {
             final Attributes attributes) throws SAXException {
         if(qName.equals("version")){
             BasePath = attributes.getValue("basepath");
-            BasePath = BasePath.replace('/','\\');
+            BasePath = BasePath.replace('/', File.separatorChar );
         }else if (qName.equals("cloneclass")) {
             lines = new ArrayList<String>();
             tokens = new ArrayList<String>();
