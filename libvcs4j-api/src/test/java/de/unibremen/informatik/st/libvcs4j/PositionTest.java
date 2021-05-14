@@ -159,6 +159,24 @@ public class PositionTest {
 		assertThat(endOfLine.getTabSize()).isEqualTo(7);
 		assertThat(endOfLine.getOffset()).isEqualTo(20);
 		assertThat(endOfLine.getLineOffset()).isEqualTo(20);
+
+		lines = Collections.singletonList(
+				"\t\t\t} else {");
+
+		VCSFile file2 = mock(VCSFile.class);
+		when(file2.readLines()).thenReturn(lines);
+		when(file2.readLinesWithEOL()).thenReturn(lines);
+		when(file2.positionOf(1, 9, 4)).thenCallRealMethod();
+		when(file2.positionOf(1, 20, 4)).thenCallRealMethod();
+
+		VCSFile.Position position2 = file.positionOf(1, 9, 4)
+				.orElseThrow(AssertionError::new);
+		VCSFile.Position endOfLine2 = position.endOfLine();
+		assertThat(endOfLine2.getLine()).isEqualTo(1);
+		assertThat(endOfLine2.getColumn()).isEqualTo(20);
+		assertThat(endOfLine2.getTabSize()).isEqualTo(4);
+		assertThat(endOfLine2.getOffset()).isEqualTo(19);
+		assertThat(endOfLine2.getLineOffset()).isEqualTo(19);
 	}
 
 	@Test
