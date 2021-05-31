@@ -379,14 +379,12 @@ public interface VCSFile extends VCSModelElement {
 			Validate.validateState(lines.size() >= getLine());
 			final String currentLine = lines.get(getLine()-1);
 			int column = 1;
-			if(!currentLine.isEmpty()) {
-				for (char c : currentLine.toCharArray()) {
-					column = c == '\t'
-							? ((column - 1) / getTabSize() + 1) * getTabSize() + 1
-							: column + 1;
-				}
-				column--;
+			for (char c : currentLine.toCharArray()) {
+				column = c == '\t'
+						? ((column - 1) / getTabSize() + 1) * getTabSize() + 1
+						: column + 1;
 			}
+			column--;
 			return getFile().positionOf(getLine(), column, getTabSize())
 					.orElseThrow(IllegalStateException::new);
 		}
