@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,4 +52,5 @@ public class PMDRunnerTest {
 		PMDDetectionResult result = pmdRunner.analyze(revision);
 		assertThat(result).isNotNull();
 	}
+
 }
