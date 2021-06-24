@@ -19,23 +19,28 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Stores a sequence of {@link Entity} instances in a CSV file.
+ * Stores a sequence of {@link Entity} instances in a CSV file. Lifespans are
+ * used to persist the evolution of mapped {@link Mappable} objects (see
+ * {@link Mapping} and {@link Tracker}). The class {@link Entity} serves as a
+ * thin wrapper for mappables so as to add additional attributes and methods
+ * required by this class while writing the CSV file. Usually, lifespans are
+ * managed by an instance of {@link Tracker}.
  */
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class Lifespan {
 
 	/**
-	 * Charset of output csv.
+	 * Charset of {@link #csv}.
 	 */
 	public static final Charset CHARSET = StandardCharsets.UTF_8;
 
 	/**
-	 * Delimiter of output csv.
+	 * The CSV delimiter used in {@link #csv}.
 	 */
 	public static final String DELIMITER = ";";
 
 	/**
-	 * Path to the CSV file containing the results.
+	 * Path to the CSV output file.
 	 */
 	@Getter
 	@NonNull
