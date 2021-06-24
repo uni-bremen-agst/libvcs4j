@@ -44,12 +44,14 @@ public class Tracker<T> {
 	public static final Charset CHARSET = StandardCharsets.UTF_8;
 
 	/**
-	 * Delimiter of lifespan info file.
+	 * The CSV delimiter used in the lifespan info file.
 	 */
 	public static final String DELIMITER = ";";
 
 	/**
-	 * The output directory containing all output files.
+	 * The output directory which contains all output files
+	 * ({@link #LIFESPAN_INFO_FILE} and the CSV files of the managed
+	 * lifespans).
 	 */
 	private final Path directory;
 
