@@ -165,7 +165,6 @@ public class PositionTest {
 
 	@Test
 	public void endOfLineWithTabs() throws IOException {
-
 		List<String> lines = Collections.singletonList(
 				"\t\t\t} else {");
 

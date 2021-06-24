@@ -378,10 +378,11 @@ public interface VCSFile extends VCSModelElement {
 			final List<String> lines = getFile().readLines();
 			Validate.validateState(lines.size() >= getLine());
 			final String currentLine = lines.get(getLine()-1);
+			final int tabSize = getTabSize();
 			int column = 1;
 			for (char c : currentLine.toCharArray()) {
 				column = c == '\t'
-						? ((column - 1) / getTabSize() + 1) * getTabSize() + 1
+						? ( (column-1)/tabSize + 1 ) * tabSize + 1
 						: column + 1;
 			}
 			column--;
