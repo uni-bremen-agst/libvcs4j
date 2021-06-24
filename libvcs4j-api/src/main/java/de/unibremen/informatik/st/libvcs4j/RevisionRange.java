@@ -414,17 +414,18 @@ public interface RevisionRange extends VCSModelElement {
 	}
 
 	/**
-	 * Merges the given revision range and returns a new one, representing the
-	 * state transition from {@code predecessor.getPredecessorRevision} to
+	 * Merges this range into {@code predecessor} and returns a new instance
+	 * that represents the state transition from
+	 * {@code predecessor.getPredecessorRevision()} to
 	 * {@code this.getRevision()}. The commits of {@code predecessor} and
 	 * {@code this} are combined such that the commits of {@code this} are
 	 * applied onto the commits of {@code predecessor}.
 	 *
 	 * @param predecessor
-	 * 		The predecessor range to merge.
+	 * 		The predecessor range to merge this range into.
 	 * @return
 	 * 		A new revision range representing the state transition from
-	 * 		{@code predecessor.getPredecessorRevision} to
+	 * 		{@code predecessor.getPredecessorRevision()} to
 	 * 		{@code this.getRevision()}.
 	 * @throws NullPointerException
 	 * 		If {@code predecessor} is {@code null}.
