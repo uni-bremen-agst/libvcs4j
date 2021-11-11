@@ -28,3 +28,11 @@ jobs:
 
       - name: Build with Gradle
         run: ./gradlew build
+
+      - name: Sonar Analysis
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          git fetch --unshallow
+          ./gradlew jacocoTestReport
+          ./gradlew sonarqube -Dsonar.host.url=https://sonarcloud.io -Dsonar.projectKey=$SONAR_KEY -Dsonar.organization=$SONAR_ORGANIZATION -Dsonar.login=$SONAR_TOKEN
