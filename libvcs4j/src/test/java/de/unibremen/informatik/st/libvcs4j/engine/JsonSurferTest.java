@@ -11,7 +11,7 @@ public class JsonSurferTest {
 
 	@Test
 	public void createOutputDirectory() {
-		final String repo = getClass()
+		final String repo = "file://" + getClass()
 				.getResource("/jsonsurfer/jsonsurfer.bundle")
 				.getFile();
 
