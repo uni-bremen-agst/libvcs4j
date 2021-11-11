@@ -36,6 +36,7 @@ jobs:
           SONAR_KEY: ${{ secrets.SONAR_KEY }}
           SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git fetch --unshallow
           ./gradlew jacocoTestReport
