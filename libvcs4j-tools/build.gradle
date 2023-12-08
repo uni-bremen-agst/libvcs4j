@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'de.uni-bremen.informatik.st'
-version = '1.8.0'
+version = '2.0.0'
 
 lombok {
 	version = "1.18.12"
