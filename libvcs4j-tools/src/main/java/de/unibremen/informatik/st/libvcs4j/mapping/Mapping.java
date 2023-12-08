@@ -574,7 +574,7 @@ public class Mapping<T> {
 					if (begin.isPresent() && end.isPresent()
 							&& VCSFile.Position.OFFSET_COMPARATOR.compare(
 									begin.get(), end.get()) < 0)  {
-						ranges.add(new VCSFile.Range(begin.get(), end.get()));
+						ranges.add(begin.get().rangeTo(end.get()));
 					} else {
 						// Unable to find range in file. We are done.
 						return Optional.empty();

@@ -544,4 +544,140 @@ public interface VCSModelFactory {
 			}
 		};
 	}
+
+	/**
+	 * Creates a new {@link VCSFile.Position}.
+	 *
+	 * @param file
+	 * 		The referenced file of the position to create.
+	 * @param line
+	 * 		The line of the position to create.
+	 * @param column
+	 * 		The column of the position to create.
+	 * @param offset
+	 * 		The offset of the position to create.
+	 * @param lineOffset
+	 * 		The line offset of the position to create.
+	 * @param tabSize
+	 * 		The tab size of the position to create.
+	 * @param engine
+	 * 		The engine of the position to create.
+	 * @throws NullPointerException
+	 * 		If {@code file} or {@code engine} is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If {@code line < 1}, {@code column < 1}, {@code offset < 0},
+	 * 		{@code lineOffset < 0}, or {@code tabSize < 1}.
+	 */
+	default VCSFile.Position createPosition(final VCSFile file,
+			final int line, final int column, final int offset,
+			final int lineOffset, final int tabSize, final VCSEngine engine)
+			throws NullPointerException, IllegalArgumentException {
+		Validate.notNull(file);
+		Validate.notNull(engine);
+		Validate.isPositive(line, "line < 1");
+		Validate.isPositive(column, "column < 1");
+		Validate.notNegative(offset, "offset < 0");
+		Validate.notNegative(lineOffset, "line offset < 0");
+		Validate.isPositive(tabSize, "tab size < 1");
+
+		return new VCSFile.Position() {
+			@Override
+			public VCSFile getFile() {
+				return file;
+			}
+
+			@Override
+			public int getLine() {
+				return line;
+			}
+
+			@Override
+			public int getColumn() {
+				return column;
+			}
+
+			@Override
+			public int getOffset() {
+				return offset;
+			}
+
+			@Override
+			public int getLineOffset() {
+				return lineOffset;
+			}
+
+			@Override
+			public int getTabSize() {
+				return tabSize;
+			}
+
+			@Override
+			public VCSEngine getVCSEngine() {
+				return engine;
+			}
+
+			@Override
+			public String toString() {
+				return String.format("Position(file=%s, line=%d, column=%d, " +
+						"offset=%d, lineOffset=%d, tabSize=%d)",
+						getFile().toString(), getLine(), getColumn(), getOffset(),
+						getLineOffset(), getTabSize());
+			}
+		};
+	}
+
+	/**
+	 * Creates a new {@link VCSFile.Range}.
+	 *
+	 * @param begin
+	 * 		The begin position of the range to create.
+	 * @param end
+	 * 		The end position of the range to create.
+	 * @param engine
+	 * 		The engine of the position to create.
+	 * @throws NullPointerException
+	 * 		If any of the given arguments is {@code null}.
+	 * @throws IllegalArgumentException
+	 * 		If {@code begin} and {@code end} reference different files,
+	 * 		or if {@code begin} is after {@code end}.
+	 */
+	default VCSFile.Range createRange(final VCSFile.Position begin,
+		  	final VCSFile.Position end, final VCSEngine engine)
+			throws NullPointerException, IllegalArgumentException {
+		Validate.notNull(begin);
+		Validate.notNull(end);
+		Validate.notNull(engine);
+		Validate.isEqualTo(begin.getFile(), end.getFile(),
+				"Begin and end position reference different files.");
+		Validate.isTrue(begin.getOffset() <= end.getOffset(),
+				"Begin must not be after end.");
+
+		return new VCSFile.Range() {
+			@Override
+			public VCSFile.Position getBegin() {
+				return begin;
+			}
+
+			@Override
+			public VCSFile.Position getEnd() {
+				return end;
+			}
+
+			@Override
+			public VCSFile getFile() {
+				return begin.getFile();
+			}
+
+			@Override
+			public VCSEngine getVCSEngine() {
+				return engine;
+			}
+
+			@Override
+			public String toString() {
+				return String.format("Range(begin=%s, end=%s)",
+						getBegin().toString(), getEnd().toString());
+			}
+		};
+	}
 }

@@ -32,22 +32,21 @@ public interface VCSFile extends VCSModelElement {
 	 * '\n', '\r', and '\r\n'. Use {@link VCSFile#positionOf(int, int, int)} or
 	 * {@link VCSFile#positionOf(int, int)} to create instances of this class.
 	 */
-	class Position {
+	public interface Position extends VCSModelElement {
 
 		/**
-		 * Compares two positions using their {@link #offset}s.
+		 * Compares two positions using their offsets ({@link #getOffset()}).
 		 */
-		public static final Comparator<Position> OFFSET_COMPARATOR =
+		Comparator<Position> OFFSET_COMPARATOR =
 				Comparator.comparingInt(Position::getOffset);
 
 		/**
-		 * Tests if two positions are equal according to their {@link #offset}s
-		 * (using {@link #OFFSET_COMPARATOR}) and their relative paths (using
+		 * Tests if two positions are equal according to their offset (using
+		 * {@link #OFFSET_COMPARATOR}) and their relative path (using
 		 * {@link VCSFile#toRelativePath()} and {@link Path#equals(Object)}).
 		 * {@code null} matches {@code null}, but not a {@code non-null} value.
 		 */
-		public static final BiPredicate<Position, Position>
-				RELATIVE_PATH_PREDICATE = (p1, p2) ->
+		BiPredicate<Position, Position> RELATIVE_PATH_PREDICATE = (p1, p2) ->
 				p1 == null && p2 == null || // null is equal to null
 						p1 != null && p2 != null &&
 						OFFSET_COMPARATOR.compare(p1, p2) == 0 &&
@@ -55,78 +54,12 @@ public interface VCSFile extends VCSModelElement {
 								p2.getFile().toRelativePath());
 
 		/**
-		 * The referenced file.
-		 */
-		private final VCSFile file;
-
-		/**
-		 * The line of a position {@code >= 1}.
-		 */
-		private final int line;
-
-		/**
-		 * The column of a position {@code >= 1}.
-		 */
-		private final int column;
-
-		/**
-		 * Alternative position information for {@link #line} and
-		 * {@link #column} {@code >= 0}).
-		 */
-		private final int offset;
-
-		/**
-		 * Alternative position information for {@link #column} {@code >= 0}.
-		 */
-		private final int lineOffset;
-
-		/**
-		 * The number of characters acquired by a tab (\t) {@code >= 1}.
-		 */
-		private final int tabSize;
-
-		/**
-		 * Creates a new size with given file, line, column, and tab size. To
-		 * create new instances, call {@link VCSFile#positionOf(int, int)} or
-		 * {@link VCSFile#positionOf(int, int, int)}.
-		 *
-		 * @param pFile
-		 * 		The referenced file of the position to create.
-		 * @param pLine
-		 * 		The line of the position to create.
-		 * @param pColumn
-		 * 		The column of the position to create.
-		 * @param pOffset
-		 * 		The offset of the position to create.
-		 * @param pTabSize
-		 * 		The tab size of the position to create.
-		 * @throws NullPointerException
-		 * 		If {@code pFile} is {@code null}.
-		 * @throws IllegalArgumentException
-		 * 		If {@code pLine < 1}, {@code pColumn < 1}, {@code pOffset < 0},
-		 * 		or {@code pTabSize < 1}.
-		 */
-		private Position(final VCSFile pFile, final int pLine,
-				final int pColumn, final int pOffset, final int pLineOffset,
-				final int pTabSize) throws NullPointerException,
-				IllegalArgumentException {
-			file = Validate.notNull(pFile);
-			line = Validate.isPositive(pLine, "line < 1");
-			column = Validate.isPositive(pColumn, "column < 1");
-			offset = Validate.notNegative(pOffset, "offset < 0");
-			lineOffset = Validate.notNegative(pLineOffset, "line offset < 0");
-			tabSize = Validate.isPositive(pTabSize, "tab size < 1");
-		}
-
-		/**
 		 * Returns the referenced file.
 		 *
 		 * @return
 		 * 		The referenced file.
 		 */
-		public VCSFile getFile() {
-			return file;
-		}
+		VCSFile getFile();
 
 		/**
 		 * Returns the line of this position {@code >= 1}.
@@ -134,9 +67,7 @@ public interface VCSFile extends VCSModelElement {
 		 * @return
 		 * 		The line of this position {@code >= 1}.
 		 */
-		public int getLine() {
-			return line;
-		}
+		int getLine();
 
 		/**
 		 * Returns the column of this position {@code >= 1}.
@@ -144,9 +75,7 @@ public interface VCSFile extends VCSModelElement {
 		 * @return
 		 * 		The column of this position {@code >= 1}.
 		 */
-		public int getColumn() {
-			return column;
-		}
+		int getColumn();
 
 		/**
 		 * Returns the offset of this position {@code >= 0}.
@@ -154,9 +83,7 @@ public interface VCSFile extends VCSModelElement {
 		 * @return
 		 * 		The offset of this position {@code >= 0}.
 		 */
-		public int getOffset() {
-			return offset;
-		}
+		int getOffset();
 
 		/**
 		 * Returns the line offset of this position {@code >= 0}.
@@ -164,9 +91,7 @@ public interface VCSFile extends VCSModelElement {
 		 * @return
 		 * 		The line offset of this position {@code >= 0}.
 		 */
-		public int getLineOffset() {
-			return lineOffset;
-		}
+		int getLineOffset();
 
 		/**
 		 * Returns the tab size of this position {@code >= 1}.
@@ -174,9 +99,7 @@ public interface VCSFile extends VCSModelElement {
 		 * @return
 		 * 		The tab size of this position {@code >= 1}.
 		 */
-		public int getTabSize() {
-			return tabSize;
-		}
+		int getTabSize();
 
 		/**
 		 * Applies the diff of {@code fileChange} (see
@@ -201,7 +124,7 @@ public interface VCSFile extends VCSModelElement {
 		 * 		If computing the line diff (see
 		 * 		{@link FileChange#computeDiff()}) fails.
 		 */
-		public Optional<Position> apply(final FileChange fileChange)
+		default Optional<Position> apply(final FileChange fileChange)
 				throws NullPointerException, IllegalArgumentException,
 				IOException {
 			Validate.notNull(fileChange);
@@ -324,7 +247,7 @@ public interface VCSFile extends VCSModelElement {
 		 * @throws IOException
 		 * 		If an error occurred while reading the file content.
 		 */
-		public Optional<Position> nextLine() throws IOException {
+		default Optional<Position> nextLine() throws IOException {
 			final List<String> lines = getFile().readLines();
 			Validate.validateState(lines.size() >= getLine());
 			if (lines.size() == getLine()) {
@@ -343,7 +266,7 @@ public interface VCSFile extends VCSModelElement {
 		 * @throws IOException
 		 * 		If an error occurred while reading the file content.
 		 */
-		public Optional<Position> previousLine() throws IOException {
+		default Optional<Position> previousLine() throws IOException {
 			final List<String> lines = getFile().readLines();
 			Validate.validateState(lines.size() >= getLine());
 			if (getLine() == 1) {
@@ -361,7 +284,7 @@ public interface VCSFile extends VCSModelElement {
 		 * @throws IOException
 		 * 		If an error occurred while reading the file content.
 		 */
-		public Position beginOfLine() throws IOException {
+		default Position beginOfLine() throws IOException {
 			return getFile().positionOf(getLine(), 1, getTabSize())
 					.orElseThrow(IllegalStateException::new);
 		}
@@ -374,7 +297,7 @@ public interface VCSFile extends VCSModelElement {
 		 * @throws IOException
 		 * 		If an error occurred while reading the file content.
 		 */
-		public Position endOfLine() throws IOException {
+		default Position endOfLine() throws IOException {
 			final List<String> lines = getFile().readLines();
 			Validate.validateState(lines.size() >= getLine());
 			final String currentLine = lines.get(getLine()-1);
@@ -392,7 +315,7 @@ public interface VCSFile extends VCSModelElement {
 
 		/**
 		 * Returns a position with same line, column, offset, line offset, and
-		 * tab size, but located in {@code file}. Returns an empty optional, if
+		 * tab size, but located in {@code file}. Returns an empty optional if
 		 * this position does not exist in {@code file}.
 		 *
 		 * @param file
@@ -405,7 +328,7 @@ public interface VCSFile extends VCSModelElement {
 		 * @throws IOException
 		 * 		If an error occurred while reading the file content.
 		 */
-		public Optional<Position> mapTo(final VCSFile file)
+		default Optional<Position> mapTo(final VCSFile file)
 				throws IOException {
 			Validate.notNull(file);
 			return file.positionOf(getLine(), getColumn(), getTabSize());
@@ -419,79 +342,60 @@ public interface VCSFile extends VCSModelElement {
 		 * @throws IOException
 		 * 		If an error occurred while reading the file content.
 		 */
-		public char readChar() throws IOException {
-			return file.readContent().charAt(offset);
+		default char readChar() throws IOException {
+			return getFile().readContent().charAt(getOffset());
 		}
 
-		@Override
-		public String toString() {
-			return String.format("Position(file=%s, line=%d, column=%d, " +
-					"offset=%d, lineOffset=%d, tabSize=%d)",
-					getFile().toString(), getLine(), getColumn(), getOffset(),
-					getLineOffset(), getTabSize());
+		/**
+		 * Creates a range from this and the given position. Automatically
+		 * computes which position is the begin and which position is the end.
+		 *
+		 * @param other
+		 * 		The position to create the range to.
+		 * @return
+		 * 		A range from this and the given position.
+		 * @throws NullPointerException
+		 * 		If {@code other} is {@code null}.
+		 * @throws IllegalArgumentException
+		 * 		If {@code this} and {@code other} reference different files.
+		 */
+		default Range rangeTo(final Position other) {
+			Validate.notNull(other);
+			final VCSModelFactory factory = getVCSEngine().getModelFactory();
+			return OFFSET_COMPARATOR.compare(this, other) <= 0
+					// Checks if the positions reference the same file.
+					? factory.createRange(this, other, getVCSEngine())
+					: factory.createRange(other, this, getVCSEngine());
 		}
 	}
 
 	/**
-	 * A range within a file. Can't be empty or negative.
+	 * A range within a file. Ranges cannot be empty or negative. Use
+	 * {@link Position#rangeTo(Position)} to create instances of this class.
 	 */
-	class Range {
+	public interface Range extends VCSModelElement {
 
 		/**
-		 * Compares two ranges using their {@link #begin} positions and
-		 * {@link Position#OFFSET_COMPARATOR}.
+		 * Compares two ranges using their begin position ({@link #getBegin()})
+		 * and {@link Position#OFFSET_COMPARATOR}.
 		 */
-		public static final Comparator<Range> BEGIN_COMPARATOR =
-				(r1, r2) -> Position.OFFSET_COMPARATOR.compare(
+		Comparator<Range> BEGIN_COMPARATOR = (r1, r2) ->
+				Position.OFFSET_COMPARATOR.compare(
 						r1.getBegin(), r2.getBegin());
 
 		/**
-		 * Tests if two ranges are equal according to their {@link #begin} and
-		 * {@link #end} positions (by matching the {@link #begin} and
-		 * {@link #end} positions with {@link Position#RELATIVE_PATH_PREDICATE}.
+		 * Tests if two ranges are equal according to their begin and end
+		 * positions (by matching the {@link #getBegin()} and {@link #getEnd()}
+		 * positions with {@link Position#RELATIVE_PATH_PREDICATE}).
 		 * {@code null} matches {@code null}, but not a {@code non-null} value.
 		 */
-		public static final BiPredicate<Range, Range>
-				RELATIVE_PATH_PREDICATE = (r1, r2) ->
+		BiPredicate<Range, Range> RELATIVE_PATH_PREDICATE = (r1, r2) ->
 				r1 == null && r2 == null || // null is equal to null
 						r1 != null && r2 != null &&
 						Position.RELATIVE_PATH_PREDICATE.test(
 								r1.getBegin(), r2.getBegin()) &&
 						Position.RELATIVE_PATH_PREDICATE.test(
 								r1.getEnd(), r2.getEnd());
-
-		/**
-		 * The begin position.
-		 */
-		private final Position begin;
-
-		/**
-		 * The end position (inclusive).
-		 */
-		private final Position end;
-
-		/**
-		 * Creates a new range with given begin and end position.
-		 *
-		 * @param pBegin
-		 * 		The begin position of the range to create.
-		 * @param pEnd
-		 * 		The end position of the range to create.
-		 * @throws NullPointerException
-		 * 		If any of the given arguments is {@code null}.
-		 * @throws IllegalArgumentException
-		 * 		If {@code pBegin} and {@code pEnd} reference different files,
-		 * 		or if {@code pBegin} is after {@code pEnd}.
-		 */
-		public Range(final Position pBegin, final Position pEnd)
-				throws NullPointerException, IllegalArgumentException {
-			begin = Validate.notNull(pBegin);
-			end = Validate.notNull(pEnd);
-			Validate.isEqualTo(begin.getFile(), end.getFile(),
-					"Begin and end position reference different files.");
-			Validate.isTrue(begin.getOffset() <= end.getOffset(),
-					"Begin must not be after end.");
-		}
 
 		/**
 		 * Calculates the sum of the lengths of the given ranges. Overlapping
@@ -506,7 +410,7 @@ public interface VCSFile extends VCSModelElement {
 		 * @throws IllegalArgumentException
 		 * 		If the ranges reference different files.
 		 */
-		public static int lengthOf(final Collection<Range> ranges) {
+		static int lengthOf(final Collection<Range> ranges) {
 			if (ranges == null || ranges.isEmpty()) {
 				return 0;
 			}
@@ -543,19 +447,15 @@ public interface VCSFile extends VCSModelElement {
 		 * @return
 		 * 		The begin position of this range.
 		 */
-		public Position getBegin() {
-			return begin;
-		}
+		Position getBegin();
 
 		/**
 		 * Returns the end position of this range.
 		 *
 		 * @return
-		 * 		The end position of this range.
+		 * 		The end position of this range (inclusive).
 		 */
-		public Position getEnd() {
-			return end;
-		}
+		Position getEnd();
 
 		/**
 		 * Returns the referenced file.
@@ -563,17 +463,15 @@ public interface VCSFile extends VCSModelElement {
 		 * @return
 		 * 		The referenced. file.
 		 */
-		public VCSFile getFile() {
-			return getBegin().getFile();
-		}
+		VCSFile getFile();
 
 		/**
 		 * Returns the length of this range.
 		 *
 		 * @return
-		 * 		The length of this range.
+		 * 		The length of this range ({@code >= 1}).
 		 */
-		public int length() {
+		default int length() {
 			return (getEnd().getOffset() + 1) - getBegin().getOffset();
 		}
 
@@ -585,7 +483,7 @@ public interface VCSFile extends VCSModelElement {
 		 * @throws IOException
 		 * 		If an error occurred while reading the file content.
 		 */
-		public String readContent() throws IOException {
+		default String readContent() throws IOException {
 			return getFile().readContent().substring(
 					getBegin().getOffset(), getEnd().getOffset() + 1);
 		}
@@ -606,7 +504,7 @@ public interface VCSFile extends VCSModelElement {
 		 * @throws IllegalArgumentException
 		 * 		If {@code range} references a different file.
 		 */
-		public Optional<Range> merge(final Range range)
+		default Optional<Range> merge(final Range range)
 				throws NullPointerException, IllegalArgumentException {
 			Validate.notNull(range);
 			Validate.isEqualTo(getFile(), range.getFile());
@@ -620,10 +518,11 @@ public interface VCSFile extends VCSModelElement {
 					lower.getBegin().getOffset()) {
 				return Optional.empty();
 			}
+			final VCSModelFactory factory = getVCSEngine().getModelFactory();
 			// Upper subsumes lower.
 			if (upper.getEnd().getOffset() >= lower.getEnd().getOffset()) {
-				return Optional.of(new Range(
-						upper.getBegin(), upper.getEnd()));
+				return Optional.of(factory.createRange(upper.getBegin(),
+						upper.getEnd(), getVCSEngine()));
 			}
 			// Merge upper and lower
 			Validate.validateState( // just to be sure
@@ -632,7 +531,8 @@ public interface VCSFile extends VCSModelElement {
 			Validate.validateState( // just to be sure
 					upper.getBegin().getOffset()
 							<= lower.getBegin().getOffset());
-			return Optional.of(new Range(upper.getBegin(), lower.getEnd()));
+			return Optional.of(factory.createRange(upper.getBegin(),
+					lower.getEnd(), getVCSEngine()));
 		}
 
 		/**
@@ -656,13 +556,14 @@ public interface VCSFile extends VCSModelElement {
 		 * 		If computing the line diff (see
 		 * 		{@link FileChange#computeDiff()}) fails.
 		 */
-		public Optional<Range> apply(final FileChange fileChange)
+		default Optional<Range> apply(final FileChange fileChange)
 				throws NullPointerException, IOException {
 			Validate.notNull(fileChange);
 			final Optional<Position> newBegin = getBegin().apply(fileChange);
 			final Optional<Position> newEnd = getEnd().apply(fileChange);
 			return newBegin.isPresent() && newEnd.isPresent()
-					? Optional.of(new Range(newBegin.get(), newEnd.get()))
+					? Optional.of(getVCSEngine().getModelFactory().createRange(
+							newBegin.get(), newEnd.get(), getVCSEngine()))
 					: Optional.empty();
 		}
 
@@ -680,26 +581,21 @@ public interface VCSFile extends VCSModelElement {
 		 * @throws IOException
 		 * 		If an error occurred while reading the file content.
 		 */
-		public Optional<Range> mapTo(final VCSFile file) throws IOException {
+		default Optional<Range> mapTo(final VCSFile file) throws IOException {
 			Validate.notNull(file);
 			final Optional<Position> newBegin = getBegin().mapTo(file);
 			final Optional<Position> newEnd = getEnd().mapTo(file);
 			return newBegin.isPresent() && newEnd.isPresent()
-					? Optional.of(new Range(newBegin.get(), newEnd.get()))
+					? Optional.of(getVCSEngine().getModelFactory().createRange(
+							newBegin.get(), newEnd.get(), getVCSEngine()))
 					: Optional.empty();
-		}
-
-		@Override
-		public String toString() {
-			return String.format("Range(begin=%s, end=%s)",
-					getBegin().toString(), getEnd().toString());
 		}
 	}
 
 	/**
 	 * Returns the relative path of this file as it was like when its
 	 * corresponding revision was checked out by {@link VCSEngine#next()}.
-	 *
+	 * <p>
 	 * The path is relative to {@link VCSEngine#getOutput()}.
 	 *
 	 * @return
@@ -1064,8 +960,9 @@ public interface VCSFile extends VCSModelElement {
 							? ( (column-1)/tabSize + 1 ) * tabSize + 1
 							: column + 1;
 				}
-				return Optional.of(new Position(this, line, column, offset,
-						offsetInLine, tabSize));
+				return Optional.of(getVCSEngine().getModelFactory()
+						.createPosition(this, line, column, offset,
+								offsetInLine, tabSize, getVCSEngine()));
 			}
 		}
 		return Optional.empty();
@@ -1120,8 +1017,9 @@ public interface VCSFile extends VCSModelElement {
 								.map(String::length)
 								.mapToInt(Integer::intValue)
 								.sum();
-				return Optional.of(new Position(this, line, column, offset,
-						offsetInLine, tabSize));
+				return Optional.of(getVCSEngine().getModelFactory()
+						.createPosition(this, line, column, offset,
+								offsetInLine, tabSize, getVCSEngine()));
 			}
 			col = c == '\t'
 					? ( (col-1)/tabSize + 1 ) * tabSize + 1

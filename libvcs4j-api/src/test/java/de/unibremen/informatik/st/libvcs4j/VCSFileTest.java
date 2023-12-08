@@ -17,9 +17,13 @@ public class VCSFileTest {
 
 	private static class VCSFileMock implements VCSFile {
 		private final String content;
+		private final VCSEngine engine;
 
 		public VCSFileMock(final String content) {
 			this.content = Validate.notNull(content);
+			this.engine = mock(VCSEngine.class);
+			final VCSModelFactory factory = new VCSModelFactory() {};
+			when(this.engine.getModelFactory()).thenReturn(factory);
 		}
 
 		@Override
@@ -44,7 +48,7 @@ public class VCSFileTest {
 
 		@Override
 		public VCSEngine getVCSEngine() {
-			throw new UnsupportedOperationException();
+			return engine;
 		}
 
 		@Override

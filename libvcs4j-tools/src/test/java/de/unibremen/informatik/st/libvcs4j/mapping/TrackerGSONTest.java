@@ -205,11 +205,10 @@ public class TrackerGSONTest {
 
 		MappableMock(VCSFile file, int beginLine, int beginColumn,
 				int endLine, int endColumn) throws IOException {
-			range = new VCSFile.Range(
-					file.positionOf(beginLine, beginColumn, 4)
-							.orElseThrow(IllegalArgumentException::new),
+			range = file.positionOf(beginLine, beginColumn, 4)
+						.orElseThrow(IllegalArgumentException::new).rangeTo(
 					file.positionOf(endLine, endColumn, 4)
-							.orElseThrow(IllegalArgumentException::new));
+						.orElseThrow(IllegalArgumentException::new));
 		}
 
 		@Override

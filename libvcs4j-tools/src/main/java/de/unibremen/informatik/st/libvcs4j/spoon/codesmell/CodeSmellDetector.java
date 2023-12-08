@@ -254,8 +254,7 @@ public abstract class CodeSmellDetector extends ElementExtractor {
 		final Optional<VCSFile.Range> end = createRange(to);
 		return begin.isEmpty() || end.isEmpty()
 				? Optional.empty()
-				: Optional.of(new VCSFile.Range(
-						begin.get().getBegin(),
+				: Optional.of(begin.get().getBegin().rangeTo(
 						end.get().getEnd()));
 	}
 

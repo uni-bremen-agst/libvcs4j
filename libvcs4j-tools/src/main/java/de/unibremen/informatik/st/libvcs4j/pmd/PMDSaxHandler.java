@@ -164,7 +164,7 @@ class PMDSaxHandler extends DefaultHandler {
 				}
 
 				final PMDViolation v = new PMDViolation(
-						new VCSFile.Range(begin.get(), end.get()),
+						begin.get().rangeTo(end.get()),
 						rule, ruleSet);
 				violations.add(v);
 			} catch (final IOException e) {

@@ -1,5 +1,6 @@
 package de.unibremen.informatik.st.libvcs4j;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -14,12 +15,22 @@ import static org.mockito.Mockito.*;
 
 public class PositionTest {
 
+	private VCSEngine engine;
+
+	@Before
+	public void init() {
+		final VCSModelFactory factory = new VCSModelFactory() {};
+		engine = mock(VCSEngine.class);
+		when(engine.getModelFactory()).thenReturn(factory);
+	}
+
 	@Test
 	public void applyFileChange() throws IOException {
 		Revision oldRevision = mock(Revision.class);
 		when(oldRevision.getId()).thenReturn("1");
 
 		VCSFile oldFile = mock(VCSFile.class);
+		when(oldFile.getVCSEngine()).thenReturn(engine);
 		when(oldFile.getRevision()).thenReturn(oldRevision);
 		when(oldFile.getRelativePath()).thenReturn("A.java");
 		when(oldFile.readLines()).thenReturn(Arrays.asList(
@@ -36,6 +47,7 @@ public class PositionTest {
 		when(newRevision.getId()).thenReturn("2");
 
 		VCSFile newFile = mock(VCSFile.class);
+		when(newFile.getVCSEngine()).thenReturn(engine);
 		when(newFile.getRevision()).thenReturn(newRevision);
 		when(newFile.getRelativePath()).thenReturn("A.java");
 		when(newFile.readLines()).thenReturn(Arrays.asList(
@@ -81,6 +93,7 @@ public class PositionTest {
 		List<String> linesEOL = Arrays.asList("foo\n", "bar");
 
 		VCSFile file = mock(VCSFile.class);
+		when(file.getVCSEngine()).thenReturn(engine);
 		when(file.readLines()).thenReturn(lines);
 		when(file.readLinesWithEOL()).thenReturn(linesEOL);
 		when(file.positionOf(1, 2, 3)).thenCallRealMethod();
@@ -103,6 +116,7 @@ public class PositionTest {
 		List<String> linesEOL = Arrays.asList("foo\n", "bar");
 
 		VCSFile file = mock(VCSFile.class);
+		when(file.getVCSEngine()).thenReturn(engine);
 		when(file.readLines()).thenReturn(lines);
 		when(file.readLinesWithEOL()).thenReturn(linesEOL);
 		when(file.positionOf(2, 2, 3)).thenCallRealMethod();
@@ -125,6 +139,7 @@ public class PositionTest {
 				"lorem ipsum dolor sit");
 
 		VCSFile file = mock(VCSFile.class);
+		when(file.getVCSEngine()).thenReturn(engine);
 		when(file.readLines()).thenReturn(lines);
 		when(file.readLinesWithEOL()).thenReturn(lines);
 		when(file.positionOf(1, 7, 8)).thenCallRealMethod();
@@ -146,6 +161,7 @@ public class PositionTest {
 				"lorem ipsum dolor sit");
 
 		VCSFile file = mock(VCSFile.class);
+		when(file.getVCSEngine()).thenReturn(engine);
 		when(file.readLines()).thenReturn(lines);
 		when(file.readLinesWithEOL()).thenReturn(lines);
 		when(file.positionOf(1, 9, 7)).thenCallRealMethod();
@@ -169,6 +185,7 @@ public class PositionTest {
 				"\t\t\t} else {");
 
 		VCSFile file = mock(VCSFile.class);
+		when(file.getVCSEngine()).thenReturn(engine);
 		when(file.readLines()).thenReturn(lines);
 		when(file.readLinesWithEOL()).thenReturn(lines);
 		when(file.positionOf(1, 1, 4)).thenCallRealMethod();
@@ -190,6 +207,7 @@ public class PositionTest {
 		List<String> linesEOL = Arrays.asList("some text\n", "\n");
 
 		VCSFile file = mock(VCSFile.class);
+		when(file.getVCSEngine()).thenReturn(engine);
 		when(file.readLines()).thenReturn(lines);
 		when(file.readLinesWithEOL()).thenReturn(linesEOL);
 		when(file.positionOf(1, 2, 4)).thenCallRealMethod();
@@ -206,6 +224,7 @@ public class PositionTest {
 		List<String> linesEOL = Arrays.asList("\n", "some text");
 
 		VCSFile file = mock(VCSFile.class);
+		when(file.getVCSEngine()).thenReturn(engine);
 		when(file.readLines()).thenReturn(lines);
 		when(file.readLinesWithEOL()).thenReturn(linesEOL);
 		when(file.positionOf(2, 2, 4)).thenCallRealMethod();
@@ -219,6 +238,7 @@ public class PositionTest {
 	@Test
 	public void mapToExistingPosition() throws IOException {
 		VCSFile file = mock(VCSFile.class);
+		when(file.getVCSEngine()).thenReturn(engine);
 		when(file.getRelativePath()).thenReturn("File.java");
 		when(file.readLinesWithEOL()).thenReturn(
 				Arrays.asList("some\n", "content"));
@@ -306,6 +326,7 @@ public class PositionTest {
 		List<String> linesEOL = Arrays.asList("foo\n", "\tbar");
 
 		VCSFile file = mock(VCSFile.class);
+		when(file.getVCSEngine()).thenReturn(engine);
 		when(file.readLinesWithEOL()).thenReturn(linesEOL);
 		when(file.positionOf(6, 4)).thenCallRealMethod();
 
@@ -322,6 +343,7 @@ public class PositionTest {
 	public void readChar() throws IOException {
 		String content = "31415";
 		VCSFile file = mock(VCSFile.class);
+		when(file.getVCSEngine()).thenReturn(engine);
 		when(file.readAllBytes()).thenReturn(content.getBytes());
 		when(file.readContent()).thenCallRealMethod();
 		when(file.readLinesWithEOL()).thenCallRealMethod();

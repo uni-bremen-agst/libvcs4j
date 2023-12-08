@@ -153,6 +153,6 @@ public abstract class ElementExtractor extends Scanner {
 				.orElseThrow(() -> new IOException(String.format(
 						"End position (%d) of element '%s' does not exist",
 						sourceEnd, element)));
-		return Optional.of(new VCSFile.Range(begin, end));
+		return Optional.of(begin.rangeTo(end));
 	}
 }

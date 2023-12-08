@@ -82,7 +82,7 @@ public class RangeTest {
 				.orElseThrow(AssertionError::new)
 				.positionOf(400, 32, 2)
 				.orElseThrow(AssertionError::new);
-		VCSFile.Range range = new VCSFile.Range(begin, end);
+		VCSFile.Range range = begin.rangeTo(end);
 		VCSFile.Range updated = range.apply(change)
 				.orElseThrow(AssertionError::new);
 
@@ -108,7 +108,7 @@ public class RangeTest {
 				.orElseThrow(AssertionError::new)
 				.positionOf(463, 32, 2)
 				.orElseThrow(AssertionError::new);
-		VCSFile.Range range = new VCSFile.Range(begin, end);
+		VCSFile.Range range = begin.rangeTo(end);
 		VCSFile.Range updated = range.apply(change)
 				.orElseThrow(AssertionError::new);
 
@@ -134,7 +134,7 @@ public class RangeTest {
 				.orElseThrow(AssertionError::new)
 				.positionOf(401, 5, 2)
 				.orElseThrow(AssertionError::new);
-		VCSFile.Range range = new VCSFile.Range(begin, end);
+		VCSFile.Range range = begin.rangeTo(end);
 		VCSFile.Range updated = range.apply(change)
 				.orElseThrow(AssertionError::new);
 
@@ -160,7 +160,7 @@ public class RangeTest {
 				.orElseThrow(AssertionError::new)
 				.positionOf(1252, 5, 2)
 				.orElseThrow(AssertionError::new);
-		VCSFile.Range range = new VCSFile.Range(begin, end);
+		VCSFile.Range range = begin.rangeTo(end);
 		assertThat(range.apply(change)).isEmpty();
 	}
 }
