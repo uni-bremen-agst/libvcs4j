@@ -1,1 +1,7 @@
+# lf for all files...
 * text eol=lf
+
+# ... except for:
+*.bundle binary
+*.jar binary
+*.tar.gz binary
