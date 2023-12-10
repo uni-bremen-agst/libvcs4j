@@ -1,16 +1,13 @@
 plugins {
 	id 'java'
-	id 'maven'
+	id 'java-library'
+	id 'maven-publish'
 	id 'jacoco'
-	id 'io.franzbecker.gradle-lombok' version '1.14'
+	id 'io.freefair.lombok' version '8.4'
 }
 
 group = 'de.uni-bremen.informatik.st'
 version = '2.0.0'
-
-lombok {
-	version = "1.18.12"
-}
 
 repositories {
 	mavenCentral()
@@ -21,31 +18,30 @@ configurations {
 }
 
 dependencies {
-	//compile 'de.uni-bremen.informatik.st:libvcs4j-api:1.7.0'
-	compile project(':libvcs4j-api')
+	api(project(':libvcs4j-api'))
 
-	// add local jars from 'libs' directory
-	extraLibs fileTree(dir: 'libs', include: '*.jar')
-	// required by JavaHG
-	compile 'com.google.guava:guava:24.1-jre'
-	// override 1.9, see https://github.com/uni-bremen-agst/libvcs4j/issues/2
-	compile ("commons-codec:commons-codec:1.11") { force = true }
+	// Add local jars from the 'libs' directory.
+	extraLibs(fileTree(dir: 'libs', include: '*.jar'))
+	// Required by JavaHG.
+	api('com.google.guava:guava:24.1-jre')
+	// Override 1.9, see https://github.com/uni-bremen-agst/libvcs4j/issues/2
+	api("commons-codec:commons-codec:1.11")
 
-	compile 'com.ibm.icu:icu4j:59.1'
-	compile 'org.eclipse.jgit:org.eclipse.jgit:4.10.0.201712302008-r'
-	compile 'org.gitlab:java-gitlab-api:4.0.0'
-	compile 'org.kohsuke:github-api:1.92'
-	compile 'org.slf4j:slf4j-api:1.7.22'
-	compile 'org.tmatesoft.svnkit:svnkit:1.9.1'
-	testCompile project(':testutils')
+	api('com.ibm.icu:icu4j:59.1')
+	api('org.eclipse.jgit:org.eclipse.jgit:4.10.0.201712302008-r')
+	api('org.gitlab:java-gitlab-api:4.0.0')
+	api('org.kohsuke:github-api:1.92')
+	api('org.slf4j:slf4j-api:1.7.22')
+	api('org.tmatesoft.svnkit:svnkit:1.9.1')
+	testImplementation(project(':testutils'))
 
-	configurations.compile.extendsFrom(configurations.extraLibs)
+	configurations.implementation.extendsFrom(configurations.extraLibs)
 }
 
 jacocoTestReport {
 	reports {
-		xml.enabled = true
-		html.enabled = true
+		xml.required = true
+		html.required = true
 	}
 	afterEvaluate {
 		getClassDirectories().from(
@@ -55,33 +51,19 @@ jacocoTestReport {
 	}
 }
 
-import io.franzbecker.gradle.lombok.task.DelombokTask
-task delombok(type: DelombokTask) {
-	dependsOn compileJava
-	ext.outputDir = file("$buildDir/delombok")
-	outputs.dir(outputDir)
-	sourceSets.main.java.srcDirs.each {
-		inputs.dir(it)
-		args(it, "-d", outputDir)
-	}
-}
-
-task sourcesJar(type: Jar) {
+tasks.register('sourcesJar', Jar) {
 	dependsOn classes
-	dependsOn delombok
-	classifier = 'sources'
-	from delombok.outputDir
+	archiveClassifier = 'sources'
+	from delombok
 }
 
 javadoc {
-	dependsOn delombok
-	source = delombok.outputDir
 	exclude 'bmsi/util'
 }
 
-task javadocJar(type: Jar) {
+tasks.register('javadocJar', Jar) {
 	dependsOn javadoc
-	classifier = 'javadoc'
+	archiveClassifier = 'javadoc'
 	from javadoc.destinationDir
 }
 
@@ -98,33 +80,39 @@ artifacts {
 	archives javadocJar
 }
 
-build {
-	doLast {
-		pom {
-			project {
-				name 'libvcs4j'
-				description 'A Java Library for Repository Mining'
-				url 'https://github.com/uni-bremen-agst/libvcs4j'
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			from components.java
+			pom {
+				name = 'libvcs4j'
+				description = 'A Java Library for Repository Mining'
+				url = 'https://github.com/uni-bremen-agst/libvcs4j'
 				licenses {
 					license {
-						name 'GPL-3.0'
-						url 'https://opensource.org/licenses/GPL-3.0'
+						name = 'GPL-3.0'
+						url = 'https://opensource.org/licenses/GPL-3.0'
 					}
 				}
 				developers {
 					developer {
-						name 'Marcel Steinbeck'
-						email 'marcel@informatik.uni-bremen.de'
-						organization 'AG Softwaretechnik (University of Bremen)'
-						organizationUrl 'https://www.informatik.uni-bremen.de/st'
+						name = 'Marcel Steinbeck'
+						email = 'marcel@informatik.uni-bremen.de'
+						organization = 'AG Softwaretechnik (University of Bremen)'
+						organizationUrl = 'https://www.informatik.uni-bremen.de/st'
 					}
 				}
 				scm {
-					connection 'scm:git:git://github.com/uni-bremen-agst/libvcs4j.git'
-					developerConnection 'scm:git:ssh://github.com:uni-bremen-agst/libvcs4j.git'
-					url 'https://github.com/uni-bremen-agst/libvcs4j'
+					connection = 'scm:git:git://github.com/uni-bremen-agst/libvcs4j.git'
+					developerConnection = 'scm:git:ssh://github.com:uni-bremen-agst/libvcs4j.git'
+					url = 'https://github.com/uni-bremen-agst/libvcs4j'
 				}
 			}
-		}.writeTo("${buildDir}/libs/pom.xml")
+			repositories {
+				maven {
+					url = layout.buildDirectory.dir("repository")
+				}
+			}
+		}
 	}
 }

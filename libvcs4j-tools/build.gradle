@@ -1,16 +1,13 @@
 plugins {
 	id 'java'
-	id 'maven'
+	id 'java-library'
+	id 'maven-publish'
 	id 'jacoco'
-	id 'io.franzbecker.gradle-lombok' version '1.14'
+	id 'io.freefair.lombok' version '8.4'
 }
 
 group = 'de.uni-bremen.informatik.st'
 version = '2.0.0'
-
-lombok {
-	version = "1.18.12"
-}
 
 repositories {
 	mavenCentral()
@@ -21,23 +18,21 @@ configurations {
 }
 
 dependencies {
-	//compile 'de.uni-bremen.informatik.st:libvcs4j-api:1.7.0'
-	compile project(':libvcs4j-api')
-	compile 'fr.inria.gforge.spoon:spoon-core:8.0.0'
-	compile 'net.sourceforge.pmd:pmd-core:6.21.0'
-	compile 'net.sourceforge.pmd:pmd-java:6.21.0'
-	compile 'org.slf4j:slf4j-api:1.7.22'
-	extraLibs project(':conqat')
-	testCompile project(':testutils')
-	//testCompile 'de.uni-bremen.informatik.st:libvcs4j:1.7.0'
-	testCompile project(':libvcs4j')
-	configurations.compile.extendsFrom(configurations.extraLibs)
+	api(project(':libvcs4j-api'))
+	api('fr.inria.gforge.spoon:spoon-core:8.0.0')
+	api('net.sourceforge.pmd:pmd-core:6.21.0')
+	api('net.sourceforge.pmd:pmd-java:6.21.0')
+	api('org.slf4j:slf4j-api:1.7.22')
+	extraLibs(project(':conqat'))
+	testImplementation(project(':testutils'))
+	testImplementation(project(':libvcs4j'))
+	configurations.implementation.extendsFrom(configurations.extraLibs)
 }
 
 jacocoTestReport {
 	reports {
-		xml.enabled = true
-		html.enabled = true
+		xml.required = true
+		html.required = true
 	}
 	afterEvaluate {
 		getClassDirectories().from(
@@ -47,15 +42,16 @@ jacocoTestReport {
 	}
 }
 
-import io.franzbecker.gradle.lombok.task.DelombokTask
-task delombok(type: DelombokTask) {
-	dependsOn compileJava
-	ext.outputDir = file("$buildDir/delombok")
-	outputs.dir(outputDir)
-	sourceSets.main.java.srcDirs.each {
-		inputs.dir(it)
-		args(it, "-d", outputDir)
-	}
+tasks.register('sourcesJar', Jar) {
+	dependsOn classes
+	archiveClassifier = 'sources'
+	from delombok
+}
+
+tasks.register('javadocJar', Jar) {
+	dependsOn javadoc
+	archiveClassifier = 'javadoc'
+	from javadoc.destinationDir
 }
 
 jar {
@@ -66,60 +62,48 @@ jar {
 	}
 }
 
-task sourcesJar(type: Jar) {
-	dependsOn classes
-	dependsOn delombok
-	classifier = 'sources'
-	from delombok.outputDir
-}
-
-javadoc {
-	dependsOn delombok
-	source = delombok.outputDir
-}
-
-task javadocJar(type: Jar) {
-	dependsOn javadoc
-	classifier = 'javadoc'
-	from javadoc.destinationDir
-}
-
 artifacts {
 	archives sourcesJar
 	archives javadocJar
 }
 
-build {
-	doLast {
-		pom {
-			project {
-				name 'libvcs4j-tools'
-				description 'LibVCS4j tools'
-				url 'https://github.com/uni-bremen-agst/libvcs4j'
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			from components.java
+			pom {
+				name = 'libvcs4j-tools'
+				description = 'LibVCS4j tools'
+				url = 'https://github.com/uni-bremen-agst/libvcs4j'
 				licenses {
 					license {
-						name 'LGPL-3.0'
-						url 'https://opensource.org/licenses/LGPL-3.0'
+						name = 'LGPL-3.0'
+						url = 'https://opensource.org/licenses/LGPL-3.0'
 					}
 				}
 				developers {
 					developer {
-						name 'Marcel Steinbeck'
-						email 'marcel@informatik.uni-bremen.de'
-						organization 'AG Softwaretechnik (University of Bremen)'
-						organizationUrl 'https://www.informatik.uni-bremen.de/st'
+						name = 'Marcel Steinbeck'
+						email = 'marcel@informatik.uni-bremen.de'
+						organization = 'AG Softwaretechnik (University of Bremen)'
+						organizationUrl = 'https://www.informatik.uni-bremen.de/st'
 					}
 					developer {
-						name 'Dominique Schulz'
-						email 'do_sc@uni-bremen.de'
+						name = 'Dominique Schulz'
+						email = 'do_sc@uni-bremen.de'
 					}
 				}
 				scm {
-					connection 'scm:git:git://github.com/uni-bremen-agst/libvcs4j.git'
-					developerConnection 'scm:git:ssh://github.com:uni-bremen-agst/libvcs4j.git'
-					url 'https://github.com/uni-bremen-agst/libvcs4j'
+					connection = 'scm:git:git://github.com/uni-bremen-agst/libvcs4j.git'
+					developerConnection = 'scm:git:ssh://github.com:uni-bremen-agst/libvcs4j.git'
+					url = 'https://github.com/uni-bremen-agst/libvcs4j'
 				}
 			}
-		}.writeTo("${buildDir}/libs/pom.xml")
+			repositories {
+				maven {
+					url = layout.buildDirectory.dir("repository")
+				}
+			}
+		}
 	}
 }

@@ -5,3 +5,4 @@
 *.bundle binary
 *.jar binary
 *.tar.gz binary
+*.bat text eol=crlf

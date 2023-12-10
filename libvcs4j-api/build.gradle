@@ -1,6 +1,6 @@
 plugins {
 	id 'java'
-	id 'maven'
+	id 'maven-publish'
 	id 'jacoco'
 }
 
@@ -12,23 +12,25 @@ repositories {
 }
 
 dependencies {
-	testCompile project(':testutils')
+	testImplementation(project(':testutils'))
 }
 
 jacocoTestReport {
 	reports {
-		xml.enabled = true
-		html.enabled = true
+		xml.required = true
+		html.required = true
 	}
 }
 
-task sourcesJar(type: Jar, dependsOn: classes) {
-	classifier = 'sources'
+tasks.register('sourcesJar', Jar) {
+	dependsOn classes
+	archiveClassifier = 'sources'
 	from sourceSets.main.allSource
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-	classifier = 'javadoc'
+tasks.register('javadocJar', Jar) {
+	dependsOn javadoc
+	archiveClassifier = 'javadoc'
 	from javadoc.destinationDir
 }
 
@@ -37,33 +39,39 @@ artifacts {
 	archives javadocJar
 }
 
-build {
-	doLast {
-		pom {
-			project {
-				name 'libvcs4j-api'
-				description 'A Java Library for Repository Mining (API)'
-				url 'https://github.com/uni-bremen-agst/libvcs4j'
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			from components.java
+			pom {
+				name = 'libvcs4j-api'
+				description = 'A Java Library for Repository Mining (API)'
+				url = 'https://github.com/uni-bremen-agst/libvcs4j'
 				licenses {
 					license {
-						name 'MIT License'
-						url 'http://www.opensource.org/licenses/mit-license.php'
+						name = 'MIT License'
+						url = 'http://www.opensource.org/licenses/mit-license.php'
 					}
 				}
 				developers {
 					developer {
-						name 'Marcel Steinbeck'
-						email 'marcel@informatik.uni-bremen.de'
-						organization 'AG Softwaretechnik (University of Bremen)'
-						organizationUrl 'https://www.informatik.uni-bremen.de/st'
+						name = 'Marcel Steinbeck'
+						email = 'marcel@informatik.uni-bremen.de'
+						organization = 'AG Softwaretechnik (University of Bremen)'
+						organizationUrl = 'https://www.informatik.uni-bremen.de/st'
 					}
 				}
 				scm {
-					connection 'scm:git:git://github.com/uni-bremen-agst/libvcs4j.git'
-					developerConnection 'scm:git:ssh://github.com:uni-bremen-agst/libvcs4j.git'
-					url 'https://github.com/uni-bremen-agst/libvcs4j'
+					connection = 'scm:git:git://github.com/uni-bremen-agst/libvcs4j.git'
+					developerConnection = 'scm:git:ssh://github.com:uni-bremen-agst/libvcs4j.git'
+					url = 'https://github.com/uni-bremen-agst/libvcs4j'
 				}
 			}
-		}.writeTo("${buildDir}/libs/pom.xml")
+			repositories {
+				maven {
+					url = layout.buildDirectory.dir("repository")
+				}
+			}
+		}
 	}
 }
