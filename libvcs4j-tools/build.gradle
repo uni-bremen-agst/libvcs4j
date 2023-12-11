@@ -22,7 +22,7 @@ dependencies {
 	api('fr.inria.gforge.spoon:spoon-core:8.0.0')
 	api('net.sourceforge.pmd:pmd-core:6.21.0')
 	api('net.sourceforge.pmd:pmd-java:6.21.0')
-	api('org.slf4j:slf4j-api:1.7.22')
+	api('org.slf4j:slf4j-api:2.0.9')
 	extraLibs(project(':conqat'))
 	testImplementation(project(':testutils'))
 	testImplementation(project(':libvcs4j'))

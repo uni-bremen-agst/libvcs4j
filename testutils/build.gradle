@@ -9,11 +9,12 @@ repositories {
 }
 
 dependencies {
-	api('junit:junit:4.13.1')
-	api('org.assertj:assertj-core:3.8.0')
+	api('org.junit.jupiter:junit-jupiter-api:5.10.1')
+	api('org.junit.vintage:junit-vintage-engine:5.10.1')
+	api('org.assertj:assertj-core:3.24.2')
 	api('org.mockito:mockito-core:5.8.0')
-	implementation('commons-io:commons-io:2.7')
-	implementation('org.apache.commons:commons-compress:1.21')
-	implementation('org.slf4j:slf4j-api:1.7.22')
-	implementation('org.slf4j:slf4j-simple:1.7.25')
+	implementation('commons-io:commons-io:2.15.1')
+	implementation('org.apache.commons:commons-compress:1.25.0')
+	implementation('org.slf4j:slf4j-api:2.0.9')
+	implementation('org.slf4j:slf4j-simple:2.0.9')
 }
