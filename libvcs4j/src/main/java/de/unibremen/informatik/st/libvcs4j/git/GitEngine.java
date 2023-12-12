@@ -667,14 +667,17 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 
 	@Override
 	protected void initImpl() throws IOException {
-		try {
-			log.info("Cloning {} to {}", getRepository(), getTarget());
-			Git.cloneRepository()
-					.setURI(getRepository())
-					.setDirectory(getTarget().toFile())
-					.setBranchesToClone(Collections.singleton(branch))
-					.setBranch(branch)
-					.call();
+		log.info("Cloning {} to {}", getRepository(), getTarget());
+		// See: https://bugs.eclipse.org/bugs/show_bug.cgi?id=542611
+		final String refName = "refs/heads/" + branch;
+		//noinspection EmptyTryBlock
+		try (Git git = Git.cloneRepository()
+				.setURI(getRepository())
+				.setDirectory(getTarget().toFile())
+				.setCloneSubmodules(true)
+				.setBranchesToClone(Collections.singleton(refName))
+				.setBranch(refName)
+				.call()) {
 		} catch (final GitAPIException e) {
 			throw new IOException(e);
 		}
