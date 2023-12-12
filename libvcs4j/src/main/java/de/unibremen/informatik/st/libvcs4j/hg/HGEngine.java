@@ -478,7 +478,7 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 		// Keep in mind that 'hg log' returns changesets in the following
 		// order: [n, n-1, ..., 0] (or corresponding changeset id)
 
-		final List<String> revisions;
+		List<String> revisions;
 		try {
 			final LogCommand cmd = LogCommandFlags
 					.on(repository)
@@ -492,10 +492,25 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 					.map(Changeset::getNode)
 					.map(String::valueOf)
 					.collect(Collectors.toList());
+			if (revisions.size() > 1) {
+				// --follow-first returns an empty list if the result would
+				// contain a single changeset without this flag.
+				//noinspection deprecation
+				revisions = cmd.followFirst()
+						.execute(getRoot())
+						.stream()
+						.map(Changeset::getNode)
+						.map(String::valueOf)
+						.collect(Collectors.toList());
+			}
 		} catch (final RuntimeException e) {
+			// Message:
+			// cannot follow file not in parent revision: <getRoot()>
+			if (e.getMessage().contains(getRoot())) {
+				return new ArrayList<>();
+			}
 			throw new IOException(e);
 		}
-
 		Collections.reverse(revisions);
 		return revisions;
 	}
@@ -518,6 +533,12 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 					.on(repository);
 			if (branch != null) {
 				cmd.branch(branch);
+			}
+			if (!pFromRev.equals(pToRev)) {
+				// If equal, setting `--follow-first` returns an empty list
+				// instead of the expected single result.
+				//noinspection deprecation
+				cmd.followFirst();
 			}
 			List<Changeset> changesets = cmd
 					.execute(getRoot())
@@ -555,6 +576,11 @@ public class HGEngine extends AbstractIntervalVCSEngine {
 				}
 			}
 		} catch (final RuntimeException e) {
+			// Message:
+			// cannot follow file not in parent revision: <getRoot()>
+			if (e.getMessage().contains(getRoot())) {
+				return new ArrayList<>();
+			}
 			throw new IOException(e);
 		}
 		Collections.reverse(revisions);
