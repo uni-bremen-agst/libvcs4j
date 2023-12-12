@@ -26,10 +26,13 @@ import static java.lang.Integer.parseInt;
 class PMDSaxHandler extends DefaultHandler {
 
 	/**
-	 * The tab size (see {@link VCSFile.Position#tabSize}) which is used to
-	 * create a position.
+	 * The tab size (see {@link VCSFile.Position#getTabSize()}) which is used
+	 * for creating positions within the source-code files analyzed by PMD.
+	 * <p>
+	 * <a href="https://github.com/pmd/pmd/pull/2656">Since mid 2020</a>,
+	 * {@code 1} for all languages.
 	 */
-	private static final int TAB_SIZE = 8;
+	private static final int TAB_SIZE = 1;
 
 	/**
 	 * The logger of this class.

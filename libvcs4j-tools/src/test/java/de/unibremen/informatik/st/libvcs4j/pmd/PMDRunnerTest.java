@@ -29,16 +29,16 @@ public class PMDRunnerTest {
 
 		PMDViolation v1 = result.violationsOf(file).get(0);
 		assertThat(v1.getRange().getBegin().getLine()).isEqualTo(29);
-		assertThat(v1.getRange().getBegin().getColumn()).isEqualTo(40);
+		assertThat(v1.getRange().getBegin().getColumn()).isEqualTo(12);
 		assertThat(v1.getRange().getEnd().getLine()).isEqualTo(29);
-		assertThat(v1.getRange().getEnd().getColumn()).isEqualTo(41);
+		assertThat(v1.getRange().getEnd().getColumn()).isEqualTo(13);
 		assertThat(v1.getRange().readContent()).isEqualTo("{}");
 
 		PMDViolation v2 = result.violationsOf(file).get(1);
 		assertThat(v2.getRange().getBegin().getLine()).isEqualTo(33);
-		assertThat(v2.getRange().getBegin().getColumn()).isEqualTo(53);
+		assertThat(v2.getRange().getBegin().getColumn()).isEqualTo(18);
 		assertThat(v2.getRange().getEnd().getLine()).isEqualTo(33);
-		assertThat(v2.getRange().getEnd().getColumn()).isEqualTo(54);
+		assertThat(v2.getRange().getEnd().getColumn()).isEqualTo(19);
 		assertThat(v2.getRange().readContent()).isEqualTo("{}");
 	}
 
