@@ -224,7 +224,8 @@ public class JavadocDetector extends CodeSmellDetector {
      */
     @Override
     public <T> void visitCtMethod(CtMethod<T> method) {
-        if ((method.getDocComment() == null || method.getDocComment().isEmpty()) &&
+        //if ((method.getDocComment() == null || method.getDocComment().isEmpty()) &&
+        if (hasNoJavadoc(method) &&
                 javadocableList.contains(Javadocable.METHOD) && accessModifierList.contains(method.getVisibility())) {
             if (!isFieldAccess(method) || (isFieldAccess(method) && fieldAccessMustBeDocumented)) {
                 addCodeSmell(method, Collections.emptyList(), createSignature(method).orElse(null),
@@ -298,7 +299,8 @@ public class JavadocDetector extends CodeSmellDetector {
      */
     @Override
     public <A extends Annotation> void visitCtAnnotationType(CtAnnotationType<A> annotationType) {
-        if ((annotationType.getDocComment() == null || annotationType.getDocComment().isEmpty()) &&
+        //if ((annotationType.getDocComment() == null || annotationType.getDocComment().isEmpty()) &&
+        if (hasNoJavadoc(annotationType) &&
                 javadocableList.contains(Javadocable.ANNOTATIONTYPE) &&
                 accessModifierList.contains(annotationType.getVisibility())) {
             addCodeSmell(annotationType, Collections.emptyList(), createSignature(annotationType).orElse(null),
@@ -325,7 +327,8 @@ public class JavadocDetector extends CodeSmellDetector {
      */
     @Override
     public <T> void visitCtClass(CtClass<T> ctClass) {
-        if ((ctClass.getDocComment() == null || ctClass.getDocComment().isEmpty()) &&
+        //if ((ctClass.getDocComment() == null || ctClass.getDocComment().isEmpty()) &&
+        if (hasNoJavadoc(ctClass) &&
                 javadocableList.contains(Javadocable.CLASS) && accessModifierList.contains(ctClass.getVisibility())) {
             addCodeSmell(ctClass, Collections.emptyList(), createSignature(ctClass).orElse(null),
                     "Class " + ctClass.getSimpleName() + " has no javadoc."
@@ -369,7 +372,8 @@ public class JavadocDetector extends CodeSmellDetector {
      */
     @Override
     public <T> void visitCtConstructor(CtConstructor<T> constructor) {
-        if ((constructor.getDocComment() == null || constructor.getDocComment().isEmpty()) &&
+        //if ((constructor.getDocComment() == null || constructor.getDocComment().isEmpty()) &&
+        if (hasNoJavadoc(constructor) &&
                 javadocableList.contains(Javadocable.CONSTRUCTOR)
                 && accessModifierList.contains(constructor.getVisibility())) {
             addCodeSmell(constructor, Collections.emptyList(), createSignature(constructor).orElse(null),
@@ -391,7 +395,8 @@ public class JavadocDetector extends CodeSmellDetector {
      */
     @Override
     public <T extends Enum<?>> void visitCtEnum(CtEnum<T> ctEnum) {
-        if ((ctEnum.getDocComment() == null || ctEnum.getDocComment().isEmpty()) &&
+        //if ((ctEnum.getDocComment() == null || ctEnum.getDocComment().isEmpty()) &&
+        if (hasNoJavadoc(ctEnum) &&
                 javadocableList.contains(Javadocable.ENUM) && accessModifierList.contains(ctEnum.getVisibility())) {
             addCodeSmell(ctEnum, Collections.emptyList(), createSignature(ctEnum).orElse(null),
                     "Enum " + ctEnum.getSimpleName() + " has no javadoc."
@@ -417,7 +422,8 @@ public class JavadocDetector extends CodeSmellDetector {
      */
     @Override
     public <T> void visitCtField(CtField<T> field) {
-        if ((field.getDocComment() == null || field.getDocComment().isEmpty()) &&
+        //if ((field.getDocComment() == null || field.getDocComment().isEmpty()) &&
+        if (hasNoJavadoc(field) &&
                 javadocableList.contains(Javadocable.FIELD) && accessModifierList.contains(field.getVisibility())) {
             addCodeSmell(field, Collections.emptyList(), createSignature(field).orElse(null),
                     "Field " + field.getSimpleName() + " has no javadoc."
@@ -437,7 +443,8 @@ public class JavadocDetector extends CodeSmellDetector {
      */
     @Override
     public <T> void visitCtInterface(CtInterface<T> ctInterface) {
-        if ((ctInterface.getDocComment() == null || ctInterface.getDocComment().isEmpty()) &&
+        //if ((ctInterface.getDocComment() == null || ctInterface.getDocComment().isEmpty()) &&
+        if (hasNoJavadoc(ctInterface) &&
                 javadocableList.contains(Javadocable.INTERFACE)
                 && accessModifierList.contains(ctInterface.getVisibility())) {
             addCodeSmell(ctInterface, Collections.emptyList(), createSignature(ctInterface).orElse(null),
@@ -462,7 +469,8 @@ public class JavadocDetector extends CodeSmellDetector {
      */
     @Override
     public void visitCtPackage(CtPackage ctPackage) {
-        if ((ctPackage.getDocComment() == null || ctPackage.getDocComment().isEmpty()) &&
+        //if ((ctPackage.getDocComment() == null || ctPackage.getDocComment().isEmpty()) &&
+        if (hasNoJavadoc(ctPackage) &&
                 javadocableList.contains(Javadocable.PACKAGE)) {
             addCodeSmell(ctPackage, Collections.emptyList(), createSignature(ctPackage).orElse(null),
                     "Package " + ctPackage.getSimpleName() + " has no javadoc."
@@ -473,6 +481,20 @@ public class JavadocDetector extends CodeSmellDetector {
             checkDeclaringPackage(ctPackage, ctPackage);
         }
         super.visitCtPackage(ctPackage);
+    }
+
+    /**
+     * Returns whether the given element has no Javadoc comment.
+     * @param element the element to be checked.
+     * @return if {@code element} has no Javadoc comment.
+     */
+    private boolean hasNoJavadoc(final CtElement element) {
+        if (element == null) return true;
+        final List<CtComment> comments = element.getComments();
+        if (comments == null) return true;
+        return comments.stream()
+                .filter(Objects::nonNull)
+                .noneMatch(c -> c instanceof CtJavaDoc);
     }
 
     /**

@@ -91,10 +91,12 @@ public class JavadocDetectorTest {
 
         assertEquals(
                 11,
-                smellMap.keys().count(Optional.of("missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"))
+                //smellMap.keys().count(Optional.of("missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"))
+                smellMap.keys().count(Optional.of("missing_javadoc.MethodTest#visitCtMethod(CtMethod)"))
         );
         List<CodeSmell> codeSmellsVCM = (List<CodeSmell>) smellMap.get(Optional.of(
-                "missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"));
+                //"missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"));
+                "missing_javadoc.MethodTest#visitCtMethod(CtMethod)"));
         assertEquals("Tag @author is not allowed for this javadocable.", codeSmellsVCM.get(0).getSummary().get());
         assertEquals("Tag @version is not allowed for this javadocable.", codeSmellsVCM.get(1).getSummary().get());
         assertEquals("Tag @unknown is not allowed for this javadocable.", codeSmellsVCM.get(2).getSummary().get());
@@ -231,10 +233,12 @@ public class JavadocDetectorTest {
 
         assertEquals(
                 11,
-                smellMap.keys().count(Optional.of("missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"))
+                //smellMap.keys().count(Optional.of("missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"))
+                smellMap.keys().count(Optional.of("missing_javadoc.MethodTest#visitCtMethod(CtMethod)"))
         );
         List<CodeSmell> codeSmellsVCM = (List<CodeSmell>) smellMap.get(Optional.of(
-                "missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"));
+                //"missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"));
+                "missing_javadoc.MethodTest#visitCtMethod(CtMethod)"));
         assertEquals("Tag @author is not allowed for this javadocable.", codeSmellsVCM.get(0).getSummary().get());
         assertEquals("Tag @version is not allowed for this javadocable.", codeSmellsVCM.get(1).getSummary().get());
         assertEquals("Tag @unknown is not allowed for this javadocable.", codeSmellsVCM.get(2).getSummary().get());
@@ -384,10 +388,12 @@ public class JavadocDetectorTest {
 
         assertEquals(
                 10,
-                smellMap.keys().count(Optional.of("missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"))
+                //smellMap.keys().count(Optional.of("missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"))
+                smellMap.keys().count(Optional.of("missing_javadoc.MethodTest#visitCtMethod(CtMethod)"))
         );
         List<CodeSmell> codeSmellsVCM = (List<CodeSmell>) smellMap.get(Optional.of(
-                "missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"));
+                //"missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"));
+                "missing_javadoc.MethodTest#visitCtMethod(CtMethod)"));
         assertEquals("Tag @author is not allowed for this javadocable.", codeSmellsVCM.get(0).getSummary().get());
         assertEquals("Tag @version is not allowed for this javadocable.", codeSmellsVCM.get(1).getSummary().get());
         assertEquals("Tag @unknown is not allowed for this javadocable.", codeSmellsVCM.get(2).getSummary().get());
@@ -538,10 +544,12 @@ public class JavadocDetectorTest {
 
         assertEquals(
                 7,
-                smellMap.keys().count(Optional.of("missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"))
+                //smellMap.keys().count(Optional.of("missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"))
+                smellMap.keys().count(Optional.of("missing_javadoc.MethodTest#visitCtMethod(CtMethod)"))
         );
         List<CodeSmell> codeSmellsVCM = (List<CodeSmell>) smellMap.get(Optional.of(
-                "missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"));
+                //"missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"));
+                "missing_javadoc.MethodTest#visitCtMethod(CtMethod)"));
         assertEquals("Tag @author is not allowed for this javadocable.", codeSmellsVCM.get(0).getSummary().get());
         assertEquals("Tag @version is not allowed for this javadocable.", codeSmellsVCM.get(1).getSummary().get());
         assertEquals("Tag @unknown is not allowed for this javadocable.", codeSmellsVCM.get(2).getSummary().get());
@@ -677,10 +685,12 @@ public class JavadocDetectorTest {
 
         assertEquals(
                 9,
-                smellMap.keys().count(Optional.of("missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"))
+                //smellMap.keys().count(Optional.of("missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"))
+                smellMap.keys().count(Optional.of("missing_javadoc.MethodTest#visitCtMethod(CtMethod)"))
         );
         List<CodeSmell> codeSmellsVCM = (List<CodeSmell>) smellMap.get(Optional.of(
-                "missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"));
+                //"missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"));
+                "missing_javadoc.MethodTest#visitCtMethod(CtMethod)"));
         assertEquals("Tag @author is not allowed for this javadocable.", codeSmellsVCM.get(0).getSummary().get());
         assertEquals("Tag @version is not allowed for this javadocable.", codeSmellsVCM.get(1).getSummary().get());
         assertEquals("Tag @unknown is not allowed for this javadocable.", codeSmellsVCM.get(2).getSummary().get());
@@ -801,10 +811,12 @@ public class JavadocDetectorTest {
 
         assertEquals(
                 10,
-                smellMap.keys().count(Optional.of("missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"))
+                //smellMap.keys().count(Optional.of("missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"))
+                smellMap.keys().count(Optional.of("missing_javadoc.MethodTest#visitCtMethod(CtMethod)"))
         );
         List<CodeSmell> codeSmellsVCM = (List<CodeSmell>) smellMap.get(Optional.of(
-                "missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"));
+                //"missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"));
+                "missing_javadoc.MethodTest#visitCtMethod(CtMethod)"));
         assertEquals("Tag @author is not allowed for this javadocable.", codeSmellsVCM.get(0).getSummary().get());
         assertEquals("Tag @version is not allowed for this javadocable.", codeSmellsVCM.get(1).getSummary().get());
         assertEquals("Tag @unknown is not allowed for this javadocable.", codeSmellsVCM.get(2).getSummary().get());
@@ -1125,10 +1137,12 @@ public class JavadocDetectorTest {
 
         assertEquals(
                 11,
-                smellMap.keys().count(Optional.of("missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"))
+                //smellMap.keys().count(Optional.of("missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"))
+                smellMap.keys().count(Optional.of("missing_javadoc.MethodTest#visitCtMethod(CtMethod)"))
         );
         List<CodeSmell> codeSmellsVCM = (List<CodeSmell>) smellMap.get(Optional.of(
-                "missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"));
+                //"missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"));
+                "missing_javadoc.MethodTest#visitCtMethod(CtMethod)"));
         assertEquals("Tag @author is not allowed for this javadocable.", codeSmellsVCM.get(0).getSummary().get());
         assertEquals("Tag @version is not allowed for this javadocable.", codeSmellsVCM.get(1).getSummary().get());
         assertEquals("Tag @unknown is not allowed for this javadocable.", codeSmellsVCM.get(2).getSummary().get());
@@ -1296,10 +1310,12 @@ public class JavadocDetectorTest {
 
         assertEquals(
                 11,
-                smellMap.keys().count(Optional.of("missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"))
+                //smellMap.keys().count(Optional.of("missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"))
+                smellMap.keys().count(Optional.of("missing_javadoc.MethodTest#visitCtMethod(CtMethod)"))
         );
         List<CodeSmell> codeSmellsVCM = (List<CodeSmell>) smellMap.get(Optional.of(
-                "missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"));
+                //"missing_javadoc.MethodTest#visitCtMethod(missing_javadoc.CtMethod)"));
+                "missing_javadoc.MethodTest#visitCtMethod(CtMethod)"));
         assertEquals("Tag @author is not allowed for this javadocable.", codeSmellsVCM.get(0).getSummary().get());
         assertEquals("Tag @version is not allowed for this javadocable.", codeSmellsVCM.get(1).getSummary().get());
         assertEquals("Tag @unknown is not allowed for this javadocable.", codeSmellsVCM.get(2).getSummary().get());
