@@ -4,6 +4,8 @@ plugins {
 
 sonar {
 	properties {
+		property("sonar.sourceEncoding", "UTF-8")
+		property("sonar.coverage.exclusions", "**/org/conqat/**")
 		property("sonar.projectKey", "uni-bremen-agst_libvcs4j")
 		property("sonar.organization", "uni-bremen-agst")
 		property("sonar.host.url", "https://sonarcloud.io")
