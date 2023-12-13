@@ -1,3 +1,11 @@
 plugins {
-	id "org.sonarqube" version "2.7"
+	id "org.sonarqube" version "4.4.1.3373"
+}
+
+sonar {
+	properties {
+		property("sonar.projectKey", "uni-bremen-agst_libvcs4j")
+		property("sonar.organization", "uni-bremen-agst")
+		property("sonar.host.url", "https://sonarcloud.io")
+	}
 }

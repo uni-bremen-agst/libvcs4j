@@ -1,3 +1,4 @@
+System.setProperty("sonar.gradle.skipCompile", "true")
 include 'conqat',
         'libvcs4j-api',
         'libvcs4j-all',
