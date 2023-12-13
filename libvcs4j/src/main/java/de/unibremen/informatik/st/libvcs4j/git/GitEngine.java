@@ -29,7 +29,6 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.PersonIdent;
-import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -295,9 +294,8 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 
 	@Override
 	protected void checkoutImpl(final String revision) throws IOException {
-		try {
-			openRepository()
-					.checkout()
+		try (Git git = openRepository()) {
+			git.checkout()
 					.setName(revision)
 					.call();
 		} catch (final GitAPIException e) {
@@ -310,11 +308,11 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 			final String toRev) throws IOException {
 		final AnyObjectId from = createId(fromRev);
 		final AnyObjectId to = createId(toRev);
-		final Repository repo = openRepository().getRepository();
 
 		final Changes changes = new Changes();
-		try (RevWalk revWalk = new RevWalk(repo);
-			 ObjectReader reader = repo.newObjectReader()) {
+		try (Git git = openRepository();
+			 RevWalk revWalk = new RevWalk(git.getRepository());
+			 ObjectReader reader = git.getRepository().newObjectReader()) {
 			final RevTree prevTree = revWalk.parseCommit(from).getTree();
 			final CanonicalTreeParser oldTree = new CanonicalTreeParser();
 			oldTree.reset(reader, prevTree);
@@ -324,8 +322,7 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 			newTree.reset(reader, revTree);
 
 			final List<DiffEntry> diffEntries = new ArrayList<>();
-			openRepository()
-					.diff()
+			git.diff()
 					.setPathFilter(createTreeFilter())
 					.setShowNameAndStatusOnly(true)
 					.setOldTree(oldTree)
@@ -358,7 +355,7 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 						}
 					});
 
-			final RenameDetector rd = new RenameDetector(repo);
+			final RenameDetector rd = new RenameDetector(git.getRepository());
 			rd.addAll(diffEntries);
 			rd.compute().stream()
 					.filter(entry -> entry.getScore() >= rd.getRenameScore())
@@ -386,8 +383,8 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 		// Keep in mind that 'git log' returns commits in the following
 		// order: [HEAD, HEAD^1, ..., initial]
 
-		try {
-			final LogCommand logCmd = openRepository().log();
+		try (Git git = openRepository()) {
+			final LogCommand logCmd = git.log();
 			final Iterable<RevCommit> it = addRootPath(logCmd).call();
 			final List<RevCommit> revs = new ArrayList<>();
 			it.forEach(revs::add);
@@ -476,8 +473,8 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 
 	private void addRevisionTo(final List<String> revisions,
 			final String revision) throws IOException {
-		try {
-			final LogCommand log = openRepository().log();
+		try (Git git = openRepository()) {
+			final LogCommand log = git.log();
 			addRootPath(log);
 			log.call().forEach(rev -> {
 				final String revName = rev.getName();
@@ -495,8 +492,8 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 			final Predicate<RevCommit> endPredicate) throws IOException {
 		final List<String> revs = new ArrayList<>();
 
-		try {
-			final LogCommand logCommand = openRepository().log();
+		try (Git git = openRepository()) {
+			final LogCommand logCommand = git.log();
 			addRootPath(logCommand);
 			final PeekingIterator<RevCommit> revisions =
 					Iterators.peekingIterator(logCommand.call().iterator());
@@ -560,19 +557,19 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 			final String pRevision) throws IOException {
 		final String path = toGitPath(pPath);
 		final AnyObjectId rev = createId(pRevision);
-		final Repository repo = openRepository().getRepository();
 
-		try (RevWalk revWalk = new RevWalk(repo)) {
+		try (Git git = openRepository();
+			 RevWalk revWalk = new RevWalk(git.getRepository())) {
 			final RevCommit commit = revWalk.parseCommit(rev);
 			final RevTree tree = commit.getTree();
 
-			try (TreeWalk treeWalk = new TreeWalk(repo)) {
+			try (TreeWalk treeWalk = new TreeWalk(git.getRepository())) {
 				treeWalk.addTree(tree);
 				treeWalk.setRecursive(true);
 				treeWalk.setFilter(PathFilter.create(path));
 				Validate.isTrue(treeWalk.next(), "Unable to find '%s'", pPath);
 				final ObjectId id = treeWalk.getObjectId(0);
-				final ObjectLoader loader = repo.open(id);
+				final ObjectLoader loader = git.getRepository().open(id);
 				return loader.getBytes();
 			}
 		}
@@ -584,9 +581,8 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 		final String path = toGitPath(pFile.getRelativePath());
 		final AnyObjectId rev = createId(pFile.getRevision().getId());
 
-		try {
-			final BlameResult result = openRepository()
-					.blame()
+		try (Git git = openRepository()) {
+			final BlameResult result = git.blame()
 					.setFilePath(path)
 					.setStartCommit(rev)
 					.call();
@@ -633,9 +629,8 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 		final AnyObjectId rev = createId(pRevision);
 		final List<RevCommit> commits = new ArrayList<>();
 
-		try {
-			openRepository()
-					.log()
+		try (Git git = openRepository()) {
+			git.log()
 					.setMaxCount(1)
 					.add(rev)
 					.call()
@@ -671,7 +666,7 @@ public class GitEngine extends AbstractIntervalVCSEngine {
 		// See: https://bugs.eclipse.org/bugs/show_bug.cgi?id=542611
 		final String refName = "refs/heads/" + branch;
 		//noinspection EmptyTryBlock
-		try (Git git = Git.cloneRepository()
+		try (Git ignored = Git.cloneRepository()
 				.setURI(getRepository())
 				.setDirectory(getTarget().toFile())
 				.setCloneSubmodules(true)
