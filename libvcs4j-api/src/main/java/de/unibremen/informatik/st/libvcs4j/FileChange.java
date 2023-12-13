@@ -69,10 +69,10 @@ public interface FileChange extends VCSModelElement {
 		Validate.validateState(old.isPresent() || nev.isPresent(),
 				"Neither the old nor the new file is available");
 
-		if (!old.isPresent()) {
+		if (old.isEmpty()) {
 			return Type.ADD;
 		}
-		if (!nev.isPresent()) {
+		if (nev.isEmpty()) {
 			return Type.REMOVE;
 		}
 		return old.get().getRelativePath()

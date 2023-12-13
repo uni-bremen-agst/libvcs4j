@@ -212,7 +212,7 @@ public abstract class AbstractVSCEngine implements VCSEngine {
 				try {
 					final Optional<RevisionRange> range =
 							AbstractVSCEngine.this.next();
-					if (!range.isPresent()) {
+					if (range.isEmpty()) {
 						throw new NoSuchElementException();
 					}
 					return range.get();

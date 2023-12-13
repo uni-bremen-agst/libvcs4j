@@ -386,7 +386,7 @@ public interface RevisionRange extends VCSModelElement {
 	 * 		otherwise.
 	 */
 	default boolean isFirst() {
-		return !getPredecessorRevision().isPresent();
+		return getPredecessorRevision().isEmpty();
 	}
 
 	/**

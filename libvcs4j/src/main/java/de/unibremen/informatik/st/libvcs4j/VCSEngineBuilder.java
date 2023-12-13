@@ -695,7 +695,7 @@ public class VCSEngineBuilder {
 		} catch (final ParseException ignored) { /* try next */ }
 		try {
 			final int year = Integer.parseInt(pDateTime);
-			return LocalDateTime.of(year, 0, 0, 0, 0);
+			return LocalDateTime.of(year, 1, 1, 0, 0);
 		} catch (final NumberFormatException |
 				DateTimeParseException ignored) { /* try next */ }
 		throw new IllegalArgumentException(String.format(
