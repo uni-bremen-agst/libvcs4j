@@ -916,8 +916,8 @@ public interface VCSFile extends VCSModelElement {
 	}
 
 	/**
-	 * Creates a position from the the given offset and tab size. Returns an
-	 * empty {@link Optional} if there is no position for {@code offset}, or if
+	 * Creates a position from the given offset and tab size. Returns an empty
+	 * {@link Optional} if there is no position for {@code offset}, or if
 	 * {@code offset} points to a new line delimiter.
 	 *
 	 * @param offset
@@ -991,8 +991,7 @@ public interface VCSFile extends VCSModelElement {
 	 * 		If an error occurred while reading the file content.
 	 */
 	default Optional<Position> positionOf(final int line, final int column,
-			final int tabSize) throws IllegalArgumentException,
-			IndexOutOfBoundsException, IOException {
+			final int tabSize) throws IllegalArgumentException, IOException {
 		Validate.isPositive(line);
 		Validate.isPositive(column);
 		Validate.isPositive(tabSize);
@@ -1026,5 +1025,36 @@ public interface VCSFile extends VCSModelElement {
 					: col + 1;
 		}
 		return Optional.empty();
+	}
+
+	/**
+	 * Creates a position from the given line, line offset, and tab size.
+	 * Returns an empty {@link Optional} if there is no position for
+	 * {@code line} and {@code lineOffset}, or if {@code line} and
+	 * {@code lineOffset} point to a new line delimiter.
+	 *
+	 * @param line
+	 * 		The line of the position to create.
+	 * @param lineOffset
+	 * 		The line offset of the position to create.
+	 * @param tabSize
+	 * 		The number of characters acquired by a tab (\t).
+	 * @return
+	 * 		The corresponding position.
+	 * @throws IllegalArgumentException
+	 * 		If {@code line < 1}, {@code lineOffset < 0}, or
+	 * 		{@code tabSize < 1}.
+	 * @throws BinaryFileException
+	 * 		If this file is binary (see {@link #isBinary()}).
+	 * @throws IOException
+	 * 		If an error occurred while reading the file content.
+	 */
+	default Optional<Position> positionAt(final int line, final int lineOffset,
+			final int tabSize) throws IllegalArgumentException, IOException {
+		// With tabSize == 1, column literally becomes lineOffset shifted by 1.
+		final Optional<Position> pos = positionOf(line, lineOffset + 1, 1);
+		if (pos.isEmpty()) return pos; // includes all parameter checks
+		// Now with requested tab size.
+		return positionOf(pos.get().getOffset(), tabSize);
 	}
 }

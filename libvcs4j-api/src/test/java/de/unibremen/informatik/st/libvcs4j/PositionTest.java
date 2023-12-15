@@ -330,13 +330,24 @@ public class PositionTest {
 		when(file.readLinesWithEOL()).thenReturn(linesEOL);
 		when(file.positionOf(6, 4)).thenCallRealMethod();
 
-		VCSFile.Position position = file.positionOf(6, 4)
+		VCSFile.Position pos1 = file.positionOf(6, 4)
 				.orElseThrow(AssertionError::new);
-		assertThat(position.getLine()).isEqualTo(2);
-		assertThat(position.getColumn()).isEqualTo(6);
-		assertThat(position.getOffset()).isEqualTo(6);
-		assertThat(position.getLineOffset()).isEqualTo(2);
-		assertThat(position.getTabSize()).isEqualTo(4);
+		assertThat(pos1.getLine()).isEqualTo(2);
+		assertThat(pos1.getColumn()).isEqualTo(6);
+		assertThat(pos1.getOffset()).isEqualTo(6);
+		assertThat(pos1.getLineOffset()).isEqualTo(2);
+		assertThat(pos1.getTabSize()).isEqualTo(4);
+
+		when(file.positionOf(anyInt(), anyInt(), anyInt()))
+				.thenCallRealMethod();
+		when(file.positionAt(2, 2, 4)).thenCallRealMethod();
+		VCSFile.Position pos2 = file.positionAt(2, 2, 4)
+				.orElseThrow(AssertionError::new);
+
+		assertThat(pos2.getLine()).isEqualTo(pos1.getLine());
+		assertThat(pos2.getColumn()).isEqualTo(pos1.getColumn());
+		assertThat(pos2.getOffset()).isEqualTo(pos1.getOffset());
+		assertThat(pos2.getTabSize()).isEqualTo(pos1.getTabSize());
 	}
 
 	@Test
