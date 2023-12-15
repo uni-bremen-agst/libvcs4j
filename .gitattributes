@@ -3,6 +3,7 @@
 
 # Force LF endings for text files that are prone to causing cross-platform issues.
 *.java text eol=lf
+*.java* text eol=lf
 *.gradle text eol=lf
 *.md text eol=lf
 *.sh text eol=lf
