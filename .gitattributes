@@ -1,8 +1,29 @@
-# lf for all files...
-* text eol=lf
+# Set the default behavior, in case people don't have core.autocrlf set.
+* text=auto
 
-# ... except for:
-*.bundle binary
-*.jar binary
-*.tar.gz binary
+# Force LF endings for text files that are prone to causing cross-platform issues.
+*.java text eol=lf
+*.gradle text eol=lf
+*.md text eol=lf
+*.sh text eol=lf
+
+# Force CRLF endings for Windows-specific files.
 *.bat text eol=crlf
+
+# Mark project configuration files as text.
+*.properties text
+*.xml text
+*.yml text
+*.yaml text
+*.json text
+
+# Denote all files that are truly binary and should not be modified.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.bin binary
+*.pdf binary
+*.zip binary
+*.jar binary
