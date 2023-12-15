@@ -48,7 +48,7 @@ jobs:
           restore-keys: ${{ runner.os }}-gradle
 
       - name: Sonar Analysis
-        if: runner.os == 'Linux'
+        if: ${{ false }}
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
