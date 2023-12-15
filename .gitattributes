@@ -27,3 +27,4 @@
 *.pdf binary
 *.zip binary
 *.jar binary
+*.bundle binary
