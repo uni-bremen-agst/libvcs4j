@@ -6,6 +6,8 @@
 *.gradle text eol=lf
 *.md text eol=lf
 *.sh text eol=lf
+*.js text eol=lf
+*.in text eol=lf
 
 # Force CRLF endings for Windows-specific files.
 *.bat text eol=crlf
@@ -28,3 +30,4 @@
 *.zip binary
 *.jar binary
 *.bundle binary
+*.gz binary
