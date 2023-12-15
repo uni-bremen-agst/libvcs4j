@@ -14,11 +14,8 @@ dependencies {
 	implementation(project(':libvcs4j-tools'))
 }
 
-// Rename the shadow jar artifact to it's original name:
-// https://stackoverflow.com/questions/48105889/rename-shadow-jar-produced-by-shadow-plugin-to-original-artifact-name
-tasks.jar.configure {
-	archiveClassifier = 'default'
-}
-tasks.shadowJar.configure {
-	archiveClassifier = null
+shadowJar {
+	archiveBaseName.set('libvcs4j-all')
+	archiveClassifier.set('')
+	archiveVersion.set('')
 }
