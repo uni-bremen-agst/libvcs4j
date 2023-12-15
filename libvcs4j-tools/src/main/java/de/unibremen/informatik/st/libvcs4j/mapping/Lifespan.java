@@ -20,11 +20,11 @@ import java.util.Optional;
 
 /**
  * Stores a sequence of {@link Entity} instances in a CSV file. Lifespans are
- * used to persist the evolution of mapped {@link Mappable} objects (see
+ * used to persist the evolution of mapped {@link Mappable} objects (see also
  * {@link Mapping} and {@link Tracker}). The class {@link Entity} serves as a
- * thin wrapper for mappables so as to add additional attributes and methods
- * required by this class while writing the CSV file. Usually, lifespans are
- * managed by an instance of {@link Tracker}.
+ * thin wrapper around {@link Mappable} to add additional attributes and
+ * methods required by this class for writing the CSV file. Typically,
+ * lifespans are managed by an instance of {@link Tracker}.
  */
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class Lifespan {
@@ -67,7 +67,7 @@ public class Lifespan {
 		if (first) {
 			final String header = String.join(DELIMITER, "ordinal", "revision",
 					"changed", "metadata", "locations") + "\n";
-			Files.write(csv, header.getBytes(CHARSET),
+			Files.writeString(csv, header, CHARSET,
 					StandardOpenOption.CREATE,
 					StandardOpenOption.TRUNCATE_EXISTING);
 		}
@@ -82,7 +82,7 @@ public class Lifespan {
 				"\"" + changed + "\"",
 				"\"" + entity.getMetadataAsString().orElse("") + "\"",
 				"\"" + toJSONString(mappable.getRanges()) + "\"") + "\n";
-		Files.write(csv, row.getBytes(CHARSET),
+		Files.writeString(csv, row, CHARSET,
 				StandardOpenOption.APPEND);
 		first = false;
 	}
@@ -121,6 +121,10 @@ public class Lifespan {
 			builder.append(range.getEnd().getColumn());
 			builder.append(",\"endTabSize\":");
 			builder.append(range.getEnd().getTabSize());
+			builder.append(",\"beginLineOffset\":");
+			builder.append(range.getBegin().getLineOffset());
+			builder.append(",\"endLineOffset\":");
+			builder.append(range.getEnd().getLineOffset());
 			builder.append(",\"beginOffset\":");
 			builder.append(range.getBegin().getOffset());
 			builder.append(",\"endOffset\":");
@@ -136,26 +140,24 @@ public class Lifespan {
 	 * Wraps a {@link Mappable} and provides additional data.
 	 */
 	@RequiredArgsConstructor
+	@Getter
 	static abstract class Entity {
 
 		/**
 		 * The wrapped mappable.
 		 */
-		@Getter
 		private final Mappable<?> mappable;
 
 		/**
 		 * The ordinal of a mappable. Corresponds to the value of
 		 * {@link RevisionRange#getOrdinal()}.
 		 */
-		@Getter
 		private final int ordinal;
 
 		/**
 		 * Indicates whether the contents of an entity changed (with respect to
 		 * its predecessor).
 		 */
-		@Getter
 		private final boolean changed;
 
 		/**

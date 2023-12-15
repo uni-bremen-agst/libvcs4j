@@ -179,8 +179,8 @@ public class Tracker<T> {
 			if (first) {
 				final String header = String.join(DELIMITER, "ordinal",
 						"total", "active", "updated", "added") + "\n";
-				Files.write(directory.resolve(LIFESPAN_INFO_FILE),
-						header.getBytes(CHARSET),
+				Files.writeString(directory.resolve(LIFESPAN_INFO_FILE),
+						header, CHARSET,
 						StandardOpenOption.CREATE,
 						StandardOpenOption.TRUNCATE_EXISTING);
 			}
@@ -190,8 +190,8 @@ public class Tracker<T> {
 					String.valueOf(mappables.size()),
 					String.valueOf(toUpdate.size()),
 					String.valueOf(toAdd.size())) + "\n";
-			Files.write(directory.resolve(LIFESPAN_INFO_FILE),
-					row.getBytes(CHARSET),
+			Files.writeString(directory.resolve(LIFESPAN_INFO_FILE),
+					row, CHARSET,
 					StandardOpenOption.APPEND);
 			first = false;
 		} catch (final IOException e) {
@@ -283,13 +283,13 @@ public class Tracker<T> {
 
 	private class Entity extends Lifespan.Entity {
 
-		private Entity(Mappable mappable, int ordinal, boolean changed) {
+		private Entity(Mappable<T> mappable, int ordinal, boolean changed) {
 			super(mappable, ordinal, changed);
 		}
 
 		@Override
+		@SuppressWarnings("unchecked")
 		Optional<String> getMetadataAsString() {
-			//noinspection unchecked
 			return getMappable()
 					.getMetadata()
 					.map(m -> (T)m)
