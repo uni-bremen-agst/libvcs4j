@@ -29,7 +29,7 @@ jobs:
         run: brew install mercurial
 
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew build --info
 
       - name: Cache SonarCloud Packages
         if: runner.os == 'Linux'
