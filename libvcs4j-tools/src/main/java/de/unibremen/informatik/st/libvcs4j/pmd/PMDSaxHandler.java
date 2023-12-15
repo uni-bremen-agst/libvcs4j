@@ -9,6 +9,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -48,7 +50,7 @@ class PMDSaxHandler extends DefaultHandler {
 	/**
 	 * Used to map paths detected by PMD to {@link VCSFile} instances.
 	 */
-	private final Map<String, VCSFile> path2File = new HashMap<>();
+	private final Map<Path, VCSFile> path2File = new HashMap<>();
 
 	/**
 	 * Stores the detected violations.
@@ -58,7 +60,7 @@ class PMDSaxHandler extends DefaultHandler {
 	/**
 	 * The absolute path to the currently processed file.
 	 */
-	private String path;
+	private Path path;
 
 	/**
 	 * Creates a new handler which uses the given collection of
@@ -84,11 +86,11 @@ class PMDSaxHandler extends DefaultHandler {
 		path2File.clear();
 		for (VCSFile f : files) {
 			try {
-				path2File.put(f.toFile().getCanonicalPath(), f);
+				path2File.put(f.toFile().getCanonicalFile().toPath(), f);
 			} catch (final IOException e) {
 				log.warn("Unable to get canonical path of file '{}'. " +
 						"Falling back to regular path.", f.getPath());
-				path2File.put(f.getPath(), f);
+				path2File.put(f.toPath(), f);
 			}
 		}
 		super.startDocument();
@@ -99,7 +101,13 @@ class PMDSaxHandler extends DefaultHandler {
 			final String uri, final String localName, final String qName,
 			final Attributes attributes) throws SAXException {
 		if (qName.equals("file")) {
-			path = attributes.getValue("name");
+			path = Paths.get(attributes.getValue("name"));
+			try {
+				path = path.toFile().getCanonicalFile().toPath();
+			} catch (final IOException e) {
+				log.warn("Skipping file whose canonical path could not be obtained ({})",
+						path);
+			}
 		} else if (qName.equals("violation")) {
 			if (path == null) {
 				log.warn("Skipping violation due to missing 'file' attribute");
@@ -149,7 +157,7 @@ class PMDSaxHandler extends DefaultHandler {
 				final int bc = parseInt(bcs);
 				final Optional<VCSFile.Position> begin =
 						file.positionOf(bl, bc, TAB_SIZE);
-				if (!begin.isPresent()) {
+				if (begin.isEmpty()) {
 					log.warn("Skipping violation due to not existing begin position. " +
 									"file: {}, line: {}, column: {}, tab size: {}",
 							file.getPath(), bl, bc, TAB_SIZE);
@@ -159,7 +167,7 @@ class PMDSaxHandler extends DefaultHandler {
 				final int ec = parseInt(ecs);
 				final Optional<VCSFile.Position> end =
 						file.positionOf(el, ec, TAB_SIZE);
-				if (!end.isPresent()) {
+				if (end.isEmpty()) {
 					log.warn("Skipping violation due to not existing end position. " +
 									"file: {}, line: {}, column: {}, tab size: {}",
 							file.getPath(), el, ec, TAB_SIZE);
@@ -171,7 +179,8 @@ class PMDSaxHandler extends DefaultHandler {
 						rule, ruleSet);
 				violations.add(v);
 			} catch (final IOException e) {
-				log.warn("Skipping violation due to an IO error while creating its range");
+				log.warn("Skipping violation due to an IO error while creating its range",
+						e);
 			}
 		}
 
