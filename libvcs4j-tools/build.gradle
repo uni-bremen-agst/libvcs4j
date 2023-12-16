@@ -71,6 +71,12 @@ publishing {
 	publications {
 		mavenJava(MavenPublication) {
 			from components.java
+			pom.withXml {
+				def pomNode = asNode()
+				pomNode.dependencies.'*'.findAll() {
+					it.artifactId.text() == 'conqat'
+				}.each() { it.parent().remove(it) }
+			}
 			pom {
 				name = 'libvcs4j-tools'
 				description = 'LibVCS4j tools'
