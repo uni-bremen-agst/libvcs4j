@@ -170,6 +170,8 @@ public class Tracker<T> {
 			throw new UncheckedIOException(e);
 		}
 		// Update `lifespans` and `mappables`.
+		final int removed = mappables.size() // those active in the last call
+				- toUpdate.size(); // those updated in this call
 		toAdd.forEach(ma -> lifespans.add(ma.getLifespan()));
 		mappables.clear();
 		toAdd.forEach(ma -> mappables.put(ma.getMappable(), ma.getLifespan()));
@@ -177,8 +179,9 @@ public class Tracker<T> {
 		// Write lifespan info file.
 		try {
 			if (first) {
-				final String header = String.join(DELIMITER, "ordinal",
-						"total", "active", "updated", "added") + "\n";
+				final String header = String.join(DELIMITER,
+						"ordinal", "total", "active", "updated", "added",
+						"removed") + "\n";
 				Files.writeString(directory.resolve(LIFESPAN_INFO_FILE),
 						header, CHARSET,
 						StandardOpenOption.CREATE,
@@ -189,7 +192,8 @@ public class Tracker<T> {
 					String.valueOf(lifespans.size()),
 					String.valueOf(mappables.size()),
 					String.valueOf(toUpdate.size()),
-					String.valueOf(toAdd.size())) + "\n";
+					String.valueOf(toAdd.size()),
+					String.valueOf(removed)) + "\n";
 			Files.writeString(directory.resolve(LIFESPAN_INFO_FILE),
 					row, CHARSET,
 					StandardOpenOption.APPEND);
@@ -197,9 +201,9 @@ public class Tracker<T> {
 		} catch (final IOException e) {
 			throw new UncheckedIOException(e);
 		}
-		log.info("Tracking {} lifespans (active: {}, updated: {}, added: {})",
+		log.info("Tracking {} lifespans (active: {}, updated: {}, added: {}, removed: {})",
 				lifespans.size(), mappables.size(), toUpdate.size(),
-				toAdd.size());
+				toAdd.size(), removed);
 	}
 
 	/**
