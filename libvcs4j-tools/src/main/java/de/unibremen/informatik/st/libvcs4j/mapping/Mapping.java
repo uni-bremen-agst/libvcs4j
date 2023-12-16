@@ -17,7 +17,6 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -152,12 +151,11 @@ public class Mapping<T> {
 		 */
 		public Optional<Mappable<T>> getPredecessor(
 				final Mappable<T> mappable) {
-			return mapping.entrySet()
+			return mapping.keySet()
 					.stream()
-					.filter(entry -> getSuccessor(entry.getKey())
+					.filter(predecessor -> getSuccessor(predecessor)
 							.orElseThrow(IllegalStateException::new)
 							== mappable)
-					.map(Map.Entry::getKey)
 					.findFirst();
 		}
 
@@ -183,7 +181,7 @@ public class Mapping<T> {
 		 */
 		public List<Mappable<T>> getWithoutSuccessor() {
 			return getFrom().stream()
-					.filter(m -> !getSuccessor(m).isPresent())
+					.filter(m -> getSuccessor(m).isEmpty())
 					.collect(Collectors.toList());
 		}
 
@@ -209,7 +207,7 @@ public class Mapping<T> {
 		 */
 		public List<Mappable<T>> getWithoutPredecessor() {
 			return getTo().stream()
-					.filter(m -> !getPredecessor(m).isPresent())
+					.filter(m -> getPredecessor(m).isEmpty())
 					.collect(Collectors.toList());
 		}
 	}
@@ -499,7 +497,7 @@ public class Mapping<T> {
 			}
 
 			// The file was not changed.
-			if (!fileChange.isPresent()) {
+			if (fileChange.isEmpty()) {
 				// File of range in current revision.
 				final VCSFile file = findRelevantFile(range, revision)
 						.orElseThrow(() -> new IllegalArgumentException(
