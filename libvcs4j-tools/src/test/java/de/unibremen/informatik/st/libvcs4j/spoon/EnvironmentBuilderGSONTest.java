@@ -87,9 +87,9 @@ public class EnvironmentBuilderGSONTest {
 		RevisionRange r2 = mock(RevisionRange.class);
 		Path p2 = basePath.resolve("Intercept.java");
 		assertThat(output.resolve(p2).toFile().delete()).isTrue();
-		when(r2.getRevision()).thenReturn(r1.getRevision());
+		when(r2.getCurrent()).thenReturn(r1.getCurrent());
 		when(r2.getFileChanges()).thenReturn(singletonList(new RemoveMock(
-				r1.getRevision(), p2.toString())));
+				r1.getCurrent(), p2.toString())));
 		when(r2.getRemovedFiles()).thenCallRealMethod();
 		assertThat(builder.update(r2)).isNotNull();
 		assertThat(builder.getEnvironment().orElseThrow(AssertionError::new)
@@ -101,9 +101,9 @@ public class EnvironmentBuilderGSONTest {
 		RevisionRange r3 = mock(RevisionRange.class);
 		Path p3 = basePath.resolve("JsonPostDeserializer.java");
 		assertThat(output.resolve(p3).toFile().delete()).isTrue();
-		when(r3.getRevision()).thenReturn(r1.getRevision());
+		when(r3.getCurrent()).thenReturn(r1.getCurrent());
 		when(r3.getFileChanges()).thenReturn(singletonList(new RemoveMock(
-				r1.getRevision(), p3.toString())));
+				r1.getCurrent(), p3.toString())));
 		when(r3.getRemovedFiles()).thenCallRealMethod();
 		assertThat(builder.update(r3)).isNotNull();
 		assertThat(builder.getEnvironment().orElseThrow(AssertionError::new)
@@ -115,9 +115,9 @@ public class EnvironmentBuilderGSONTest {
 		RevisionRange r4 = mock(RevisionRange.class);
 		Path p4 = basePath.resolve("package-info.java");
 		assertThat(output.resolve(p4).toFile().delete()).isTrue();
-		when(r4.getRevision()).thenReturn(r1.getRevision());
+		when(r4.getCurrent()).thenReturn(r1.getCurrent());
 		when(r4.getFileChanges()).thenReturn(singletonList(new RemoveMock(
-				r1.getRevision(), p4.toString())));
+				r1.getCurrent(), p4.toString())));
 		when(r4.getRemovedFiles()).thenCallRealMethod();
 		assertThat(builder.update(r4)).isNotNull();
 		assertThat(builder.getEnvironment().orElseThrow(AssertionError::new)

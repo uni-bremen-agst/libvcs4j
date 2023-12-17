@@ -17,9 +17,9 @@ import static de.unibremen.informatik.st.libvcs4j.FileChange.Type.*;
 
 /**
  * This class represents the state transition between two revisions. The "from"
- * revision (if any) is available with {@link #getPredecessorRevision()}. The
- * "to" revision is available with {@link #getRevision()}.
- *
+ * revision (if any) is available with {@link #getPrevious()}. The "to"
+ * revision is available with {@link #getCurrent()}.
+ * <p>
  * A single range may subsume several commits to merge commits on, for
  * instance, a monthly basis.
  */
@@ -37,11 +37,38 @@ public interface RevisionRange extends VCSModelElement {
 
 	/**
 	 * Returns the "to" revision the file changes of this range belong to.
+	 * @deprecated
+	 * Use {@link #getCurrent()} instead.
 	 *
 	 * @return
 	 * 		The "to" revision the file changes of this range belong to.
 	 */
-	Revision getRevision();
+	@Deprecated
+	default Revision getRevision() {
+		return getCurrent();
+	}
+
+	/**
+	 * Returns the "to" revision the file changes of this range belong to.
+	 *
+	 * @return
+	 * 		The "to" revision the file changes of this range belong to.
+	 */
+	Revision getCurrent();
+
+	/**
+	 * Returns the "from" revision the file changes of this range belong to.
+	 * @deprecated
+	 * Use {@link #getPrevious()} instead.
+	 *
+	 * @return
+	 * 		The "from" revision the file changes of this range belong to or an
+	 * 		empty {@link Optional} if this is the first range.
+	 */
+	@Deprecated
+	default Optional<Revision> getPredecessorRevision() {
+		return getPrevious();
+	}
 
 	/**
 	 * Returns the "from" revision the file changes of this range belong to.
@@ -50,13 +77,12 @@ public interface RevisionRange extends VCSModelElement {
 	 * 		The "from" revision the file changes of this range belong to or an
 	 * 		empty {@link Optional} if this is the first range.
 	 */
-	Optional<Revision> getPredecessorRevision();
+	Optional<Revision> getPrevious();
 
 	/**
-	 * Returns the commits that have been applied to
-	 * {@link #getPredecessorRevision()} so that {@link #getRevision()} results
-	 * from it. The order of the returned list is from oldest to latest.
-	 * Contains at least one commit.
+	 * Returns the commits that have been applied to {@link #getPrevious()} so
+	 * that {@link #getCurrent()} results from it. The order of the returned
+	 * list is from oldest to latest. Contains at least one commit.
 	 *
 	 * @return
 	 * 		The list of commits.
@@ -77,10 +103,9 @@ public interface RevisionRange extends VCSModelElement {
 	}
 
 	/**
-	 * Returns all files that have changed between
-	 * {@link #getPredecessorRevision()} and {@link #getRevision()}. The
-	 * default implementation, if necessary, merges the file changes of all
-	 * commits listed in {@link #getCommits()}.
+	 * Returns all files that have changed between {@link #getPrevious()} and
+	 * {@link #getCurrent()}. The default implementation, if necessary, merges
+	 * the file changes of all commits listed in {@link #getCommits()}.
 	 *
 	 * @return
 	 * 		The list of file changes.
@@ -178,8 +203,8 @@ public interface RevisionRange extends VCSModelElement {
 			// Postprocessing: Replace accumulated file changes such that the
 			// revisions of the referenced files match with the predecessor and
 			// successor revision of this range.
-			final Revision predRev = getPredecessorRevision().orElse(null);
-			final Revision rev = getRevision();
+			final Revision predRev = getPrevious().orElse(null);
+			final Revision rev = getCurrent();
 			final VCSEngine engine = getVCSEngine();
 			final VCSModelFactory factory = engine.getModelFactory();
 			final ListIterator<FileChange> it = accum.listIterator();
@@ -301,7 +326,7 @@ public interface RevisionRange extends VCSModelElement {
 	 * {@code prefix}.
 	 *
 	 * You may use this method to analyze file changes affecting a certain
-	 * directory (and its sub-directories) only. For instance, call
+	 * directory (and its subdirectories) only. For instance, call
 	 * {@code getFileChangesByPrefix("src/main/java")} to get only the file
 	 * changes affecting files located in "src/main/java".
 	 *
@@ -378,7 +403,7 @@ public interface RevisionRange extends VCSModelElement {
 	 * Returns whether this range is the first one. That is, there is no
 	 * predecessor revision and, consequently, all changes returned by
 	 * {@link #getFileChanges()} are additions. The default implementation
-	 * simply checks whether {@link #getPredecessorRevision()} returns an empty
+	 * simply checks whether {@link #getPrevious()} returns an empty
 	 * {@link Optional}.
 	 *
 	 * @return
@@ -386,7 +411,7 @@ public interface RevisionRange extends VCSModelElement {
 	 * 		otherwise.
 	 */
 	default boolean isFirst() {
-		return getPredecessorRevision().isEmpty();
+		return getPrevious().isEmpty();
 	}
 
 	/**
@@ -416,17 +441,16 @@ public interface RevisionRange extends VCSModelElement {
 	/**
 	 * Merges this range into {@code predecessor} and returns a new instance
 	 * that represents the state transition from
-	 * {@code predecessor.getPredecessorRevision()} to
-	 * {@code this.getRevision()}. The commits of {@code predecessor} and
-	 * {@code this} are combined such that the commits of {@code this} are
-	 * applied onto the commits of {@code predecessor}.
+	 * {@code predecessor.getPrevious()} to {@code this.getCurrent()}. The
+	 * commits of {@code predecessor} and {@code this} are combined such that
+	 * the commits of {@code this} are applied onto the commits of
+	 * {@code predecessor}.
 	 *
 	 * @param predecessor
 	 * 		The predecessor range to merge this range into.
 	 * @return
 	 * 		A new revision range representing the state transition from
-	 * 		{@code predecessor.getPredecessorRevision()} to
-	 * 		{@code this.getRevision()}.
+	 * 		{@code predecessor.getPrevious()} to {@code this.getCurrent()}.
 	 * @throws NullPointerException
 	 * 		If {@code predecessor} is {@code null}.
 	 */
@@ -437,8 +461,7 @@ public interface RevisionRange extends VCSModelElement {
 		final List<Commit> commits = predecessor.getCommits();
 		commits.addAll(getCommits());
 		return engine.getModelFactory().createRevisionRange(getOrdinal(),
-				getRevision(),
-				predecessor.getPredecessorRevision().orElse(null), commits,
-				getVCSEngine());
+				getCurrent(), predecessor.getPrevious().orElse(null),
+				commits, getVCSEngine());
 	}
 }

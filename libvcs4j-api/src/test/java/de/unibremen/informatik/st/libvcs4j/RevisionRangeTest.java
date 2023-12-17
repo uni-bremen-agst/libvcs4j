@@ -105,7 +105,7 @@ public class RevisionRangeTest {
         RevisionRange range1 = spy(RevisionRange.class);
         when(range1.getCommits()).thenReturn(Arrays.asList(c1, c2));
         when(range1.getVCSEngine()).thenReturn(engine);
-        when(range1.getRevision()).thenReturn(rev3);
+        when(range1.getCurrent()).thenReturn(rev3);
         assertThat(range1.getFileChanges())
                 .hasSize(1)
                 .first()
@@ -185,8 +185,8 @@ public class RevisionRangeTest {
         RevisionRange range1 = spy(RevisionRange.class);
         when(range1.getCommits()).thenReturn(Arrays.asList(c2, c3));
         when(range1.getVCSEngine()).thenReturn(vcs);
-        when(range1.getPredecessorRevision()).thenReturn(Optional.of(rev1));
-        when(range1.getRevision()).thenReturn(rev3);
+        when(range1.getPrevious()).thenReturn(Optional.of(rev1));
+        when(range1.getCurrent()).thenReturn(rev3);
         assertThat(range1.getFileChanges())
                 .hasSize(1)
                 .first()
@@ -204,8 +204,8 @@ public class RevisionRangeTest {
         RevisionRange range2 = spy(RevisionRange.class);
         when(range2.getCommits()).thenReturn(Arrays.asList(c2, c3, c4));
         when(range2.getVCSEngine()).thenReturn(vcs);
-        when(range2.getPredecessorRevision()).thenReturn(Optional.of(rev1));
-        when(range2.getRevision()).thenReturn(rev4);
+        when(range2.getPrevious()).thenReturn(Optional.of(rev1));
+        when(range2.getCurrent()).thenReturn(rev4);
         assertThat(range2.getFileChanges())
                 .hasSize(1)
                 .first()
@@ -260,8 +260,8 @@ public class RevisionRangeTest {
         RevisionRange range = spy(RevisionRange.class);
         when(range.getCommits()).thenReturn(Arrays.asList(c1, c2));
         when(range.getVCSEngine()).thenReturn(vcs);
-        when(range.getPredecessorRevision()).thenReturn(Optional.empty());
-        when(range.getRevision()).thenReturn(rev2);
+        when(range.getPrevious()).thenReturn(Optional.empty());
+        when(range.getCurrent()).thenReturn(rev2);
         assertThat(range.getFileChanges()).hasSize(2);
 
         assertThat(range.getFileChanges().get(0).getType())
@@ -334,7 +334,7 @@ public class RevisionRangeTest {
         RevisionRange range = spy(RevisionRange.class);
         when(range.getCommits()).thenReturn(Arrays.asList(c1, c2, c3));
         when(range.getVCSEngine()).thenReturn(engine);
-        when(range.getRevision()).thenReturn(rev3);
+        when(range.getCurrent()).thenReturn(rev3);
         assertThat(range.getFileChanges().get(0).getType())
                 .isEqualTo(r1.getType());
         assertThat(range.getFileChanges().get(1).getType())
@@ -388,7 +388,7 @@ public class RevisionRangeTest {
         Revision rev = mock(Revision.class);
 
         RevisionRange range = mock(RevisionRange.class);
-        when(range.getPredecessorRevision()).thenReturn(Optional.of(rev));
+        when(range.getPrevious()).thenReturn(Optional.of(rev));
         when(range.isFirst()).thenCallRealMethod();
         assertThat(range.isFirst()).isFalse();
     }
@@ -396,7 +396,7 @@ public class RevisionRangeTest {
     @Test
     public void isFirstWithoutPredecessor() {
         RevisionRange range = mock(RevisionRange.class);
-        when(range.getPredecessorRevision()).thenReturn(Optional.empty());
+        when(range.getPrevious()).thenReturn(Optional.empty());
         when(range.isFirst()).thenCallRealMethod();
         assertThat(range.isFirst()).isTrue();
     }

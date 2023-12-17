@@ -57,7 +57,7 @@ public class TrackerGSONTest {
 
 		RevisionRange fromRange = engine.next()
 				.orElseThrow(AssertionError::new);
-		List<VCSFile> fromFiles = fromRange.getRevision()
+		List<VCSFile> fromFiles = fromRange.getCurrent()
 				.getFilesBySuffix(suffix);
 		Mappable<String> fromMappable = new MappableMock(
 				fromFiles.get(0), 1, 1, 200, 1);
@@ -65,7 +65,7 @@ public class TrackerGSONTest {
 
 		RevisionRange toRange = engine.next()
 				.orElseThrow(AssertionError::new);
-		List<VCSFile> toFiles = toRange.getRevision()
+		List<VCSFile> toFiles = toRange.getCurrent()
 				.getFilesBySuffix(suffix);
 		Mappable<String> toMappables = new MappableMock(
 				toFiles.get(0), 1, 1, 200, 1);
@@ -94,7 +94,7 @@ public class TrackerGSONTest {
 
 		RevisionRange fromRange = engine.next()
 				.orElseThrow(AssertionError::new);
-		List<VCSFile> fromFiles = fromRange.getRevision()
+		List<VCSFile> fromFiles = fromRange.getCurrent()
 				.getFilesBySuffix(suffix);
 		Mappable<String> fromMappable = new MappableMock(
 				fromFiles.get(0), 64, 1, 66, 1);
@@ -102,7 +102,7 @@ public class TrackerGSONTest {
 
 		RevisionRange toRange = engine.next()
 				.orElseThrow(AssertionError::new);
-		List<VCSFile> toFiles = toRange.getRevision()
+		List<VCSFile> toFiles = toRange.getCurrent()
 				.getFilesBySuffix(suffix);
 		Mappable<String> toMappables = new MappableMock(
 				toFiles.get(0), 64, 1, 66, 1);
@@ -131,7 +131,7 @@ public class TrackerGSONTest {
 
 		RevisionRange fromRange = engine.next()
 				.orElseThrow(AssertionError::new);
-		List<VCSFile> fromFiles = fromRange.getRevision()
+		List<VCSFile> fromFiles = fromRange.getCurrent()
 				.getFilesBySuffix(suffix);
 		Mappable<String> fromMappable = new MappableMock(
 				fromFiles.get(0), 1, 1, 200, 1);
@@ -139,7 +139,7 @@ public class TrackerGSONTest {
 
 		RevisionRange toRange = engine.next()
 				.orElseThrow(AssertionError::new);
-		List<VCSFile> toFiles = toRange.getRevision()
+		List<VCSFile> toFiles = toRange.getCurrent()
 				.getFilesBySuffix(suffix);
 		Mappable<String> toMappables = new MappableMock(
 				toFiles.get(0), 3, 1, 200, 1);
@@ -168,7 +168,7 @@ public class TrackerGSONTest {
 
 		RevisionRange fromRange = engine.next()
 				.orElseThrow(AssertionError::new);
-		List<VCSFile> fromFiles = fromRange.getRevision()
+		List<VCSFile> fromFiles = fromRange.getCurrent()
 				.getFilesBySuffix(suffix);
 		Mappable<String> fromMappable = new MappableMock(
 				fromFiles.get(0), 250, 1, 325, 1);
@@ -176,7 +176,7 @@ public class TrackerGSONTest {
 
 		RevisionRange toRange = engine.next()
 				.orElseThrow(AssertionError::new);
-		List<VCSFile> toFiles = toRange.getRevision()
+		List<VCSFile> toFiles = toRange.getCurrent()
 				.getFilesBySuffix(suffix);
 		Mappable<String> toMappables = new MappableMock(
 				toFiles.get(0), 250, 1, 327, 1);

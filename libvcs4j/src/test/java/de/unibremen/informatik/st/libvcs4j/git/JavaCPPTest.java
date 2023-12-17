@@ -164,7 +164,7 @@ public class JavaCPPTest extends VCSBaseTest {
 		assertTrue(range.isPresent());
 
 		List<String> files = range.get()
-				.getRevision()
+				.getCurrent()
 				.getFiles()
 				.stream()
 				.map(VCSFile::toRelativePath)
@@ -185,7 +185,7 @@ public class JavaCPPTest extends VCSBaseTest {
 		assertEquals(10, ranges.size());
 
 		ranges.stream()
-				.map(RevisionRange::getRevision)
+				.map(RevisionRange::getCurrent)
 				.map(Revision::getFiles)
 				.flatMap(Collection::stream)
 				.map(VCSFile::toRelativePath)
@@ -204,23 +204,23 @@ public class JavaCPPTest extends VCSBaseTest {
 		assertEquals(9, ranges.size());
 
 		assertEquals("9b2c67502aaf168b1dbfee640a38a897cd02a6ec",
-				ranges.get(0).getRevision().getId());
+				ranges.get(0).getCurrent().getId());
 		assertEquals("369203faee219272bc658333c71ffc7dc9117efb",
-				ranges.get(1).getRevision().getId());
+				ranges.get(1).getCurrent().getId());
 		assertEquals("6b95f2bc0b443299e6dbfbf9774fd807c8e8b2c4",
-				ranges.get(2).getRevision().getId());
+				ranges.get(2).getCurrent().getId());
 		assertEquals("320baec0f14f99c2284bb69e0dc6df52677f1474",
-				ranges.get(3).getRevision().getId());
+				ranges.get(3).getCurrent().getId());
 		assertEquals("fbdff9f6014d31f6bd7a5424f510ebd77d0b7c16",
-				ranges.get(4).getRevision().getId());
+				ranges.get(4).getCurrent().getId());
 		assertEquals("4e6011ac12f6e3f7ed9464814cbd7d0a09065273",
-				ranges.get(5).getRevision().getId());
+				ranges.get(5).getCurrent().getId());
 		assertEquals("1106d44879310a9aa658ac73120ea4aaa67d0ab0",
-				ranges.get(6).getRevision().getId());
+				ranges.get(6).getCurrent().getId());
 		assertEquals("1c08928b9b4e0f6529760cf7dbc607383afa7fa5",
-				ranges.get(7).getRevision().getId());
+				ranges.get(7).getCurrent().getId());
 		assertEquals("32510a922ab069d52c312b3fb8668fb9dfda5e5f",
-				ranges.get(8).getRevision().getId());
+				ranges.get(8).getCurrent().getId());
 	}
 
 	@Test
@@ -233,7 +233,7 @@ public class JavaCPPTest extends VCSBaseTest {
 		Optional<RevisionRange> range = engine.next();
 		assertTrue(range.isPresent());
 
-		Revision revision = range.get().getRevision();
+		Revision revision = range.get().getCurrent();
 		VCSFile buildMojo = revision.getFilesBySuffix("BuildMojo.java").get(0);
 		List<LineInfo> lineInfo = buildMojo.readLineInfo();
 
@@ -271,7 +271,7 @@ public class JavaCPPTest extends VCSBaseTest {
 		Optional<RevisionRange> range = engine.next();
 		assertTrue(range.isPresent());
 
-		Revision revision = range.get().getRevision();
+		Revision revision = range.get().getCurrent();
 		VCSFile buildMojo = revision.getFilesBySuffix("BuildMojo.java").get(0);
 		List<LineInfo> lineInfo = buildMojo.readLineInfo();
 

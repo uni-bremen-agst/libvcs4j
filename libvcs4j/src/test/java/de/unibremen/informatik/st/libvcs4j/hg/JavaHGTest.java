@@ -106,7 +106,7 @@ public class JavaHGTest extends VCSBaseTest {
 		engine.forEach(ranges::add);
 		assertEquals(1, ranges.size());
 		assertEquals("544c5168e4d3d314a996699692d8099ffa6419b2",
-				ranges.get(0).getRevision().getId());
+				ranges.get(0).getCurrent().getId());
 	}
 
 	@Test
@@ -121,7 +121,7 @@ public class JavaHGTest extends VCSBaseTest {
 		engine.forEach(ranges::add);
 		assertEquals(1, ranges.size());
 		assertEquals("544c5168e4d3d314a996699692d8099ffa6419b2",
-				ranges.get(0).getRevision().getId());
+				ranges.get(0).getCurrent().getId());
 	}
 
 	@Test
@@ -134,7 +134,7 @@ public class JavaHGTest extends VCSBaseTest {
 		Optional<RevisionRange> range = engine.next();
 		assertTrue(range.isPresent());
 
-		Revision revision = range.get().getRevision();
+		Revision revision = range.get().getCurrent();
 		VCSFile addCommandTest = revision
 				.getFilesBySuffix("AddCommandTest.java").get(0);
 		List<LineInfo> lineInfo = addCommandTest.readLineInfo();
@@ -169,7 +169,7 @@ public class JavaHGTest extends VCSBaseTest {
 		Optional<RevisionRange> range = engine.next();
 		assertTrue(range.isPresent());
 
-		Revision revision = range.get().getRevision();
+		Revision revision = range.get().getCurrent();
 		VCSFile addCommandTest = revision
 				.getFilesBySuffix("AddCommandTest.java").get(0);
 		List<LineInfo> lineInfo = addCommandTest.readLineInfo();

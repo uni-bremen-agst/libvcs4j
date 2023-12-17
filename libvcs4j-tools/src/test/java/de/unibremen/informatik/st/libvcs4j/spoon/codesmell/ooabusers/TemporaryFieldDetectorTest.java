@@ -30,7 +30,7 @@ public class TemporaryFieldDetectorTest {
         revision.addFile(Paths.get("temporary-field", "A.java"));
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         Launcher launcher = new Launcher();
         launcher.addInputResource(folder.getRoot().getAbsolutePath());

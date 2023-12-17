@@ -30,7 +30,7 @@ public class UnusedCodeDetectorTest {
 		revision.addFile(Paths.get("unused", "PrivateOnly.java"));
 
 		RevisionRange revisionRange = mock(RevisionRange.class);
-		when(revisionRange.getRevision()).thenReturn(revision);
+		when(revisionRange.getCurrent()).thenReturn(revision);
 
 		Launcher launcher = new Launcher();
 		launcher.addInputResource(folder.getRoot().getAbsolutePath());

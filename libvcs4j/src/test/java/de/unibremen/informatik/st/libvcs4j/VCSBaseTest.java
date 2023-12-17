@@ -240,7 +240,7 @@ public abstract class VCSBaseTest {
 					.isEqualTo(i + 1);
 			assertThat(r.getLatestCommit().getId())
 					.isEqualTo(commitIds.get(i));
-			assertThat(r.getRevision().getId())
+			assertThat(r.getCurrent().getId())
 					.isEqualTo(revisionIds.get(i));
 		}
 	}
@@ -260,7 +260,7 @@ public abstract class VCSBaseTest {
 			RevisionRange r = ranges.get(i);
 			assertEquals(i + 1, r.getOrdinal());
 			assertEquals(commitIds.get(i), r.getLatestCommit().getId());
-			assertEquals(revisionIds.get(i), r.getRevision().getId());
+			assertEquals(revisionIds.get(i), r.getCurrent().getId());
 		}
 	}
 
@@ -281,7 +281,7 @@ public abstract class VCSBaseTest {
 			RevisionRange r = ranges.get(i);
 			assertEquals(i + 1, r.getOrdinal());
 			assertEquals(commitIds.get(i), r.getLatestCommit().getId());
-			assertEquals(revisionIds.get(i), r.getRevision().getId());
+			assertEquals(revisionIds.get(i), r.getCurrent().getId());
 		}
 	}
 
@@ -302,7 +302,7 @@ public abstract class VCSBaseTest {
 			RevisionRange r = ranges.get(i);
 			assertEquals(i + 1, r.getOrdinal());
 			assertEquals(commitIds.get(i + 5), r.getLatestCommit().getId());
-			assertEquals(revisionIds.get(i + 5), r.getRevision().getId());
+			assertEquals(revisionIds.get(i + 5), r.getCurrent().getId());
 		}
 	}
 
@@ -322,7 +322,7 @@ public abstract class VCSBaseTest {
 			RevisionRange r = ranges.get(i);
 			assertEquals(i + 1, r.getOrdinal());
 			assertEquals(commitIds.get(i), r.getLatestCommit().getId());
-			assertEquals(revisionIds.get(i), r.getRevision().getId());
+			assertEquals(revisionIds.get(i), r.getCurrent().getId());
 		}
 	}
 
@@ -345,7 +345,7 @@ public abstract class VCSBaseTest {
 			assertEquals(commitIds.get(i + start),
 					r.getLatestCommit().getId());
 			assertEquals(revisionIds.get(i + start),
-					r.getRevision().getId());
+					r.getCurrent().getId());
 		}
 	}
 
@@ -366,7 +366,7 @@ public abstract class VCSBaseTest {
 		for (int i = 0; i < ranges.size(); i++) {
 			RevisionRange r = ranges.get(i);
 			assertEquals(commitIds.get(i), r.getLatestCommit().getId());
-			assertEquals(revisionIds.get(i), r.getRevision().getId());
+			assertEquals(revisionIds.get(i), r.getCurrent().getId());
 		}
 	}
 
@@ -387,7 +387,7 @@ public abstract class VCSBaseTest {
 		for (int i = 0; i < ranges.size(); i++) {
 			RevisionRange r = ranges.get(i);
 			assertEquals(commitIds.get(i + 6), r.getLatestCommit().getId());
-			assertEquals(revisionIds.get(i + 6), r.getRevision().getId());
+			assertEquals(revisionIds.get(i + 6), r.getCurrent().getId());
 		}
 	}
 
@@ -406,7 +406,7 @@ public abstract class VCSBaseTest {
 		for (int i = 0; i < ranges.size(); i++) {
 			RevisionRange r = ranges.get(i);
 			assertEquals(commitIds.get(i), r.getLatestCommit().getId());
-			assertEquals(revisionIds.get(i), r.getRevision().getId());
+			assertEquals(revisionIds.get(i), r.getCurrent().getId());
 		}
 	}
 
@@ -429,7 +429,7 @@ public abstract class VCSBaseTest {
 			assertEquals(commitIds.get(i + start),
 					r.getLatestCommit().getId());
 			assertEquals(revisionIds.get(i + start),
-					r.getRevision().getId());
+					r.getCurrent().getId());
 		}
 	}
 
@@ -448,7 +448,7 @@ public abstract class VCSBaseTest {
 			assertEquals(commitIds.get(i),
 					range.getLatestCommit().getId());
 			assertEquals(revisionIds.get(i),
-					range.getRevision().getId());
+					range.getCurrent().getId());
 			i++;
 		}
 	}
@@ -466,7 +466,7 @@ public abstract class VCSBaseTest {
 					file.readAllBytes();
 				}
 			}
-			lastRevision = range.getRevision();
+			lastRevision = range.getCurrent();
 		}
 		assertThat(lastRevision).isNotNull();
 	}
@@ -492,7 +492,7 @@ public abstract class VCSBaseTest {
 					}
 				}
 			}
-			lastRevision = range.getRevision();
+			lastRevision = range.getCurrent();
 		}
 	}
 
@@ -524,7 +524,7 @@ public abstract class VCSBaseTest {
 
 		RevisionRange range = engine.next()
 				.orElseThrow(AssertionFailedError::new);
-		assertThat(range.getRevision().getId())
+		assertThat(range.getCurrent().getId())
 				.isEqualTo(revisionIds.get(revisionIds.size() - 1));
 	}
 

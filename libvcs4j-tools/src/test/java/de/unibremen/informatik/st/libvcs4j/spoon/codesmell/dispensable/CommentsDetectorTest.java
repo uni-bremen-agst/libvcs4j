@@ -32,7 +32,7 @@ public class CommentsDetectorTest {
 		revision.addFile(Paths.get("comments", "Comment.java"));
 
 		RevisionRange revisionRange = mock(RevisionRange.class);
-		when(revisionRange.getRevision()).thenReturn(revision);
+		when(revisionRange.getCurrent()).thenReturn(revision);
 
 		Launcher launcher = new Launcher();
 		launcher.addInputResource(folder.getRoot().getAbsolutePath());
@@ -63,7 +63,7 @@ public class CommentsDetectorTest {
 		revision.addFile(Paths.get("comments", "Comments.java"));
 
 		RevisionRange revisionRange = mock(RevisionRange.class);
-		when(revisionRange.getRevision()).thenReturn(revision);
+		when(revisionRange.getCurrent()).thenReturn(revision);
 
 		Launcher launcher = new Launcher();
 		launcher.addInputResource(folder.getRoot().getAbsolutePath());

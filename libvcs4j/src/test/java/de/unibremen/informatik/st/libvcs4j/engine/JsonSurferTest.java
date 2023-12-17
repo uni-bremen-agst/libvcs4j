@@ -21,7 +21,7 @@ public class JsonSurferTest {
 				.build();
 
 		for (RevisionRange range : vcs) {
-			assertTrue(range.getRevision().getOutput().toFile().exists());
+			assertTrue(range.getCurrent().getOutput().toFile().exists());
 		}
 	}
 }

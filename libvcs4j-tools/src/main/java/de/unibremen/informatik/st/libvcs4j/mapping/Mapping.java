@@ -275,7 +275,7 @@ public class Mapping<T> {
 		log.info("Mapping {}/{} elements", previous.size(), mappables.size());
 		final List<Mappable<T>> current = filterOutNull(mappables);
 		validateSameRevisions(current);
-		validateHaveRevision(current, range.getRevision());
+		validateHaveRevision(current, range.getCurrent());
 
 		final IdentityHashMap<Mappable<T>, Mappable<T>> bySignature =
 				mapBySignature(previous, current);
@@ -320,10 +320,10 @@ public class Mapping<T> {
 	 * @throws NullPointerException
 	 * 		If any of the given arguments is {@code null}.
 	 * @throws IllegalArgumentException
-	 * 		If {@code range} has no predecessor (see
-	 * 		{@link RevisionRange#getPredecessorRevision()}), if {@code from} or
-	 * 		{@code to} contain a mappable without a range, or if {@code from}
-	 * 		or {@code to} contain a mappable that does not correspond to
+	 * 		If {@code range} has no predecessor revision (see
+	 * 		{@link RevisionRange#getPrevious()}), if {@code from} or
+	 * 		{@code to} contains a mappable without a range, or if {@code from}
+	 * 		or {@code to} contains a mappable that does not correspond to
 	 * 		{@code range}.
 	 * @throws IOException
 	 * 		If an error occurred while applying changes (see
@@ -335,7 +335,7 @@ public class Mapping<T> {
 			@NonNull final RevisionRange range) throws IOException {
 		final List<Mappable<T>> backup = new ArrayList<>(previous);
 		try {
-			final Revision preRev = range.getPredecessorRevision()
+			final Revision preRev = range.getPrevious()
 					.orElseThrow(() -> new IllegalArgumentException(
 							"Revision range without predecessor"));
 			final List<Mappable<T>> prev = filterOutNull(from);
@@ -451,7 +451,7 @@ public class Mapping<T> {
 		final IdentityHashMap<Mappable<T>, Mappable<T>> fromToUpdated =
 				new IdentityHashMap<>();
 		from.forEach(f -> fromToUpdated.put(f, f));
-		final Optional<Revision> preRev = range.getPredecessorRevision();
+		final Optional<Revision> preRev = range.getPrevious();
 		final boolean applyChanges = preRev.isPresent()
 				&& haveRevision(from, preRev.get());
 		if (applyChanges) {
@@ -482,7 +482,7 @@ public class Mapping<T> {
 	private static <T> Optional<Mappable<T>> applyChanges(
 			@NonNull final Mappable<T> mappable,
 			@NonNull final RevisionRange revRange) throws IOException {
-		final Revision revision = revRange.getRevision();
+		final Revision revision = revRange.getCurrent();
 		final List<VCSFile.Range> ranges = new ArrayList<>();
 		for (final VCSFile.Range range : mappable.getRanges()) {
 			// Never returns an addition.

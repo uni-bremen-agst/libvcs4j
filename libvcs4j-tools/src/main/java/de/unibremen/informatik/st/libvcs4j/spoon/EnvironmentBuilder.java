@@ -70,7 +70,7 @@ public class EnvironmentBuilder {
 	 */
 	public Environment update(@NonNull final RevisionRange range)
 			throws BuildException {
-		final Revision revision = range.getRevision();
+		final Revision revision = range.getCurrent();
 		log.info("Building Spoon model for revision {}", revision.getId());
 		log.info("Enable auto imports: {}", autoImports);
 		log.info("Enable comments: {}", comments);

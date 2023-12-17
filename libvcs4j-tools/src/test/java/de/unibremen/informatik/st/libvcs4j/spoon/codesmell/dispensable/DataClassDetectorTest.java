@@ -29,7 +29,7 @@ public class DataClassDetectorTest {
 		revision.addFile(Paths.get("dataclass", "Triple.java"));
 
 		RevisionRange revisionRange = mock(RevisionRange.class);
-		when(revisionRange.getRevision()).thenReturn(revision);
+		when(revisionRange.getCurrent()).thenReturn(revision);
 
 		Launcher launcher = new Launcher();
 		launcher.addInputResource(folder.getRoot().getAbsolutePath());

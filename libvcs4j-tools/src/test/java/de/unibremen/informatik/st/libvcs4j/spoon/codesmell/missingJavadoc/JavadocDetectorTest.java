@@ -61,7 +61,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -215,7 +215,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -358,7 +358,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -512,7 +512,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -655,7 +655,7 @@ public class JavadocDetectorTest {
         launcher.addInputResource(folder.getRoot().getAbsolutePath());
         CtModel model = launcher.buildModel();
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -782,7 +782,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
         JavadocDetector javadocDetectorWithoutDeprecated = new JavadocDetector(env);
@@ -930,7 +930,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
         JavadocDetector javadocDetector = new JavadocDetector(env);
@@ -958,7 +958,7 @@ public class JavadocDetectorTest {
         launcher.addInputResource(folder.getRoot().getAbsolutePath());
         CtModel model = launcher.buildModel();
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -1047,7 +1047,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -1120,7 +1120,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -1219,7 +1219,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
         JavadocDetector javadocDetector = new JavadocDetector(env);
@@ -1281,7 +1281,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
         JavadocDetector javadocDetector = new JavadocDetector(env);
@@ -1426,7 +1426,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
         JavadocDetector javadocDetector = new JavadocDetector(env);
@@ -1492,7 +1492,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -1518,7 +1518,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -1582,7 +1582,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -1647,7 +1647,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -1708,7 +1708,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -1790,7 +1790,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -1842,7 +1842,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -1903,7 +1903,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -1955,7 +1955,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -2001,7 +2001,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -2069,7 +2069,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -2099,7 +2099,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -2176,7 +2176,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -2212,7 +2212,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -2254,7 +2254,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -2278,7 +2278,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -2340,7 +2340,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -2410,7 +2410,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -2470,7 +2470,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -2526,7 +2526,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -2566,7 +2566,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -2607,7 +2607,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -2646,7 +2646,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -2685,7 +2685,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -2734,7 +2734,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -2775,7 +2775,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -2836,7 +2836,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -2874,7 +2874,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -2912,7 +2912,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -2953,7 +2953,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -2995,7 +2995,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -3043,7 +3043,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -3072,7 +3072,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -3132,7 +3132,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -3170,7 +3170,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -3208,7 +3208,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -3248,7 +3248,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -3290,7 +3290,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -3336,7 +3336,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -3394,7 +3394,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -3460,7 +3460,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -3502,7 +3502,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -3545,7 +3545,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -3590,7 +3590,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -3636,7 +3636,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -3689,7 +3689,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -3777,7 +3777,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -3923,7 +3923,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -4061,7 +4061,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 
@@ -4186,7 +4186,7 @@ public class JavadocDetectorTest {
         CtModel model = launcher.buildModel();
 
         RevisionRange revisionRange = mock(RevisionRange.class);
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
 
         final var env = new Environment(model, revisionRange);
 

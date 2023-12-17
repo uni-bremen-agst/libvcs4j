@@ -39,13 +39,13 @@ public class Environment {
 	private final RevisionRange revisionRange;
 
 	/**
-	 * Shortcut for {@code getRevisionRange().getRevision()}.
+	 * Shortcut for {@code getRevisionRange().getCurrent()}.
 	 *
 	 * @return
-	 * 		The revision returned by {@code getRevisionRange().getRevision()}.
+	 * 		The revision returned by {@code getRevisionRange().getCurrent()}.
 	 */
 	public Revision getRevision() {
-		return revisionRange.getRevision();
+		return revisionRange.getCurrent();
 	}
 
 	/**
@@ -79,7 +79,7 @@ public class Environment {
 		// Make VCS file paths canonical.
 		final Map<VCSFile, Path> fileToCPath = new IdentityHashMap<>();
 		try {
-			final Revision revision = revisionRange.getRevision();
+			final Revision revision = revisionRange.getCurrent();
 			for (final VCSFile vFile : revision.getFiles()) {
 				final Path cPath = vFile.toFile().getCanonicalFile().toPath();
 				fileToCPath.put(vFile, cPath);

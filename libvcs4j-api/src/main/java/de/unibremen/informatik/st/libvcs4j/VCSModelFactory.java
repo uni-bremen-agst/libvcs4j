@@ -392,28 +392,28 @@ public interface VCSModelFactory {
 	 * fallback. {@code null} values are filtered out.
 	 *
 	 * @param ordinal
-	 * 		The ordinal of the revision range to create.
-	 * @param revision
-	 * 		The revision of the revision range to create.
-	 * @param predecessorRevision
-	 * 		The predecessor revision of the revision range to create.
+	 * 		The ordinal of the range to create.
+	 * @param current
+	 * 		The current revision of the range to create.
+	 * @param previous
+	 * 		The previous revision of the range to create.
 	 * @param commits
-	 * 		The commits of the revision range to create.
+	 * 		The commits of the range to create.
 	 * @param engine
-	 * 		The engine of the revision range to create.
+	 * 		The engine of the range to create.
 	 * @return
 	 * 		The created {@link RevisionRange} instance.
 	 * @throws NullPointerException
-	 * 		If {@code revision} or {@code engine} is {@code null}.
+	 * 		If {@code current} or {@code engine} is {@code null}.
 	 * @throws IllegalArgumentException
 	 * 		If {@code ordinal < 1} or if {@code commits} is empty.
 	 */
 	default RevisionRange createRevisionRange(final int ordinal,
-			final Revision revision, final Revision predecessorRevision,
+			final Revision current, final Revision previous,
 			final List<Commit> commits, final VCSEngine engine)
 			throws NullPointerException, IllegalArgumentException {
 		Validate.isPositive(ordinal, "Ordinal (%d) < 1");
-		Validate.notNull(revision);
+		Validate.notNull(current);
 		Validate.notNull(engine);
 		final List<Commit> _commits = createCopy(commits);
 		Validate.notEmpty(_commits, "There must be at least one commit");
@@ -424,13 +424,13 @@ public interface VCSModelFactory {
 			}
 
 			@Override
-			public Revision getRevision() {
-				return revision;
+			public Revision getCurrent() {
+				return current;
 			}
 
 			@Override
-			public Optional<Revision> getPredecessorRevision() {
-				return Optional.ofNullable(predecessorRevision);
+			public Optional<Revision> getPrevious() {
+				return Optional.ofNullable(previous);
 			}
 
 			@Override
@@ -446,10 +446,9 @@ public interface VCSModelFactory {
 			@Override
 			public String toString() {
 				return String.format("RevisionRange(ordinal=%d, " +
-						"revision=%s, predecessorRevision=%s, commits=%d, " +
-						"first=%b)", getOrdinal(), getRevision().getId(),
-						getPredecessorRevision().map(Revision::getId)
-								.orElse(null),
+						"current=%s, previous=%s, commits=%d, " +
+						"first=%b)", getOrdinal(), getCurrent().getId(),
+						getPrevious().map(Revision::getId).orElse(null),
 						getCommits().size(), isFirst());
 			}
 		};

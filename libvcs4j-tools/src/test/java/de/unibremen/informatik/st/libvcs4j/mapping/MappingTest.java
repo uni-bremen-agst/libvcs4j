@@ -42,7 +42,7 @@ public class MappingTest {
         revisionRange = mock(RevisionRange.class);
         Revision revision = mock(Revision.class);
         when(revision.getId()).thenReturn("2");
-        when(revisionRange.getRevision()).thenReturn(revision);
+        when(revisionRange.getCurrent()).thenReturn(revision);
     }
 
     @Test
@@ -83,7 +83,7 @@ public class MappingTest {
         when(revision.getId()).thenReturn("2");
         Revision predRevision = mock(Revision.class);
         when(predRevision.getId()).thenReturn("1");
-        when(revisionRange.getPredecessorRevision()).thenReturn(Optional.of(predRevision));
+        when(revisionRange.getPrevious()).thenReturn(Optional.of(predRevision));
         ranges = Collections.singletonList(range);
         mockMappable = mock(Mappable.class);
         when(mockMappable.getRanges()).thenReturn(ranges);
@@ -429,7 +429,7 @@ public class MappingTest {
             when(revision.getId()).thenReturn("1");
             Revision predRevision = mock(Revision.class);
             when(predRevision.getId()).thenReturn("1");
-            when(revisionRange.getPredecessorRevision())
+            when(revisionRange.getPrevious())
                     .thenReturn(Optional.of(predRevision));
         } else {
             when(revision.getId()).thenReturn("2");

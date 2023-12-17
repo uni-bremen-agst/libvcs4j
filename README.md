@@ -62,10 +62,10 @@ VCSEngine vcs = ...
 
 for (RevisionRange range : vcs) {
     // Path to the root of the currently checked out revivion.
-    range.getRevision().getOutput();
+    range.getCurrent().getOutput();
 
     // Returns the files of the currenlty checked out revision as list.
-    range.getRevision().getFiles();
+    range.getCurrent().getFiles();
 }
 ```
 
