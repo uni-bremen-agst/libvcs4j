@@ -35,6 +35,15 @@ public abstract class ElementExtractor extends Scanner {
 	}
 
 	/**
+	 * Scans the spoon model provided by {@link #environment}
+	 * ({@link Environment#getCtModel()})}.
+	 *
+	 */
+	public void scan() {
+		scan(environment.getCtModel());
+	}
+
+	/**
 	 * Tries to create a signature for {@code element}.
 	 *
 	 * @param element
