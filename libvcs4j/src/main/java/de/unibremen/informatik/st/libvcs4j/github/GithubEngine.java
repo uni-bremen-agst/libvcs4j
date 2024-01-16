@@ -98,13 +98,17 @@ public class GithubEngine extends AbstractITEngine {
 
 	private Comment createComment(final GHIssueComment pComment)
 			throws IOException {
+		String author = pComment.getUser().getName();
+		if (author == null) {
+			author = pComment.getUser().getLogin();
+		}
+		final String message = pComment.getBody();
 		final LocalDateTime dateTime = pComment
 				.getCreatedAt()
 				.toInstant()
 				.atZone(ZoneId.systemDefault())
 				.toLocalDateTime();
 		return getModelFactory().createComment(
-				pComment.getUser().getName(),
-				pComment.getBody(), dateTime, this);
+				author, message, dateTime, this);
 	}
 }
